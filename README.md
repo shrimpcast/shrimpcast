@@ -59,7 +59,7 @@ To install Shrimpcast, follow these steps:
 1. On a fresh VPS, run:
 
    ```bash
-   wget -O install.sh https://github.com/username/shrimpcast.git
+   wget -O install.sh https://github.com/shrimpcast/shrimpcast/releases/latest/download/install.sh
    chmod +x install.sh
    ./install.sh -d [YOUR_DOMAIN_NAME]
    ```
@@ -69,7 +69,7 @@ To install Shrimpcast, follow these steps:
 2. (Optional) If you're using Cloudflare as a reverse proxy, run:
 
    ```bash
-   wget -O cloudflare_setup.sh https://github.com/username/shrimpcast.git
+   wget -O cloudflare_setup.sh https://github.com/shrimpcast/shrimpcast/releases/latest/download/cloudflare_setup.sh
    chmod +x cloudflare_setup.sh
    ./cloudflare_setup.sh
    ```
@@ -277,7 +277,7 @@ Retrieve the SessionId from the [Message and User Management](#message-and-user-
 ## Update
 If you want to update to the latest version of shrimpcast, you can do so by running
    ```bash
-   wget -O update.sh https://github.com/username/shrimpcast.git
+   wget -O update.sh https://github.com/shrimpcast/shrimpcast/releases/latest/download/update.sh
    chmod +x update.sh
    ./update.sh -d [YOUR_DOMAIN_NAME]
    ```
