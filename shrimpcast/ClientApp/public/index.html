@@ -1,0 +1,50 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, width=device-width, interactive-widget=resizes-content" />
+    <meta name="theme-color" content="#000000">
+    <base href="%PUBLIC_URL%/" />
+    <!--
+      manifest.json provides metadata used when your web app is added to the
+      homescreen on Android. See https://developers.google.com/web/fundamentals/engage-and-retain/web-app-manifest/
+    -->
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json">
+    <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
+    <link rel="stylesheet" href="%PUBLIC_URL%/css/loader-default.css?cacheBurst=%REACT_APP_CACHE_BUST%">
+    <link rel="stylesheet" href="%PUBLIC_URL%/css/defaults.css?cacheBurst=%REACT_APP_CACHE_BUST%">
+    <!--
+      Notice the use of %PUBLIC_URL% in the tags above.
+      It will be replaced with the URL of the `public` folder during the build.
+      Only files inside the `public` folder can be referenced from the HTML.
+
+      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
+      work correctly both with client-side routing and a non-root public URL.
+      Learn how to configure a non-root public URL by running `npm run build`.
+    -->
+  </head>
+  <body>
+    <noscript>
+      <style>
+        /* Hide loading screen if JavaScript is disabled */
+        #loading-screen {
+          display: none;
+        }
+      </style> 
+      You need to enable JavaScript to run this app.
+    </noscript>
+    <div id="root">
+      <div id="loading-screen">
+        <div class="loading-spinner-cont">
+          <span class="loading-spinner" role="progressbar" style="width: 50px; height: 50px;">
+            <svg viewBox="22 22 44 44">
+              <circle cx="44" cy="44" r="20.2" fill="none" stroke-width="3.6"></circle>
+            </svg>
+          </span>
+          <span class="text-p">LOADING RESOURCES</span>
+          <span class="text-s">POWERED BY SHRIMPCAST</span>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

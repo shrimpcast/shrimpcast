@@ -1,0 +1,108 @@
+﻿#root,
+#rtc-embed,
+body,
+html {
+  height: 100%;
+}
+
+* {
+  scrollbar-width: none;
+}
+
+::-webkit-scrollbar {
+  width: 0;
+  background: 0 0;
+}
+
+.glow {
+  color: #b23c17 !important;
+  animation-name: glow;
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+
+@keyframes glow {
+  from {
+    text-shadow: 0 0 5px #b23c17, 0 0 5px #b71c1c;
+  }
+
+  to {
+    text-shadow: 0 0 20px #b23c17, 0 0 20px #b71c1c;
+  }
+}
+
+.noselect {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.wrapper-comment:hover .wrapper-overlay {
+  visibility: visible;
+}
+
+.emote {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  margin-left: 2.5px;
+  margin-right: 2.5px;
+  border-radius: 0;
+  position: relative;
+  top: 8.5px;
+}
+
+.full-height {
+  height: 100% !important;
+}
+
+#rtc-embed {
+  width: 100%;
+  border: none;
+}
+
+.drawer-poll {
+  scrollbar-width: thin;
+  scrollbar-color: #ff9100 transparent;
+}
+
+.drawer-poll::-webkit-scrollbar {
+  width: 5px;
+}
+
+.drawer-poll::-webkit-scrollbar-track {
+  background: 0 0;
+}
+
+.drawer-poll::-webkit-scrollbar-thumb {
+  background-color: #ff9100;
+  border-radius: 10px;
+}
+
+.drawer-poll-secondary::-webkit-scrollbar {
+  height: 5px;
+  width: 0px;
+}
+
+.santa-hat:before {
+  content: url("../images/santa-hat.png");
+  position: absolute;
+  z-index: 1;
+  left: -3px;
+}
+
+.santa-hat-primary {
+  position: relative;
+}
+
+.santa-hat-primary:before {
+  content: url("../images/santa-hat-big.png");
+  position: absolute;
+  z-index: 1;
+  top: -12.5px;
+  left: -5.5px;
+}
