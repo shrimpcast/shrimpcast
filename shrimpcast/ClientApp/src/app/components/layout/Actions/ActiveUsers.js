@@ -12,14 +12,28 @@ const ActiveUsers = (props) => {
     [users, setUsers] = useState([]),
     setClosed = () => setOpen(false),
     setOpened = () => setOpen(true),
-    getUsers = async () => {
-      const activeUsers = await AdminActionsManager.GetActiveUsers(props.signalR);
+    { signalR } = props;
+
+  useEffect(() => {
+    const addUser = (user) =>
+        setUsers((users) => {
+          const userExists = users.find((existingUser) => existingUser.sessionId === user.sessionId);
+          return userExists ? users : users.concat(user);
+        }),
+      removeUser = (sessionId) => setUsers((users) => users.filter((user) => user.sessionId !== sessionId));
+
+    const getUsers = async () => {
+      signalR.on(SignalRManager.events.userConnected, addUser);
+      signalR.on(SignalRManager.events.userDisconnected, removeUser);
+      const activeUsers = await AdminActionsManager.GetActiveUsers(signalR);
       setUsers(activeUsers);
     };
 
-  useEffect(() => {
-    props.signalR.on(SignalRManager.events.userCountChange, getUsers);
-    return () => props.signalR.off(SignalRManager.events.userCountChange);
+    getUsers();
+    return () => {
+      signalR.off(SignalRManager.events.userConnected);
+      signalR.off(SignalRManager.events.userDisconnected);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

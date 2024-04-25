@@ -85,13 +85,19 @@ namespace shrimpcast.Hubs
             }
 
             await TriggerUserCountChange();
+            await SendAdminUserStatusUpdate(session: Session);
             await base.OnConnectedAsync();
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
+            var SessionId = GetCurrentConnection().Session.SessionId;
             ActiveConnections.TryRemove(Context.ConnectionId, out _);
             await TriggerUserCountChange();
+            if (!ActiveConnections.Any(ac => ac.Value.Session.SessionId == SessionId))
+            {
+                await SendAdminUserStatusUpdate(sessionId: SessionId);
+            }
             await base.OnDisconnectedAsync(exception);
         }
 
@@ -579,6 +585,18 @@ namespace shrimpcast.Hubs
             var Action = "ChatMessage";
             if (!useCallers) await Clients.Caller.SendAsync(Action, obj);
             else if (Callers != null) await Clients.Clients(Callers).SendAsync(Action, obj);
+        }
+
+        private async Task SendAdminUserStatusUpdate(Session? session = null, int? sessionId = null)
+        {
+            var admins = ActiveConnections.Where(ac => ac.Value.Session.IsAdmin).Select(ac => ac.Key);
+            var eventType = session != null ? "UserConnected" : "UserDisconnected";
+            await Clients.Clients(admins).SendAsync(eventType, session != null ? new
+            {
+                session.SessionId,
+                session.SessionNames.Last().Name,
+                session.IsAdmin
+            } : sessionId);
         }
 
         private async Task<bool> PerformBan(int SessionId, bool IsSilent, bool SilentDelete, int bannedBy)

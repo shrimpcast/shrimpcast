@@ -29,6 +29,7 @@ const ConnectedUsersCount = (props) => {
   useEffect(() => {
     const triggerCountChange = async () => await ChatActionsManager.TriggerCountChange(signalR);
     signalR.on(SignalRManager.events.userCountChange, (resp) => setConnected(resp));
+    // Trigger it twice on the initial render to ensure that the message is properly received
     triggerCountChange();
     return () => signalR.off(SignalRManager.events.userCountChange);
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -13,6 +13,8 @@ class SignalRManager {
     pong: "Pong",
     userCountChange: "UserCountChange",
     messageReceived: "ChatMessage",
+    userConnected: "UserConnected",
+    userDisconnected: "UserDisconnected",
   };
 
   static async connect() {
