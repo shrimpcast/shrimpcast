@@ -9,7 +9,7 @@
   <img src="https://github.com/shrimpcast/shrimpcast/assets/167498236/d3159e68-60dd-4e8f-a8ca-be0a99a759a1" alt="Logo">
 </p>
 
-![Minimalist-Showcase-Project-Presentation](https://github.com/shrimpcast/shrimpcast/assets/167498236/82d0aac8-d1c0-4290-af0d-33cbefa37156)
+![Minimalist-Showcase-Project-Presentation](https://github.com/shrimpcast/shrimpcast/assets/167498236/4262b7b5-b307-47e8-b358-1c9138f77026)
 
 ## Introduction
 
