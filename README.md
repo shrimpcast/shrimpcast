@@ -1,9 +1,15 @@
 > [!NOTE]
 > This documentation is a work-in-progress
 
-# Shrimpcast
+<h1 align="center">
+  Shrimpcast
+</h1>
 
-![image](https://github.com/shrimpcast/shrimpcast/assets/167498236/4d642f0e-ec3b-4220-8dc3-792a3d5f937e)
+<p align="center">
+  <img src="https://github.com/shrimpcast/shrimpcast/assets/167498236/d3159e68-60dd-4e8f-a8ca-be0a99a759a1" alt="Logo">
+</p>
+
+![Minimalist-Showcase-Project-Presentation](https://github.com/shrimpcast/shrimpcast/assets/167498236/82d0aac8-d1c0-4290-af0d-33cbefa37156)
 
 ## Introduction
 
