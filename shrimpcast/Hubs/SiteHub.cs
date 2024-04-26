@@ -84,8 +84,7 @@ namespace shrimpcast.Hubs
                 await ForceDisconnect(connectionsToRemove, "You have exceeded the maximum amount of permitted simultaneous connections. Refresh to try again.");
             }
 
-            await TriggerUserCountChange();
-            await SendAdminUserStatusUpdate(session: Session);
+            await TriggerUserCountChange(false, Session, null);
             await base.OnConnectedAsync();
         }
 
@@ -93,26 +92,11 @@ namespace shrimpcast.Hubs
         {
             var SessionId = GetCurrentConnection().Session.SessionId;
             ActiveConnections.TryRemove(Context.ConnectionId, out _);
-            await TriggerUserCountChange();
-            if (!ActiveConnections.Any(ac => ac.Value.Session.SessionId == SessionId))
-            {
-                await SendAdminUserStatusUpdate(sessionId: SessionId);
-            }
+            await TriggerUserCountChange(false, null, SessionId);
             await base.OnDisconnectedAsync(exception);
         }
 
-        public async Task TriggerUserCountChange([FromBody] bool SelfInvoked = false)
-        {
-            int byIp = ActiveConnections.DistinctBy(connection => connection.Value.RemoteAdress).Count();
-            var obj = new
-            {
-                ByConnection = ActiveConnections.DistinctBy(connection => connection.Key).Count(),
-                byIp,
-            };
-
-            if (SelfInvoked) await Clients.Caller.SendAsync("UserCountChange", obj);
-            else await Clients.All.SendAsync("UserCountChange", obj);
-        }
+        public async Task GetUserCount() => await TriggerUserCountChange(true, null, null);
         #endregion
 
         #region Chat
@@ -503,6 +487,40 @@ namespace shrimpcast.Hubs
             return true;
         }
 
+        private async Task TriggerUserCountChange(bool SelfInvoked, Session? session, int? sessionId)
+        {
+            int byIp = ActiveConnections.DistinctBy(connection => connection.Value.RemoteAdress).Count();
+            var obj = new
+            {
+                ByConnection = ActiveConnections.DistinctBy(connection => connection.Key).Count(),
+                byIp,
+            };
+
+            if (SelfInvoked) await Clients.Caller.SendAsync("UserCountChange", obj);
+            else
+            {
+                await Clients.All.SendAsync("UserCountChange", obj);
+                // Session being different to null means it's a connected event
+                if (session != null) await SendAdminUserStatusUpdate(session);
+                else if (!ActiveConnections.Any(ac => ac.Value.Session.SessionId == sessionId))
+                {
+                    await SendAdminUserStatusUpdate(sessionId: sessionId);
+                }
+            }
+        }
+
+        private async Task SendAdminUserStatusUpdate(Session? session = null, int? sessionId = null)
+        {
+            var admins = ActiveConnections.Where(ac => ac.Value.Session.IsAdmin).Select(ac => ac.Key);
+            var eventType = session != null ? "UserConnected" : "UserDisconnected";
+            await Clients.Clients(admins).SendAsync(eventType, session != null ? new
+            {
+                session.SessionId,
+                session.SessionNames.Last().Name,
+                session.IsAdmin
+            } : sessionId);
+        }
+
         private async Task<string?> IsChatActionAllowed()
         {
             await AbortIfBanned();
@@ -585,18 +603,6 @@ namespace shrimpcast.Hubs
             var Action = "ChatMessage";
             if (!useCallers) await Clients.Caller.SendAsync(Action, obj);
             else if (Callers != null) await Clients.Clients(Callers).SendAsync(Action, obj);
-        }
-
-        private async Task SendAdminUserStatusUpdate(Session? session = null, int? sessionId = null)
-        {
-            var admins = ActiveConnections.Where(ac => ac.Value.Session.IsAdmin).Select(ac => ac.Key);
-            var eventType = session != null ? "UserConnected" : "UserDisconnected";
-            await Clients.Clients(admins).SendAsync(eventType, session != null ? new
-            {
-                session.SessionId,
-                session.SessionNames.Last().Name,
-                session.IsAdmin
-            } : sessionId);
         }
 
         private async Task<bool> PerformBan(int SessionId, bool IsSilent, bool SilentDelete, int bannedBy)
