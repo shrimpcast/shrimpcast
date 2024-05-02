@@ -57,12 +57,12 @@ const VideoJSPlayer = (props) => {
   }, [playerRef]);
 
   useEffect(() => {
-    const importCss = async () => {
+    const importCSS = async () => {
       await import("video.js/dist/video-js.css");
       setCssLoaded(true);
     };
 
-    if (!cssLoaded) importCss();
+    if (!cssLoaded) importCSS();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

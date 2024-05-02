@@ -15,21 +15,21 @@ const XPlayer = (props) => {
   const elId = "xg-player-cont",
     [loadState, setLoadState] = useState({
       css: false,
-      player: false,
       flv: false,
+      player: false,
     });
 
   useEffect(() => {
     if (!loadState.css)
-      postscribe("#player-xg-css", '<link rel="stylesheet" href="./xg/index.min.css"/>', {
+      postscribe("#player-xg-css", '<link rel="stylesheet" href="./lib/xg/index.min.css"/>', {
         done: () => setLoadState((state) => ({ ...state, css: true })),
       });
     if (!loadState.player)
-      postscribe("#player-xg", '<script src="./xg/player.xg.js"></script>', {
+      postscribe("#player-xg", '<script src="./lib/xg/player.xg.js"></script>', {
         done: () => setLoadState((state) => ({ ...state, player: true })),
       });
     if (!loadState.flv)
-      postscribe("#player-xg-flv", '<script src="./xg/xg.flv.js"></script>', {
+      postscribe("#player-xg-flv", '<script src="./lib/xg/xg.flv.js"></script>', {
         done: () => setLoadState((state) => ({ ...state, flv: true })),
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
