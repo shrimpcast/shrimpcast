@@ -17,7 +17,7 @@ const CenteredSpinner = () => {
         LOADING PROFILE
       </Typography>
       <Typography variant="caption" display="block" fontWeight="bold" color="secondary.500" sx={{ fontSize: "10px" }}>
-        POWERED BY SHRIMPCAST
+        POWERED BY SHRIMPCAST {process.env.REACT_APP_VERSION}
       </Typography>
     </Box>
   );

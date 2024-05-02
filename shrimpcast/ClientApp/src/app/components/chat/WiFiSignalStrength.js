@@ -50,7 +50,7 @@ const RTTSx = {
 const WiFiSignalStrength = (props) => {
   const { signalR, connectionStatus } = props,
     [rtt, setRtt] = useState(0),
-    rttName = rtt < 250 ? WiFiColours.high : rtt > 250 && rtt < 400 ? WiFiColours.medium : WiFiColours.low,
+    rttName = rtt < 250 ? WiFiColours.high : rtt > 250 && rtt < 500 ? WiFiColours.medium : WiFiColours.low,
     RttComponent = WiFIIcons[rttName];
 
   useEffect(() => {
