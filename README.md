@@ -1,6 +1,3 @@
-> [!NOTE]
-> This documentation is a work-in-progress
-
 <h1 align="center">
   Shrimpcast
 </h1>
