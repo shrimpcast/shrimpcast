@@ -35,16 +35,6 @@ html {
 .neon-text {
   color: #ff9100;
   text-shadow: 0 0 10px #ff9100, 0 0 20px #ff9100;
-  animation: neon-glow 1.5s ease-in-out infinite alternate;
-}
-
-@keyframes neon-glow {
-  from {
-    text-shadow: 0 0 10px #ff9100, 0 0 20px;
-  }
-  to {
-    text-shadow: 0 0 20px #ff9100, 0 0 30px;
-  }
 }
 
 .noselect {
