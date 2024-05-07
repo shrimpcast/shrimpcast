@@ -14,21 +14,36 @@ html {
   background: 0 0;
 }
 
-.glow {
+.admin-glow {
   color: #b23c17 !important;
-  animation-name: glow;
+  animation-name: admin-glow;
   animation-duration: 1s;
   animation-iteration-count: infinite;
   animation-direction: alternate;
 }
 
-@keyframes glow {
+@keyframes admin-glow {
   from {
     text-shadow: 0 0 5px #b23c17, 0 0 5px #b71c1c;
   }
 
   to {
     text-shadow: 0 0 20px #b23c17, 0 0 20px #b71c1c;
+  }
+}
+
+.neon-text {
+  color: #ff9100;
+  text-shadow: 0 0 10px #ff9100, 0 0 20px #ff9100;
+  animation: neon-glow 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes neon-glow {
+  from {
+    text-shadow: 0 0 10px #ff9100, 0 0 20px;
+  }
+  to {
+    text-shadow: 0 0 20px #ff9100, 0 0 30px;
   }
 }
 

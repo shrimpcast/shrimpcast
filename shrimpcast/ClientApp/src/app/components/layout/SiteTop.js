@@ -5,15 +5,9 @@ import DoneIcon from "@mui/icons-material/Done";
 import CloseIcon from "@mui/icons-material/Close";
 import TokenManager from "../../managers/TokenManager";
 import LocalStorageManager from "../../managers/LocalStorageManager";
-import ConfigUserDialog from "./Actions/ConfigUserDialog";
-import Bans from "./Actions/Bans";
 import Grid from "@mui/material/Unstable_Grid2";
 import Colours from "../chat/Colours/Colours";
-import ActiveUsers from "./Actions/ActiveUsers";
-import AutoModFilters from "./Actions/AutoModFilters";
-import Notifications from "./Actions/Notifications";
-import AccountInfo from "./Actions/AccountInfo";
-import EmotesAdmin from "./Actions/EmotesAdmin";
+import Actions from "./Actions/Actions";
 
 const SiteTopSx = {
     width: "100%",
@@ -28,7 +22,7 @@ const SiteTopSx = {
   ButtonSx = (isAdmin) => ({
     height: "35px",
     borderRadius: "0px",
-    width: `calc(100% - ${isAdmin ? "0px" : "35px"})`,
+    width: `calc(100% - ${isAdmin ? "0px" : "34px"})`,
     textTransform: "none",
   }),
   ButtonTextSx = {
@@ -74,18 +68,7 @@ const SiteTop = (props) => {
 
   return (
     <Box sx={SiteTopSx}>
-      {props.isAdmin ? (
-        <>
-          <ConfigUserDialog {...props} />
-          <Bans {...props} />
-          <ActiveUsers {...props} />
-          <AutoModFilters {...props} />
-          <Notifications {...props} />
-          <EmotesAdmin {...props} />
-        </>
-      ) : (
-        <AccountInfo {...props} />
-      )}
+      <Actions {...props} />
       <Grid container xs={12} md={4} lg={3} xl={2} marginLeft={StatusSx}>
         {!editMode ? (
           <>

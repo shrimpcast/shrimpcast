@@ -6,14 +6,14 @@ import ChatActionsManager from "../../../managers/ChatActionsManager";
 import ColorLensIcon from "@mui/icons-material/ColorLens";
 
 const ColoursWrapperSx = {
-  position: "static",
-  width: "100%",
-  padding: "2px",
-  paddingLeft: "7.5px",
-  paddingTop: "12.5px",
-  top: "35px",
-  zIndex: 3,
-},
+    position: "static",
+    width: "100%",
+    padding: "2px",
+    paddingLeft: "7.5px",
+    paddingTop: "12.5px",
+    top: "35px",
+    zIndex: 3,
+  },
   ColoursSx = {
     marginTop: "5px",
     marginBottom: "5px",
@@ -47,7 +47,12 @@ const Colours = (props) => {
 
   return (
     <>
-      <IconButton onClick={toggleState} type="button" size="small" sx={{ borderRadius: "1px", backgroundColor: selfColour }}>
+      <IconButton
+        onClick={toggleState}
+        type="button"
+        size="small"
+        sx={{ borderRadius: "1px", backgroundColor: selfColour }}
+      >
         <ColorLensIcon />
       </IconButton>
       {showColours && (

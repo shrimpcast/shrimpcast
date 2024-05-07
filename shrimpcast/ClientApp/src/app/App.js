@@ -21,7 +21,7 @@ const theme = createTheme({
     primary: blueGrey,
     secondary: orange,
     background: {
-      default: "#263238",
+      default: blueGrey[900],
     },
   },
   breakpoints: {

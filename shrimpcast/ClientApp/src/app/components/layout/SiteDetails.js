@@ -33,13 +33,13 @@ const SiteDetails = (props) => {
           <Box sx={{ wordBreak: "break-word" }}>
             <Typography
               color="secondary.main"
-              className={configuration.enableChristmasTheme ? "santa-hat-primary" : null}
+              className={`neon-text ${configuration.enableChristmasTheme ? "santa-hat-primary" : null}`}
               variant="h3"
               sx={TitleSx}
             >
               {configuration.streamTitle}
             </Typography>
-            <Typography color="secondary.main" sx={DescriptionSx}>
+            <Typography className="neon-text" color="secondary.main" sx={DescriptionSx}>
               {configuration.streamDescription}
             </Typography>
           </Box>

@@ -73,14 +73,13 @@ const UserMessage = React.memo((props) => {
     },
     max = 250,
     [isMiniminized, setMinimized] = useState(!props.isAdmin),
-    content = props.content.length > max && isMiniminized ? props.content.substring(0, max) : props.content,
     openMinimized = () => setMinimized(false),
+    content = props.content.length > max && isMiniminized ? props.content.substring(0, max) : props.content,
     getEmote = (emoteName) => props.emotes.find((emote) => emote.name === emoteName);
 
   return (
     <MessageWrapper useTransition={props.useTransition}>
       <Box className="wrapper-comment" sx={WrapperTextBoxSx}>
-        {/* ------- Wrapper section ------- */}
         <Box className="wrapper-overlay" sx={OverlaySx}>
           <ManageUserDialog OverlayButtonSx={OverlayButtonSx} {...props} />
           {props.siteAdmin && (
@@ -94,17 +93,15 @@ const UserMessage = React.memo((props) => {
             </>
           )}
         </Box>
-        {/* ------- Username section ------- */}
         <Box display="inline-block">
           <Typography
             sx={TextSx(props.userColorDisplay, true)}
-            className={`${props.enableChristmasTheme ? "santa-hat" : null} ${props.isAdmin ? "glow" : null}`}
+            className={`${props.enableChristmasTheme ? "santa-hat" : null} ${props.isAdmin ? "admin-glow" : null}`}
           >
             {props.isAdmin && <VerifiedUserIcon sx={VerifiedUserIconSx} />}
             {props.sentBy}
           </Typography>
         </Box>
-        {/* ------- Emote and username highlight section ------- */}
         <Typography component="span" sx={TextSx()}>
           {": "}
           {reactStringReplace(content, regex, (match, i) =>
