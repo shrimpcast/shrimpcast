@@ -16,6 +16,8 @@ namespace shrimpcast.Data.Repositories.Interfaces
         Task<string> UpdateColour(int sessionId, int nameColourId);
         Task<List<object>> ListActiveMutes();
         Task<bool> Unmute(int sessionId);
+        Task<bool> ToggleModStatus(int sessionId, bool shouldAdd);
+        Task<List<object>> ListMods();
     }
 }
 

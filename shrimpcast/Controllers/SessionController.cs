@@ -49,7 +49,7 @@ namespace shrimpcast.Controllers
                 colours,
                 subscribed,
                 isAdmin,
-                isMod = ensureCreated.IsModerator,
+                ensureCreated.IsMod,
                 accessToken = ensureCreated.SessionToken,
                 selfColour = ensureCreated.UserDisplayColor,
                 name = ensureCreated.SessionNames.Last().Name,

@@ -22,6 +22,7 @@ namespace shrimpcast.Data.Repositories
             int MaxMessages = _configurationSingleton.Configuration.MaxMessagesToShow;
             var query = (from message in _context.Messages
                          where !message.IsDeleted && (from bans in _context.Bans where bans.SessionId == message.SessionId select bans.SessionId).FirstOrDefault() == default
+                         join session in _context.Sessions on message.SessionId equals session.SessionId
                          orderby message.CreatedAt descending
                          select new Message
                          {
@@ -30,10 +31,10 @@ namespace shrimpcast.Data.Repositories
                              CreatedAt = message.CreatedAt,
                              MessageType = message.MessageType,
                              MessageId = message.MessageId,
+                             UserColorDisplay = session.UserDisplayColor,
+                             IsAdmin = session.IsAdmin,
+                             IsMod = session.IsMod,
                              SentBy = (from name in _context.SessionNames where name.SessionId == message.SessionId orderby name.CreatedAt select name.Name).Last(),
-                             UserColorDisplay = (from session in _context.Sessions where session.SessionId == message.SessionId select session.UserDisplayColor).FirstOrDefault(),
-                             IsAdmin = (from session in _context.Sessions where session.SessionId == message.SessionId select session.IsAdmin).First(),
-                             IsMod = (from session in _context.Sessions where session.SessionId == message.SessionId select session.IsModerator).First()
                          }).Take(MaxMessages);
             var result = await query.AsNoTracking().ToListAsync();
             var now = DateTime.UtcNow;

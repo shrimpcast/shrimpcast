@@ -161,7 +161,7 @@ namespace shrimpcast.Hubs
             var addedMessage = await _messageRepository.Add(CurrentConnection.Session.SessionId, RemoteAddress, message, "UserMessage");
             addedMessage.SentBy = session.SessionNames.Last().Name;
             addedMessage.IsAdmin = session.IsAdmin;
-            addedMessage.IsMod = session.IsModerator;
+            addedMessage.IsMod = session.IsMod;
             addedMessage.RemoteAddress = string.Empty;
             addedMessage.UserColorDisplay = session.UserDisplayColor;
             await NotifyNewMessage(addedMessage);
@@ -209,6 +209,7 @@ namespace shrimpcast.Hubs
                 IPs = IPs.Select(ip => ip.RemoteAddress),
                 activeSessions,
                 userInfo.MutedUntil,
+                userInfo.IsMod,
             };
         }
 
@@ -314,6 +315,24 @@ namespace shrimpcast.Hubs
                 connection.Value.Session.MutedUntil = null;
             }
             return isUnmuted;
+        }
+        #endregion
+
+        #region Moderators
+        public async Task<bool> ToggleModStatus([FromBody] int SessionId, [FromBody] bool ShouldAdd)
+        {
+            await ShouldGrantAccess();
+            var status = await _sessionRepository.ToggleModStatus(SessionId, ShouldAdd);
+            var connections = ActiveConnections.Where(ac => ac.Value.Session.SessionId == SessionId);
+            foreach (var connection in connections) connection.Value.Session.IsMod = ShouldAdd;
+            if (ShouldAdd) await DispatchSystemMessage("You are now a janny", true, connections.Select(c => c.Key));
+            return status;
+        }
+
+        public async Task<List<object>> ListMods()
+        {
+            await ShouldGrantAccess();
+            return await _sessionRepository.ListMods();
         }
         #endregion
 
@@ -731,7 +750,7 @@ namespace shrimpcast.Hubs
                     await DispatchSystemMessage($"Successfully executed {Constants.PLAY_KINO_COMMAND}.");
                     break;
                 case string _message when _message.StartsWith(Constants.PLAY_MUSIC_MAIN_MUTED):
-                    await DispatchSystemMessage($"Executing {Constants.PLAY_MAIN_COMMAND} command...");
+                    await DispatchSystemMessage($"Executing {Constants.PLAY_MUSIC_MAIN_MUTED} command...");
                     await _obsCommandsRepository.PlayMusic(url);
                     await DispatchSystemMessage($"Successfully executed {Constants.PLAY_MUSIC_MAIN_MUTED}.");
                     break;

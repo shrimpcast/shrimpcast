@@ -9,6 +9,7 @@ import AccountInfo from "./AccountInfo";
 import EmotesAdmin from "./EmotesAdmin";
 import MenuIcon from "@mui/icons-material/Menu";
 import Mutes from "./Mutes";
+import Moderators from "./Moderators";
 
 const Actions = (props) => {
   const theme = useTheme();
@@ -16,10 +17,11 @@ const Actions = (props) => {
   const actions = props.isAdmin
     ? [
         <ConfigUserDialog {...props} />,
+        <ActiveUsers {...props} />,
         <Bans {...props} />,
         <Mutes {...props} />,
-        <ActiveUsers {...props} />,
         <AutoModFilters {...props} />,
+        <Moderators {...props} />,
         <Notifications {...props} />,
         <EmotesAdmin {...props} />,
         <AccountInfo {...props} />,

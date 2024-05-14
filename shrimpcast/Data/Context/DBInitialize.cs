@@ -18,7 +18,7 @@ namespace shrimpcast.Data
 
         public static void SetInitialData(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.InsertData("Session", [nameof(Session.SessionToken), nameof(Session.CreatedAt), nameof(Session.IsAdmin), nameof(Session.IsModerator), nameof(Session.UserDisplayColor)], new object[,]
+            migrationBuilder.InsertData("Session", [nameof(Session.SessionToken), nameof(Session.CreatedAt), nameof(Session.IsAdmin), "IsModerator", nameof(Session.UserDisplayColor)], new object[,]
             {
                 { INITIAL_ADMIN_TOKEN, DateTime.UtcNow, true, false, string.Empty},
             });

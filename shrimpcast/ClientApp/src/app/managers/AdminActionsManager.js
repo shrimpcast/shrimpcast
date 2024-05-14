@@ -20,6 +20,10 @@ class AdminActionsManager {
     const response = await signalR.invoke("ListActiveUsers").catch((ex) => console.log(ex));
     return response;
   }
+  static async ListMods(signalR) {
+    const response = await signalR.invoke("ListMods").catch((ex) => console.log(ex));
+    return response;
+  }
 }
 
 export default AdminActionsManager;

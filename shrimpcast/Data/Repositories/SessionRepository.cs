@@ -162,6 +162,27 @@ namespace shrimpcast.Data.Repositories
             Session.MutedUntil = null;
             return await _context.SaveChangesAsync() > 0 ? true : throw new Exception("Could not update record.");
         }
+
+        public async Task<bool> ToggleModStatus(int sessionId, bool shouldAdd)
+        {
+            var Session = await GetExistingByIdAsync(sessionId, true);
+            Session.IsMod = shouldAdd;
+            return await _context.SaveChangesAsync() > 0 ? true : throw new Exception("Could not update record.");
+        }
+
+        public async Task<List<object>> ListMods()
+        {
+            var mods = from session in _context.Sessions
+                       where session.IsMod == true
+                       select new
+                       {
+                           session.SessionId,
+                           SessionName = (from sn in _context.SessionNames where sn.SessionId == session.SessionId orderby sn.CreatedAt select sn.Name).Last(),
+                       };
+
+            var result = await mods.AsNoTracking().ToListAsync();
+            return result.Cast<object>().ToList();
+        }
     }
 }
 

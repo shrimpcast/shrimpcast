@@ -1,7 +1,8 @@
 import React from "react";
-import AddModeratorIcon from "@mui/icons-material/AddModerator";
+import SafetyCheckIcon from "@mui/icons-material/SafetyCheck";
 import AutoModFiltersManager from "../../../managers/AutoModFiltersManager";
 import GenericActionList from "./GenericActionList";
+import PrecisionManufacturingIcon from "@mui/icons-material/PrecisionManufacturing";
 
 const AutoModFilters = (props) => {
   return (
@@ -9,7 +10,7 @@ const AutoModFilters = (props) => {
       title="Auto-mod filters"
       getItems={AutoModFiltersManager.GetAll}
       removeItem={AutoModFiltersManager.Remove}
-      icon={AddModeratorIcon}
+      icon={PrecisionManufacturingIcon}
       identifier="autoModFilterId"
       contentIdentifier="content"
       {...props}

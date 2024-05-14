@@ -15,7 +15,7 @@ namespace shrimpcast.Entities.DB
 
         public bool IsAdmin { get; set; }
 
-        public bool IsModerator { get; set; }
+        public bool IsMod { get; set; }
 
         public required string UserDisplayColor { get; set; }
 

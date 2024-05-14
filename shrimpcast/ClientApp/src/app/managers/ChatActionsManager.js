@@ -1,4 +1,16 @@
 class ChatActionsManager {
+  static bans = {
+    mute: "Mute",
+    ban: "Ban",
+    silentBan: "Silent ban",
+    silentBanAndDelete: "Silent ban and delete",
+    filterBan: "Filter and ban",
+  };
+  static actions = {
+    mod: (isMod) => `${isMod ? "Remove" : "Make"} mod`,
+    ...this.bans,
+  };
+
   static async RemoveMessage(signalR, messageId) {
     const response = await signalR.invoke("RemoveMessage", messageId).catch((ex) => console.log(ex));
     return response;
@@ -31,6 +43,12 @@ class ChatActionsManager {
   }
   static async GetUserCount(signalR) {
     await signalR.invoke("GetUserCount").catch((ex) => console.log(ex));
+  }
+  static async ToggleModStatus(signalR, sessionId, shouldAdd) {
+    const response = await signalR
+      .invoke("ToggleModStatus", sessionId, shouldAdd || false)
+      .catch((ex) => console.log(ex));
+    return response;
   }
 }
 
