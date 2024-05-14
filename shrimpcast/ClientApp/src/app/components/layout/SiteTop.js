@@ -33,7 +33,7 @@ const SiteTopSx = {
   };
 
 const SiteTop = (props) => {
-  const signalR = props.signalR,
+  const { isAdmin, isMod, signalR } = props,
     [registeredName, setRegisteredName] = useState(props.name),
     [newName, setNewName] = useState(registeredName),
     [editMode, setEditMode] = useState(false),
@@ -77,11 +77,11 @@ const SiteTop = (props) => {
               variant="contained"
               endIcon={<EditIcon />}
               size="small"
-              sx={ButtonSx(props.isAdmin)}
+              sx={ButtonSx(props.isAdmin || props.isMod)}
             >
               <Box sx={ButtonTextSx}>{registeredName}</Box>
             </Button>
-            {!props.isAdmin && <Colours {...props} />}
+            {!isAdmin && !isMod && <Colours {...props} />}
           </>
         ) : (
           <>

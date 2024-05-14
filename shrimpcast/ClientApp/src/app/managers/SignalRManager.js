@@ -15,6 +15,7 @@ class SignalRManager {
     messageReceived: "ChatMessage",
     userConnected: "UserConnected",
     userDisconnected: "UserDisconnected",
+    modStatusUpdate: "ModStatusUpdate",
   };
 
   static async connect() {

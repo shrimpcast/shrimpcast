@@ -66,7 +66,13 @@ const RenderChatMessages = (props) => {
                   m.sentBy = message.sentBy;
                 }
                 if (isNameColourChangedType) {
-                  m.userColorDisplay = message.content;
+                  const { content } = message,
+                    isModAdded = content === "ModAdded",
+                    isModRemoved = content === "ModRemoved";
+
+                  if (isModAdded) m.isMod = true;
+                  else if (isModRemoved) m.isMod = false;
+                  else m.userColorDisplay = content;
                 }
               });
           }

@@ -32,6 +32,24 @@ html {
   }
 }
 
+.mod-glow {
+  color: #00e5ff !important;
+  animation-name: mod-glow;
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+
+@keyframes mod-glow {
+  from {
+    text-shadow: 0 0 5px #00e5ff, 0 0 5px #33eaff;
+  }
+
+  to {
+    text-shadow: 0 0 20px #00e5ff, 0 0 20px #33eaff;
+  }
+}
+
 .neon-text {
   color: #ff9100;
   text-shadow: 0 0 10px #ff9100, 0 0 20px #ff9100;

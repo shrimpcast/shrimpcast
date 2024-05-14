@@ -1,5 +1,4 @@
 import React from "react";
-import SafetyCheckIcon from "@mui/icons-material/SafetyCheck";
 import AutoModFiltersManager from "../../../managers/AutoModFiltersManager";
 import GenericActionList from "./GenericActionList";
 import PrecisionManufacturingIcon from "@mui/icons-material/PrecisionManufacturing";

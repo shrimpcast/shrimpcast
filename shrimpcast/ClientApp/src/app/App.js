@@ -64,6 +64,13 @@ const App = () => {
       }))
     );
 
+    connection.on(SignalRManager.events.modStatusUpdate, (isMod) =>
+      setConnectionDataState((state) => ({
+        ...state,
+        isMod,
+      }))
+    );
+
     updateConnectionStatus();
   };
 

@@ -1,14 +1,19 @@
 class ChatActionsManager {
-  static bans = {
+  static mod_actions = {
     mute: "Mute",
+  };
+
+  static admin_actions = {
+    ...this.mod_actions,
     ban: "Ban",
     silentBan: "Silent ban",
     silentBanAndDelete: "Silent ban and delete",
     filterBan: "Filter and ban",
   };
+
   static actions = {
     mod: (isMod) => `${isMod ? "Remove" : "Make"} mod`,
-    ...this.bans,
+    ...this.admin_actions,
   };
 
   static async RemoveMessage(signalR, messageId) {

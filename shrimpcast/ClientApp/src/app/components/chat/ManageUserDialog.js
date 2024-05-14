@@ -24,9 +24,11 @@ const BanSx = (optionsCount) => ({
 const ManageUserDialog = (props) => {
   //siteAdmin means that the user is authenticated as an admin
   //isAdmin means that the target user is an admin
-  const { siteAdmin, isAdmin } = props,
+  const { siteAdmin, isAdmin, isMod, siteMod } = props,
     targetIsUser = siteAdmin && !isAdmin,
-    actionKeys = Object.keys(ChatActionsManager.bans),
+    showActionsPanel = !isAdmin && (!isMod || siteAdmin),
+    actions = siteAdmin ? ChatActionsManager.admin_actions : ChatActionsManager.mod_actions,
+    actionKeys = Object.keys(actions),
     [userInfo, setUserInfo] = useState(null),
     [open, setOpen] = useState(false),
     setOpened = () => setOpen(true),
@@ -94,7 +96,11 @@ const ManageUserDialog = (props) => {
   return (
     <>
       <IconButton sx={props.OverlayButtonSx} onClick={setOpened}>
-        {props.siteAdmin ? <ManageAccountsIcon sx={{ fontSize: "16px" }} /> : <InfoIcon sx={{ fontSize: "16px" }} />}
+        {siteAdmin || siteMod ? (
+          <ManageAccountsIcon sx={{ fontSize: "16px" }} />
+        ) : (
+          <InfoIcon sx={{ fontSize: "16px" }} />
+        )}
       </IconButton>
       {open && (
         <Dialog open={open} onClose={setClosed} maxWidth={"sm"} fullWidth>
@@ -149,39 +155,44 @@ const ManageUserDialog = (props) => {
                 </Grid>
                 <Divider />
                 <Grid container spacing={2} mt="2px">
-                  <Grid xs={12} sm={siteAdmin ? 6 : 12}>
+                  <Grid xs={12} sm={siteAdmin || (siteMod && showActionsPanel) ? 6 : 12}>
                     <Typography>Previous names:</Typography>
                     <VirtualizedList list={userInfo.basicResponse.previousNames} />
                   </Grid>
-                  {siteAdmin && (
+                  {(siteAdmin || siteMod) && (
                     <>
-                      <Grid xs={12} sm={6}>
-                        <Typography>All token IPs:</Typography>
-                        <VirtualizedList list={userInfo.iPs} />
-                      </Grid>
-
-                      <Grid xs={12} sm={isAdmin ? 12 : 6}>
-                        <Typography sx={MessageIPSx}>Active sessions{userInfo.ip && ` on ${userInfo.ip}`}:</Typography>
-                        {userInfo.activeSessions.length === 0 ? (
-                          <Typography>IP not connected.</Typography>
-                        ) : (
-                          <VirtualizedList list={userInfo.activeSessions} />
-                        )}
-                      </Grid>
-                      {!isAdmin && (
+                      {siteAdmin && (
+                        <>
+                          <Grid xs={12} sm={6}>
+                            <Typography>All token IPs:</Typography>
+                            <VirtualizedList list={userInfo.iPs} />
+                          </Grid>
+                          <Grid xs={12} sm={isAdmin ? 12 : 6}>
+                            <Typography sx={MessageIPSx}>
+                              Active sessions{userInfo.ip && ` on ${userInfo.ip}`}:
+                            </Typography>
+                            {userInfo.activeSessions.length === 0 ? (
+                              <Typography>IP not connected.</Typography>
+                            ) : (
+                              <VirtualizedList list={userInfo.activeSessions} />
+                            )}
+                          </Grid>
+                        </>
+                      )}
+                      {showActionsPanel && (
                         <Grid xs={12} sm={6} pb={2}>
                           <Typography>Moderate</Typography>
                           <Divider />
                           <Box height="200px">
                             {actionKeys.map((actionKey) => (
                               <Button
-                                onClick={() => openConfirmPrompt(ChatActionsManager.bans[actionKey])}
+                                onClick={() => openConfirmPrompt(actions[actionKey])}
                                 variant="contained"
                                 color="error"
                                 sx={BanSx(actionKeys.length)}
                                 key={actionKey}
                               >
-                                {ChatActionsManager.bans[actionKey]}
+                                {actions[actionKey]}
                               </Button>
                             ))}
 

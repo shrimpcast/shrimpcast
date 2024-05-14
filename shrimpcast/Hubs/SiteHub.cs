@@ -291,7 +291,7 @@ namespace shrimpcast.Hubs
         #region Mutes
         public async Task<bool> Mute([FromBody] int SessionId)
         {
-            await ShouldGrantAccess();
+            await ShouldGrantAccess(true);
             var mutedUntil = await _sessionRepository.Mute(SessionId);
             foreach (var connection in ActiveConnections.Where(ac => ac.Value.Session.SessionId == SessionId))
             {
@@ -325,7 +325,17 @@ namespace shrimpcast.Hubs
             var status = await _sessionRepository.ToggleModStatus(SessionId, ShouldAdd);
             var connections = ActiveConnections.Where(ac => ac.Value.Session.SessionId == SessionId);
             foreach (var connection in connections) connection.Value.Session.IsMod = ShouldAdd;
+            await Clients.Clients(connections.Select(c => c.Key)).SendAsync("ModStatusUpdate", ShouldAdd);
             if (ShouldAdd) await DispatchSystemMessage("You are now a janny", true, connections.Select(c => c.Key));
+            await Task.Delay(100);
+            await NotifyNewMessage(new Message
+            {
+                Content = ShouldAdd ? "ModAdded" : "ModRemoved",
+                CreatedAt = DateTime.UtcNow,
+                MessageType = "UserColourChange",
+                SessionId = SessionId,
+                MessageId = new Random().Next()
+            });
             return status;
         }
 
@@ -514,16 +524,18 @@ namespace shrimpcast.Hubs
         #endregion
 
         #region Private methods
-        private async Task<bool> ShouldGrantAccess()
+        private async Task<bool> ShouldGrantAccess(bool modActionAllowed = false)
         {
-            var CurrentConnection = GetCurrentConnection();
-            if (!CurrentConnection.Session.IsAdmin)
+            var session = GetCurrentConnection().Session;
+            if (!session.IsAdmin && (!session.IsMod || !modActionAllowed))
             {
                 await DispatchSystemMessage("Permission denied.");
                 throw new Exception("Access denied.");
             }
+
             return true;
         }
+
 
         private async Task TriggerUserCountChange(bool SelfInvoked, Session? session, int? sessionId)
         {
