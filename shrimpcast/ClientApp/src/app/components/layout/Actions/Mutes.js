@@ -1,21 +1,21 @@
 import React from "react";
-import BlockIcon from "@mui/icons-material/Block";
 import AdminActionsManager from "../../../managers/AdminActionsManager";
 import ChatActionsManager from "../../../managers/ChatActionsManager";
 import GenericActionList from "./GenericActionList";
+import VolumeOffIcon from "@mui/icons-material/VolumeOff";
 
-const Bans = (props) => {
+const Mutes = (props) => {
   return (
     <GenericActionList
-      title="Banned users list"
-      getItems={AdminActionsManager.GetBans}
-      removeItem={ChatActionsManager.Unban}
-      icon={BlockIcon}
-      identifier="banId"
+      title="Muted users list"
+      getItems={AdminActionsManager.GetActiveMutes}
+      removeItem={ChatActionsManager.Unmute}
+      icon={VolumeOffIcon}
+      identifier="sessionId"
       contentIdentifier="sessionName"
       {...props}
     />
   );
 };
 
-export default Bans;
+export default Mutes;

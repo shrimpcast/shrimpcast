@@ -12,6 +12,10 @@ class AdminActionsManager {
     const response = await signalR.invoke("ListBans").catch((ex) => console.log(ex));
     return response;
   }
+  static async GetActiveMutes(signalR) {
+    const response = await signalR.invoke("ListActiveMutes").catch((ex) => console.log(ex));
+    return response;
+  }
   static async GetActiveUsers(signalR) {
     const response = await signalR.invoke("ListActiveUsers").catch((ex) => console.log(ex));
     return response;

@@ -14,6 +14,8 @@ namespace shrimpcast.Data.Repositories.Interfaces
         Task<List<SessionIP>> GetAllIPs(int sessionId);
         Task<DateTime> Mute(int sessionId);
         Task<string> UpdateColour(int sessionId, int nameColourId);
+        Task<List<object>> ListActiveMutes();
+        Task<bool> Unmute(int sessionId);
     }
 }
 

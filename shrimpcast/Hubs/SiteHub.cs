@@ -243,38 +243,6 @@ namespace shrimpcast.Hubs
             var session = await _sessionRepository.GetExistingByTokenAsync(accessToken);
             return session != null;
         }
-        #endregion
-
-        #region Moderation
-        public async Task<bool> Ban([FromBody] int SessionId, [FromBody] bool IsSilent, [FromBody] bool SilentDelete)
-        {
-            await ShouldGrantAccess();
-            return await PerformBan(SessionId, IsSilent, SilentDelete, GetCurrentConnection().Session.SessionId);
-        }
-
-        public async Task PerformBackgroundBan(int SessionId, string VerificationToken)
-        {
-            if (VerificationToken != Constants.FIREANDFORGET_TOKEN) return;
-            await Task.Delay(new Random().Next(Configuration.MinABTimeInMs, Configuration.MaxABTimeInMs));
-            await PerformBan(SessionId, true, true, -1);
-        }
-
-        public async Task<bool> Mute([FromBody] int SessionId)
-        {
-            await ShouldGrantAccess();
-            var mutedUntil = await _sessionRepository.Mute(SessionId);
-            foreach (var connection in ActiveConnections.Where(ac => ac.Value.Session.SessionId == SessionId))
-            {
-                connection.Value.Session.MutedUntil = mutedUntil;
-            }
-            return true;
-        }
-
-        public async Task<bool> Unban([FromBody] int banId)
-        {
-            await ShouldGrantAccess();
-            return await _banRepository.Unban(banId);
-        }
 
         public async Task<bool> RemoveMessage([FromBody] int MessageId)
         {
@@ -290,6 +258,21 @@ namespace shrimpcast.Hubs
             });
             return result;
         }
+        #endregion
+
+        #region Bans
+        public async Task<bool> Ban([FromBody] int SessionId, [FromBody] bool IsSilent, [FromBody] bool SilentDelete)
+        {
+            await ShouldGrantAccess();
+            return await PerformBan(SessionId, IsSilent, SilentDelete, GetCurrentConnection().Session.SessionId);
+        }
+
+        public async Task PerformBackgroundBan(int SessionId, string VerificationToken)
+        {
+            if (VerificationToken != Constants.FIREANDFORGET_TOKEN) return;
+            await Task.Delay(new Random().Next(Configuration.MinABTimeInMs, Configuration.MaxABTimeInMs));
+            await PerformBan(SessionId, true, true, -1);
+        }
 
         public async Task<List<Ban>> ListBans()
         {
@@ -297,16 +280,40 @@ namespace shrimpcast.Hubs
             return await _banRepository.GetAllBans();
         }
 
-        public async Task<List<object>> ListActiveUsers()
+        public async Task<bool> Unban([FromBody] int banId)
         {
             await ShouldGrantAccess();
-            var users = ActiveConnections.OrderBy(ac => ac.Value.ConnectedAt).DistinctBy(ac => ac.Value.Session.SessionId).Select(ac => (object)new
+            return await _banRepository.Unban(banId);
+        }
+        #endregion
+
+        #region Mutes
+        public async Task<bool> Mute([FromBody] int SessionId)
+        {
+            await ShouldGrantAccess();
+            var mutedUntil = await _sessionRepository.Mute(SessionId);
+            foreach (var connection in ActiveConnections.Where(ac => ac.Value.Session.SessionId == SessionId))
             {
-                ac.Value.Session.SessionId,
-                ac.Value.Session.SessionNames.Last().Name,
-                ac.Value.Session.IsAdmin,
-            }).ToList();
-            return users;
+                connection.Value.Session.MutedUntil = mutedUntil;
+            }
+            return true;
+        }
+
+        public async Task<List<object>> ListActiveMutes()
+        {
+            await ShouldGrantAccess();
+            return await _sessionRepository.ListActiveMutes();
+        }
+
+        public async Task<bool> Unmute([FromBody] int SessionId)
+        {
+            await ShouldGrantAccess();
+            var isUnmuted = await _sessionRepository.Unmute(SessionId);
+            foreach (var connection in ActiveConnections.Where(ac => ac.Value.Session.SessionId == SessionId))
+            {
+                connection.Value.Session.MutedUntil = null;
+            }
+            return isUnmuted;
         }
         #endregion
 
@@ -440,6 +447,18 @@ namespace shrimpcast.Hubs
             await ShouldGrantAccess();
             var result = await _emoteRepository.Remove(EmoteId);
             return result;
+        }
+
+        public async Task<List<object>> ListActiveUsers()
+        {
+            await ShouldGrantAccess();
+            var users = ActiveConnections.OrderBy(ac => ac.Value.ConnectedAt).DistinctBy(ac => ac.Value.Session.SessionId).Select(ac => (object)new
+            {
+                ac.Value.Session.SessionId,
+                ac.Value.Session.SessionNames.Last().Name,
+                ac.Value.Session.IsAdmin,
+            }).ToList();
+            return users;
         }
         #endregion
 

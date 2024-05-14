@@ -22,7 +22,7 @@ namespace shrimpcast.Data.Repositories
             };
 
             var existingBan = await _context.Bans.Where(ban => ban.SessionId == sessionId).FirstOrDefaultAsync();
-            if (existingBan != null) return Session;
+            if (existingBan != null) return null;
 
             await _context.AddAsync(Ban);
             var result = await _context.SaveChangesAsync();

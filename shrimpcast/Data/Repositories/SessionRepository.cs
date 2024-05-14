@@ -141,6 +141,27 @@ namespace shrimpcast.Data.Repositories
             session.UserDisplayColor = colour.ColourHex;
             return await _context.SaveChangesAsync() > 0 ? session.UserDisplayColor : throw new Exception("Could not update record");
         }
+
+        public async Task<List<object>> ListActiveMutes()
+        {
+            var now = DateTime.UtcNow;
+            var activeMutes = from session in _context.Sessions
+                              where session.MutedUntil > now
+                              select new
+                              {
+                                  session.SessionId,
+                                  SessionName = (from sn in _context.SessionNames where sn.SessionId == session.SessionId orderby sn.CreatedAt select sn.Name).Last(),
+                              };
+            var result = await activeMutes.AsNoTracking().ToListAsync();
+            return result.Cast<object>().ToList();
+        }
+
+        public async Task<bool> Unmute(int sessionId)
+        {
+            var Session = await GetExistingByIdAsync(sessionId, true);
+            Session.MutedUntil = null;
+            return await _context.SaveChangesAsync() > 0 ? true : throw new Exception("Could not update record.");
+        }
     }
 }
 

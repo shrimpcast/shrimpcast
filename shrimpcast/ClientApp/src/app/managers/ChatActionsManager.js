@@ -13,6 +13,10 @@ class ChatActionsManager {
     const response = await signalR.invoke("Mute", sessionId).catch((ex) => console.log(ex));
     return response;
   }
+  static async Unmute(signalR, sessionId) {
+    const response = await signalR.invoke("Unmute", sessionId).catch((ex) => console.log(ex));
+    return response;
+  }
   static async ChangeColour(signalR, nameColourId) {
     const response = await signalR.invoke("ChangeColour", nameColourId).catch((ex) => console.log(ex));
     return response;

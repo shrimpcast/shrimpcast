@@ -8,6 +8,7 @@ import Notifications from "./Notifications";
 import AccountInfo from "./AccountInfo";
 import EmotesAdmin from "./EmotesAdmin";
 import MenuIcon from "@mui/icons-material/Menu";
+import Mutes from "./Mutes";
 
 const Actions = (props) => {
   const theme = useTheme();
@@ -16,6 +17,7 @@ const Actions = (props) => {
     ? [
         <ConfigUserDialog {...props} />,
         <Bans {...props} />,
+        <Mutes {...props} />,
         <ActiveUsers {...props} />,
         <AutoModFilters {...props} />,
         <Notifications {...props} />,

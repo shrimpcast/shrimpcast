@@ -23,7 +23,7 @@ const BanSx = {
 
 const ManageUserDialog = (props) => {
   //siteAdmin means that the user is authenticated as an admin
-  //isAdmin means that the target message was sent by an admin
+  //isAdmin means that the target user is an admin
   const { siteAdmin, isAdmin } = props,
     [userInfo, setUserInfo] = useState(null),
     [open, setOpen] = useState(false),
