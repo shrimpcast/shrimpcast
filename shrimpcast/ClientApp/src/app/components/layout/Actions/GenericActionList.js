@@ -1,14 +1,17 @@
 import DialogTitle from "@mui/material/DialogTitle";
 import Dialog from "@mui/material/Dialog";
 import React, { useEffect, useState } from "react";
-import { Box, DialogContent, Divider, IconButton, List, ListItem, ListItemText } from "@mui/material";
+import { Box, CircularProgress, DialogContent, Divider, IconButton, List, ListItem, ListItemText } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ManageUserDialog from "../../chat/ManageUserDialog";
 
 const GenericActionList = (props) => {
   const [open, setOpen] = useState(false),
-    [items, setItems] = useState([]),
-    setClosed = () => setOpen(false),
+    [items, setItems] = useState(null),
+    setClosed = () => {
+      setOpen(false);
+      setItems(null);
+    },
     setOpened = () => setOpen(true),
     { signalR } = props,
     getItems = async () => {
@@ -32,15 +35,19 @@ const GenericActionList = (props) => {
       <IconButton onClick={setOpened} type="button" size="small" sx={{ borderRadius: "0px" }}>
         <Icon sx={{ color: "primary.500" }} />
       </IconButton>
-      {open && (
-        <Dialog open={open} onClose={setClosed} maxWidth={"sm"} fullWidth>
-          <DialogTitle sx={{ fontSize: "24px", paddingBottom: "7.5px" }}>
-            <Box display="flex" width="100%" marginBottom={"10px"}>
-              {props.title}
+      <Dialog open={open} onClose={setClosed} maxWidth={"sm"} fullWidth>
+        <DialogTitle sx={{ fontSize: "24px", paddingBottom: "7.5px" }}>
+          <Box display="flex" width="100%" marginBottom={"10px"}>
+            {props.title}
+          </Box>
+          <Divider />
+        </DialogTitle>
+        <DialogContent>
+          {!items ? (
+            <Box width="40px" ml="auto" mr="auto">
+              <CircularProgress color="secondary" />
             </Box>
-            <Divider />
-          </DialogTitle>
-          <DialogContent>
+          ) : (
             <List sx={{ width: "100%", bgcolor: "background.paper" }}>
               {items.map((item) => (
                 <ListItem
@@ -66,9 +73,9 @@ const GenericActionList = (props) => {
                 </ListItem>
               ))}
             </List>
-          </DialogContent>
-        </Dialog>
-      )}
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
