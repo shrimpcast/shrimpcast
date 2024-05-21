@@ -2,6 +2,7 @@ class LocalStorageManager {
   static localStorage = {
     token: "access_token",
     name: "name",
+    ignoredUsers: "ignored_users",
     showNotificationsPrompt: "notifications_prompt_hidden",
     showGitHubPrompt: "github_prompt_hidden",
   };
@@ -38,6 +39,19 @@ class LocalStorageManager {
 
   static getName() {
     return this.getStorage(this.localStorage.name);
+  }
+
+  static setIgnoredUsers(users) {
+    this.setStorage(this.localStorage.ignoredUsers, JSON.stringify(users));
+    return true;
+  }
+
+  static getIgnoredUsers() {
+    let users;
+    try {
+      users = JSON.parse(this.getStorage(this.localStorage.ignoredUsers));
+    } catch (e) {}
+    return users || [];
   }
 
   static hideNotificationsPrompt() {

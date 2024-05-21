@@ -10,6 +10,7 @@ import EmotesAdmin from "./EmotesAdmin";
 import MenuIcon from "@mui/icons-material/Menu";
 import Mutes from "./Mutes";
 import Moderators from "./Moderators";
+import IgnoredUsers from "./IgnoredUsers";
 
 const Actions = (props) => {
   const theme = useTheme();
@@ -25,8 +26,9 @@ const Actions = (props) => {
         <Notifications {...props} />,
         <EmotesAdmin {...props} />,
         <AccountInfo {...props} />,
+        <IgnoredUsers {...props} />,
       ]
-    : [<AccountInfo {...props} />];
+    : [<AccountInfo {...props} />, <IgnoredUsers {...props} />];
 
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);

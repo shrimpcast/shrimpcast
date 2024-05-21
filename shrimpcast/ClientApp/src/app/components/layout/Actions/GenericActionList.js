@@ -1,7 +1,17 @@
 import DialogTitle from "@mui/material/DialogTitle";
 import Dialog from "@mui/material/Dialog";
 import React, { useEffect, useState } from "react";
-import { Box, CircularProgress, DialogContent, Divider, IconButton, List, ListItem, ListItemText } from "@mui/material";
+import {
+  Box,
+  CircularProgress,
+  DialogContent,
+  Divider,
+  IconButton,
+  List,
+  ListItem,
+  ListItemText,
+  Typography,
+} from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ManageUserDialog from "../../chat/ManageUserDialog";
 
@@ -49,29 +59,33 @@ const GenericActionList = (props) => {
             </Box>
           ) : (
             <List sx={{ width: "100%", bgcolor: "background.paper" }}>
-              {items.map((item) => (
-                <ListItem
-                  key={item[props.identifier]}
-                  secondaryAction={
-                    <>
-                      {item.sessionId && (
-                        <ManageUserDialog
-                          {...props}
-                          siteAdmin={props.isAdmin}
-                          useSession={true}
-                          isAdmin={false}
-                          sessionId={item.sessionId}
-                        />
-                      )}
-                      <IconButton onClick={() => removeItem(item[props.identifier])} edge="end" aria-label="delete">
-                        <DeleteIcon />
-                      </IconButton>
-                    </>
-                  }
-                >
-                  <ListItemText primary={item[props.contentIdentifier]} />
-                </ListItem>
-              ))}
+              {!items.length ? (
+                <Typography ml={1}>No entries found</Typography>
+              ) : (
+                items.map((item) => (
+                  <ListItem
+                    key={item[props.identifier]}
+                    secondaryAction={
+                      <>
+                        {item.sessionId && (
+                          <ManageUserDialog
+                            {...props}
+                            siteAdmin={props.isAdmin}
+                            useSession={true}
+                            isAdmin={false}
+                            sessionId={item.sessionId}
+                          />
+                        )}
+                        <IconButton onClick={() => removeItem(item[props.identifier])} edge="end" aria-label="delete">
+                          <DeleteIcon />
+                        </IconButton>
+                      </>
+                    }
+                  >
+                    <ListItemText primary={item[props.contentIdentifier]} />
+                  </ListItem>
+                ))
+              )}
             </List>
           )}
         </DialogContent>

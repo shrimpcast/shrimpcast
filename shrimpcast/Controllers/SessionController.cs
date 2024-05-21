@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using shrimpcast.Data.Repositories.Interfaces;
 using shrimpcast.Entities;
-using shrimpcast.Entities.DB;
 
 namespace shrimpcast.Controllers
 {
@@ -50,9 +49,10 @@ namespace shrimpcast.Controllers
                 subscribed,
                 isAdmin,
                 ensureCreated.IsMod,
-                accessToken = ensureCreated.SessionToken,
-                selfColour = ensureCreated.UserDisplayColor,
-                name = ensureCreated.SessionNames.Last().Name,
+                ensureCreated.SessionId,
+                ensureCreated.SessionNames.Last().Name,
+                ensureCreated.SessionToken,
+                ensureCreated.UserDisplayColor,
             };
         }
     }

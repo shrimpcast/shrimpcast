@@ -161,6 +161,7 @@ const RenderChatMessages = (props) => {
               emotes={props.emotes}
               signalR={props.signalR}
               enableChristmasTheme={props.configuration.enableChristmasTheme}
+              userSessionId={props.sessionId}
               {...message}
             />
           ))

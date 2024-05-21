@@ -24,10 +24,15 @@ const BanSx = (optionsCount) => ({
 const ManageUserDialog = (props) => {
   //siteAdmin means that the user is authenticated as an admin
   //isAdmin means that the target user is an admin
-  const { siteAdmin, isAdmin, isMod, siteMod } = props,
-    targetIsUser = siteAdmin && !isAdmin,
-    showActionsPanel = !isAdmin && (!isMod || siteAdmin),
-    actions = siteAdmin ? ChatActionsManager.admin_actions : ChatActionsManager.mod_actions,
+  const { siteAdmin, isAdmin, isMod, siteMod, sessionId, userSessionId, signalR } = props,
+    //targetUserPublic means that the user is authenticated as an admin and the target is not an admin
+    targetUserPublic = siteAdmin && !isAdmin,
+    showActionsPanel = !isAdmin && (!isMod || siteAdmin) && sessionId !== userSessionId,
+    actions = siteAdmin
+      ? ChatActionsManager.admin_actions
+      : siteMod
+      ? ChatActionsManager.mod_actions
+      : ChatActionsManager.public_actions,
     actionKeys = Object.keys(actions),
     [userInfo, setUserInfo] = useState(null),
     [open, setOpen] = useState(false),
@@ -46,26 +51,25 @@ const ManageUserDialog = (props) => {
 
       switch (type) {
         case actions.mod(userInfo.isMod):
-          successfulResponse = await ChatActionsManager.ToggleModStatus(
-            props.signalR,
-            props.sessionId,
-            !userInfo.isMod
-          );
+          successfulResponse = await ChatActionsManager.ToggleModStatus(signalR, sessionId, !userInfo.isMod);
+          break;
+        case actions.ignore:
+          successfulResponse = ChatActionsManager.Ignore(sessionId, sentBy);
           break;
         case actions.mute:
-          successfulResponse = await ChatActionsManager.Mute(props.signalR, props.sessionId);
+          successfulResponse = await ChatActionsManager.Mute(signalR, sessionId);
           break;
         case actions.ban:
-          successfulResponse = await ChatActionsManager.Ban(props.signalR, props.sessionId, false, false);
+          successfulResponse = await ChatActionsManager.Ban(signalR, sessionId, false, false);
           break;
         case actions.silentBan:
-          successfulResponse = await ChatActionsManager.Ban(props.signalR, props.sessionId, true, false);
+          successfulResponse = await ChatActionsManager.Ban(signalR, sessionId, true, false);
           break;
         case actions.silentBanAndDelete:
-          successfulResponse = await ChatActionsManager.Ban(props.signalR, props.sessionId, true, true);
+          successfulResponse = await ChatActionsManager.Ban(signalR, sessionId, true, true);
           break;
         case actions.filterBan:
-          successfulResponse = await AutoModFiltersManager.Add(props.signalR, props.sessionId, props.messageId);
+          successfulResponse = await AutoModFiltersManager.Add(signalR, sessionId, props.messageId);
           break;
         default:
           break;
@@ -74,16 +78,12 @@ const ManageUserDialog = (props) => {
       if (!successfulResponse) return;
       closeConfirmPrompt();
       setClosed();
-    };
+    },
+    sentBy = userInfo?.basicResponse?.previousNames[userInfo?.basicResponse?.previousNames?.length - 1];
 
   useEffect(() => {
     async function getInfo() {
-      const info = await ChatActionsManager.GetMessageInfo(
-        props.signalR,
-        props.messageId,
-        props.sessionId,
-        props.useSession
-      );
+      const info = await ChatActionsManager.GetMessageInfo(signalR, props.messageId, sessionId, props.useSession);
 
       if (!info?.basicResponse) setClosed();
       else setUserInfo(info);
@@ -105,21 +105,21 @@ const ManageUserDialog = (props) => {
       {open && (
         <Dialog open={open} onClose={setClosed} maxWidth={"sm"} fullWidth>
           <DialogTitle sx={{ fontSize: "24px", paddingBottom: "7.5px" }}>
-            {targetIsUser ? `Manage` : `Details`}
+            {targetUserPublic ? `Manage` : `Details`}
             <Divider />
           </DialogTitle>
           <DialogContent>
-            {userInfo === null ? (
+            {!userInfo ? (
               <Box width="40px" ml="auto" mr="auto">
                 <CircularProgress color="secondary" />
               </Box>
             ) : (
               <>
                 <Grid container alignItems="center">
-                  <Grid xs={12} sm={targetIsUser ? 10 : 12}>
+                  <Grid xs={12} sm={targetUserPublic ? 10 : 12}>
                     <Typography>
                       User first joined on {new Date(userInfo.basicResponse.createdAt).toLocaleString()}
-                      {siteAdmin && ` with ID ${props.sessionId}`}{" "}
+                      {siteAdmin && ` with ID ${sessionId}`}{" "}
                     </Typography>
                     {props.createdAt && (
                       <Typography>Message sent at {new Date(props.createdAt).toLocaleString()}</Typography>
@@ -140,7 +140,7 @@ const ManageUserDialog = (props) => {
                       </Typography>
                     )}
                   </Grid>
-                  {targetIsUser && (
+                  {targetUserPublic && (
                     <Grid xs={12} sm={2} pb="5px">
                       <Button
                         variant="contained"
@@ -155,60 +155,52 @@ const ManageUserDialog = (props) => {
                 </Grid>
                 <Divider />
                 <Grid container spacing={2} mt="2px">
-                  <Grid xs={12} sm={siteAdmin || (siteMod && showActionsPanel) ? 6 : 12}>
+                  <Grid xs={12} sm={siteAdmin || showActionsPanel ? 6 : 12}>
                     <Typography>Previous names:</Typography>
                     <VirtualizedList list={userInfo.basicResponse.previousNames} />
                   </Grid>
-                  {(siteAdmin || siteMod) && (
+                  {siteAdmin && (
                     <>
-                      {siteAdmin && (
-                        <>
-                          <Grid xs={12} sm={6}>
-                            <Typography>All token IPs:</Typography>
-                            <VirtualizedList list={userInfo.iPs} />
-                          </Grid>
-                          <Grid xs={12} sm={isAdmin ? 12 : 6}>
-                            <Typography sx={MessageIPSx}>
-                              Active sessions{userInfo.ip && ` on ${userInfo.ip}`}:
-                            </Typography>
-                            {userInfo.activeSessions.length === 0 ? (
-                              <Typography>IP not connected.</Typography>
-                            ) : (
-                              <VirtualizedList list={userInfo.activeSessions} />
-                            )}
-                          </Grid>
-                        </>
-                      )}
-                      {showActionsPanel && (
-                        <Grid xs={12} sm={6} pb={2}>
-                          <Typography>Moderate</Typography>
-                          <Divider />
-                          <Box height="200px">
-                            {actionKeys.map((actionKey) => (
-                              <Button
-                                onClick={() => openConfirmPrompt(actions[actionKey])}
-                                variant="contained"
-                                color="error"
-                                sx={BanSx(actionKeys.length)}
-                                key={actionKey}
-                              >
-                                {actions[actionKey]}
-                              </Button>
-                            ))}
-
-                            {showPromptDialog.open && (
-                              <ConfirmDialog
-                                title={`Confirm ${showPromptDialog.type.toLowerCase()} for ${
-                                  userInfo.basicResponse.previousNames[userInfo.basicResponse.previousNames.length - 1]
-                                }?`}
-                                confirm={executeAction}
-                                cancel={closeConfirmPrompt}
-                              />
-                            )}
-                          </Box>
-                        </Grid>
-                      )}
+                      <Grid xs={12} sm={6}>
+                        <Typography>All token IPs:</Typography>
+                        <VirtualizedList list={userInfo.iPs} />
+                      </Grid>
+                      <Grid xs={12} sm={isAdmin ? 12 : 6}>
+                        <Typography sx={MessageIPSx}>Active sessions{userInfo.ip && ` on ${userInfo.ip}`}:</Typography>
+                        {userInfo.activeSessions.length === 0 ? (
+                          <Typography>IP not connected.</Typography>
+                        ) : (
+                          <VirtualizedList list={userInfo.activeSessions} />
+                        )}
+                      </Grid>
                     </>
+                  )}
+                  {showActionsPanel && (
+                    <Grid xs={12} sm={6} pb={2}>
+                      <Typography>Moderate</Typography>
+                      <Divider />
+                      <Box height="200px">
+                        {actionKeys.map((actionKey) => (
+                          <Button
+                            onClick={() => openConfirmPrompt(actions[actionKey])}
+                            variant="contained"
+                            color="error"
+                            sx={BanSx(actionKeys.length)}
+                            key={actionKey}
+                          >
+                            {actions[actionKey]}
+                          </Button>
+                        ))}
+
+                        {showPromptDialog.open && (
+                          <ConfirmDialog
+                            title={`Confirm ${showPromptDialog.type.toLowerCase()} for ${sentBy}?`}
+                            confirm={executeAction}
+                            cancel={closeConfirmPrompt}
+                          />
+                        )}
+                      </Box>
+                    </Grid>
                   )}
                 </Grid>
               </>

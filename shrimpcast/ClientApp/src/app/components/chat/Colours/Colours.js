@@ -34,14 +34,14 @@ const ColoursWrapperSx = {
   });
 
 const Colours = (props) => {
-  const [selfColour, setSelfColour] = useState(props.selfColour),
+  const [userDisplayColor, setUserDisplayColor] = useState(props.userDisplayColor),
     [showColours, setShowColours] = useState(false),
     toggleState = () => setShowColours(!showColours),
     handleClose = () => setShowColours(false),
     changeColour = async (nameColourId) => {
       let colourChanged = await ChatActionsManager.ChangeColour(props.signalR, nameColourId);
       if (!colourChanged) return;
-      setSelfColour(colourChanged);
+      setUserDisplayColor(colourChanged);
       handleClose();
     };
 
@@ -51,7 +51,7 @@ const Colours = (props) => {
         onClick={toggleState}
         type="button"
         size="small"
-        sx={{ borderRadius: "1px", backgroundColor: selfColour }}
+        sx={{ borderRadius: "1px", backgroundColor: userDisplayColor }}
       >
         <ColorLensIcon />
       </IconButton>
@@ -65,7 +65,7 @@ const Colours = (props) => {
                   key={colour.nameColourId}
                   type="button"
                   size="small"
-                  sx={ColourSx(colour, selfColour === colour.colourHex)}
+                  sx={ColourSx(colour, userDisplayColor === colour.colourHex)}
                 ></IconButton>
               ))}
             </Box>

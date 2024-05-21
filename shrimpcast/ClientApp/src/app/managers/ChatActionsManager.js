@@ -1,5 +1,12 @@
+import LocalStorageManager from "./LocalStorageManager";
+
 class ChatActionsManager {
+  static public_actions = {
+    ignore: "Ignore",
+  };
+
   static mod_actions = {
+    ...this.public_actions,
     mute: "Mute",
   };
 
@@ -54,6 +61,22 @@ class ChatActionsManager {
       .invoke("ToggleModStatus", sessionId, shouldAdd || false)
       .catch((ex) => console.log(ex));
     return response;
+  }
+  static IsIgnored(sessionId, ignoredUsers, isAdminOrMod) {
+    if (isAdminOrMod) return false;
+    if (!ignoredUsers) ignoredUsers = LocalStorageManager.getIgnoredUsers();
+    return Boolean(ignoredUsers.find((eu) => eu.sessionId === sessionId));
+  }
+  static Ignore(sessionId, sessionName) {
+    let ignoredUsers = LocalStorageManager.getIgnoredUsers();
+    if (this.IsIgnored(sessionId, ignoredUsers)) return true;
+    ignoredUsers.push({ sessionId, n: sessionName });
+    return LocalStorageManager.setIgnoredUsers(ignoredUsers);
+  }
+  static Unignore(signalR, sessionId) {
+    let ignoredUsers = LocalStorageManager.getIgnoredUsers();
+    ignoredUsers = ignoredUsers.filter((eu) => eu.sessionId !== sessionId);
+    return LocalStorageManager.setIgnoredUsers(ignoredUsers);
   }
 }
 

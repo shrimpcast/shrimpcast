@@ -8,7 +8,7 @@ class TokenManager {
       if (!abortSignal.aborted)
         return { data: { message: `Could not load the site: ${ex.message}. Refresh to try again.` } };
     });
-    this.SaveData(response?.data?.accessToken, response?.data?.name);
+    this.SaveData(response?.data?.sessionToken, response?.data?.name);
     return response?.data;
   }
 
