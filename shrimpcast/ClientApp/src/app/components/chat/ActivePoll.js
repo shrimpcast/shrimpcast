@@ -5,20 +5,20 @@ import PollIcon from "@mui/icons-material/Poll";
 import Poll from "../polls/Poll";
 
 const PollButtonSx = {
-  bgcolor: "primary.800",
-  borderRadius: "0px",
-  width: "100%",
-  textAlign: "center",
-  height: "35px",
-  maxHeight: "35px",
-  display: "flex",
-  justifyContent: "center",
-},
+    bgcolor: "primary.800",
+    borderRadius: "0px",
+    width: "100%",
+    textAlign: "center",
+    height: "35px",
+    maxHeight: "35px",
+    display: "flex",
+    justifyContent: "center",
+  },
   DrawerSx = {
-    maxHeight: "min(calc(100% - 63px), 225px)",
+    maxHeight: "min(calc(100% - 63px - 56px), 225px)",
     backgroundColor: "primary.800",
     position: "absolute",
-    width: '100%',
+    width: "100%",
     zIndex: 2,
     overflowY: "scroll",
   };
