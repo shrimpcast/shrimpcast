@@ -443,6 +443,20 @@ namespace shrimpcast.Hubs
             await DispatchUpdatedVoteCount();
             return result ? existingPollOptionId == pollOptionId ? -1 : pollOptionId : 0;
         }
+
+        public async Task<List<object>> GetPollVotes([FromBody] int pollOptionId)
+        {
+            var Connection = GetCurrentConnection();
+            var Session = Connection.Session;
+
+            if (!Session.IsAdmin && !Configuration.ShowVotes)
+            {
+                await DispatchSystemMessage("Permission denied.");
+                throw new Exception("Access denied.");
+            }
+
+            return await _pollRepository.GetOptionVotes(pollOptionId);
+        }
         #endregion
 
         #region Admin

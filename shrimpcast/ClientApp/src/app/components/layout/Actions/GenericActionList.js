@@ -16,11 +16,12 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import ManageUserDialog from "../../chat/ManageUserDialog";
 
 const GenericActionList = (props) => {
-  const [open, setOpen] = useState(false),
+  const [open, setOpen] = useState(props.skipButton || false),
     [items, setItems] = useState(null),
     setClosed = () => {
-      setOpen(false);
       setItems(null);
+      setOpen(false);
+      props.closeCallback && props.closeCallback();
     },
     setOpened = () => setOpen(true),
     { signalR } = props,
@@ -42,9 +43,11 @@ const GenericActionList = (props) => {
 
   return (
     <>
-      <IconButton onClick={setOpened} type="button" size="small" sx={{ borderRadius: "0px" }}>
-        <Icon sx={{ color: "primary.500" }} />
-      </IconButton>
+      {!props.skipButton && (
+        <IconButton onClick={setOpened} type="button" size="small" sx={{ borderRadius: "0px" }}>
+          <Icon sx={{ color: "primary.500" }} />
+        </IconButton>
+      )}
       <Dialog open={open} onClose={setClosed} maxWidth={"sm"} fullWidth>
         <DialogTitle sx={{ fontSize: "24px", paddingBottom: "7.5px" }}>
           <Box display="flex" width="100%" marginBottom={"10px"}>
@@ -76,9 +79,11 @@ const GenericActionList = (props) => {
                             sessionId={item.sessionId}
                           />
                         )}
-                        <IconButton onClick={() => removeItem(item[props.identifier])} edge="end" aria-label="delete">
-                          <DeleteIcon />
-                        </IconButton>
+                        {props.removeItem && (
+                          <IconButton onClick={() => removeItem(item[props.identifier])} edge="end" aria-label="delete">
+                            <DeleteIcon />
+                          </IconButton>
+                        )}
                       </>
                     }
                   >

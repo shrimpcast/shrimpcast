@@ -13,14 +13,18 @@ namespace shrimpcast.Data.Repositories
             _context = context;
         }
 
-        public async Task<int> GetOptionVotes(int PollOptionId)
+        public async Task<List<object>> GetOptionVotes(int PollOptionId)
         {
-            var votes = await (from pvotes in _context.PollVotes
-                               join poptions in _context.PollOptions on pvotes.PollOptionId equals poptions.PollOptionId
-                               where pvotes.PollOptionId == PollOptionId && poptions.IsActive
-                               group pvotes by pvotes.PollVoteId into g
-                               select g.Count()).CountAsync();
-            return votes;
+            var votes = from pvotes in _context.PollVotes
+                        join poptions in _context.PollOptions on pvotes.PollOptionId equals poptions.PollOptionId
+                        where pvotes.PollOptionId == PollOptionId && poptions.IsActive
+                        select new
+                        {
+                            pvotes.SessionId,
+                            SessionName = (from sn in _context.SessionNames where sn.SessionId == pvotes.SessionId orderby sn.CreatedAt select sn.Name).Last(),
+                        };
+            var result = await votes.AsNoTracking().ToListAsync();
+            return result.Cast<object>().ToList();
         }
 
         public async Task<List<PollOption>> GetOptions(int PollId)

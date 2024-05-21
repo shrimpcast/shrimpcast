@@ -4,6 +4,8 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import PollManager from "../../managers/PollManager";
 import ConfirmDialog from "../others/ConfirmDialog";
 import { Radio } from "@mui/material";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import GenericActionList from "../layout/Actions/GenericActionList";
 
 const PollOptionSx = (selected) => ({
     width: "100%",
@@ -61,29 +63,41 @@ const PollOptionSx = (selected) => ({
     right: "-5px",
     position: "relative",
   },
-  TextSx = {
+  ViewBtnSx = {
+    marginTop: "3px",
+    cursor: "pointer",
+    "&:hover": {
+      backgroundColor: "secondary.900",
+    },
+  },
+  TextSx = (buttonsWidth, showVotes) => ({
     overflowX: "scroll",
-    width: "calc(95% - 70px)",
+    width: `calc(95% - ${showVotes ? buttonsWidth + 20 : buttonsWidth}px)`,
     marginTop: "2px",
     whiteSpace: "nowrap",
-  };
+  });
 
 const PollOption = React.memo((props) => {
-  const [showPromptDialog, setShowPromptDialog] = useState(false),
+  const { signalR, isAdmin, configuration } = props,
+    [showPromptDialog, setShowPromptDialog] = useState(false),
     openConfirmPrompt = () => setShowPromptDialog(true),
     closeConfirmPrompt = () => setShowPromptDialog(false),
+    [showVotes, setShowVotes] = useState(false),
+    openVotes = () => setShowVotes(true),
+    closeVotes = () => setShowVotes(false),
     removeOption = async () => {
-      const response = await PollManager.RemoveOption(props.signalR, props.pollOptionId);
+      const response = await PollManager.RemoveOption(signalR, props.pollOptionId);
       if (response) closeConfirmPrompt();
     },
     voteOption = async () => {
-      if (!props.isAdmin && !props.configuration.acceptNewVotes) return;
-      const response = await PollManager.VoteOption(props.signalR, props.pollOptionId);
+      if (!isAdmin && !configuration.acceptNewVotes) return;
+      const response = await PollManager.VoteOption(signalR, props.pollOptionId);
 
       if (response > 0) props.setSelectedOption(response);
       else if (response === -1) props.setSelectedOption(0);
     },
-    isSelected = props.selectedOption === props.pollOptionId;
+    isSelected = props.selectedOption === props.pollOptionId,
+    showPublicVotes = isAdmin || configuration.showVotes;
 
   return (
     <Box display="flex">
@@ -93,13 +107,35 @@ const PollOption = React.memo((props) => {
       <Box sx={PollOptionSx(isSelected)}>
         <LinearProgress variant="determinate" value={props.percentage ?? 0} sx={ProgressSx} />
         <Box sx={OptionValueSx}>
-          <Box sx={TextSx} className="drawer-poll drawer-poll-secondary">
+          <Box
+            sx={TextSx(isAdmin ? 55.45 : 23.45, configuration.showVotes)}
+            className="drawer-poll drawer-poll-secondary"
+          >
             {props.value}
           </Box>
         </Box>
         <Box sx={RemoveSx}>
-          <Chip label={props.voteCount} size="small" color="secondary" sx={{ marginTop: "3px" }} />
-          {props.isAdmin && (
+          <Chip
+            icon={showPublicVotes ? <VisibilityIcon /> : null}
+            label={props.voteCount}
+            size="small"
+            color="secondary"
+            sx={showPublicVotes ? ViewBtnSx : { marginTop: "3px" }}
+            onClick={showPublicVotes ? openVotes : null}
+          />
+          {showVotes && (
+            <GenericActionList
+              title={`Votes for [${props.value}]`}
+              getItems={() => PollManager.ShowVotes(signalR, props.pollOptionId)}
+              identifier="sessionId"
+              contentIdentifier="sessionName"
+              skipButton={true}
+              {...props}
+              createdAt={null}
+              closeCallback={closeVotes}
+            />
+          )}
+          {isAdmin && (
             <>
               <IconButton onClick={openConfirmPrompt} sx={RemoveBtnSx}>
                 <DeleteIcon sx={{ fontSize: "16px" }} />
