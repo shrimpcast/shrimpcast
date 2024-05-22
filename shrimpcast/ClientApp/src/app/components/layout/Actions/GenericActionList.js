@@ -74,8 +74,8 @@ const GenericActionList = (props) => {
                           <ManageUserDialog
                             {...props}
                             siteAdmin={props.isAdmin}
+                            siteMod={props.isMod}
                             useSession={true}
-                            isAdmin={false}
                             sessionId={item.sessionId}
                           />
                         )}

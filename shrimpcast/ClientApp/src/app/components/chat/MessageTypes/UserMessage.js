@@ -79,57 +79,55 @@ const UserMessage = React.memo((props) => {
     getEmote = (emoteName) => props.emotes.find((emote) => emote.name === emoteName);
 
   return (
-    !ChatActionsManager.IsIgnored(props.sessionId, null, isAdmin || isMod) && (
-      <MessageWrapper useTransition={props.useTransition}>
-        <Box className="wrapper-comment" sx={WrapperTextBoxSx}>
-          <Box className="wrapper-overlay" sx={OverlaySx}>
-            <ManageUserDialog OverlayButtonSx={OverlayButtonSx} {...props} />
-            {props.siteAdmin && (
-              <>
-                <IconButton sx={OverlayButtonSx} onClick={openConfirmPrompt}>
-                  <DeleteIcon sx={{ fontSize: "16px" }} />
-                </IconButton>
-                {showPromptDialog && (
-                  <ConfirmDialog title="Remove message?" confirm={removeMessage} cancel={closeConfirmPrompt} />
-                )}
-              </>
-            )}
-          </Box>
-          <Box display="inline-block">
-            <Typography
-              sx={TextSx(props.userColorDisplay, true)}
-              className={`${props.enableChristmasTheme ? "santa-hat" : null} ${
-                isAdmin ? "admin-glow" : isMod ? "mod-glow" : null
-              }`}
-            >
-              {isAdmin && <VerifiedUserIcon sx={VerifiedUserIconSx} />}
-              {props.sentBy}
-            </Typography>
-          </Box>
-          <Typography component="span" sx={TextSx()}>
-            {": "}
-            {reactStringReplace(content, regex, (match, i) =>
-              getEmote(match.toLowerCase()) ? (
-                <img key={i} alt={match.toLowerCase()} className="emote" src={getEmote(match.toLowerCase()).url} />
-              ) : match.match(urlRegex) ? (
-                <Link key={i} href={match} target="_blank">
-                  {match}
-                </Link>
-              ) : (
-                <Typography key={i} component="span" sx={HighlightSx}>
-                  {match}
-                </Typography>
-              )
-            )}
-            {isMiniminized && props.content.length > max && (
-              <Link component="button" onClick={openMinimized}>
-                {" [+]"}
-              </Link>
-            )}
+    <MessageWrapper useTransition={props.useTransition}>
+      <Box className="wrapper-comment" sx={WrapperTextBoxSx}>
+        <Box className="wrapper-overlay" sx={OverlaySx}>
+          <ManageUserDialog OverlayButtonSx={OverlayButtonSx} {...props} />
+          {props.siteAdmin && (
+            <>
+              <IconButton sx={OverlayButtonSx} onClick={openConfirmPrompt}>
+                <DeleteIcon sx={{ fontSize: "16px" }} />
+              </IconButton>
+              {showPromptDialog && (
+                <ConfirmDialog title="Remove message?" confirm={removeMessage} cancel={closeConfirmPrompt} />
+              )}
+            </>
+          )}
+        </Box>
+        <Box display="inline-block">
+          <Typography
+            sx={TextSx(props.userColorDisplay, true)}
+            className={`${props.enableChristmasTheme ? "santa-hat" : null} ${
+              isAdmin ? "admin-glow" : isMod ? "mod-glow" : null
+            }`}
+          >
+            {isAdmin && <VerifiedUserIcon sx={VerifiedUserIconSx} />}
+            {props.sentBy}
           </Typography>
         </Box>
-      </MessageWrapper>
-    )
+        <Typography component="span" sx={TextSx()}>
+          {": "}
+          {reactStringReplace(content, regex, (match, i) =>
+            getEmote(match.toLowerCase()) ? (
+              <img key={i} alt={match.toLowerCase()} className="emote" src={getEmote(match.toLowerCase()).url} />
+            ) : match.match(urlRegex) ? (
+              <Link key={i} href={match} target="_blank">
+                {match}
+              </Link>
+            ) : (
+              <Typography key={i} component="span" sx={HighlightSx}>
+                {match}
+              </Typography>
+            )
+          )}
+          {isMiniminized && props.content.length > max && (
+            <Link component="button" onClick={openMinimized}>
+              {" [+]"}
+            </Link>
+          )}
+        </Typography>
+      </Box>
+    </MessageWrapper>
   );
 });
 

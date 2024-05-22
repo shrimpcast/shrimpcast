@@ -74,6 +74,7 @@ const RenderPollOptions = (props) => {
             key={option.pollOptionId}
             signalR={props.signalR}
             isAdmin={props.isAdmin}
+            isMod={props.isMod}
             selectedOption={props.selectedOption}
             setSelectedOption={props.setSelectedOption}
             configuration={props.configuration}

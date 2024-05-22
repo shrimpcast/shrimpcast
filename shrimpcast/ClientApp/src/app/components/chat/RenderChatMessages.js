@@ -5,6 +5,8 @@ import MessageManager from "../../managers/MessageManager";
 import UserMessage from "./MessageTypes/UserMessage";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import SignalRManager from "../../managers/SignalRManager";
+import LocalStorageManager from "../../managers/LocalStorageManager";
+import ChatActionsManager from "../../managers/ChatActionsManager";
 
 const ChatMessagesSx = (activePoll) => ({
     width: "100%",
@@ -46,6 +48,10 @@ const RenderChatMessages = (props) => {
     addNewMessageHandler = () =>
       signalR.on(SignalRManager.events.messageReceived, (message) => {
         setMessages((existingMessages) => {
+          if (ChatActionsManager.IsIgnored(message.sessionId, null, message.isAdmin || message.isMod)) {
+            return existingMessages;
+          }
+
           let messageList = existingMessages;
           if (message.messageType === "MessageRemoved") {
             let index = messageList.findIndex((m) => m.messageId === message.messageId);
@@ -112,6 +118,10 @@ const RenderChatMessages = (props) => {
       if (!loading) return;
       let existingMessages = await MessageManager.GetExistingMessages(abortControllerSignal);
       if (abortControllerSignal.aborted) return;
+      const ignoredUsers = LocalStorageManager.getIgnoredUsers().map((iu) => iu.sessionId);
+      existingMessages = existingMessages.filter(
+        (em) => em.isAdmin || em.isMod || !ignoredUsers.includes(em.sessionId)
+      );
       existingMessages = existingMessages.reverse();
       setMessages(existingMessages);
       setLoading(false);

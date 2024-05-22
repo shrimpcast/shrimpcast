@@ -176,14 +176,16 @@ namespace shrimpcast.Hubs
             await AbortIfBanned();
             var messageInfo = MessageId != 0 ? await _messageRepository.GetById(MessageId) : null;
             var userInfo = await _sessionRepository.GetExistingByIdAsync(messageInfo != null ? messageInfo.SessionId : SessionId, false);
-            var isAdmin = GetCurrentConnection().Session.IsAdmin;
+            var session = GetCurrentConnection().Session;
             var basicResponse = new
             {
                 PreviousNames = userInfo.SessionNames.Select(sn => sn.Name),
                 userInfo.CreatedAt,
+                userInfo.IsAdmin,
+                userInfo.IsMod,
             };
 
-            if (!isAdmin) return new { basicResponse };
+            if (!session.IsAdmin) return new { basicResponse };
 
             var IPs = await _sessionRepository.GetAllIPs(userInfo.SessionId);
             List<string>? activeSessions = [];
@@ -499,7 +501,6 @@ namespace shrimpcast.Hubs
             {
                 ac.Value.Session.SessionId,
                 ac.Value.Session.SessionNames.Last().Name,
-                ac.Value.Session.IsAdmin,
             }).ToList();
             return users;
         }

@@ -60,7 +60,6 @@ const ActiveUsers = (props) => {
                       {...props}
                       siteAdmin={props.isAdmin}
                       useSession={true}
-                      isAdmin={user.isAdmin}
                       sessionId={user.sessionId}
                     />
                   }

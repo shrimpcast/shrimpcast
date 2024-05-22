@@ -24,7 +24,10 @@ const BanSx = (optionsCount) => ({
 const ManageUserDialog = (props) => {
   //siteAdmin means that the user is authenticated as an admin
   //isAdmin means that the target user is an admin
-  const { siteAdmin, isAdmin, isMod, siteMod, sessionId, userSessionId, signalR } = props,
+  const [userInfo, setUserInfo] = useState(null),
+    sentBy = userInfo?.basicResponse?.previousNames[userInfo?.basicResponse?.previousNames?.length - 1],
+    { isAdmin, isMod } = userInfo?.basicResponse || {},
+    { siteAdmin, siteMod, sessionId, userSessionId, signalR } = props,
     //targetUserPublic means that the user is authenticated as an admin and the target is not an admin
     targetUserPublic = siteAdmin && !isAdmin,
     showActionsPanel = !isAdmin && (!isMod || siteAdmin) && sessionId !== userSessionId,
@@ -34,7 +37,6 @@ const ManageUserDialog = (props) => {
       ? ChatActionsManager.mod_actions
       : ChatActionsManager.public_actions,
     actionKeys = Object.keys(actions),
-    [userInfo, setUserInfo] = useState(null),
     [open, setOpen] = useState(false),
     setOpened = () => setOpen(true),
     setClosed = () => setOpen(false),
@@ -78,8 +80,7 @@ const ManageUserDialog = (props) => {
       if (!successfulResponse) return;
       closeConfirmPrompt();
       setClosed();
-    },
-    sentBy = userInfo?.basicResponse?.previousNames[userInfo?.basicResponse?.previousNames?.length - 1];
+    };
 
   useEffect(() => {
     async function getInfo() {
