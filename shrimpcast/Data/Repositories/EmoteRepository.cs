@@ -57,7 +57,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             var Emote = await _context.Emotes.FirstAsync(emote => emote.EmoteId == EmoteId);
             _context.Emotes.Remove(Emote);
             var result = await _context.SaveChangesAsync();
-            return result > 0;
+            return result > 0 ? true : throw new Exception("Could not remove emote.");
         }
 
         private async Task<bool> ExistsByName (string name) =>

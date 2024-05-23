@@ -491,6 +491,7 @@ namespace shrimpcast.Hubs
         {
             await ShouldGrantAccess();
             var result = await _emoteRepository.Remove(EmoteId);
+            await Clients.All.SendAsync("EmoteRemoved", EmoteId);
             return result;
         }
 

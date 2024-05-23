@@ -16,6 +16,8 @@ class SignalRManager {
     userConnected: "UserConnected",
     userDisconnected: "UserDisconnected",
     modStatusUpdate: "ModStatusUpdate",
+    emoteAdded: "EmoteAdded",
+    emoteRemoved: "EmoteRemoved",
   };
 
   static async connect() {

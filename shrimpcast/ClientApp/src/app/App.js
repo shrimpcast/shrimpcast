@@ -71,6 +71,20 @@ const App = () => {
       }))
     );
 
+    connection.on(SignalRManager.events.emoteAdded, (emote) =>
+      setConnectionDataState((state) => ({
+        ...state,
+        emotes: state.emotes.concat(emote),
+      }))
+    );
+
+    connection.on(SignalRManager.events.emoteRemoved, (emoteId) =>
+      setConnectionDataState((state) => ({
+        ...state,
+        emotes: state.emotes.filter((emote) => emote.emoteId !== emoteId),
+      }))
+    );
+
     updateConnectionStatus();
   };
 
