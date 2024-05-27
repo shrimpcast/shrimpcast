@@ -43,7 +43,7 @@ const ColorButtonSx = {
 
 const NotificationBar = (props) => {
   const Icon = props.icon;
-  const { palette } = props;
+  const { palette, skipCloseButton } = props;
 
   return (
     <Box sx={{ width: "100%", display: "flex" }}>
@@ -53,9 +53,11 @@ const NotificationBar = (props) => {
           {props.loading ? <CircularProgress size={14} sx={LoaderSx} /> : <Icon sx={NotifIconSx} />}
         </Typography>
       </ColorButton>
-      <IconButton onClick={props.close} type="button" size="small" sx={{ p: 0 }}>
-        <CloseIcon sx={CloseIconSx(palette)} />
-      </IconButton>
+      {!skipCloseButton && (
+        <IconButton onClick={props.close} type="button" size="small" sx={{ p: 0 }}>
+          <CloseIcon sx={CloseIconSx(palette)} />
+        </IconButton>
+      )}
     </Box>
   );
 };

@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import React from "react";
+import React, { useState } from "react";
 import Grid from "@mui/material/Unstable_Grid2";
 import { useTheme } from "@emotion/react";
 import SitePlayer from "./player/SitePlayer";
@@ -10,6 +10,7 @@ import ShowFireworks from "./others/ShowFireworks";
 import ShowSnow from "./others/ShowSnow";
 import ShowPing from "./others/ShowPing";
 import { HelmetProvider, Helmet } from "react-helmet-async";
+import LocalStorageManager from "../managers/LocalStorageManager";
 
 const MainGridSx = {
     overflow: "hidden",
@@ -54,7 +55,9 @@ const MainGridSx = {
 
 const Layout = (props) => {
   const theme = useTheme(),
-    { streamTitle, streamDescription } = props.configuration;
+    { streamTitle, streamDescription } = props.configuration,
+    multistreamStatus = LocalStorageManager.shouldShowSecondaryMultistream(),
+    [useMultistreamSecondary, setMultistreamSecondary] = useState(multistreamStatus);
 
   return (
     <>
@@ -72,10 +75,14 @@ const Layout = (props) => {
         </Grid>
         <Grid xs={12} md={8} lg={9} xl={10} sx={PlayerBoxSx(theme)}>
           <Box sx={PlayerContainerSx(theme, !streamTitle && !streamDescription)}>
-            <SitePlayer {...props} />
+            <SitePlayer {...props} useMultistreamSecondary={useMultistreamSecondary} />
           </Box>
           <Box sx={SiteDetailsSx}>
-            <SiteDetails {...props} />
+            <SiteDetails
+              {...props}
+              useMultistreamSecondary={useMultistreamSecondary}
+              setMultistreamSecondary={setMultistreamSecondary}
+            />
           </Box>
         </Grid>
         <Grid xs={12} md={4} lg={3} xl={2} sx={ChatBoxSx(theme)}>

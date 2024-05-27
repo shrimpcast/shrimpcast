@@ -22,6 +22,8 @@ namespace shrimpcast.Entities.DB
 
         public required bool StreamEnabled { get; set; }
 
+        public required bool EnableMultistreams { get; set; }
+
         public required string StreamTitle { get; set; }
 
         public required string StreamDescription  { get; set; }
@@ -148,6 +150,7 @@ namespace shrimpcast.Entities.DB
                         new { name = nameof(config.UsePrimarySource).ToLower(), label = "Use primary source", value = config.UsePrimarySource },
                         new { name = nameof(config.UseLegacyPlayer).ToLower(), label = "Use native player", value = config.UseLegacyPlayer },
                         new { name = nameof(config.UseRTCEmbed).ToLower(), label = "Treat url as embed", value = config.UseRTCEmbed },
+                        new { name = nameof(config.EnableMultistreams).ToLower(), label = "Enable multistreams", value = config.EnableMultistreams },
                         new { name = nameof(config.PrimaryStreamUrl).ToLower(), label = "Primary stream url", value = config.PrimaryStreamUrl },
                         new { name = nameof(config.SecondaryStreamUrl).ToLower(), label = "Secondary stream url", value = config.SecondaryStreamUrl },
                     }

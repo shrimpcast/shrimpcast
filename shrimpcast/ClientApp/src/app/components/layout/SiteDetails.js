@@ -2,6 +2,7 @@ import { Box, Typography } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2";
 import NotificationPrompt from "./Prompts/NotificationPrompt";
 import GithubPrompt from "./Prompts/GithubPrompt";
+import MultistreamPrompt from "./Prompts/MultistreamPrompt";
 
 const BlockSx = {
     marginLeft: 3,
@@ -21,31 +22,31 @@ const BlockSx = {
   };
 
 const SiteDetails = (props) => {
-  const { configuration } = props,
-    showRightSide = false;
+  const { enableChristmasTheme, streamTitle, streamDescription, enableMultistreams, streamEnabled } =
+    props.configuration;
 
   return (
     <Grid width="100%" container>
+      {streamEnabled && enableMultistreams && <MultistreamPrompt {...props} />}
       <NotificationPrompt {...props} />
       <GithubPrompt {...props} />
-      <Grid xs={12} md={showRightSide ? 7 : 12}>
+      <Grid>
         <Box sx={BlockSx}>
           <Box sx={{ wordBreak: "break-word" }}>
             <Typography
               color="secondary.main"
-              className={`neon-text ${configuration.enableChristmasTheme ? "santa-hat-primary" : null}`}
+              className={`neon-text ${enableChristmasTheme ? "santa-hat-primary" : null}`}
               variant="h3"
               sx={TitleSx}
             >
-              {configuration.streamTitle}
+              {streamTitle}
             </Typography>
             <Typography className="neon-text" color="secondary.main" sx={DescriptionSx}>
-              {configuration.streamDescription}
+              {streamDescription}
             </Typography>
           </Box>
         </Box>
       </Grid>
-      {showRightSide && <Grid xs={12} md={5}></Grid>}
     </Grid>
   );
 };

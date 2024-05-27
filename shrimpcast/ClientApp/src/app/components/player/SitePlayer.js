@@ -13,8 +13,22 @@ const WrapperSx = {
 };
 
 const SitePlayer = (props) => {
-  const config = props.configuration,
-    url = config.usePrimarySource ? config.primaryStreamUrl : config.secondaryStreamUrl,
+  const {
+      enableMultistreams,
+      usePrimarySource,
+      primaryStreamUrl,
+      secondaryStreamUrl,
+      streamEnabled,
+      useRTCEmbed,
+      useLegacyPlayer,
+    } = props.configuration,
+    url = enableMultistreams
+      ? props.useMultistreamSecondary
+        ? secondaryStreamUrl
+        : primaryStreamUrl
+      : usePrimarySource
+      ? primaryStreamUrl
+      : secondaryStreamUrl,
     [muted, setMuted] = useState(false),
     video = useRef(),
     videoJsOptions = {
@@ -44,10 +58,10 @@ const SitePlayer = (props) => {
     console.log("Forcing M3U8 because FLV is not supported.");
   }
 
-  return config.streamEnabled ? (
+  return streamEnabled ? (
     isFLV && !forceM3U8 ? (
       <XPlayer url={url} />
-    ) : config.useRTCEmbed ? (
+    ) : useRTCEmbed ? (
       <iframe
         src={`${url}?muted=false&autoplay=true`}
         title="rtc-embed"
@@ -55,7 +69,7 @@ const SitePlayer = (props) => {
         allow="autoplay"
         allowFullScreen
       ></iframe>
-    ) : !config.useLegacyPlayer ? (
+    ) : !useLegacyPlayer ? (
       <VideoJSPlayer options={videoJsOptions} />
     ) : (
       <ReactPlayer
