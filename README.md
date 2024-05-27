@@ -28,9 +28,11 @@ Shrimpcast is a highly customizable, flexible, battle-tested, fast, and secure s
     - [OBS](#obs)
     - [Theme](#theme)
     - [Notifications](#notifications)
+  - [Active Users](#active-users)
   - [Bans](#bans)
-  - [Active users](#active-users)
+  - [Mutes](#mutes)
   - [Auto-mod filters](#auto-mod-filters)
+  - [Moderators](#moderators)
   - [Notify users](#notify-users)
   - [Emotes](#emotes)
   - [Message and user management](#message-and-user-management)
@@ -46,7 +48,6 @@ Shrimpcast is a highly customizable, flexible, battle-tested, fast, and secure s
 - **Fast and lightweight**
 - **Flexible and highly customizable**
 - **Battle-tested with hundreds of concurrent users**
-- **Inbuilt chat poll**
 - **Out-of-the-box Cloudflare support**
 
 ## Installation
@@ -133,7 +134,7 @@ And that's it! You're now authenticated as an admin.
 
 Once you're authenticated as an admin, you will have the following options:
 
-![image](https://github.com/shrimpcast/shrimpcast/assets/167498236/96fc0191-93d0-4a4b-962e-6abf661769ab)
+![image](https://github.com/shrimpcast/shrimpcast/assets/167498236/3708fdda-18fc-4fdd-b6fe-060c5d79e420)
 
 - [Configuration](#configuration)
     - [Site](#site)
@@ -143,10 +144,12 @@ Once you're authenticated as an admin, you will have the following options:
     - [OBS](#obs)
     - [Theme](#theme)
     - [Notifications](#notifications)
-- [Bans](#bans)
 - [Active Users](#active-users)
-- [Auto-mod Filters](#auto-mod-filters)
-- [Notify Users](#notify-users)
+- [Bans](#bans)
+- [Mutes](#mutes)
+- [Auto-mod filters](#auto-mod-filters)
+- [Moderators](#moderators)
+- [Notify users](#notify-users)
 - [Emotes](#emotes)
 
 #### Site
@@ -182,10 +185,11 @@ Once you're authenticated as an admin, you will have the following options:
 - **Secondary stream URL:** Provides an alternative URL source for streaming content if the primary source is unavailable.
 
 #### Poll
-![image](https://github.com/shrimpcast/shrimpcast/assets/167498236/f7743eaf-b4ff-4021-b46b-d4e27ae34c6f)
+![image](https://github.com/shrimpcast/shrimpcast/assets/167498236/44b1004c-d2bd-43b0-8d35-0b5f2a3c7dce)
 - **Show poll:** Controls the visibility of the poll.
 - **Accept new options:** Determines whether new options can be added to an existing poll.
 - **Accept new votes:** Specifies whether new votes are allowed after a poll has started.
+- **Make votes public:** Makes votes visible to all users.
 - **Minimum sent to participate:** Sets the minimum number of messages a user must have sent to participate in a poll.
 - **Poll title:** Specifies the title or topic of the poll being conducted.
 
@@ -219,6 +223,11 @@ Once you're authenticated as an admin, you will have the following options:
 
 Shows the list of banned users. Use the button on the right to unban the user.
 
+### Mutes
+![image](https://github.com/shrimpcast/shrimpcast/assets/167498236/45a00624-5b5e-4456-999f-0a1ea85697e0)
+
+Shows the list of currently muted users. To remove a mute, use the button on the right.
+
 ### Active users
 ![image](https://github.com/shrimpcast/shrimpcast/assets/167498236/13d5e33d-121e-4f16-b243-778017587cfb)
 
@@ -228,6 +237,11 @@ Show the list of active users. Use the button on the right to display their info
 ![image](https://github.com/shrimpcast/shrimpcast/assets/167498236/43fdfdd5-da5c-46fd-9d5c-9bcebd777f92)
 
 Shows the list of active auto-mod filters. Use the button on the right to remove them.
+
+### Moderators
+![image](https://github.com/shrimpcast/shrimpcast/assets/167498236/9f9183d5-f3ee-4086-9f9c-7eb54725ebe0)
+
+Shows the list of moderators. Use the button on the right to unmod them.
 
 ### Notify users
 ![image](https://github.com/shrimpcast/shrimpcast/assets/167498236/cfd0c047-277f-4fce-b399-6356e165392c)
@@ -249,9 +263,11 @@ While authenticated as an admin, hover over a message and you will have the opti
    
 2. Manage the user (by clicking on the user button)
    
-   ![image](https://github.com/shrimpcast/shrimpcast/assets/167498236/40b26c11-177b-4199-a699-37789bdcf49a)
+   ![image](https://github.com/shrimpcast/shrimpcast/assets/167498236/395510c7-1417-485b-bd53-1fa483a8d32b)
 
    The following moderation options will be available:
+   - **Make mod**: Grants the user moderator privileges.
+   - **Ignore**: Ignores the user. This option is available to all users.
    - **Mute**: mutes the user for the amount of time dettermined in the chat [configuration](#chat)
    - **Ban**: Bans the user and displays a public chat message indicating that the user has been removed from chat.
      >Caution: when issuing a ban, all IPs associated with the user will be blocked.  
