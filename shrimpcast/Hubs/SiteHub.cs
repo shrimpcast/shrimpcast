@@ -50,6 +50,7 @@ namespace shrimpcast.Hubs
         private Configuration Configuration => _configurationSigleton.Configuration;
         private ConcurrentDictionary<string, SignalRConnection> ActiveConnections => _activeConnections.All;
         private SignalRConnection GetCurrentConnection() => ActiveConnections.First(ac => ac.Key == Context.ConnectionId).Value;
+        private IEnumerable<string> GetAdminSessions() => ActiveConnections.Where(ac => ac.Value.Session.IsAdmin).Select(ac => ac.Key);
 
         #region Connection
         public override async Task OnConnectedAsync()
@@ -167,7 +168,7 @@ namespace shrimpcast.Hubs
             await NotifyNewMessage(addedMessage);
 
             var shouldBan = await _autoModFilterRepository.Contains(addedMessage.Content);
-            if (shouldBan) BackgroundJob.Enqueue(() => PerformBackgroundBan(addedMessage.SessionId, Constants.FIREANDFORGET_TOKEN));
+            if (shouldBan) BackgroundJob.Enqueue(() => PerformBackgroundBan(addedMessage.SentBy, addedMessage.SessionId, Constants.FIREANDFORGET_TOKEN));
             return true;
         }
 
@@ -270,11 +271,12 @@ namespace shrimpcast.Hubs
             return await PerformBan(SessionId, IsSilent, SilentDelete, GetCurrentConnection().Session.SessionId);
         }
 
-        public async Task PerformBackgroundBan(int SessionId, string VerificationToken)
+        public async Task PerformBackgroundBan(string sentBy, int SessionId, string VerificationToken)
         {
             if (VerificationToken != Constants.FIREANDFORGET_TOKEN) return;
             await Task.Delay(new Random().Next(Configuration.MinABTimeInMs, Configuration.MaxABTimeInMs));
             await PerformBan(SessionId, true, true, -1);
+            await DispatchSystemMessage($"[{sentBy}] has been banned by the auto-mod", true, GetAdminSessions());
         }
 
         public async Task<List<Ban>> ListBans()
@@ -294,11 +296,15 @@ namespace shrimpcast.Hubs
         public async Task<bool> Mute([FromBody] int SessionId)
         {
             await ShouldGrantAccess(true);
+            var session = GetCurrentConnection().Session;
             var mutedUntil = await _sessionRepository.Mute(SessionId);
-            foreach (var connection in ActiveConnections.Where(ac => ac.Value.Session.SessionId == SessionId))
+            var connections = ActiveConnections.Where(ac => ac.Value.Session.SessionId == SessionId);
+            foreach (var connection in connections) connection.Value.Session.MutedUntil = mutedUntil;
+            if (session.IsMod) 
             {
-                connection.Value.Session.MutedUntil = mutedUntil;
-            }
+                var message = $"{session.SessionNames.Last().Name} muted {connections.First().Value.Session.SessionNames.Last().Name}";
+                await DispatchSystemMessage(message, true, GetAdminSessions());
+            } 
             return true;
         }
 
@@ -577,7 +583,7 @@ namespace shrimpcast.Hubs
 
         private async Task SendAdminUserStatusUpdate(Session? session = null, int? sessionId = null)
         {
-            var admins = ActiveConnections.Where(ac => ac.Value.Session.IsAdmin).Select(ac => ac.Key);
+            var admins = GetAdminSessions();
             var eventType = session != null ? "UserConnected" : "UserDisconnected";
             await Clients.Clients(admins).SendAsync(eventType, session != null ? new
             {
@@ -668,7 +674,7 @@ namespace shrimpcast.Hubs
 
             var Action = "ChatMessage";
             if (!useCallers) await Clients.Caller.SendAsync(Action, obj);
-            else if (Callers != null) await Clients.Clients(Callers).SendAsync(Action, obj);
+            else if (Callers != null) await _hubContext.Clients.Clients(Callers).SendAsync(Action, obj);
         }
 
         private async Task<bool> PerformBan(int SessionId, bool IsSilent, bool SilentDelete, int bannedBy)
