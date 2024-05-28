@@ -298,11 +298,16 @@ namespace shrimpcast.Hubs
             await ShouldGrantAccess(true);
             var session = GetCurrentConnection().Session;
             var mutedUntil = await _sessionRepository.Mute(SessionId);
-            var connections = ActiveConnections.Where(ac => ac.Value.Session.SessionId == SessionId);
-            foreach (var connection in connections) connection.Value.Session.MutedUntil = mutedUntil;
+            
+            foreach (var connection in ActiveConnections.Where(ac => ac.Value.Session.SessionId == SessionId))
+            { 
+                connection.Value.Session.MutedUntil = mutedUntil;
+            }
+
             if (session.IsMod) 
             {
-                var message = $"{session.SessionNames.Last().Name} muted {connections.First().Value.Session.SessionNames.Last().Name}";
+                var name = await _sessionRepository.GetCurrentName(SessionId);
+                var message = $"{session.SessionNames.Last().Name} muted {name}";
                 await DispatchSystemMessage(message, true, GetAdminSessions());
             } 
             return true;
