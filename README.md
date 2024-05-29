@@ -176,11 +176,13 @@ Once you're authenticated as an admin, you will have the following options:
 - **Default name for new users:** Sets the default username assigned to new users.
 
 #### Stream
-![image](https://github.com/shrimpcast/shrimpcast/assets/167498236/c136b625-db4f-4798-b290-5c7528484011)
+![image](https://github.com/shrimpcast/shrimpcast/assets/167498236/9acf769b-3a82-4d5d-a62a-8fa4380dc10b)
+
 - **Enable stream:** Shows or hides the player.
 - **Use primary source:** Specifies whether to use the primary source for the stream. Fallbacks to the secondary source if disabled.
 - **Use native player:** Determines whether to use the browser's native player for streaming.
 - **Treat URL as embed:** Dictates whether to treat URLs as embedded content for streaming purposes.
+- **Enable Multistreams:** Allows users to switch between the primary and secondary sources simultaneously.
 - **Primary stream URL:** Specifies the primary URL source for streaming content.
 - **Secondary stream URL:** Provides an alternative URL source for streaming content if the primary source is unavailable.
 
