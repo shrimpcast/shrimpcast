@@ -35,6 +35,7 @@ const SitePlayer = (props) => {
       autoplay: true,
       controls: true,
       fill: true,
+      playsinline: true,
       sources: [
         {
           src: url,
@@ -76,6 +77,7 @@ const SitePlayer = (props) => {
         width={"100%"}
         height={"100%"}
         controls
+        playsinline
         url={url}
         ref={video}
         playing={muted}
