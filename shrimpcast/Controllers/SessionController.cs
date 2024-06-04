@@ -25,13 +25,16 @@ namespace shrimpcast.Controllers
             var configuration = _configurationSingleton.Configuration;
 
             var isBanned = await _banRepository.IsBanned(remoteAddress, ensureCreated.SessionToken);
-            if (!isAdmin && isBanned) return new { message = Constants.BANNED_MESSAGE };
+            object? message = null;
+            if (!isAdmin && isBanned) message = Constants.BANNED_MESSAGE;
 
             var IsTorAndBlocked = configuration.BlockTORConnections && await _torExitNodeRepository.IsTorExitNode(remoteAddress);
-            if (!isAdmin && IsTorAndBlocked) return new { message = Constants.TOR_DISABLED_MESSAGE };
+            if (!isAdmin && IsTorAndBlocked) message = Constants.TOR_DISABLED_MESSAGE;
 
             var openAt = configuration.OpenAt;
-            if (!isAdmin && openAt > DateTime.UtcNow) return new { message = openAt };
+            if (!isAdmin && openAt > DateTime.UtcNow) message = openAt;
+
+            if (message != null) return new { configuration = new { configuration.StreamTitle }, message };
 
             var emotes = await _emoteRepository.GetAll();
             var poll = await _pollRepository.GetExistingOrNew(false);

@@ -9,7 +9,6 @@ import Chat from "./chat/Chat";
 import ShowFireworks from "./others/ShowFireworks";
 import ShowSnow from "./others/ShowSnow";
 import ShowPing from "./others/ShowPing";
-import { HelmetProvider, Helmet } from "react-helmet-async";
 import LocalStorageManager from "../managers/LocalStorageManager";
 
 const MainGridSx = {
@@ -61,11 +60,6 @@ const Layout = (props) => {
 
   return (
     <>
-      <HelmetProvider>
-        <Helmet>
-          <title>{streamTitle}</title>
-        </Helmet>
-      </HelmetProvider>
       <ShowFireworks {...props} />
       <ShowSnow {...props} />
       <ShowPing {...props} />

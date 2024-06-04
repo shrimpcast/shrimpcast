@@ -14,6 +14,7 @@ import { useEffect } from "react";
 import CenteredSpinner from "./components/loaders/CenteredSpinner";
 import ErrorAlert from "./components/layout/ErrorAlert";
 import TokenManager from "./managers/TokenManager";
+import { HelmetProvider, Helmet } from "react-helmet-async";
 
 const theme = createTheme({
   palette: {
@@ -93,19 +94,22 @@ const App = () => {
       if (!loading) return;
       const response = await TokenManager.EnsureTokenExists(abortControllerSignal);
       if (abortControllerSignal.aborted) return;
+
+      setConnectionDataState((state) => ({
+        ...state,
+        ...response,
+      }));
+
       if (response.message) {
         setLoading(false);
         setDisconnectMessage(response.message);
         return;
       }
+
       const newConnection = await SignalRManager.connect(),
         errorAtLoad = newConnection._connectionState !== "Connected";
 
       setLoading(false);
-      setConnectionDataState((state) => ({
-        ...state,
-        ...response,
-      }));
       addReconnectHandlers(newConnection, true);
       setSignalR(errorAtLoad ? { errorAtLoad } : newConnection);
     };
@@ -119,6 +123,11 @@ const App = () => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      <HelmetProvider>
+        <Helmet>
+          <title>{connectionDataState?.configuration?.streamTitle}</title>
+        </Helmet>
+      </HelmetProvider>
       {loading ? (
         <CenteredSpinner />
       ) : signalR.errorAtLoad || disconnectMessage ? (
