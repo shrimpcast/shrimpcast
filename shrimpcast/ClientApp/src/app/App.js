@@ -6,7 +6,7 @@ import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 import { ThemeProvider } from "@emotion/react";
-import { createTheme } from "@mui/material";
+import { Alert, Snackbar, createTheme } from "@mui/material";
 import { orange, blueGrey } from "@mui/material/colors";
 import { useState } from "react";
 import SignalRManager from "./managers/SignalRManager";
@@ -98,6 +98,7 @@ const App = () => {
       setConnectionDataState((state) => ({
         ...state,
         ...response,
+        FRONTEND_NEEDS_UPDATE: process.env.REACT_APP_VERSION !== response.version,
       }));
 
       if (response.message) {
@@ -134,6 +135,13 @@ const App = () => {
         <ErrorAlert disconnectMessage={disconnectMessage} />
       ) : (
         <Layout signalR={signalR} {...connectionDataState} />
+      )}
+      {connectionDataState?.FRONTEND_NEEDS_UPDATE && (
+        <Snackbar open={true}>
+          <Alert severity={"error"} variant="filled" sx={{ width: "100%" }}>
+            You are using an outdated version. Please perform a hard refresh or clear your cache and reload the page.
+          </Alert>
+        </Snackbar>
       )}
     </ThemeProvider>
   );

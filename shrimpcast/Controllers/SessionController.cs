@@ -34,7 +34,12 @@ namespace shrimpcast.Controllers
             var openAt = configuration.OpenAt;
             if (!isAdmin && openAt > DateTime.UtcNow) message = openAt;
 
-            if (message != null) return new { configuration = new { configuration.StreamTitle }, message };
+            if (message != null) return new
+            {
+                version = Constants.BACKEND_VERSION
+                configuration = new { configuration.StreamTitle },
+                message,
+            };
 
             var emotes = await _emoteRepository.GetAll();
             var poll = await _pollRepository.GetExistingOrNew(false);
@@ -44,6 +49,7 @@ namespace shrimpcast.Controllers
 
             return new
             {
+                version = Constants.BACKEND_VERSION,
                 configuration,
                 emotes,
                 poll,
