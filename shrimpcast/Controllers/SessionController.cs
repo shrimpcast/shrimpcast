@@ -36,7 +36,7 @@ namespace shrimpcast.Controllers
 
             if (message != null) return new
             {
-                version = Constants.BACKEND_VERSION
+                version = Constants.BACKEND_VERSION,
                 configuration = new { configuration.StreamTitle },
                 message,
             };
