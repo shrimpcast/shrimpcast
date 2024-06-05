@@ -18,9 +18,9 @@ const WrapperTextBoxSx = {
       backgroundColor: "primary.800",
     },
   },
-  TextSx = (color, force) => ({
+  TextSx = (color, force, gt) => ({
     fontWeight: color || force ? "bold" : "none",
-    color: color ? color : "white",
+    color: color ? color : gt ? "#789922" : "white",
     display: "inline",
     fontSize: "15px",
   }),
@@ -105,8 +105,8 @@ const UserMessage = React.memo((props) => {
             {props.sentBy}
           </Typography>
         </Box>
-        <Typography component="span" sx={TextSx()}>
-          {": "}
+        {": "}
+        <Typography component="span" sx={TextSx(null, false, content.startsWith(">"))}>
           {reactStringReplace(content, regex, (match, i) =>
             getEmote(match.toLowerCase()) ? (
               <img key={i} alt={match.toLowerCase()} className="emote" src={getEmote(match.toLowerCase()).url} />
