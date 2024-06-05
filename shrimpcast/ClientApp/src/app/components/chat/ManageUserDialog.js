@@ -168,7 +168,7 @@ const ManageUserDialog = (props) => {
                       </Grid>
                       <Grid xs={12} sm={isAdmin ? 12 : 6}>
                         <Typography sx={MessageIPSx}>Active sessions{userInfo.ip && ` on ${userInfo.ip}`}:</Typography>
-                        {userInfo.activeSessions.length === 0 ? (
+                        {!userInfo.activeSessions?.length ? (
                           <Typography>IP not connected.</Typography>
                         ) : (
                           <VirtualizedList list={userInfo.activeSessions} />

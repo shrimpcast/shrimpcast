@@ -15,6 +15,8 @@ import CenteredSpinner from "./components/loaders/CenteredSpinner";
 import ErrorAlert from "./components/layout/ErrorAlert";
 import TokenManager from "./managers/TokenManager";
 import { HelmetProvider, Helmet } from "react-helmet-async";
+import { ErrorBoundary } from "react-error-boundary";
+import FallbackError from "./components/layout/FallbackError";
 
 const theme = createTheme({
   palette: {
@@ -111,7 +113,7 @@ const App = () => {
         errorAtLoad = newConnection._connectionState !== "Connected";
 
       setLoading(false);
-      addReconnectHandlers(newConnection, true);
+      addReconnectHandlers(newConnection);
       setSignalR(errorAtLoad ? { errorAtLoad } : newConnection);
     };
 
@@ -134,7 +136,9 @@ const App = () => {
       ) : signalR.errorAtLoad || disconnectMessage ? (
         <ErrorAlert disconnectMessage={disconnectMessage} />
       ) : (
-        <Layout signalR={signalR} {...connectionDataState} />
+        <ErrorBoundary fallbackRender={FallbackError}>
+          <Layout signalR={signalR} {...connectionDataState} />
+        </ErrorBoundary>
       )}
       {connectionDataState?.FRONTEND_NEEDS_UPDATE && (
         <Snackbar open={true}>

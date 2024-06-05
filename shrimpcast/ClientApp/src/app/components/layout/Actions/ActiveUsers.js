@@ -52,7 +52,7 @@ const ActiveUsers = (props) => {
           </DialogTitle>
           <DialogContent>
             <List sx={{ width: "100%", bgcolor: "background.paper" }}>
-              {users.map((user) => (
+              {users?.map((user) => (
                 <ListItem
                   key={user.sessionId}
                   secondaryAction={
