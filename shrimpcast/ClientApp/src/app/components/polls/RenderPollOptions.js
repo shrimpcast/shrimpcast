@@ -10,7 +10,7 @@ const RenderPollOptions = (props) => {
 
       if (searchOnExisting) {
         voteOptions.forEach((option) => {
-          option.voteCount = votes.find((v) => v.pollOptionId === option.pollOptionId).count;
+          option.voteCount = votes.find((v) => v.pollOptionId === option.pollOptionId)?.count || 0;
         });
       }
 

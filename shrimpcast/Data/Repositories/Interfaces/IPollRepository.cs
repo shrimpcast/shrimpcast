@@ -12,6 +12,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
         Task<bool> AddVote(int PollOptionId, int SessionId, string RemoteAddress);
         Task<bool> UpdateVote(int PollVoteId, int PollOptionId, int SessionId, string RemoteAddress);
         Task<bool> RemovePollOption(int PollOptionId, bool RemoveAll);
+        Task<bool> IsOptionEnabled(int PollOptionId);
     }
 }
 

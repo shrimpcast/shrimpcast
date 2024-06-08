@@ -144,6 +144,12 @@ namespace shrimpcast.Data.Repositories
             }
             return result > 0 ? true : throw new Exception("Could not update record.");
         }
+
+        public async Task<bool> IsOptionEnabled(int PollOptionId)
+        {
+            var option = await _context.PollOptions.AsNoTracking().FirstAsync(p => p.PollOptionId == PollOptionId);
+            return option.IsActive;
+        }
     }
 }
 

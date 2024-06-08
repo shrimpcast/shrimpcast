@@ -441,6 +441,12 @@ namespace shrimpcast.Hubs
                 return 0;
             }
 
+            if (!await _pollRepository.IsOptionEnabled(pollOptionId))
+            {
+                await DispatchSystemMessage("Option does not exist.");
+                return 0;
+            }
+
             var existingVote = await _pollRepository.CanAddVote(Connection.RemoteAdress, Session.SessionId);
             int? existingPollOptionId = existingVote?.PollOptionId;
             bool result;
