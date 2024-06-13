@@ -102,15 +102,6 @@ const App = () => {
     updateConnectionStatus();
   };
 
-  const handleVisibilityChange = () => {
-    if (document.hidden) {
-      window.focusLostTime = Date.now();
-    } else {
-      const seconds = (Date.now() - window.focusLostTime) / 1000;
-      if (seconds > 60) fetchLatestData();
-    }
-  };
-
   useEffect(() => {
     const connectSignalR = async (abortControllerSignal) => {
       if (!loading) return;
