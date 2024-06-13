@@ -1,5 +1,5 @@
 import { Box, Button, IconButton, InputAdornment, TextField, Typography } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import AddIcon from "@mui/icons-material/Add";
 import PollManager from "../../managers/PollManager";
 import RenderPollOptions from "./RenderPollOptions";
@@ -31,7 +31,7 @@ const Poll = (props) => {
     [showPromptDialog, setShowPromptDialog] = useState(false),
     openConfirmPrompt = () => setShowPromptDialog(true),
     closeConfirmPrompt = () => setShowPromptDialog(false),
-    [selectedOption, setSelectedOption] = useState(props.pollOptionId),
+    [selectedOption, setSelectedOption] = useState(null),
     submitOption = async () => {
       const pollOption = newPollOption.trim();
       if (!pollOption) return;
@@ -46,6 +46,10 @@ const Poll = (props) => {
       const response = await PollManager.RemoveOption(props.signalR, 0);
       if (response) closeConfirmPrompt();
     };
+
+  useEffect(() => {
+    setSelectedOption(props.pollOptionId);
+  }, [props.pollOptionId, props.poll.options]);
 
   return (
     <Box sx={PollSx}>

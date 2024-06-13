@@ -44,6 +44,14 @@ const App = () => {
     [connectionDataState, setConnectionDataState] = useState({}),
     [disconnectMessage, setDisconnectMessage] = useState(null);
 
+  const fetchLatestData = async () => {
+    const updatedData = await TokenManager.EnsureTokenExists(null);
+    setConnectionDataState((state) => ({
+      ...state,
+      ...updatedData,
+    }));
+  };
+
   const addReconnectHandlers = (connection) => {
     const updateConnectionStatus = () =>
       setConnectionDataState((state) => ({
@@ -51,9 +59,12 @@ const App = () => {
         connectionStatus: connection._connectionState,
       }));
 
-    connection.onreconnecting(() => updateConnectionStatus());
-    connection.onreconnected(() => updateConnectionStatus());
     connection.onclose(() => !disconnectMessage && setSignalR({ errorAtLoad: true }));
+    connection.onreconnecting(() => updateConnectionStatus());
+    connection.onreconnected(() => {
+      updateConnectionStatus();
+      fetchLatestData();
+    });
 
     connection.on(SignalRManager.events.forceDisconnect, (message) => {
       setDisconnectMessage(message);
@@ -91,6 +102,15 @@ const App = () => {
     updateConnectionStatus();
   };
 
+  const handleVisibilityChange = () => {
+    if (document.hidden) {
+      window.focusLostTime = Date.now();
+    } else {
+      const seconds = (Date.now() - window.focusLostTime) / 1000;
+      if (seconds > 60) fetchLatestData();
+    }
+  };
+
   useEffect(() => {
     const connectSignalR = async (abortControllerSignal) => {
       if (!loading) return;
@@ -115,6 +135,7 @@ const App = () => {
       setLoading(false);
       addReconnectHandlers(newConnection);
       setSignalR(errorAtLoad ? { errorAtLoad } : newConnection);
+      document.addEventListener("visibilitychange", handleVisibilityChange);
     };
 
     const abortController = new AbortController();

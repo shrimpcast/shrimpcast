@@ -3,7 +3,7 @@ import PollOption from "./PollOption";
 import SignalRManager from "../../managers/SignalRManager";
 
 const RenderPollOptions = (props) => {
-  const [options, setOptions] = useState(props.poll.options),
+  const [options, setOptions] = useState([]),
     { signalR } = props,
     calculatePercentages = (pollOptions, searchOnExisting, votes) => {
       let voteOptions = pollOptions.filter((option) => option.isActive);
@@ -57,7 +57,6 @@ const RenderPollOptions = (props) => {
   useEffect(() => {
     addNewOptionHandler();
     addVoteUpdateHandler();
-    setOptions(calculatePercentages(options));
     return () => {
       signalR.off(SignalRManager.events.pollOptionAdded);
       signalR.off(SignalRManager.events.pollOptionRemoved);
@@ -65,6 +64,10 @@ const RenderPollOptions = (props) => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.selectedOption]);
+
+  useEffect(() => {
+    setOptions(calculatePercentages(props.poll.options));
+  }, [props.poll.options]);
 
   return (
     <>
