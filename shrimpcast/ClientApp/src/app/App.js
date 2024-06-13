@@ -126,7 +126,6 @@ const App = () => {
       setLoading(false);
       addReconnectHandlers(newConnection);
       setSignalR(errorAtLoad ? { errorAtLoad } : newConnection);
-      document.addEventListener("visibilitychange", handleVisibilityChange);
     };
 
     const abortController = new AbortController();
