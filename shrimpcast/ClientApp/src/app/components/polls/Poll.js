@@ -49,7 +49,8 @@ const Poll = (props) => {
 
   useEffect(() => {
     setSelectedOption(props.pollOptionId);
-  }, [props.pollOptionId, props.poll.options]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.poll.options]);
 
   return (
     <Box sx={PollSx}>

@@ -44,20 +44,20 @@ const App = () => {
     [connectionDataState, setConnectionDataState] = useState({}),
     [disconnectMessage, setDisconnectMessage] = useState(null);
 
-  const fetchLatestData = async () => {
-    const updatedData = await TokenManager.EnsureTokenExists(null);
-    setConnectionDataState((state) => ({
-      ...state,
-      ...updatedData,
-    }));
-  };
-
-  const addReconnectHandlers = (connection) => {
+  const addSocketEvents = (connection) => {
     const updateConnectionStatus = () =>
       setConnectionDataState((state) => ({
         ...state,
         connectionStatus: connection._connectionState,
       }));
+
+    const fetchLatestData = async () => {
+      const updatedData = await TokenManager.EnsureTokenExists(null);
+      setConnectionDataState((state) => ({
+        ...state,
+        ...updatedData,
+      }));
+    };
 
     connection.onclose(() => !disconnectMessage && setSignalR({ errorAtLoad: true }));
     connection.onreconnecting(() => updateConnectionStatus());
@@ -124,7 +124,7 @@ const App = () => {
         errorAtLoad = newConnection._connectionState !== "Connected";
 
       setLoading(false);
-      addReconnectHandlers(newConnection);
+      addSocketEvents(newConnection);
       setSignalR(errorAtLoad ? { errorAtLoad } : newConnection);
     };
 
