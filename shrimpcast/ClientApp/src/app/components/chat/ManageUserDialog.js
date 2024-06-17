@@ -145,26 +145,24 @@ const ManageUserDialog = (props) => {
                     )}
                   </Grid>
                   {targetUserPublic && (
-                    <>
-                      <Grid xs={12} sm={2} pb="5px">
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          sx={{ width: "100%", mb: "5px" }}
-                          onClick={() => openConfirmPrompt(ChatActionsManager.actions.verify(userInfo.isVerified))}
-                        >
-                          {ChatActionsManager.actions.verify(userInfo.isVerified)}
-                        </Button>
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          sx={{ width: "100%" }}
-                          onClick={() => openConfirmPrompt(ChatActionsManager.actions.mod(userInfo.isMod))}
-                        >
-                          {ChatActionsManager.actions.mod(userInfo.isMod)}
-                        </Button>
-                      </Grid>
-                    </>
+                    <Grid xs={12} sm={2} pb="5px">
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        sx={{ width: "100%", mb: "5px" }}
+                        onClick={() => openConfirmPrompt(ChatActionsManager.actions.verify(userInfo.isVerified))}
+                      >
+                        {ChatActionsManager.actions.verify(userInfo.isVerified)}
+                      </Button>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        sx={{ width: "100%" }}
+                        onClick={() => openConfirmPrompt(ChatActionsManager.actions.mod(userInfo.isMod))}
+                      >
+                        {ChatActionsManager.actions.mod(userInfo.isMod)}
+                      </Button>
+                    </Grid>
                   )}
                 </Grid>
                 <Divider />
