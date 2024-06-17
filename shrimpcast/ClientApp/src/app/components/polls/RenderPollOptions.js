@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import PollOption from "./PollOption";
 import SignalRManager from "../../managers/SignalRManager";
+import { Flipper, Flipped } from "react-flip-toolkit";
 
 const RenderPollOptions = (props) => {
   const [options, setOptions] = useState([]),
@@ -19,7 +20,8 @@ const RenderPollOptions = (props) => {
         voteOption.percentage = totalVotes ? (voteOption.voteCount * 100) / totalVotes : 0;
       });
 
-      return voteOptions;
+      // Order by vote count descending
+      return voteOptions.sort((a, b) => b.voteCount - a.voteCount);
     },
     addNewOptionHandler = () => {
       signalR.on(SignalRManager.events.pollOptionAdded, (newOption) =>
@@ -70,23 +72,27 @@ const RenderPollOptions = (props) => {
   }, [props.poll.options]);
 
   return (
-    <>
-      {options.map((option) =>
-        option.isActive ? (
-          <PollOption
-            key={option.pollOptionId}
-            signalR={props.signalR}
-            isAdmin={props.isAdmin}
-            isMod={props.isMod}
-            userSessionId={props.sessionId}
-            selectedOption={props.selectedOption}
-            setSelectedOption={props.setSelectedOption}
-            configuration={props.configuration}
-            {...option}
-          />
-        ) : null
+    <Flipper flipKey={options.map((o) => o.pollOptionId).join("")}>
+      {options.map(
+        (option) =>
+          option.isActive && (
+            <Flipped key={option.pollOptionId} flipId={option.pollOptionId}>
+              <div>
+                <PollOption
+                  signalR={props.signalR}
+                  isAdmin={props.isAdmin}
+                  isMod={props.isMod}
+                  userSessionId={props.sessionId}
+                  selectedOption={props.selectedOption}
+                  setSelectedOption={props.setSelectedOption}
+                  configuration={props.configuration}
+                  {...option}
+                />
+              </div>
+            </Flipped>
+          )
       )}
-    </>
+    </Flipper>
   );
 };
 

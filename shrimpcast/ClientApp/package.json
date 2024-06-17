@@ -17,6 +17,7 @@
     "react-app-polyfill": "^3.0.0",
     "react-dom": "^18.2.0",
     "react-error-boundary": "^4.0.13",
+    "react-flip-toolkit": "^7.1.0",
     "react-helmet-async": "^2.0.4",
     "react-player": "^2.13.0",
     "react-scripts": "^5.0.1",

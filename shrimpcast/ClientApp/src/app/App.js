@@ -151,7 +151,7 @@ const App = () => {
           <Layout signalR={signalR} {...connectionDataState} />
         </ErrorBoundary>
       )}
-      {connectionDataState?.FRONTEND_NEEDS_UPDATE && (
+      {connectionDataState?.version && connectionDataState?.FRONTEND_NEEDS_UPDATE && (
         <Snackbar open={true}>
           <Alert severity={"error"} variant="filled" sx={{ width: "100%" }}>
             You are using an outdated version. Please perform a hard refresh or clear your cache and reload the page.
