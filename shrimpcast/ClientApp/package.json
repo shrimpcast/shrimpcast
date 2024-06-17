@@ -6,7 +6,7 @@
     "@emotion/styled": "^11.11.0",
     "@fireworks-js/react": "^2.10.7",
     "@fontsource/roboto": "^5.0.8",
-    "@microsoft/signalr": "^7.0.12",
+    "@microsoft/signalr": "^8.0.0",
     "@mui/icons-material": "^5.14.16",
     "@mui/material": "^5.14.16",
     "axios": "^1.6.0",
