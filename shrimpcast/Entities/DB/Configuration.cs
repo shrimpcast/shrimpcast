@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Components.Web;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
@@ -9,6 +10,8 @@ namespace shrimpcast.Entities.DB
         public int ConfigurationId { get; set; }
 
         public required bool ChatEnabled { get; set; }
+
+        public required bool EnableVerifiedMode { get;set; }
         
         public required int MaxConnectionsPerIP { get; set; }
 
@@ -133,6 +136,7 @@ namespace shrimpcast.Entities.DB
                     values = new object[]
                     {
                         new { name = nameof(config.ChatEnabled).ToLower(), label = "Enable chat", value = config.ChatEnabled },
+                        new { name = nameof(config.EnableVerifiedMode).ToLower(), label = "Allow verified users only", value = config.EnableVerifiedMode },
                         new { name = nameof(config.MaxMessagesToShow).ToLower(), label = "Max visible messages", value = config.MaxMessagesToShow },
                         new { name = nameof(config.OffsetDateTimeInMinutes).ToLower(), label = "Message age limit (mins)", value = config.OffsetDateTimeInMinutes },
                         new { name = nameof(config.RequiredTokenTimeInMinutes).ToLower(), label = "Required time for new users (mins)", value = config.RequiredTokenTimeInMinutes },

@@ -18,6 +18,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
         Task<bool> Unmute(int sessionId);
         Task<bool> ToggleModStatus(int sessionId, bool shouldAdd);
         Task<List<object>> ListMods();
+        Task<bool> ToggleVerifiedStatus(int sessionId, bool shouldVerify);
     }
 }
 

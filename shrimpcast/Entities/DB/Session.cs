@@ -17,11 +17,13 @@ namespace shrimpcast.Entities.DB
 
         public bool IsMod { get; set; }
 
+        public bool IsVerified { get; set; }
+
         public required string UserDisplayColor { get; set; }
 
-        public List<SessionName> SessionNames { get; set; } = new List<SessionName>();
+        public List<SessionName> SessionNames { get; set; } = [];
 
-        public List<SessionIP> SessionIPs { get; set; } = new List<SessionIP>();
+        public List<SessionIP> SessionIPs { get; set; } = [];
     }
 }
 

@@ -213,6 +213,7 @@ namespace shrimpcast.Hubs
                 activeSessions,
                 userInfo.MutedUntil,
                 userInfo.IsMod,
+                userInfo.IsVerified,
             };
         }
 
@@ -356,6 +357,15 @@ namespace shrimpcast.Hubs
         {
             await ShouldGrantAccess();
             return await _sessionRepository.ListMods();
+        }
+
+        public async Task<bool> ToggleVerifiedStatus([FromBody] int SessionId, [FromBody] bool ShouldVerify)
+        {
+            await ShouldGrantAccess();
+            var status = await _sessionRepository.ToggleVerifiedStatus(SessionId, ShouldVerify);
+            var connections = ActiveConnections.Where(ac => ac.Value.Session.SessionId == SessionId);
+            foreach (var connection in connections) connection.Value.Session.IsVerified = ShouldVerify;
+            return status;
         }
         #endregion
 
@@ -612,6 +622,11 @@ namespace shrimpcast.Hubs
             if (!Configuration.ChatEnabled)
             {
                 return "Chat is temporarily disabled.";
+            }
+
+            if (Configuration.EnableVerifiedMode && !connection.Session.IsVerified)
+            {
+                return "Error: Chat is currently restricted to verified users only.";
             }
 
             int requiredSessionTime = Configuration.RequiredTokenTimeInMinutes;

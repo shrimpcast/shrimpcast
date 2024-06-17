@@ -183,6 +183,13 @@ namespace shrimpcast.Data.Repositories
             var result = await mods.AsNoTracking().ToListAsync();
             return result.Cast<object>().ToList();
         }
+
+        public async Task<bool> ToggleVerifiedStatus(int sessionId, bool shouldVerify)
+        {
+            var Session = await GetExistingByIdAsync(sessionId, true);
+            Session.IsVerified = shouldVerify;
+            return await _context.SaveChangesAsync() > 0 ? true : throw new Exception("Could not update record.");
+        }
     }
 }
 

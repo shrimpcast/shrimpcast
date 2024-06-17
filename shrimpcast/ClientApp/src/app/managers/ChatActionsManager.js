@@ -19,7 +19,8 @@ class ChatActionsManager {
   };
 
   static actions = {
-    mod: (isMod) => `${isMod ? "Remove" : "Make"} mod`,
+    mod: (isMod) => (isMod ? "Unmod" : "Mod"),
+    verify: (isVerified) => (isVerified ? "Unverify" : "Verify"),
     ...this.admin_actions,
   };
 
@@ -59,6 +60,12 @@ class ChatActionsManager {
   static async ToggleModStatus(signalR, sessionId, shouldAdd) {
     const response = await signalR
       .invoke("ToggleModStatus", sessionId, shouldAdd || false)
+      .catch((ex) => console.log(ex));
+    return response;
+  }
+  static async ToggleVerifiedStatus(signalR, sessionId, shouldVerify) {
+    const response = await signalR
+      .invoke("ToggleVerifiedStatus", sessionId, shouldVerify)
       .catch((ex) => console.log(ex));
     return response;
   }
