@@ -97,9 +97,6 @@ app.UseCors(builder =>
         .WithMethods("GET", "POST");
 });
 
-app.MapHub<SiteHub>("/hubs/ws", options =>
-{
-    options.AllowStatefulReconnects = true;
-});
+app.MapHub<SiteHub>("/hubs/ws");
 app.MapFallbackToFile("index.html");
 app.Run();

@@ -28,7 +28,6 @@ class SignalRManager {
         skipNegotiation: true,
       })
       .withAutomaticReconnect()
-      .withStatefulReconnect()
       .build();
     await connection.start().catch((ex) => console.log(ex));
     return connection;
