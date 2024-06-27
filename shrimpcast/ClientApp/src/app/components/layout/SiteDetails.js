@@ -22,8 +22,9 @@ const BlockSx = {
   };
 
 const SiteDetails = (props) => {
-  const { enableChristmasTheme, streamTitle, streamDescription, enableMultistreams, streamEnabled } =
-    props.configuration;
+  const { enableChristmasTheme, hideStreamTitle, streamDescription, enableMultistreams, streamEnabled } =
+      props.configuration,
+    streamTitle = hideStreamTitle ? null : props.configuration.streamTitle;
 
   return (
     <Grid width="100%" container>

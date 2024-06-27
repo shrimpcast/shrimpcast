@@ -27,6 +27,8 @@ namespace shrimpcast.Entities.DB
 
         public required bool EnableMultistreams { get; set; }
 
+        public required bool HideStreamTitle { get; set; }
+
         public required string StreamTitle { get; set; }
 
         public required string StreamDescription  { get; set; }
@@ -122,6 +124,7 @@ namespace shrimpcast.Entities.DB
                     values = new object[]
                     {
                         new { name = nameof(config.BlockTORConnections).ToLower(), label = "Block TOR connections", value = config.BlockTORConnections },
+                        new { name = nameof(config.HideStreamTitle).ToLower(), label = "Hide stream title", value = config.HideStreamTitle },
                         new { name = nameof(config.MaxConnectionsPerIP).ToLower(), label = "Max connections per IP", value = config.MaxConnectionsPerIP },
                         new { name = nameof(config.MinABTimeInMs).ToLower(), label = "Min auto-mod time (ms)", value = config.MinABTimeInMs },
                         new { name = nameof(config.MaxABTimeInMs).ToLower(), label = "Max auto-mod time (ms)", value = config.MaxABTimeInMs },

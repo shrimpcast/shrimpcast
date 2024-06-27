@@ -54,7 +54,8 @@ const MainGridSx = {
 
 const Layout = (props) => {
   const theme = useTheme(),
-    { streamTitle, streamDescription } = props.configuration,
+    { streamDescription, hideStreamTitle } = props.configuration,
+    streamTitle = hideStreamTitle ? null : props.configuration.streamTitle,
     multistreamStatus = LocalStorageManager.shouldShowSecondaryMultistream(),
     [useMultistreamSecondary, setMultistreamSecondary] = useState(multistreamStatus);
 
