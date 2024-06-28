@@ -64,11 +64,11 @@ const UserMessage = React.memo((props) => {
     openConfirmPrompt = () => setShowPromptDialog(true),
     closeConfirmPrompt = () => setShowPromptDialog(false),
     { isAdmin, isMod } = props,
-    name = LocalStorageManager.getName(),
+    escapedName = LocalStorageManager.getName().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+    // Use lookahead assertion to ensure we're matching the full name
+    nameRegex = `@${escapedName}(?:\\s|$|\\.)`,
     emotes = props.emotes.map((emote) => emote.name).join("|"),
     urlRegex = "https?://\\S+",
-    // Use lookahead and lookbehind assertions to ensure we're matching the full name
-    nameRegex = `(?<!\\p{L})@${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?!\\p{L})`,
     regex = new RegExp(`(${nameRegex}|${emotes}|${urlRegex})`, "giu"),
     removeMessage = async () => {
       let resp = await ChatActionsManager.RemoveMessage(props.signalR, props.messageId);
