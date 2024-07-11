@@ -18,6 +18,9 @@ class SignalRManager {
     modStatusUpdate: "ModStatusUpdate",
     emoteAdded: "EmoteAdded",
     emoteRemoved: "EmoteRemoved",
+    bingoOptionUpdate: "BingoOptionStatusUpdate",
+    bingoOptionAdded: "BingoOptionAdded",
+    bingoOptionRemoved: "BingoOptionRemoved",
   };
 
   static async connect() {

@@ -8,9 +8,11 @@ import SignalRManager from "../../managers/SignalRManager";
 import LocalStorageManager from "../../managers/LocalStorageManager";
 import ChatActionsManager from "../../managers/ChatActionsManager";
 
-const ChatMessagesSx = (activePoll) => ({
+const ChatMessagesSx = (activePoll, activeBingo, bingoButtonExpanded) => ({
     width: "100%",
-    height: `calc(100% - 84px${activePoll ? " - 35px" : ""})`,
+    height: `calc(100% - 84px${activePoll ? " - 35px" : ""}${
+      activeBingo ? ` - ${bingoButtonExpanded ? 35 : 10}px` : ""
+    })`,
     overflowY: "scroll",
   }),
   Loader = {
@@ -38,7 +40,7 @@ const RenderChatMessages = (props) => {
   const [messages, setMessages] = useState([]),
     [pendingMessages, setPendingMessages] = useState(0),
     [loading, setLoading] = useState(true),
-    signalR = props.signalR,
+    { signalR, configuration, bingoButtonExpanded } = props,
     scrollReference = useRef(),
     scrollToBottom = () => {
       scrollReference.current.scrollIntoView();
@@ -93,7 +95,7 @@ const RenderChatMessages = (props) => {
           /**
            * Clean excess messages
            */
-          const maxItems = props.configuration.maxMessagesToShow;
+          const maxItems = configuration.maxMessagesToShow;
           if (messageList.length > maxItems) {
             const excessItemsCount = messageList.length - maxItems;
             messageList.splice(0, excessItemsCount);
@@ -138,7 +140,7 @@ const RenderChatMessages = (props) => {
     addNewMessageHandler();
     return () => removeMessageHandler();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.configuration.maxMessagesToShow]);
+  }, [configuration.maxMessagesToShow]);
 
   /** Scroll listeners */
   useEffect(() => {
@@ -151,7 +153,7 @@ const RenderChatMessages = (props) => {
   }, [messages]);
 
   return (
-    <Box sx={ChatMessagesSx(props.configuration.showPoll)}>
+    <Box sx={ChatMessagesSx(configuration.showPoll, configuration.showBingo, bingoButtonExpanded)}>
       {loading && (
         <Box sx={Loader}>
           <CircularProgress size={50} color="secondary" />
@@ -162,15 +164,15 @@ const RenderChatMessages = (props) => {
           !message.hidden &&
           message.content &&
           (message.messageType !== "UserMessage" ? (
-            <SystemMessage key={message.messageId} siteAdmin={props.isAdmin} signalR={props.signalR} {...message} />
+            <SystemMessage key={message.messageId} siteAdmin={props.isAdmin} signalR={signalR} {...message} />
           ) : (
             <UserMessage
               key={message.messageId}
               siteAdmin={props.isAdmin}
               siteMod={props.isMod}
               emotes={props.emotes}
-              signalR={props.signalR}
-              enableChristmasTheme={props.configuration.enableChristmasTheme}
+              signalR={signalR}
+              enableChristmasTheme={configuration.enableChristmasTheme}
               userSessionId={props.sessionId}
               {...message}
             />

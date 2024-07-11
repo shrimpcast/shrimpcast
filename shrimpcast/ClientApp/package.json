@@ -9,6 +9,7 @@
     "@microsoft/signalr": "^8.0.0",
     "@mui/icons-material": "^5.14.16",
     "@mui/material": "^5.14.16",
+    "auto-text-size": "^0.2.3",
     "axios": "^1.6.0",
     "http-proxy-middleware": "^2.0.6",
     "is-ip": "^5.0.1",

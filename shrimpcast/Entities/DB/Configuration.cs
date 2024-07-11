@@ -39,6 +39,10 @@ namespace shrimpcast.Entities.DB
 
         public required int OffsetDateTimeInMinutes { get; set; }
 
+        public required bool ShowBingo { get; set; }
+
+        public required string BingoTitle { get; set; }
+
         public required bool ShowPoll { get; set; }
 
         public required bool AcceptNewOptions { get; set; }
@@ -173,6 +177,15 @@ namespace shrimpcast.Entities.DB
                         new { name = nameof(config.ShowVotes).ToLower(), label = "Make votes public", value = config.ShowVotes },
                         new { name = nameof(config.MinSentToParticipate).ToLower(), label = "Minimum sent to participate", value = config.MinSentToParticipate },
                         new { name = nameof(config.PollTitle).ToLower(), label = "Poll title", value = config.PollTitle },
+                    }
+                },
+                new
+                {
+                    name = "Bingo",
+                    values = new object[]
+                    {
+                        new { name = nameof(config.ShowBingo).ToLower(), label = "Show bingo", value = config.ShowBingo },
+                        new { name = nameof(config.BingoTitle).ToLower(), label = "Bingo title", value = config.BingoTitle },
                     }
                 },
                 new

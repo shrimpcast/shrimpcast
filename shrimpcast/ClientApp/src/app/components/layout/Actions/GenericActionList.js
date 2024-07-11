@@ -3,6 +3,7 @@ import Dialog from "@mui/material/Dialog";
 import React, { useEffect, useState } from "react";
 import {
   Box,
+  Button,
   CircularProgress,
   DialogContent,
   Divider,
@@ -14,9 +15,12 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ManageUserDialog from "../../chat/ManageUserDialog";
+import GenericAddTextItemDialog from "./GenericAddTextItemDialog";
 
 const GenericActionList = (props) => {
   const [open, setOpen] = useState(props.skipButton || false),
+    [addDialogOpened, setAddDialogOpened] = useState(false),
+    openAddDialog = () => setAddDialogOpened(true),
     [items, setItems] = useState(null),
     setClosed = () => {
       setItems(null);
@@ -52,6 +56,11 @@ const GenericActionList = (props) => {
         <DialogTitle sx={{ fontSize: "24px", paddingBottom: "7.5px" }}>
           <Box display="flex" width="100%" marginBottom={"10px"}>
             {props.title}
+            {props.customButton && (
+              <Button onClick={openAddDialog} sx={{ marginLeft: "auto" }} variant="contained" color="success">
+                {props.customButton}
+              </Button>
+            )}
           </Box>
           <Divider />
         </DialogTitle>
@@ -87,7 +96,7 @@ const GenericActionList = (props) => {
                       </>
                     }
                   >
-                    <ListItemText primary={item[props.contentIdentifier]} />
+                    <ListItemText primary={item[props.contentIdentifier]} sx={{ wordBreak: "break-word" }} />
                   </ListItem>
                 ))
               )}
@@ -95,6 +104,9 @@ const GenericActionList = (props) => {
           )}
         </DialogContent>
       </Dialog>
+      {addDialogOpened && (
+        <GenericAddTextItemDialog setItems={setItems} setAddDialogOpened={setAddDialogOpened} {...props} />
+      )}
     </>
   );
 };

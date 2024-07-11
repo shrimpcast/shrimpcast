@@ -59,7 +59,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
                 var subscription = new PushSubscription(notification.Endpoint, notification.P256, notification.Auth);
                 try
                 {
-                    await webPushClient.SendNotificationAsync(subscription);
+                    await webPushClient.SendNotificationAsync(subscription, cancellationToken: ct);
                 }
                 catch (WebPushException e)
                 {

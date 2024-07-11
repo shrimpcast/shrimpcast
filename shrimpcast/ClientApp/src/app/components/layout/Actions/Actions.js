@@ -11,6 +11,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import Mutes from "./Mutes";
 import Moderators from "./Moderators";
 import IgnoredUsers from "./IgnoredUsers";
+import BingoOptions from "./BingoOptions";
 
 const Actions = (props) => {
   const theme = useTheme();
@@ -25,6 +26,7 @@ const Actions = (props) => {
         <Moderators {...props} />,
         <Notifications {...props} />,
         <EmotesAdmin {...props} />,
+        <BingoOptions {...props} />,
         <AccountInfo {...props} />,
         <IgnoredUsers {...props} />,
       ]

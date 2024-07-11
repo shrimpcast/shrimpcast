@@ -51,6 +51,7 @@ builder.Services.AddScoped<IOBSCommandsRepository, OBSCommandsRepository>();
 builder.Services.AddScoped<IAutoModFilterRepository, AutoModFilterRepository>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<IEmoteRepository, EmoteRepository>();
+builder.Services.AddScoped<IBingoRepository, BingoRepository>();
 builder.Services.AddHangfire(configuration => configuration
                 .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
                 .UseSimpleAssemblyNameTypeSerializer()

@@ -24,12 +24,13 @@ namespace shrimpcast.Hubs
         private readonly IAutoModFilterRepository _autoModFilterRepository;
         private readonly INotificationRepository _notificationRepository;
         private readonly IEmoteRepository _emoteRepository;
+        private readonly IBingoRepository _bingoRepository;
         private readonly IHubContext<SiteHub> _hubContext;
         private readonly ConfigurationSingleton _configurationSigleton;
         private readonly Connections<SiteHub> _activeConnections;
         private readonly Pings<SiteHub> _pings;
 
-        public SiteHub(IConfigurationRepository configurationRepository, ISessionRepository sessionRepository, IMessageRepository messageRepository, IBanRepository banRepository, IPollRepository pollRepository, ITorExitNodeRepository torExitNodeRepository, IHubContext<SiteHub> hubContext, ConfigurationSingleton configurationSingleton, Connections<SiteHub> activeConnections, Pings<SiteHub> pings, IOBSCommandsRepository obsCommandsRepository, IAutoModFilterRepository autoModFilterRepository, INotificationRepository notificationRepository, IEmoteRepository emoteRepository)
+        public SiteHub(IConfigurationRepository configurationRepository, ISessionRepository sessionRepository, IMessageRepository messageRepository, IBanRepository banRepository, IPollRepository pollRepository, ITorExitNodeRepository torExitNodeRepository, IHubContext<SiteHub> hubContext, ConfigurationSingleton configurationSingleton, Connections<SiteHub> activeConnections, Pings<SiteHub> pings, IOBSCommandsRepository obsCommandsRepository, IAutoModFilterRepository autoModFilterRepository, INotificationRepository notificationRepository, IEmoteRepository emoteRepository, IBingoRepository bingoRepository)
         {
             _configurationRepository = configurationRepository;
             _sessionRepository = sessionRepository;
@@ -45,6 +46,7 @@ namespace shrimpcast.Hubs
             _autoModFilterRepository = autoModFilterRepository;
             _notificationRepository = notificationRepository;
             _emoteRepository = emoteRepository;
+            _bingoRepository = bingoRepository;
         }
 
         private Configuration Configuration => _configurationSigleton.Configuration;
@@ -277,7 +279,7 @@ namespace shrimpcast.Hubs
             if (VerificationToken != Constants.FIREANDFORGET_TOKEN) return;
             await Task.Delay(new Random().Next(Configuration.MinABTimeInMs, Configuration.MaxABTimeInMs));
             await PerformBan(SessionId, true, true, -1);
-            await DispatchSystemMessage($"[{sentBy}] has been banned by the auto-mod", true, GetAdminSessions());
+            await DispatchSystemMessage($"[{sentBy}] has been banned by the auto-mod", true, false, GetAdminSessions());
         }
 
         public async Task<List<Ban>> ListBans()
@@ -309,7 +311,7 @@ namespace shrimpcast.Hubs
             {
                 var name = await _sessionRepository.GetCurrentName(SessionId);
                 var message = $"{session.SessionNames.Last().Name} muted {name}";
-                await DispatchSystemMessage(message, true, GetAdminSessions());
+                await DispatchSystemMessage(message, true, false, GetAdminSessions());
             } 
             return true;
         }
@@ -340,7 +342,7 @@ namespace shrimpcast.Hubs
             var connections = ActiveConnections.Where(ac => ac.Value.Session.SessionId == SessionId);
             foreach (var connection in connections) connection.Value.Session.IsMod = ShouldAdd;
             await Clients.Clients(connections.Select(c => c.Key)).SendAsync("ModStatusUpdate", ShouldAdd);
-            if (ShouldAdd) await DispatchSystemMessage("You are now a janny", true, connections.Select(c => c.Key));
+            if (ShouldAdd) await DispatchSystemMessage("You are now a janny", true, false, connections.Select(c => c.Key));
             await Task.Delay(100);
             await NotifyNewMessage(new Message
             {
@@ -488,6 +490,66 @@ namespace shrimpcast.Hubs
         }
         #endregion
 
+        #region Bingo
+        public async Task<List<BingoOption>> GetAll() => await _bingoRepository.GetAllOptions();
+
+        public async Task<BingoOption?> AddBingoOption ([FromBody] string Content)
+        {
+            await ShouldGrantAccess();
+            Content = Content.Trim();
+            if (string.IsNullOrEmpty(Content))
+            {
+                await DispatchSystemMessage("Option content can not be empty.");
+                return null;
+            }
+
+            var newOption = await _bingoRepository.AddOption(Content); 
+            await Clients.All.SendAsync("BingoOptionAdded", newOption);
+            return newOption;
+        }
+
+        public async Task<bool> RemoveBingoOption([FromBody] int BingoOptionId)
+        {
+            await ShouldGrantAccess();
+            await _bingoRepository.RemoveOption(BingoOptionId);
+            await Clients.All.SendAsync("BingoOptionRemoved", BingoOptionId);
+            return true;
+        }
+
+        public async Task<bool> ToggleBingoOptionStatus([FromBody] int BingoOptionId)
+        {
+            if (!Configuration.ShowBingo)
+            {
+                await DispatchSystemMessage("Bingo is currently disabled.");
+                return false;
+            }
+
+            var existingOption = await _bingoRepository.ExistsById(BingoOptionId);
+            if (existingOption == null)
+            {
+                await DispatchSystemMessage("This option has been removed.");
+                return false;
+            }
+
+            var Session = GetCurrentConnection().Session;
+            if (!Session.IsMod && !Session.IsAdmin)
+            {
+                if (!existingOption.IsChecked) await NewMessage($"[BINGO]: I suggest marking [{existingOption.Content}].");
+                return true;
+            }
+
+            var isChecked = await _bingoRepository.ToggleOptionStatus(BingoOptionId);
+            await Clients.All.SendAsync("BingoOptionStatusUpdate", new
+            {
+                BingoOptionId,
+                isChecked,
+            });
+            if (isChecked) await DispatchSystemMessage($"[BINGO]: marked [{existingOption.Content}].", true, true);
+            if (await _bingoRepository.IsBingo()) await DispatchSystemMessage($"BINGO!", true, true);
+            return true;
+        }
+        #endregion
+
         #region Admin
         public async Task<bool> SaveConfig([FromBody] Configuration updatedConfiguration)
         {
@@ -559,7 +621,7 @@ namespace shrimpcast.Hubs
                 var targets = ActiveConnections.Where(ac => ac.Value.Session.SessionId == Ping.SentBy)
                                                .Select(ac => ac.Key);
 
-                await DispatchSystemMessage($"ID {Ping.Target}: ping {(ConfirmSeen ? "seen" : "received")}.", true, targets);
+                await DispatchSystemMessage($"ID {Ping.Target}: ping {(ConfirmSeen ? "seen" : "received")}.", true, false, targets);
                 if (ConfirmSeen) Ping.ConfirmedSeen = true;
                 else Ping.ConfirmedReception = true;
             }
@@ -686,7 +748,7 @@ namespace shrimpcast.Hubs
         private async Task NotifyNewMessage(Message message) =>
             await _hubContext.Clients.All.SendAsync("ChatMessage", message);
 
-        private async Task DispatchSystemMessage(string Message, bool useCallers = false, IEnumerable<string>? Callers = null)
+        private async Task DispatchSystemMessage(string Message, bool useCallers = false, bool useAll = false, IEnumerable<string>? Callers = null)
         {
             var obj = new Message
             {
@@ -700,6 +762,7 @@ namespace shrimpcast.Hubs
 
             var Action = "ChatMessage";
             if (!useCallers) await Clients.Caller.SendAsync(Action, obj);
+            else if (useAll) await Clients.All.SendAsync(Action, obj);
             else if (Callers != null) await _hubContext.Clients.Clients(Callers).SendAsync(Action, obj);
         }
 

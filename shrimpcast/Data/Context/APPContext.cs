@@ -19,6 +19,7 @@ namespace shrimpcast.Data
         public DbSet<AutoModFilter> AutoModFilters { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<Emote> Emotes { get; set; }
+        public DbSet<BingoOption> BingoOptions { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -44,6 +45,7 @@ namespace shrimpcast.Data
             modelBuild.Entity<AutoModFilter>().ToTable("AutoModFilters");
             modelBuild.Entity<Notification>().ToTable("Notification");
             modelBuild.Entity<Emote>().ToTable("Emote");
+            modelBuild.Entity<BingoOption>().ToTable("BingoOption");
         }
     }
 }
