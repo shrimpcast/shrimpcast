@@ -380,6 +380,18 @@ namespace shrimpcast.Hubs
             return await PerformBan(SessionId, true, true, GetCurrentConnection().Session.SessionId);
         }
 
+        public async Task<AutoModFilter?> AddAutoModFilterWithText([FromBody] string Content)
+        {
+            await ShouldGrantAccess();
+            Content = Content.Trim();
+            if (string.IsNullOrEmpty(Content) || Content.Length < 5)
+            {
+                await DispatchSystemMessage("Content length must be at least 5.");
+                return null;
+            }
+            return await _autoModFilterRepository.Add(Content);
+        }
+
         public async Task<bool> RemoveAutoModFilter([FromBody] int AutoModFilterId)
         {
             await ShouldGrantAccess();

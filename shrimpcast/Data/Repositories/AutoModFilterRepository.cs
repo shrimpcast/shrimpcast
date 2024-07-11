@@ -7,15 +7,16 @@ namespace shrimpcast.Data.Repositories.Interfaces
     {
         private readonly APPContext _context = context;
 
-        public async Task<bool> Add(string Content)
+        public async Task<AutoModFilter?> Add(string Content)
         {
-            if (_context.AutoModFilters.FirstOrDefault(filter => filter.Content == Content) != null) return true;
-            await _context.AddAsync(new AutoModFilter
+            if (_context.AutoModFilters.AsNoTracking().FirstOrDefault(filter => filter.Content == Content) != null) return null;
+            var filter = new AutoModFilter
             {
                 Content = Content
-            });
+            };
+            await _context.AddAsync(filter);
             var result = await _context.SaveChangesAsync();
-            return result > 0 ? true : throw new Exception("Could not add filter.");
+            return result > 0 ? filter : throw new Exception("Could not add filter.");
         }
 
         public async Task<List<AutoModFilter>> GetAll()

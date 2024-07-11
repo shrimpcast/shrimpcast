@@ -12,6 +12,10 @@ const AutoModFilters = (props) => {
       icon={PrecisionManufacturingIcon}
       identifier="autoModFilterId"
       contentIdentifier="content"
+      customButton="Add filter"
+      gad_description="Filter content"
+      gad_title="Add auto-mod filter"
+      gad_handleSubmit={AutoModFiltersManager.AddWithText}
       {...props}
     />
   );
