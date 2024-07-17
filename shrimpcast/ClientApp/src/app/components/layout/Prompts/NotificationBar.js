@@ -4,15 +4,15 @@ import CloseIcon from "@mui/icons-material/Close";
 
 const ColorButtonSx = {
     width: "100%",
-    height: "20px",
     borderRadius: "0px",
     borderBottomRightRadius: "0px",
+    padding: "0px",
   },
   ColorButtonTextSx = {
     fontSize: "12px",
     fontWeight: "bold",
-    position: "absolute",
-    top: "1px",
+    pl: "2.5px",
+    pr: "2.5px",
   },
   NotifIconSx = {
     position: "relative",

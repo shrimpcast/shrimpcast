@@ -3,7 +3,7 @@ import LocalStorageManager from "../../../managers/LocalStorageManager";
 import NotificationBar from "./NotificationBar";
 import LiveTvIcon from "@mui/icons-material/LiveTv";
 
-const getFilenameWithoutExtension = (url) => {
+const getNameWithoutExtension = (url) => {
   const parts = url.split("/");
   const filename = parts[parts.length - 1];
   const filenameWithoutExtension = filename.split(".")[0];
@@ -11,8 +11,10 @@ const getFilenameWithoutExtension = (url) => {
 };
 
 const MultistreamPrompt = (props) => {
-  const { primaryStreamUrl, secondaryStreamUrl } = props.configuration,
-    sourceName = getFilenameWithoutExtension(props.useMultistreamSecondary ? primaryStreamUrl : secondaryStreamUrl),
+  const { configuration, useMultistreamSecondary } = props,
+    { primaryStreamUrl, secondaryStreamUrl, primaryUrlName, secondaryUrlName } = configuration,
+    rawUrlName = getNameWithoutExtension(useMultistreamSecondary ? primaryStreamUrl : secondaryStreamUrl),
+    sourceName = useMultistreamSecondary ? primaryUrlName || rawUrlName : secondaryUrlName || rawUrlName,
     toggleSource = () => {
       const status = LocalStorageManager.toggleMultistreamStatus();
       props.setMultistreamSecondary(status);

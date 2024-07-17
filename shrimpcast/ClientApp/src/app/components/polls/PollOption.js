@@ -71,7 +71,7 @@ const PollOptionSx = (selected) => ({
     },
   },
   TextSx = (buttonsWidth, showVotes) => ({
-    overflowX: "scroll",
+    overflowX: "auto",
     width: `calc(95% - ${showVotes ? buttonsWidth + 20 : buttonsWidth}px)`,
     marginTop: "2px",
     whiteSpace: "nowrap",
@@ -109,7 +109,7 @@ const PollOption = React.memo((props) => {
         <Box sx={OptionValueSx}>
           <Box
             sx={TextSx(isAdmin ? 55.45 : 23.45, configuration.showVotes)}
-            className="drawer-poll drawer-poll-secondary"
+            className="scrollbar-custom scrollbar-custom-secondary"
           >
             {props.value}
           </Box>

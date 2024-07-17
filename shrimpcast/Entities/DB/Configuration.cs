@@ -21,7 +21,11 @@ namespace shrimpcast.Entities.DB
 
         public required string? PrimaryStreamUrl { get; set; }
 
+        public required string? PrimaryUrlName { get; set; }
+
         public required string? SecondaryStreamUrl { get; set; }
+
+        public required string? SecondaryUrlName { get; set; }
 
         public required bool StreamEnabled { get; set; }
 
@@ -36,6 +40,8 @@ namespace shrimpcast.Entities.DB
         public required int MessageDelayTime { get; set; }
 
         public required int RequiredTokenTimeInMinutes { get; set; }
+
+        public required int MaxLengthTruncation { get; set; }
 
         public required int OffsetDateTimeInMinutes { get; set; }
 
@@ -149,6 +155,7 @@ namespace shrimpcast.Entities.DB
                         new { name = nameof(config.RequiredTokenTimeInMinutes).ToLower(), label = "Required time for new users (mins)", value = config.RequiredTokenTimeInMinutes },
                         new { name = nameof(config.MessageDelayTime).ToLower(), label = "Cooldown between messages", value = config.MessageDelayTime },
                         new { name = nameof(config.MuteLenghtInMinutes).ToLower(), label = "Mute time in minutes", value = config.MuteLenghtInMinutes },
+                        new { name = nameof(config.MaxLengthTruncation).ToLower(), label = "Message length before truncation", value = config.MaxLengthTruncation },
                         new { name = nameof(config.DefaultName).ToLower(), label = "Default name for new users", value = config.DefaultName },
                     }
                 },
@@ -160,10 +167,12 @@ namespace shrimpcast.Entities.DB
                         new { name = nameof(config.StreamEnabled).ToLower(), label = "Enable stream", value = config.StreamEnabled },
                         new { name = nameof(config.UsePrimarySource).ToLower(), label = "Use primary source", value = config.UsePrimarySource },
                         new { name = nameof(config.UseLegacyPlayer).ToLower(), label = "Use native player", value = config.UseLegacyPlayer },
-                        new { name = nameof(config.UseRTCEmbed).ToLower(), label = "Treat url as embed", value = config.UseRTCEmbed },
+                        new { name = nameof(config.UseRTCEmbed).ToLower(), label = "Treat URL as embed", value = config.UseRTCEmbed },
                         new { name = nameof(config.EnableMultistreams).ToLower(), label = "Enable multistreams", value = config.EnableMultistreams },
-                        new { name = nameof(config.PrimaryStreamUrl).ToLower(), label = "Primary stream url", value = config.PrimaryStreamUrl },
-                        new { name = nameof(config.SecondaryStreamUrl).ToLower(), label = "Secondary stream url", value = config.SecondaryStreamUrl },
+                        new { name = nameof(config.PrimaryStreamUrl).ToLower(), label = "Primary stream URL", value = config.PrimaryStreamUrl },
+                        new { name = nameof(config.PrimaryUrlName).ToLower(), label = " (optional) Primary URL custom name", value = config.PrimaryUrlName },
+                        new { name = nameof(config.SecondaryStreamUrl).ToLower(), label = "Secondary stream URL", value = config.SecondaryStreamUrl },
+                        new { name = nameof(config.SecondaryUrlName).ToLower(), label = "(optional) Secondary URL custom name", value = config.SecondaryUrlName },
                     }
                 },
                 new

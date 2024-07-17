@@ -63,7 +63,7 @@ const UserMessage = React.memo((props) => {
   const [showPromptDialog, setShowPromptDialog] = useState(false),
     openConfirmPrompt = () => setShowPromptDialog(true),
     closeConfirmPrompt = () => setShowPromptDialog(false),
-    { isAdmin, isMod } = props,
+    { isAdmin, isMod, maxLengthTruncation } = props,
     escapedName = LocalStorageManager.getName().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
     // Use lookahead assertion to ensure we're matching the full name
     nameRegex = `@${escapedName}(?:\\s|$|\\.)`,
@@ -74,10 +74,12 @@ const UserMessage = React.memo((props) => {
       let resp = await ChatActionsManager.RemoveMessage(props.signalR, props.messageId);
       if (resp) closeConfirmPrompt();
     },
-    max = 250,
     [isMiniminized, setMinimized] = useState(!isAdmin),
     openMinimized = () => setMinimized(false),
-    content = props.content.length > max && isMiniminized ? props.content.substring(0, max) : props.content,
+    content =
+      props.content.length > maxLengthTruncation && isMiniminized
+        ? props.content.substring(0, maxLengthTruncation)
+        : props.content,
     getEmote = (emoteName) => props.emotes.find((emote) => emote.name === emoteName);
 
   return (
@@ -122,8 +124,13 @@ const UserMessage = React.memo((props) => {
               </Typography>
             )
           )}
-          {isMiniminized && props.content.length > max && (
-            <Link component="button" onClick={openMinimized}>
+          {isMiniminized && props.content.length > maxLengthTruncation && (
+            <Link
+              component="button"
+              sx={{ color: "secondary.500", ml: "2.5px" }}
+              title="Click to expand"
+              onClick={openMinimized}
+            >
               {" [+]"}
             </Link>
           )}

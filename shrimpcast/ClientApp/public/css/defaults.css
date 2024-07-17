@@ -88,25 +88,25 @@ html {
   border: none;
 }
 
-.drawer-poll {
+.scrollbar-custom {
   scrollbar-width: thin;
   scrollbar-color: #ff9100 transparent;
 }
 
-.drawer-poll::-webkit-scrollbar {
+.scrollbar-custom::-webkit-scrollbar {
   width: 5px;
 }
 
-.drawer-poll::-webkit-scrollbar-track {
+.scrollbar-custom::-webkit-scrollbar-track {
   background: 0 0;
 }
 
-.drawer-poll::-webkit-scrollbar-thumb {
+.scrollbar-custom::-webkit-scrollbar-thumb {
   background-color: #ff9100;
   border-radius: 10px;
 }
 
-.drawer-poll-secondary::-webkit-scrollbar {
+.scrollbar-custom-secondary::-webkit-scrollbar {
   height: 5px;
   width: 0px;
 }

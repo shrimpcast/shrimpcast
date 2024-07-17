@@ -18,7 +18,7 @@ const MainGridSx = {
     alignItems: "stretch",
   },
   PlayerBoxSx = (theme) => ({
-    overflowY: "scroll",
+    overflowY: "auto",
     height: "calc(100% - 35px)",
     display: "flex",
     flexDirection: "column",
@@ -68,7 +68,7 @@ const Layout = (props) => {
         <Grid xs={12}>
           <SiteTop {...props} />
         </Grid>
-        <Grid xs={12} md={8} lg={9} xl={10} sx={PlayerBoxSx(theme)}>
+        <Grid xs={12} md={8} lg={9} xl={10} sx={PlayerBoxSx(theme)} className={"scrollbar-custom"}>
           <Box sx={PlayerContainerSx(theme, !streamTitle && !streamDescription)}>
             <SitePlayer {...props} useMultistreamSecondary={useMultistreamSecondary} />
           </Box>

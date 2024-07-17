@@ -20,7 +20,7 @@ const PollButtonSx = {
     position: "absolute",
     width: "100%",
     zIndex: 2,
-    overflowY: "scroll",
+    overflowY: "auto",
   };
 
 const ActivePoll = (props) => {
@@ -46,7 +46,7 @@ const ActivePoll = (props) => {
         </Button>
       </Paper>
       <Slide direction="left" in={show}>
-        <Box sx={DrawerSx} className="drawer-poll">
+        <Box sx={DrawerSx} className="scrollbar-custom">
           <Poll {...props} />
         </Box>
       </Slide>

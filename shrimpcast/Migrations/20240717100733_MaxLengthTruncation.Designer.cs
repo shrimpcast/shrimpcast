@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using shrimpcast.Data;
@@ -11,9 +12,11 @@ using shrimpcast.Data;
 namespace shrimpcast.Migrations
 {
     [DbContext(typeof(APPContext))]
-    partial class APPContextModelSnapshot : ModelSnapshot
+    [Migration("20240717100733_MaxLengthTruncation")]
+    partial class MaxLengthTruncation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -190,16 +193,10 @@ namespace shrimpcast.Migrations
                     b.Property<string>("PrimaryStreamUrl")
                         .HasColumnType("text");
 
-                    b.Property<string>("PrimaryUrlName")
-                        .HasColumnType("text");
-
                     b.Property<int>("RequiredTokenTimeInMinutes")
                         .HasColumnType("integer");
 
                     b.Property<string>("SecondaryStreamUrl")
-                        .HasColumnType("text");
-
-                    b.Property<string>("SecondaryUrlName")
                         .HasColumnType("text");
 
                     b.Property<bool>("ShowBingo")
