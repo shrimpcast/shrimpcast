@@ -10,14 +10,16 @@ const BlockSx = {
   },
   TitleSx = {
     fontFamily: "Roboto, sans-serif",
+    textTransform: "uppercase",
+    fontSize: "3rem",
     fontWeight: 600,
     letterSpacing: 0.5,
-    textTransform: "uppercase",
+    lineHeight: 1.2,
   },
   DescriptionSx = {
     fontFamily: "'Roboto', sans-serif",
-    letterSpacing: 0.25,
     fontSize: "1.1rem",
+    letterSpacing: 0.25,
     lineHeight: 1.6,
   };
 
@@ -36,8 +38,7 @@ const SiteDetails = (props) => {
           <Box sx={{ wordBreak: "break-word" }}>
             <Typography
               color="secondary.main"
-              className={`neon-text ${enableChristmasTheme ? "santa-hat-primary" : null}`}
-              variant="h3"
+              className={`neon-text ${enableChristmasTheme && streamTitle ? "santa-hat-primary" : null}`}
               sx={TitleSx}
             >
               {streamTitle}

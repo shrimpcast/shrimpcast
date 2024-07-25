@@ -34,17 +34,13 @@ const MainGridSx = {
       height: "60%",
     },
   }),
-  PlayerContainerSx = (theme, fullHeight) => ({
-    height: fullHeight ? "100%" : "90%",
-    aspectRatio: 16 / 9,
+  PlayerContainerSx = {
+    height: "100%",
     margin: "0 auto",
     width: "100%",
     borderRadius: "5px",
     backgroundColor: "#121212",
-    [theme.breakpoints.down("md")]: {
-      height: "100%",
-    },
-  }),
+  },
   SiteDetailsSx = {
     backgroundColor: "primary.900",
     display: "flex",
@@ -54,8 +50,6 @@ const MainGridSx = {
 
 const Layout = (props) => {
   const theme = useTheme(),
-    { streamDescription, hideStreamTitle } = props.configuration,
-    streamTitle = hideStreamTitle ? null : props.configuration.streamTitle,
     multistreamStatus = LocalStorageManager.shouldShowSecondaryMultistream(),
     [useMultistreamSecondary, setMultistreamSecondary] = useState(multistreamStatus);
 
@@ -69,7 +63,7 @@ const Layout = (props) => {
           <SiteTop {...props} />
         </Grid>
         <Grid xs={12} md={8} lg={9} xl={10} sx={PlayerBoxSx(theme)} className={"scrollbar-custom"}>
-          <Box sx={PlayerContainerSx(theme, !streamTitle && !streamDescription)}>
+          <Box sx={PlayerContainerSx}>
             <SitePlayer {...props} useMultistreamSecondary={useMultistreamSecondary} />
           </Box>
           <Box sx={SiteDetailsSx}>
