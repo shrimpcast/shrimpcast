@@ -186,7 +186,7 @@ cat $CERT/fullchain.pem | docker exec -i srs-stack sh -c 'cat > /usr/local/srs-s
 systemctl restart srs-stack
 
 # Install TOR nodes
-TOR_EXIT_NODES_URL="https://raw.githubusercontent.com/SecOps-Institute/Tor-IP-Addresses/master/tor-exit-nodes.lst"
+TOR_EXIT_NODES_URL="https://www.dan.me.uk/torlist/?exit"
 export PGPASSWORD='$hrimpca$t'
 
 # Download the file and pass its contents directly to psql using process substitution
