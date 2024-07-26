@@ -24,6 +24,7 @@ namespace shrimpcast.Data.Repositories
             configuration.OBSHost = configuration.OBSHostNotMapped;
             configuration.VAPIDPrivateKey = configuration.VAPIDPrivateKeyNotMapped;
             configuration.VAPIDMail = configuration.VAPIDMailNotMapped;
+            configuration.IPServiceApiKey = configuration.IPServiceApiKeyNotMapped;
             if (configuration.MaxConnectionsPerIP < 1) configuration.MaxConnectionsPerIP = 1;
             _context.Entry(config).CurrentValues.SetValues(configuration);
             var updated = await _context.SaveChangesAsync();
@@ -31,6 +32,7 @@ namespace shrimpcast.Data.Repositories
             configuration.OBSPasswordtNotMapped = null;
             configuration.VAPIDPrivateKeyNotMapped = null;
             configuration.VAPIDMailNotMapped = null;
+            configuration.IPServiceApiKeyNotMapped = null;
             return updated > 0;
         }
     }

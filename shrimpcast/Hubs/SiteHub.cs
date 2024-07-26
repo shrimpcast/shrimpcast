@@ -20,6 +20,7 @@ namespace shrimpcast.Hubs
         private readonly IBanRepository _banRepository;
         private readonly IPollRepository _pollRepository;
         private readonly ITorExitNodeRepository _torExitNodeRepository;
+        private readonly IVpnAddressRepository _vpnAddressRepository;
         private readonly IOBSCommandsRepository _obsCommandsRepository;
         private readonly IAutoModFilterRepository _autoModFilterRepository;
         private readonly INotificationRepository _notificationRepository;
@@ -30,7 +31,7 @@ namespace shrimpcast.Hubs
         private readonly Connections<SiteHub> _activeConnections;
         private readonly Pings<SiteHub> _pings;
 
-        public SiteHub(IConfigurationRepository configurationRepository, ISessionRepository sessionRepository, IMessageRepository messageRepository, IBanRepository banRepository, IPollRepository pollRepository, ITorExitNodeRepository torExitNodeRepository, IHubContext<SiteHub> hubContext, ConfigurationSingleton configurationSingleton, Connections<SiteHub> activeConnections, Pings<SiteHub> pings, IOBSCommandsRepository obsCommandsRepository, IAutoModFilterRepository autoModFilterRepository, INotificationRepository notificationRepository, IEmoteRepository emoteRepository, IBingoRepository bingoRepository)
+        public SiteHub(IConfigurationRepository configurationRepository, ISessionRepository sessionRepository, IMessageRepository messageRepository, IBanRepository banRepository, IPollRepository pollRepository, ITorExitNodeRepository torExitNodeRepository, IHubContext<SiteHub> hubContext, ConfigurationSingleton configurationSingleton, Connections<SiteHub> activeConnections, Pings<SiteHub> pings, IOBSCommandsRepository obsCommandsRepository, IAutoModFilterRepository autoModFilterRepository, INotificationRepository notificationRepository, IEmoteRepository emoteRepository, IBingoRepository bingoRepository, IVpnAddressRepository vpnAddressRepository)
         {
             _configurationRepository = configurationRepository;
             _sessionRepository = sessionRepository;
@@ -47,6 +48,7 @@ namespace shrimpcast.Hubs
             _notificationRepository = notificationRepository;
             _emoteRepository = emoteRepository;
             _bingoRepository = bingoRepository;
+            _vpnAddressRepository = vpnAddressRepository;
         }
 
         private Configuration Configuration => _configurationSigleton.Configuration;
@@ -580,6 +582,7 @@ namespace shrimpcast.Hubs
             unorderedConfig.OBSHostNotMapped = unorderedConfig.OBSHost;
             unorderedConfig.VAPIDPrivateKeyNotMapped = unorderedConfig.VAPIDPrivateKey;
             unorderedConfig.VAPIDMailNotMapped = unorderedConfig.VAPIDMail;
+            unorderedConfig.IPServiceApiKeyNotMapped = unorderedConfig.IPServiceApiKey;
             return new
             {
                 OrderedConfig = Configuration.BuildJSONConfiguration(),
@@ -729,6 +732,18 @@ namespace shrimpcast.Hubs
                 return $"You have been muted for {minuteDifference} {(minuteDifference == 1 ? "minute" : "minutes")}.";
             }
 
+            if (connection.Session.IsVerified) return null;
+
+            if (Configuration.ChatBlockTORConnections && await _torExitNodeRepository.IsTorExitNode(connection.RemoteAdress))
+            {
+                return $"Error: {Constants.TOR_DISABLED_MESSAGE}";
+            }
+
+            if (Configuration.ChatBlockVPNConnections && await _vpnAddressRepository.IsVpnAddress(connection.RemoteAdress))
+            {
+                return $"Error: {Constants.VPN_DISABLED_MESSAGE}";
+            }
+
             return null;
         }
 
@@ -803,11 +818,13 @@ namespace shrimpcast.Hubs
         {
             var Connection = GetCurrentConnection();
             if (Connection.Session.IsAdmin) return;
+            var IsVerified = Connection.Session.IsVerified;
             var IsBanned = await _banRepository.IsBanned(Connection.RemoteAdress, Connection.Session.SessionToken);
-            var IsTorAndBlocked = Configuration.BlockTORConnections && await _torExitNodeRepository.IsTorExitNode(Connection.RemoteAdress);
-            if (IsBanned || IsTorAndBlocked)
+            var IsTorAndBlocked = !IsVerified && Configuration.SiteBlockTORConnections && await _torExitNodeRepository.IsTorExitNode(Connection.RemoteAdress);
+            var IsVpnAndBlocked = !IsVerified && Configuration.SiteBlockVPNConnections && await _vpnAddressRepository.IsVpnAddress(Connection.RemoteAdress);
+            if (IsBanned || IsTorAndBlocked || IsVpnAndBlocked)
             {
-                await ForceDisconnect([Context.ConnectionId], IsBanned ? Constants.BANNED_MESSAGE : Constants.TOR_DISABLED_MESSAGE);
+                await ForceDisconnect([Context.ConnectionId], IsBanned ? Constants.BANNED_MESSAGE : (IsVpnAndBlocked ? Constants.VPN_DISABLED_MESSAGE : Constants.TOR_DISABLED_MESSAGE));
                 Context.Abort();
             }
         }

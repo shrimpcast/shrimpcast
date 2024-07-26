@@ -47,6 +47,7 @@ builder.Services.AddScoped<IBanRepository, BanRepository>();
 builder.Services.AddScoped<IPollRepository, PollRepository>();
 builder.Services.AddScoped<INameColourRepository, NameColourRepository>();
 builder.Services.AddScoped<ITorExitNodeRepository, TorExitNodeRepository>();
+builder.Services.AddScoped<IVpnAddressRepository, VpnAddressRepository>();
 builder.Services.AddScoped<IOBSCommandsRepository, OBSCommandsRepository>();
 builder.Services.AddScoped<IAutoModFilterRepository, AutoModFilterRepository>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();

@@ -75,7 +75,20 @@ namespace shrimpcast.Entities.DB
 
         public required int SnowflakeCount { get; set; }
 
-        public required bool BlockTORConnections { get; set; }
+        public required bool SiteBlockTORConnections { get; set; }
+
+        public required bool ChatBlockTORConnections { get; set; }
+
+        public required bool SiteBlockVPNConnections { get; set; }
+
+        public required bool ChatBlockVPNConnections { get; set; }
+
+        [JsonIgnore]
+        public string? IPServiceApiKey { get; set; } = string.Empty;
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [NotMapped]
+        public string? IPServiceApiKeyNotMapped { get; set; }
 
         [JsonIgnore]
         public string? OBSHost { get; set; } = string.Empty;
@@ -133,7 +146,6 @@ namespace shrimpcast.Entities.DB
                     name = "Site",
                     values = new object[]
                     {
-                        new { name = nameof(config.BlockTORConnections).ToLower(), label = "Block TOR connections", value = config.BlockTORConnections },
                         new { name = nameof(config.HideStreamTitle).ToLower(), label = "Hide stream title", value = config.HideStreamTitle },
                         new { name = nameof(config.MaxConnectionsPerIP).ToLower(), label = "Max connections per IP", value = config.MaxConnectionsPerIP },
                         new { name = nameof(config.MinABTimeInMs).ToLower(), label = "Min auto-mod time (ms)", value = config.MinABTimeInMs },
@@ -190,6 +202,18 @@ namespace shrimpcast.Entities.DB
                 },
                 new
                 {
+                    name = "TOR & VPNs",
+                    values = new object[]
+                    {
+                        new { name = nameof(config.SiteBlockTORConnections).ToLower(), label = "Block all TOR connections site-wide", value = config.SiteBlockTORConnections },
+                        new { name = nameof(config.ChatBlockTORConnections).ToLower(), label = "Block TOR connections for chat only", value = config.ChatBlockTORConnections },
+                        new { name = nameof(config.SiteBlockVPNConnections).ToLower(), label = "Block all VPN connections site-wide", value = config.SiteBlockVPNConnections },
+                        new { name = nameof(config.ChatBlockVPNConnections).ToLower(), label = "Block VPN connections for chat only", value = config.ChatBlockVPNConnections },
+                        new { name = nameof(config.IPServiceApiKeyNotMapped).ToLower(), label = "API key for the VPN Detection Service (https://iphub.info)", value = config.IPServiceApiKey },
+                    }
+                },
+                new
+                {
                     name = "Bingo",
                     values = new object[]
                     {
@@ -222,7 +246,7 @@ namespace shrimpcast.Entities.DB
                 },
                 new
                 {
-                    name = "Notifications",
+                    name = "Vapid",
                     values = new object[]
                     {
                         new { name = nameof(config.VAPIDPublicKey).ToLower(), label = "VAPID Public key", value = config.VAPIDPublicKey },
