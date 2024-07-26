@@ -820,8 +820,13 @@ namespace shrimpcast.Hubs
             if (Connection.Session.IsAdmin) return;
             var IsVerified = Connection.Session.IsVerified;
             var IsBanned = await _banRepository.IsBanned(Connection.RemoteAdress, Connection.Session.SessionToken);
+            var triggeredVPNVerification = false;
+            if (!IsVerified && (Configuration.SiteBlockVPNConnections || Configuration.ChatBlockVPNConnections))
+            {
+                triggeredVPNVerification = await _vpnAddressRepository.IsVpnAddress(Connection.RemoteAdress);
+            }
+            var IsVpnAndBlocked = !IsVerified && Configuration.SiteBlockVPNConnections && triggeredVPNVerification;
             var IsTorAndBlocked = !IsVerified && Configuration.SiteBlockTORConnections && await _torExitNodeRepository.IsTorExitNode(Connection.RemoteAdress);
-            var IsVpnAndBlocked = !IsVerified && Configuration.SiteBlockVPNConnections && await _vpnAddressRepository.IsVpnAddress(Connection.RemoteAdress);
             if (IsBanned || IsTorAndBlocked || IsVpnAndBlocked)
             {
                 await ForceDisconnect([Context.ConnectionId], IsBanned ? Constants.BANNED_MESSAGE : (IsVpnAndBlocked ? Constants.VPN_DISABLED_MESSAGE : Constants.TOR_DISABLED_MESSAGE));
