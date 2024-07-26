@@ -26,7 +26,7 @@ const ActiveUsers = (props) => {
       signalR.on(SignalRManager.events.userConnected, addUser);
       signalR.on(SignalRManager.events.userDisconnected, removeUser);
       const activeUsers = await AdminActionsManager.GetActiveUsers(signalR);
-      setUsers(activeUsers);
+      setUsers(activeUsers || []);
     };
 
     getUsers();

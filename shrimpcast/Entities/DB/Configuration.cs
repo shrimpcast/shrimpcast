@@ -205,9 +205,9 @@ namespace shrimpcast.Entities.DB
                     name = "TOR & VPNs",
                     values = new object[]
                     {
-                        new { name = nameof(config.SiteBlockTORConnections).ToLower(), label = "Block all TOR connections site-wide", value = config.SiteBlockTORConnections },
+                        new { name = nameof(config.SiteBlockTORConnections).ToLower(), label = "Block TOR connections site-wide", value = config.SiteBlockTORConnections },
                         new { name = nameof(config.ChatBlockTORConnections).ToLower(), label = "Block TOR connections for chat only", value = config.ChatBlockTORConnections },
-                        new { name = nameof(config.SiteBlockVPNConnections).ToLower(), label = "Block all VPN connections site-wide", value = config.SiteBlockVPNConnections },
+                        new { name = nameof(config.SiteBlockVPNConnections).ToLower(), label = "Block VPN connections site-wide", value = config.SiteBlockVPNConnections },
                         new { name = nameof(config.ChatBlockVPNConnections).ToLower(), label = "Block VPN connections for chat only", value = config.ChatBlockVPNConnections },
                         new { name = nameof(config.IPServiceApiKeyNotMapped).ToLower(), label = "API key for the VPN Detection Service (https://iphub.info)", value = config.IPServiceApiKey },
                     }
