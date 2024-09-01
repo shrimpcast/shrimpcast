@@ -40,6 +40,10 @@ namespace shrimpcast.Data
                 else values.Add(Activator.CreateInstance(propType));
             }
 
+            // Manually add renamed columns:
+            // -- BlockTORConnections to SiteBlockTORConnections
+            values.Insert(types.IndexOf("BlockTORConnections"), false);
+
             values[types.IndexOf("MaxConnectionsPerIP")] = 3;
             values[types.IndexOf("DefaultName")] = "Anonymous";
             values[types.IndexOf("MaxMessagesToShow")] = 150;
