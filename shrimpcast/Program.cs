@@ -39,6 +39,7 @@ builder.Services.AddSignalR(hubOptions =>
 });
 builder.Services.AddSingleton(typeof(Connections<>));
 builder.Services.AddSingleton(typeof(Pings<>));
+builder.Services.AddSingleton(typeof(BingoSuggestions<>));
 builder.Services.AddSingleton(typeof(ConfigurationSingleton));
 builder.Services.AddScoped<IConfigurationRepository, ConfigurationRepository>();
 builder.Services.AddScoped<ISessionRepository, SessionRepository>();

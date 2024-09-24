@@ -1,4 +1,5 @@
 using Hangfire;
+using System.Linq;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -30,8 +31,9 @@ namespace shrimpcast.Hubs
         private readonly ConfigurationSingleton _configurationSigleton;
         private readonly Connections<SiteHub> _activeConnections;
         private readonly Pings<SiteHub> _pings;
+        private readonly BingoSuggestions<SiteHub> _bingoSuggestions;
 
-        public SiteHub(IConfigurationRepository configurationRepository, ISessionRepository sessionRepository, IMessageRepository messageRepository, IBanRepository banRepository, IPollRepository pollRepository, ITorExitNodeRepository torExitNodeRepository, IHubContext<SiteHub> hubContext, ConfigurationSingleton configurationSingleton, Connections<SiteHub> activeConnections, Pings<SiteHub> pings, IOBSCommandsRepository obsCommandsRepository, IAutoModFilterRepository autoModFilterRepository, INotificationRepository notificationRepository, IEmoteRepository emoteRepository, IBingoRepository bingoRepository, IVpnAddressRepository vpnAddressRepository)
+        public SiteHub(IConfigurationRepository configurationRepository, ISessionRepository sessionRepository, IMessageRepository messageRepository, IBanRepository banRepository, IPollRepository pollRepository, ITorExitNodeRepository torExitNodeRepository, IHubContext<SiteHub> hubContext, ConfigurationSingleton configurationSingleton, Connections<SiteHub> activeConnections, Pings<SiteHub> pings, IOBSCommandsRepository obsCommandsRepository, IAutoModFilterRepository autoModFilterRepository, INotificationRepository notificationRepository, IEmoteRepository emoteRepository, IBingoRepository bingoRepository, IVpnAddressRepository vpnAddressRepository, BingoSuggestions<SiteHub> bingoSuggestions)
         {
             _configurationRepository = configurationRepository;
             _sessionRepository = sessionRepository;
@@ -49,6 +51,7 @@ namespace shrimpcast.Hubs
             _emoteRepository = emoteRepository;
             _bingoRepository = bingoRepository;
             _vpnAddressRepository = vpnAddressRepository;
+            _bingoSuggestions = bingoSuggestions;
         }
 
         private Configuration Configuration => _configurationSigleton.Configuration;
@@ -545,11 +548,14 @@ namespace shrimpcast.Hubs
                 return false;
             }
 
-            var Session = GetCurrentConnection().Session;
+            var Connection = GetCurrentConnection();
+            var Session = Connection.Session;
             if (!Session.IsMod && !Session.IsAdmin)
             {
-                if (!existingOption.IsChecked) await NewMessage($"[BINGO]: I suggest marking [{existingOption.Content}].");
-                return true;
+                if (existingOption.IsChecked) return true;
+                await NewMessage($"[BINGO]: I suggest marking [{existingOption.Content}].");
+                var ShouldTriggerAutoMarking = ShouldTriggerBingoAutoMarking(Connection.RemoteAdress, existingOption.BingoOptionId);
+                if (!ShouldTriggerAutoMarking) return true;
             }
 
             var isChecked = await _bingoRepository.ToggleOptionStatus(BingoOptionId);
@@ -655,7 +661,6 @@ namespace shrimpcast.Hubs
 
             return true;
         }
-
 
         private async Task TriggerUserCountChange(bool SelfInvoked, Session? session, int? sessionId)
         {
@@ -770,6 +775,32 @@ namespace shrimpcast.Hubs
             }
 
             return null;
+        }
+
+        private bool ShouldTriggerBingoAutoMarking (string RemoteAddress, int BingoSuggestionId)
+        {
+            if (!Configuration.EnableAutoBingoMarking || Configuration.AutoMarkingUserCountThreshold < 1) return false;
+
+            var suggestions = _bingoSuggestions.All;
+            var utcNow = DateTime.UtcNow;
+            suggestions.TryAdd(Guid.NewGuid().ToString(), new BingoSuggestion
+            {
+                BingoSuggestionId = BingoSuggestionId,
+                RemoteAddress = RemoteAddress,
+                Timestamp = utcNow
+            });
+
+            foreach (var suggestion in suggestions)
+            {
+                if ((utcNow - suggestion.Value.Timestamp).TotalSeconds >= Configuration.AutoMarkingSecondsThreshold)
+                {
+                    suggestions.TryRemove(suggestion);
+                } 
+            }
+
+            var uniqueSuggestions = suggestions.Where(suggestion => suggestion.Value.BingoSuggestionId == BingoSuggestionId)
+                                               .DistinctBy(suggestion => suggestion.Value.RemoteAddress).Count();
+            return uniqueSuggestions >= Configuration.AutoMarkingUserCountThreshold;
         }
 
         private async Task NotifyNewMessage(Message message) =>
