@@ -144,7 +144,7 @@ namespace shrimpcast.Hubs
             return newName;
         }
 
-        public async Task<bool> NewMessage([FromBody] string message)
+        public async Task<int> NewMessage([FromBody] string message)
         {
             var CurrentConnection = GetCurrentConnection();
             var RemoteAddress = CurrentConnection.RemoteAdress;
@@ -153,17 +153,17 @@ namespace shrimpcast.Hubs
             if (notAllowedMessage != null)
             {
                 await DispatchSystemMessage(notAllowedMessage);
-                return true;
+                return -1;
             }
 
             message = message.Trim();
             if (string.IsNullOrEmpty(message))
             {
                 await DispatchSystemMessage("Your message can not be empty.");
-                return false;
+                return 0;
             }
 
-            if (await DispatchCommand(message, CurrentConnection)) return true;
+            if (await DispatchCommand(message, CurrentConnection)) return 1;
 
             var session = CurrentConnection.Session;
             var addedMessage = await _messageRepository.Add(CurrentConnection.Session.SessionId, RemoteAddress, message, "UserMessage");
@@ -176,7 +176,7 @@ namespace shrimpcast.Hubs
 
             var shouldBan = await _autoModFilterRepository.Contains(addedMessage.Content);
             if (shouldBan) BackgroundJob.Enqueue(() => PerformBackgroundBan(addedMessage.SentBy, addedMessage.SessionId, Constants.FIREANDFORGET_TOKEN));
-            return true;
+            return 1;
         }
 
         public async Task<object> GetInformation([FromBody] int MessageId, [FromBody] int SessionId)
@@ -552,8 +552,8 @@ namespace shrimpcast.Hubs
             var Session = Connection.Session;
             if (!Session.IsMod && !Session.IsAdmin)
             {
-                if (existingOption.IsChecked) return true;
-                await NewMessage($"[BINGO]: I suggest marking [{existingOption.Content}].");
+                if (existingOption.IsChecked ||
+                   await NewMessage($"[BINGO]: I suggest marking [{existingOption.Content}].") == -1) return true;
                 var ShouldTriggerAutoMarking = ShouldTriggerBingoAutoMarking(Connection.RemoteAdress, existingOption.BingoOptionId);
                 if (!ShouldTriggerAutoMarking) return true;
             }
@@ -567,6 +567,14 @@ namespace shrimpcast.Hubs
             if (isChecked) await DispatchSystemMessage($"[BINGO]: marked [{existingOption.Content}].", true, true);
             if (await _bingoRepository.IsBingo()) await DispatchSystemMessage($"BINGO!", true, true);
             return true;
+        }
+
+        public async Task<bool> ResetBingo()
+        {
+            await ShouldGrantAccess();
+            var isReset = await _bingoRepository.ResetBingo();
+            await Clients.All.SendAsync("BingoReset");
+            return isReset;
         }
         #endregion
 
@@ -783,6 +791,7 @@ namespace shrimpcast.Hubs
 
             var suggestions = _bingoSuggestions.All;
             var utcNow = DateTime.UtcNow;
+
             suggestions.TryAdd(Guid.NewGuid().ToString(), new BingoSuggestion
             {
                 BingoSuggestionId = BingoSuggestionId,
@@ -790,13 +799,10 @@ namespace shrimpcast.Hubs
                 Timestamp = utcNow
             });
 
-            foreach (var suggestion in suggestions)
-            {
-                if ((utcNow - suggestion.Value.Timestamp).TotalSeconds >= Configuration.AutoMarkingSecondsThreshold)
-                {
-                    suggestions.TryRemove(suggestion);
-                } 
-            }
+            var keysToRemove = suggestions.Where(suggestion => (utcNow - suggestion.Value.Timestamp).TotalSeconds >= Configuration.AutoMarkingSecondsThreshold)
+                                          .Select(suggestion => suggestion.Key);
+
+            foreach (var key in keysToRemove) suggestions.TryRemove(key, out _);
 
             var uniqueSuggestions = suggestions.Where(suggestion => suggestion.Value.BingoSuggestionId == BingoSuggestionId)
                                                .DistinctBy(suggestion => suggestion.Value.RemoteAddress).Count();

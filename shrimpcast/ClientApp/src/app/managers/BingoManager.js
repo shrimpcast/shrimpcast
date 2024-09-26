@@ -15,6 +15,10 @@ class BingoManager {
     const response = await signalR.invoke("GetAll").catch((ex) => console.log(ex));
     return response;
   }
+  static async ResetBingo(signalR) {
+    const response = await signalR.invoke("ResetBingo").catch((ex) => console.log(ex));
+    return response;
+  }
 }
 
 export default BingoManager;

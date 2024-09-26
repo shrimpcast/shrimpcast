@@ -45,6 +45,12 @@ namespace shrimpcast.Data.Repositories
             return result > 0 ? option.IsChecked : throw new Exception("Could not add record.");
         }
 
+        public async Task<bool> ResetBingo()
+        {
+            var result = await _context.BingoOptions.ExecuteUpdateAsync(bo => bo.SetProperty(p => p.IsChecked, p => false));
+            return result > 0 ? true : throw new Exception("Could not reset bingo.");
+        }
+
         public async Task<bool> RemoveOption(int BingoOptionId)
         {
             var option = await GetById(BingoOptionId);

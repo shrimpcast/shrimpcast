@@ -224,9 +224,9 @@ namespace shrimpcast.Entities.DB
                     values = new object[]
                     {
                         new { name = nameof(config.ShowBingo).ToLower(), label = "Show bingo", value = config.ShowBingo },
-                        new { name = nameof(config.EnableAutoBingoMarking).ToLower(), label = "Enable auto bingo marking", value = config.EnableAutoBingoMarking },
-                        new { name = nameof(config.AutoMarkingUserCountThreshold).ToLower(), label = "Auto marking user count treshold", value = config.AutoMarkingUserCountThreshold },
-                        new { name = nameof(config.AutoMarkingSecondsThreshold).ToLower(), label = "Auto marking seconds treshold", value = config.AutoMarkingSecondsThreshold },
+                        new { name = nameof(config.EnableAutoBingoMarking).ToLower(), label = "Enable auto marking", value = config.EnableAutoBingoMarking },
+                        new { name = nameof(config.AutoMarkingSecondsThreshold).ToLower(), label = "Auto marking seconds threshold", value = config.AutoMarkingSecondsThreshold },
+                        new { name = nameof(config.AutoMarkingUserCountThreshold).ToLower(), label = "Auto marking user count threshold", value = config.AutoMarkingUserCountThreshold },
                         new { name = nameof(config.BingoTitle).ToLower(), label = "Bingo title", value = config.BingoTitle },
                     }
                 },

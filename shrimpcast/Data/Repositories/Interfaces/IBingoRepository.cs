@@ -12,6 +12,8 @@ namespace shrimpcast.Data.Repositories.Interfaces
 
         Task<bool> RemoveOption(int BingoOptionId);
 
+        Task<bool> ResetBingo();
+
         Task<BingoOption?> ExistsById(int Id);
 
         Task<bool> IsBingo();
