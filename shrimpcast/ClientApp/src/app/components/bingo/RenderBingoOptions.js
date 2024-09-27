@@ -38,6 +38,7 @@ const RenderBingoOptions = (props) => {
       signalR.off(SignalRManager.events.bingoOptionUpdate);
       signalR.off(SignalRManager.events.bingoOptionAdded);
       signalR.off(SignalRManager.events.bingoOptionRemoved);
+      signalR.off(SignalRManager.events.bingoReset);
     };
 
   useEffect(() => {

@@ -28,7 +28,7 @@ const Bingo = (props) => {
   useEffect(() => {
     const getOptions = async () => {
       const options = await BingoManager.GetOptions(signalR);
-      setOptions(options || []);
+      setOptions(options);
     };
 
     if (displayBingo) getOptions();
