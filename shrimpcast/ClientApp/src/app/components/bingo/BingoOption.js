@@ -31,6 +31,7 @@ const StyledCard = styled(Card)(({ theme }) => ({
 
 const BingoOption = React.memo((props) => {
   const { bingoOptionId, content, isChecked, signalR } = props,
+    canAutoSize = Boolean(window.ResizeObserver),
     markAsChecked = async (BingoOptionId) => {
       await BingoManager.ToggleOptionStatus(signalR, BingoOptionId);
     };
@@ -39,9 +40,13 @@ const BingoOption = React.memo((props) => {
     <Grid xs={6} sm={3} md={12 / 5}>
       <StyledCard background="red" onClick={() => markAsChecked(bingoOptionId)}>
         <Box sx={CardContentSx}>
-          <AutoTextSize mode="box">
+          {canAutoSize ? (
+            <AutoTextSize mode="box">
+              <p className="noselect">{content}</p>
+            </AutoTextSize>
+          ) : (
             <p className="noselect">{content}</p>
-          </AutoTextSize>
+          )}
         </Box>
         {isChecked && (
           <Box sx={{ position: "absolute", height: "100%" }}>
