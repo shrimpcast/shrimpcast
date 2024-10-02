@@ -142,6 +142,10 @@ namespace shrimpcast.Entities.DB
 
         public required bool ShowGoldenPassButton { get; set; }
 
+        public required int GoldenPassValue { get; set; }
+
+        public required string GoldenPassTitle { get; set; }
+
         public object Clone() => MemberwiseClone();
     }
 
@@ -264,6 +268,16 @@ namespace shrimpcast.Entities.DB
                         new { name = nameof(config.VAPIDPublicKey).ToLower(), label = "VAPID Public key", value = config.VAPIDPublicKey },
                         new { name = nameof(config.VAPIDPrivateKeyNotMapped).ToLower(), label = "VAPID Private key", value = config.VAPIDPrivateKey },
                         new { name = nameof(config.VAPIDMailNotMapped).ToLower(), label = "VAPID Mail", value = config.VAPIDMail },
+                    }
+                },
+                new
+                {
+                    name = "Golden pass",
+                    values = new object[]
+                    {
+                        new { name = nameof(config.ShowGoldenPassButton).ToLower(), label = "Enable golden pass purchases", value = config.ShowGoldenPassButton },
+                        new { name = nameof(config.GoldenPassValue).ToLower(), label = "Golden pass value (USD)", value = config.GoldenPassValue },
+                        new { name = nameof(config.GoldenPassTitle).ToLower(), label = "Golden pass title", value = config.GoldenPassTitle },
                     }
                 }
             };

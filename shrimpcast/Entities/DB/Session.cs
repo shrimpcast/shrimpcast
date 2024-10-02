@@ -19,6 +19,8 @@ namespace shrimpcast.Entities.DB
 
         public bool IsVerified { get; set; }
 
+        public bool IsGolden { get; set; }
+
         public required string UserDisplayColor { get; set; }
 
         public List<SessionName> SessionNames { get; set; } = [];

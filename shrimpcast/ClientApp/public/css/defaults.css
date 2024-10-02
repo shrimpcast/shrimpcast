@@ -143,23 +143,41 @@ html {
   background: linear-gradient(
     135deg,
     #e91e63,
-    /* Pink 500 */ #9c27b0,
-    /* Purple 500 */ #7e57c2,
-    /* Deep Purple 400 */ #3f51b5,
-    /* Indigo 500 */ #2196f3,
-    /* Blue 500 */ #03a9f4,
-    /* Light Blue 500 */ #00bcd4,
-    /* Cyan 400 */ #009688,
-    /* Teal 500 */ #4caf50,
-    /* Green 500 */ #cddc39,
-    /* Lime 500 */ #ffc107,
-    /* Amber 500 */ #ff5722,
-    /* Orange 500 */ #f44336 /* Red 500 */
+    #9c27b0,
+    #7e57c2,
+    #3f51b5,
+    #2196f3,
+    #03a9f4,
+    #00bcd4,
+    #009688,
+    #4caf50,
+    #cddc39,
+    #ffc107,
+    #ff5722,
+    #f44336
   );
-  background-size: 200% 200%; /* Ensures the animation loops seamlessly */
-  animation: diagonalRainbow 3s linear infinite; /* Slower and seamless animation */
+  background-size: 200% 200%;
+  animation: diagonalRainbow 3s linear infinite;
 }
 
 .rainbow-background::before {
-  background-color: rgba(0, 0, 0, 0.2); /* Slightly darken the background */
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.golden-glow {
+  color: #ffca28 !important;
+  animation-name: golden-glow;
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+
+@keyframes golden-glow {
+  from {
+    text-shadow: 0 0 5px #ffca28, 0 0 5px #ffb300;
+  }
+
+  to {
+    text-shadow: 0 0 20px #ffca28, 0 0 20px #ffb300;
+  }
 }

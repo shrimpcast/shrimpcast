@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { Box, Typography } from "@mui/material";
-import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
+import { Box, IconButton, Typography } from "@mui/material";
 import GoldenPassDialog from "./GoldenPassDialog";
+import CloseIcon from "@mui/icons-material/Close";
 
 const GoldenPassSx = {
     width: "100%",
@@ -25,32 +25,37 @@ const GoldenPassSx = {
     bottom: "3px",
     position: "relative",
   },
-  IconSx = {
+  CloseIconSx = {
     height: "15px",
-    fontSize: "12px",
+    p: 0,
     position: "relative",
-    top: "3px",
+    top: "2.5px",
+    float: "right",
+    mr: "2.5px",
   };
 
 const GoldenPassButton = (props) => {
-  const { isAdmin, configuration } = props,
+  const { isAdmin, configuration, goldenPassExpanded, setGoldenPassExpanded } = props,
     { showGoldenPassButton } = configuration,
     [showDialog, setShowDialog] = useState(false),
     openDialog = () => setShowDialog(true),
-    closeDialog = () => setShowDialog(false);
+    closeDialog = () => setShowDialog(false),
+    goldenPassTitle = configuration.goldenPassTitle
+      ? configuration.goldenPassTitle.toUpperCase()
+      : configuration.streamTitle.toUpperCase(),
+    closeButton = () => setGoldenPassExpanded(false);
 
-  return showGoldenPassButton && !isAdmin ? (
+  return showGoldenPassButton && !isAdmin && goldenPassExpanded ? (
     <>
       <Box sx={GoldenPassSx} onClick={openDialog} className="rainbow-background">
         <Typography className="noselect" variant="caption" sx={TextSx}>
-          GET THE {configuration.streamTitle.toUpperCase()}{" "}
-          <span style={{ color: "#ff9800" }}>
-            GOLDEN PASS
-            <WorkspacePremiumIcon sx={IconSx} />
-          </span>
+          GET THE {goldenPassTitle} <span style={{ color: "#ff9800" }}>GOLDEN PASS</span>
         </Typography>
+        <IconButton onClick={closeButton} type="button" size="small" sx={CloseIconSx}>
+          <CloseIcon sx={{ fontSize: "16px" }} />
+        </IconButton>
       </Box>
-      {showDialog && <GoldenPassDialog closeDialog={closeDialog} {...props} />}
+      {showDialog && <GoldenPassDialog closeDialog={closeDialog} goldenPassTitle={goldenPassTitle} {...props} />}
     </>
   ) : null;
 };
