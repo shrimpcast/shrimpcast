@@ -129,3 +129,37 @@ html {
   top: -12.5px;
   left: -5.5px;
 }
+
+@keyframes diagonalRainbow {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 200% 200%;
+  }
+}
+
+.rainbow-background {
+  background: linear-gradient(
+    135deg,
+    #e91e63,
+    /* Pink 500 */ #9c27b0,
+    /* Purple 500 */ #7e57c2,
+    /* Deep Purple 400 */ #3f51b5,
+    /* Indigo 500 */ #2196f3,
+    /* Blue 500 */ #03a9f4,
+    /* Light Blue 500 */ #00bcd4,
+    /* Cyan 400 */ #009688,
+    /* Teal 500 */ #4caf50,
+    /* Green 500 */ #cddc39,
+    /* Lime 500 */ #ffc107,
+    /* Amber 500 */ #ff5722,
+    /* Orange 500 */ #f44336 /* Red 500 */
+  );
+  background-size: 200% 200%; /* Ensures the animation loops seamlessly */
+  animation: diagonalRainbow 3s linear infinite; /* Slower and seamless animation */
+}
+
+.rainbow-background::before {
+  background-color: rgba(0, 0, 0, 0.2); /* Slightly darken the background */
+}

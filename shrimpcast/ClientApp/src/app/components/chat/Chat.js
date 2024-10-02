@@ -5,6 +5,7 @@ import RenderChatMessages from "./RenderChatMessages";
 import ChatTextField from "./ChatTextField";
 import ActivePoll from "./ActivePoll";
 import ActiveBingo from "./ActiveBingo";
+import GoldenPassButton from "./GoldenPass/GoldenPassButton";
 
 const ChatSx = {
   height: "100%",
@@ -38,6 +39,7 @@ const Chat = (props) => {
         nameSuggestions={nameSuggestions}
         {...props}
       />
+      <GoldenPassButton {...props} />
     </Box>
   );
 };

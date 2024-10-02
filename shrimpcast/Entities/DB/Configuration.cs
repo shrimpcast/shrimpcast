@@ -140,6 +140,8 @@ namespace shrimpcast.Entities.DB
         [NotMapped]
         public string? VAPIDMailNotMapped { get; set; }
 
+        public required bool ShowGoldenPassButton { get; set; }
+
         public object Clone() => MemberwiseClone();
     }
 
@@ -153,6 +155,7 @@ namespace shrimpcast.Entities.DB
                     values = new object[]
                     {
                         new { name = nameof(config.HideStreamTitle).ToLower(), label = "Hide stream title", value = config.HideStreamTitle },
+                        new { name = nameof(config.ShowGoldenPassButton).ToLower(), label = "Enable golden pass", value = config.ShowGoldenPassButton },
                         new { name = nameof(config.MaxConnectionsPerIP).ToLower(), label = "Max connections per IP", value = config.MaxConnectionsPerIP },
                         new { name = nameof(config.MinABTimeInMs).ToLower(), label = "Min auto-mod time (ms)", value = config.MinABTimeInMs },
                         new { name = nameof(config.MaxABTimeInMs).ToLower(), label = "Max auto-mod time (ms)", value = config.MaxABTimeInMs },
