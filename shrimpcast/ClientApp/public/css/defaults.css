@@ -130,38 +130,27 @@ html {
   left: -5.5px;
 }
 
-@keyframes diagonalRainbow {
-  0% {
-    background-position: 0% 0%;
-  }
-  100% {
-    background-position: 200% 200%;
-  }
-}
-
-.rainbow-background {
-  background: linear-gradient(
-    135deg,
-    #e91e63,
-    #9c27b0,
-    #7e57c2,
-    #3f51b5,
-    #2196f3,
-    #03a9f4,
-    #00bcd4,
-    #009688,
-    #4caf50,
-    #cddc39,
-    #ffc107,
-    #ff5722,
-    #f44336
+.animated-background {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 1rem,
+    #212121 1rem,
+    #212121 2rem,
+    #009688 2rem,
+    #009688 3rem
   );
   background-size: 200% 200%;
-  animation: diagonalRainbow 3s linear infinite;
+  animation: barberpole 4s linear infinite;
 }
 
-.rainbow-background::before {
-  background-color: rgba(0, 0, 0, 0.2);
+@keyframes barberpole {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 100% 100%;
+  }
 }
 
 .golden-glow {

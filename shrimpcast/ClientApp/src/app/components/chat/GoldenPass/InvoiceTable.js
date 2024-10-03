@@ -33,7 +33,7 @@ const TableSx = {
 const InvoiceTable = ({ invoices, setCheckoutUrl }) => {
   return (
     <TableContainer component={Paper} sx={TableSx}>
-      <Typography variant="h4" component="h4" gutterBottom>
+      <Typography textAlign="center" variant="h5" component="h5" gutterBottom>
         Invoices
       </Typography>
       <Divider />
@@ -43,8 +43,8 @@ const InvoiceTable = ({ invoices, setCheckoutUrl }) => {
             <TableHead>
               <TableRow>
                 <TableCell>Status</TableCell>
-                <TableCell>Checkout page</TableCell>
-                <TableCell>Created time</TableCell>
+                <TableCell>Checkout</TableCell>
+                <TableCell>Created at</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -65,7 +65,7 @@ const InvoiceTable = ({ invoices, setCheckoutUrl }) => {
             </TableBody>
           </Table>
         ) : (
-          <Typography mt="5px">No invoices found</Typography>
+          <Typography mt="5px">No records found</Typography>
         )
       ) : (
         <Box sx={InvoicesLoaderSx}>

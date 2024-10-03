@@ -69,15 +69,16 @@ const GoldenPassDialog = (props) => {
       <Dialog open={true} onClose={closeDialog} maxWidth={"sm"} fullWidth PaperProps={{ sx: DialogSx }}>
         <DialogTitle sx={DialogTitleSx}>
           GET YOUR {goldenPassTitle}{" "}
-          <span style={{ color: "#ff9800" }}>
+          <Typography variant="span" color="secondary.400">
             GOLDEN PASS
             <WorkspacePremiumIcon sx={{ position: "relative", top: "5px" }} />
-          </span>
+          </Typography>
           <Divider color="#FFF" />
         </DialogTitle>
         <DialogContent sx={DialogContentSx}>
           <Typography variant="body1" marginTop="5px">
-            Buy the {goldenPassTitle} golden pass to support the site! Enjoy benefits such as:
+            Buy the {goldenPassTitle} golden pass if you wish to support the site, and enjoy complimentary benefits such
+            as:
           </Typography>
           <Box marginTop="10px" mb={3}>
             <Typography variant="body2" className="golden-glow">
