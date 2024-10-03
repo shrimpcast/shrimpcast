@@ -7,11 +7,11 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Link,
   Typography,
   CircularProgress,
   Box,
   Divider,
+  Button,
 } from "@mui/material";
 
 const TableSx = {
@@ -30,7 +30,7 @@ const TableSx = {
     mt: "5px",
   };
 
-const InvoiceTable = ({ invoices }) => {
+const InvoiceTable = ({ invoices, setCheckoutUrl }) => {
   return (
     <TableContainer component={Paper} sx={TableSx}>
       <Typography variant="h4" component="h4" gutterBottom>
@@ -43,7 +43,7 @@ const InvoiceTable = ({ invoices }) => {
             <TableHead>
               <TableRow>
                 <TableCell>Status</TableCell>
-                <TableCell>Checkout link</TableCell>
+                <TableCell>Checkout page</TableCell>
                 <TableCell>Created time</TableCell>
               </TableRow>
             </TableHead>
@@ -57,9 +57,7 @@ const InvoiceTable = ({ invoices }) => {
                     )}
                   </TableCell>
                   <TableCell>
-                    <Link href={invoice.checkoutLink} target="_blank" rel="noopener">
-                      open
-                    </Link>
+                    <Button onClick={() => setCheckoutUrl(invoice.checkoutLink)}>open</Button>
                   </TableCell>
                   <TableCell>{new Date(invoice.createdTime * 1000).toLocaleString()}</TableCell>
                 </TableRow>

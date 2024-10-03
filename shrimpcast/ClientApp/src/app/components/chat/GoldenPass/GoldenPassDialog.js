@@ -93,7 +93,7 @@ const GoldenPassDialog = (props) => {
             </Button>
           </Box>
 
-          <InvoiceTable invoices={invoices} />
+          <InvoiceTable invoices={invoices} setCheckoutUrl={setCheckoutUrl} />
         </DialogContent>
       </Dialog>
       {showToast && (
