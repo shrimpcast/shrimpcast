@@ -6,10 +6,6 @@ using shrimpcast.Entities.DB;
 using shrimpcast.Helpers;
 using shrimpcast.Hubs;
 using shrimpcast.Hubs.Dictionaries;
-using System.Net;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.Json;
 
 namespace shrimpcast.Controllers
 {
