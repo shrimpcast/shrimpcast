@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.SignalR;
 using shrimpcast.Data.Repositories.Interfaces;
 using shrimpcast.Entities;
 using shrimpcast.Entities.DB;
+using shrimpcast.Helpers;
 using shrimpcast.Hubs;
 using shrimpcast.Hubs.Dictionaries;
 using System.Net;
@@ -96,41 +97,34 @@ namespace shrimpcast.Controllers
         {
             // Verify that the payload comes from an authenticated webhook
             var configuration = _configurationSingleton.Configuration;
-            using var reader = new StreamReader(Request.Body);
-            var requestBody = await reader.ReadToEndAsync();
-            var receivedSignature = Request.Headers["BTCPAY-SIG"].ToString();
-            var webhookSecret = configuration.BTCServerWebhookSecret;
-            using (var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(webhookSecret ?? string.Empty)))
+            var sessionId = await HMACSHA256Auth.VerifyPayload(Request, configuration.BTCServerWebhookSecret);
+            var isGolden = await _sessionRepository.SetGoldStatus(sessionId);
+
+            var connections = _activeConnections.All.Where(ac => ac.Value.Session.SessionId == sessionId);
+            var connectionKeys = connections.Select(c => c.Key);
+
+            foreach (var connection in connections)
             {
-                var hashBytes = hmac.ComputeHash(Encoding.UTF8.GetBytes(requestBody));
-                string computedSignature = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
-                if (computedSignature != receivedSignature.Replace("sha256=", string.Empty)) 
-                {
-                    throw new ProtocolViolationException("Permission denied");
-                } 
+                connection.Value.Session.IsGolden = isGolden;
             }
 
-            // Confirm the gold status
-            using var document = JsonDocument.Parse(requestBody);
-            var orderId = document.RootElement.GetProperty("metadata").GetProperty("orderId").GetString() 
-                          ?? throw new JsonException("OrderId must be supplied.");
-
-            var sessionId = int.Parse(orderId);
-            var isGolden = await _sessionRepository.SetGoldStatus(sessionId);
-            var connections = _activeConnections.All.Where(ac => ac.Value.Session.SessionId == sessionId);
-            
-            foreach (var connection in connections) connection.Value.Session.IsGolden = isGolden;
-            var connectionKeys = connections.Select(c => c.Key);
-            
             await _hubContext.Clients.Clients(connectionKeys).SendAsync("GoldStatusUpdate", isGolden);
             await _hubContext.Clients.Clients(connectionKeys).SendAsync("ChatMessage", new Message
             {
-                Content = $"You are now a golden user. Thank you for buying the {configuration.GoldenPassTitle} pass! Remember to save your session token.",
+                Content = $"You are now a golden user. Thank you for buying the {configuration.GoldenPassTitle} golden pass! Remember to save your session token.",
                 CreatedAt = DateTime.UtcNow,
                 MessageType = "SystemMessage",
                 MessageId = new Random().Next(),
                 SessionId = 0,
                 UserColorDisplay = null,
+            });
+            await _hubContext.Clients.All.SendAsync("ChatMessage", new Message
+            {
+                Content = "GoldenAdded",
+                CreatedAt = DateTime.UtcNow,
+                MessageType = "UserColourChange",
+                SessionId = sessionId,
+                MessageId = new Random().Next()
             });
 
             return Ok();

@@ -15,6 +15,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             using var client = new HttpClient() { Timeout = TimeSpan.FromSeconds(15) };
             var request = GetRequest("health");
             var response = await client.SendAsync(request);
+            response.EnsureSuccessStatusCode();
             var parsedResponse = await response.Content.ReadAsStringAsync();
             using var document = JsonDocument.Parse(parsedResponse);
             var status = document.RootElement.GetProperty("synchronized").GetBoolean();

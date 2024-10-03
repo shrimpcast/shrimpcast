@@ -76,10 +76,12 @@ const RenderChatMessages = (props) => {
                 if (isNameColourChangedType) {
                   const { content } = message,
                     isModAdded = content === "ModAdded",
-                    isModRemoved = content === "ModRemoved";
+                    isModRemoved = content === "ModRemoved",
+                    isGoldenAdded = content === "GoldenAdded";
 
                   if (isModAdded) m.isMod = true;
                   else if (isModRemoved) m.isMod = false;
+                  else if (isGoldenAdded) m.isGolden = true;
                   else m.userColorDisplay = content;
                 }
               });
