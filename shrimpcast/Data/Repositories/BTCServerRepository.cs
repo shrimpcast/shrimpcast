@@ -12,7 +12,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
 
         public async Task<bool> CheckStatus()
         {
-            using var client = new HttpClient() { Timeout = TimeSpan.FromSeconds(5) };
+            using var client = new HttpClient() { Timeout = TimeSpan.FromSeconds(15) };
             var request = GetRequest("health");
             var response = await client.SendAsync(request);
             var parsedResponse = await response.Content.ReadAsStringAsync();
@@ -27,7 +27,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             var configuration = _configurationSingleton.Configuration;
             var identifier = $"{name} [{sessionId}]";
             var description = $"{configuration.GoldenPassTitle} golden pass - {identifier}";
-            using var client = new HttpClient() { Timeout = TimeSpan.FromSeconds(5) };
+            using var client = new HttpClient() { Timeout = TimeSpan.FromSeconds(15) };
             var request = GetRequest($"stores/{configuration.BTCServerStoreId}/invoices", true);
             var payload = "{\"metadata\": {\"itemDesc\": \"{0}\", \"orderId\": \"{1}\"},\"amount\": \"{2}\"}"
                           .Replace("{0}", description)
@@ -46,7 +46,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
         {
             if (!await CheckStatus()) return null; 
             var configuration = _configurationSingleton.Configuration;
-            using var client = new HttpClient() { Timeout = TimeSpan.FromSeconds(5) };
+            using var client = new HttpClient() { Timeout = TimeSpan.FromSeconds(15) };
             var request = GetRequest($"stores/{configuration.BTCServerStoreId}/invoices?orderId={sessionId}");
             var response = await client.SendAsync(request);
             response.EnsureSuccessStatusCode();

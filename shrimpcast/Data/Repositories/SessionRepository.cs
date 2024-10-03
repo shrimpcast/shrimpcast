@@ -195,7 +195,9 @@ namespace shrimpcast.Data.Repositories
         {
             var Session = await GetExistingByIdAsync(sessionId, true);
             Session.IsGolden = true;
-            return await _context.SaveChangesAsync() > 0 ? true : throw new Exception("Could not update record.");
+            await _context.SaveChangesAsync();
+            // Get the updated status in case multiple hooks are fired simultaneously 
+            return (await GetExistingByIdAsync(sessionId, true)).IsGolden ? true : throw new Exception("Could not update record");
         }
     }
 }

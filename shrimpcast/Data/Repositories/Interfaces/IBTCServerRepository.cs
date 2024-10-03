@@ -1,4 +1,3 @@
-using shrimpcast.Entities.DB;
 using shrimpcast.Entities.DTO;
 
 namespace shrimpcast.Data.Repositories.Interfaces

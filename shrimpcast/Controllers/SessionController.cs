@@ -5,6 +5,7 @@ using shrimpcast.Entities;
 using shrimpcast.Entities.DB;
 using shrimpcast.Hubs;
 using shrimpcast.Hubs.Dictionaries;
+using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -105,14 +106,14 @@ namespace shrimpcast.Controllers
                 string computedSignature = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
                 if (computedSignature != receivedSignature.Replace("sha256=", string.Empty)) 
                 {
-                    throw new Exception("Permission denied");
+                    throw new ProtocolViolationException("Permission denied");
                 } 
             }
 
             // Confirm the gold status
             using var document = JsonDocument.Parse(requestBody);
             var orderId = document.RootElement.GetProperty("metadata").GetProperty("orderId").GetString() 
-                          ?? throw new Exception("OrderId must be supplied.");
+                          ?? throw new JsonException("OrderId must be supplied.");
 
             var sessionId = int.Parse(orderId);
             var isGolden = await _sessionRepository.SetGoldStatus(sessionId);
@@ -124,7 +125,7 @@ namespace shrimpcast.Controllers
             await _hubContext.Clients.Clients(connectionKeys).SendAsync("GoldStatusUpdate", isGolden);
             await _hubContext.Clients.Clients(connectionKeys).SendAsync("ChatMessage", new Message
             {
-                Content = $"You are now a golden user. Thanks for buying the {configuration.GoldenPassTitle} pass! Remember to save your session token.",
+                Content = $"You are now a golden user. Thank you for buying the {configuration.GoldenPassTitle} pass! Remember to save your session token.",
                 CreatedAt = DateTime.UtcNow,
                 MessageType = "SystemMessage",
                 MessageId = new Random().Next(),
