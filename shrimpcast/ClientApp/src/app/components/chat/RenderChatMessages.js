@@ -40,7 +40,7 @@ const RenderChatMessages = (props) => {
   const [messages, setMessages] = useState([]),
     [pendingMessages, setPendingMessages] = useState(0),
     [loading, setLoading] = useState(true),
-    { signalR, configuration, bingoButtonExpanded, isAdmin, goldenPassExpanded } = props,
+    { signalR, configuration, bingoButtonExpanded, isAdmin, isGolden, goldenPassExpanded } = props,
     scrollReference = useRef(),
     scrollToBottom = () => {
       scrollReference.current.scrollIntoView();
@@ -158,7 +158,7 @@ const RenderChatMessages = (props) => {
         configuration.showPoll,
         configuration.showBingo,
         bingoButtonExpanded,
-        configuration.showGoldenPassButton && goldenPassExpanded && !isAdmin
+        !isAdmin && !isGolden && configuration.showGoldenPassButton && goldenPassExpanded
       )}
     >
       {loading && (

@@ -27,13 +27,14 @@ namespace shrimpcast.Hubs
         private readonly INotificationRepository _notificationRepository;
         private readonly IEmoteRepository _emoteRepository;
         private readonly IBingoRepository _bingoRepository;
+        private readonly IBTCServerRepository _btcServerRepository;
         private readonly IHubContext<SiteHub> _hubContext;
         private readonly ConfigurationSingleton _configurationSigleton;
         private readonly Connections<SiteHub> _activeConnections;
         private readonly Pings<SiteHub> _pings;
         private readonly BingoSuggestions<SiteHub> _bingoSuggestions;
 
-        public SiteHub(IConfigurationRepository configurationRepository, ISessionRepository sessionRepository, IMessageRepository messageRepository, IBanRepository banRepository, IPollRepository pollRepository, ITorExitNodeRepository torExitNodeRepository, IHubContext<SiteHub> hubContext, ConfigurationSingleton configurationSingleton, Connections<SiteHub> activeConnections, Pings<SiteHub> pings, IOBSCommandsRepository obsCommandsRepository, IAutoModFilterRepository autoModFilterRepository, INotificationRepository notificationRepository, IEmoteRepository emoteRepository, IBingoRepository bingoRepository, IVpnAddressRepository vpnAddressRepository, BingoSuggestions<SiteHub> bingoSuggestions)
+        public SiteHub(IConfigurationRepository configurationRepository, ISessionRepository sessionRepository, IMessageRepository messageRepository, IBanRepository banRepository, IPollRepository pollRepository, ITorExitNodeRepository torExitNodeRepository, IHubContext<SiteHub> hubContext, ConfigurationSingleton configurationSingleton, Connections<SiteHub> activeConnections, Pings<SiteHub> pings, IOBSCommandsRepository obsCommandsRepository, IAutoModFilterRepository autoModFilterRepository, INotificationRepository notificationRepository, IEmoteRepository emoteRepository, IBingoRepository bingoRepository, IVpnAddressRepository vpnAddressRepository, BingoSuggestions<SiteHub> bingoSuggestions, IBTCServerRepository btcServerRepository)
         {
             _configurationRepository = configurationRepository;
             _sessionRepository = sessionRepository;
@@ -52,6 +53,7 @@ namespace shrimpcast.Hubs
             _bingoRepository = bingoRepository;
             _vpnAddressRepository = vpnAddressRepository;
             _bingoSuggestions = bingoSuggestions;
+            _btcServerRepository = btcServerRepository;
         }
 
         private Configuration Configuration => _configurationSigleton.Configuration;
@@ -597,6 +599,7 @@ namespace shrimpcast.Hubs
             unorderedConfig.VAPIDPrivateKeyNotMapped = unorderedConfig.VAPIDPrivateKey;
             unorderedConfig.VAPIDMailNotMapped = unorderedConfig.VAPIDMail;
             unorderedConfig.IPServiceApiKeyNotMapped = unorderedConfig.IPServiceApiKey;
+            unorderedConfig.BTCServerApiKeyNotMapped = unorderedConfig.BTCServerApiKey;
             return new
             {
                 OrderedConfig = Configuration.BuildJSONConfiguration(),
@@ -654,6 +657,22 @@ namespace shrimpcast.Hubs
                 if (ConfirmSeen) Ping.ConfirmedSeen = true;
                 else Ping.ConfirmedReception = true;
             }
+        }
+        #endregion
+
+        #region Golden pass
+        public async Task<string> BeginPurchase()
+        {
+            string? response;
+            try
+            {
+                response = await _btcServerRepository.GenerateInvoice();
+            }
+            catch (Exception ex)
+            {
+                response = $"Error: {ex.Message}";
+            }
+            return response;
         }
         #endregion
 

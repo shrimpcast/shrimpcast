@@ -72,6 +72,7 @@ namespace shrimpcast.Controllers
                 subscribed,
                 isAdmin,
                 ensureCreated.IsMod,
+                ensureCreated.IsGolden,
                 ensureCreated.SessionId,
                 ensureCreated.SessionNames.Last().Name,
                 ensureCreated.SessionToken,

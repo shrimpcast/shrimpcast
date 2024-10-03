@@ -35,7 +35,7 @@ const GoldenPassSx = {
   };
 
 const GoldenPassButton = (props) => {
-  const { isAdmin, configuration, goldenPassExpanded, setGoldenPassExpanded } = props,
+  const { isAdmin, configuration, goldenPassExpanded, setGoldenPassExpanded, isGolden } = props,
     { showGoldenPassButton } = configuration,
     [showDialog, setShowDialog] = useState(false),
     openDialog = () => setShowDialog(true),
@@ -45,7 +45,7 @@ const GoldenPassButton = (props) => {
       : configuration.streamTitle.toUpperCase(),
     closeButton = () => setGoldenPassExpanded(false);
 
-  return showGoldenPassButton && !isAdmin && goldenPassExpanded ? (
+  return !isAdmin && !isGolden && showGoldenPassButton && goldenPassExpanded ? (
     <>
       <Box sx={GoldenPassSx} onClick={openDialog} className="rainbow-background">
         <Typography className="noselect" variant="caption" sx={TextSx}>

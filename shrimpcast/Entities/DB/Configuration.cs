@@ -146,6 +146,15 @@ namespace shrimpcast.Entities.DB
 
         public required string GoldenPassTitle { get; set; }
 
+        public required string BTCServerInstanceURL { get; set; }
+
+        [JsonIgnore]
+        public string? BTCServerApiKey { get; set; } = string.Empty;
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [NotMapped]
+        public string? BTCServerApiKeyNotMapped { get; set; }
+
         public object Clone() => MemberwiseClone();
     }
 
@@ -278,6 +287,8 @@ namespace shrimpcast.Entities.DB
                         new { name = nameof(config.ShowGoldenPassButton).ToLower(), label = "Enable golden pass purchases", value = config.ShowGoldenPassButton },
                         new { name = nameof(config.GoldenPassValue).ToLower(), label = "Golden pass value (USD)", value = config.GoldenPassValue },
                         new { name = nameof(config.GoldenPassTitle).ToLower(), label = "Golden pass title", value = config.GoldenPassTitle },
+                        new { name = nameof(config.BTCServerInstanceURL).ToLower(), label = "BTCServer instance URL", value = config.BTCServerInstanceURL },
+                        new { name = nameof(config.BTCServerApiKeyNotMapped).ToLower(), label = "BTCServer API key", value = config.BTCServerApiKey },
                     }
                 }
             };

@@ -26,7 +26,7 @@ const PollButtonSx = {
 const ActivePoll = (props) => {
   const [show, setShow] = useState(true),
     toggleStatus = () => setShow(!show),
-    { isAdmin, configuration, goldenPassExpanded } = props,
+    { isAdmin, isGolden, configuration, goldenPassExpanded } = props,
     { showPoll, showGoldenPassButton } = configuration;
 
   useEffect(() => {
@@ -48,7 +48,7 @@ const ActivePoll = (props) => {
       </Paper>
       <Slide direction="left" in={show}>
         <Box
-          sx={DrawerSx(showGoldenPassButton && goldenPassExpanded && !isAdmin ? 56 + 20 : 56)}
+          sx={DrawerSx(!isAdmin && !isGolden && showGoldenPassButton && goldenPassExpanded ? 56 + 20 : 56)}
           className="scrollbar-custom"
         >
           <Poll {...props} />
