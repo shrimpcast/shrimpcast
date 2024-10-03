@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import DialogTitle from "@mui/material/DialogTitle";
 import Dialog from "@mui/material/Dialog";
 import { Box, DialogContent, Divider, Typography, Button, CircularProgress, Snackbar, Alert } from "@mui/material";
 import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
 import TokenManager from "../../../managers/TokenManager";
+import InvoiceTable from "./InvoiceTable";
 
 const DialogSx = {
     borderRadius: "10px",
@@ -34,9 +35,16 @@ const DialogSx = {
 const GoldenPassDialog = (props) => {
   const { closeDialog, configuration, goldenPassTitle, signalR } = props,
     [loading, setLoading] = useState(false),
+    [invoices, setInvoices] = useState(null),
     [toastMessage, setToastMessage] = useState(""),
     [showToast, setShowToast] = useState(false),
     closeToast = () => setShowToast(false),
+    [checkoutUrl, setCheckoutUrl] = useState(""),
+    closeCheckoutDialog = () => setCheckoutUrl(""),
+    getInvoices = async () => {
+      const invoices = await TokenManager.GetSessionInvoices(signalR);
+      setInvoices(invoices);
+    },
     beginPurchase = async () => {
       setLoading(true);
       const response = await TokenManager.BeginGoldenPassPurchase(signalR);
@@ -44,8 +52,17 @@ const GoldenPassDialog = (props) => {
       if (!response || response.includes("Error")) {
         setToastMessage(response || "Error: could not complete purchase.");
         setShowToast(true);
+        return;
       }
+
+      setCheckoutUrl(response);
+      getInvoices();
     };
+
+  useEffect(() => {
+    getInvoices();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <>
@@ -63,7 +80,6 @@ const GoldenPassDialog = (props) => {
             Buy the {goldenPassTitle} golden pass to support the site! Enjoy benefits such as:
           </Typography>
           <Box marginTop="10px" mb={3}>
-            <Typography variant="body2">- Priority voting (x2)</Typography>
             <Typography variant="body2" className="golden-glow">
               - Glowie username
             </Typography>
@@ -76,6 +92,8 @@ const GoldenPassDialog = (props) => {
               {loading && <CircularProgress color="primary" sx={{ ml: "10px" }} size={14} />}
             </Button>
           </Box>
+
+          <InvoiceTable invoices={invoices} />
         </DialogContent>
       </Dialog>
       {showToast && (
@@ -88,6 +106,11 @@ const GoldenPassDialog = (props) => {
             {toastMessage}
           </Alert>
         </Snackbar>
+      )}
+      {checkoutUrl && (
+        <Dialog open={true} onClose={closeCheckoutDialog} sx={{ borderRadius: "5px" }}>
+          <iframe style={{ height: "520px" }} src={checkoutUrl} title="checkout-page" />
+        </Dialog>
       )}
     </>
   );

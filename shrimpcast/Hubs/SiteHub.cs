@@ -10,6 +10,7 @@ using shrimpcast.Hubs.Dictionaries;
 using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
 using Message = shrimpcast.Entities.DB.Message;
+using shrimpcast.Entities.DTO;
 
 namespace shrimpcast.Hubs
 {
@@ -172,6 +173,7 @@ namespace shrimpcast.Hubs
             addedMessage.SentBy = session.SessionNames.Last().Name;
             addedMessage.IsAdmin = session.IsAdmin;
             addedMessage.IsMod = session.IsMod;
+            addedMessage.IsGolden = session.IsGolden;
             addedMessage.RemoteAddress = string.Empty;
             addedMessage.UserColorDisplay = session.UserDisplayColor;
             await NotifyNewMessage(addedMessage);
@@ -600,6 +602,7 @@ namespace shrimpcast.Hubs
             unorderedConfig.VAPIDMailNotMapped = unorderedConfig.VAPIDMail;
             unorderedConfig.IPServiceApiKeyNotMapped = unorderedConfig.IPServiceApiKey;
             unorderedConfig.BTCServerApiKeyNotMapped = unorderedConfig.BTCServerApiKey;
+            unorderedConfig.BTCServerWebhookSecretNotMapped = unorderedConfig.BTCServerWebhookSecret;
             return new
             {
                 OrderedConfig = Configuration.BuildJSONConfiguration(),
@@ -666,7 +669,8 @@ namespace shrimpcast.Hubs
             string? response;
             try
             {
-                response = await _btcServerRepository.GenerateInvoice();
+                var session = GetCurrentConnection().Session;
+                response = await _btcServerRepository.GenerateInvoice(session.SessionNames.Last().Name, session.SessionId);
             }
             catch (Exception ex)
             {
@@ -674,6 +678,9 @@ namespace shrimpcast.Hubs
             }
             return response;
         }
+
+        public async Task<List<InvoiceDTO>?> GetSessionInvoices() =>
+            await _btcServerRepository.GetInvoices(GetCurrentConnection().Session.SessionId);
         #endregion
 
         #region Private methods
@@ -733,6 +740,17 @@ namespace shrimpcast.Hubs
                 return "Chat is temporarily disabled.";
             }
 
+            var MutedUntil = connection.Session.MutedUntil.GetValueOrDefault();
+            var difference = DateTime.UtcNow.Subtract(MutedUntil).TotalMinutes;
+            if (difference < 0)
+            {
+                var timeDifference = MutedUntil.Subtract(DateTime.UtcNow);
+                var minuteDifference = Math.Ceiling(timeDifference.TotalMinutes);
+                return $"You have been muted for {minuteDifference} {(minuteDifference == 1 ? "minute" : "minutes")}.";
+            }
+
+            if (connection.Session.IsGolden) return null;
+
             if (Configuration.EnableVerifiedMode && !connection.Session.IsVerified)
             {
                 return "Error: Chat is currently restricted to verified users only.";
@@ -753,15 +771,6 @@ namespace shrimpcast.Hubs
             {
                 var diff = Math.Ceiling(requiredTime - secondsDifference);
                 return $"You need to wait {diff} more {(diff == 1 ? "second" : "seconds")}.";
-            }
-
-            var MutedUntil = connection.Session.MutedUntil.GetValueOrDefault();
-            var difference = DateTime.UtcNow.Subtract(MutedUntil).TotalMinutes;
-            if (difference < 0)
-            {
-                var timeDifference = MutedUntil.Subtract(DateTime.UtcNow);
-                var minuteDifference = Math.Ceiling(timeDifference.TotalMinutes);
-                return $"You have been muted for {minuteDifference} {(minuteDifference == 1 ? "minute" : "minutes")}.";
             }
 
             if (connection.Session.IsVerified) return null;

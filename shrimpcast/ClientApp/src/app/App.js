@@ -92,6 +92,13 @@ const App = () => {
       }))
     );
 
+    connection.on(SignalRManager.events.goldStatusUpdate, (isGolden) =>
+      setConnectionDataState((state) => ({
+        ...state,
+        isGolden,
+      }))
+    );
+
     connection.on(SignalRManager.events.emoteAdded, (emote) =>
       setConnectionDataState((state) => ({
         ...state,

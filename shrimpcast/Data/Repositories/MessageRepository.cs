@@ -34,6 +34,7 @@ namespace shrimpcast.Data.Repositories
                              UserColorDisplay = session.UserDisplayColor,
                              IsAdmin = session.IsAdmin,
                              IsMod = session.IsMod,
+                             IsGolden = session.IsGolden,
                              SentBy = (from name in _context.SessionNames where name.SessionId == message.SessionId orderby name.CreatedAt select name.Name).Last(),
                          }).Take(MaxMessages);
             var result = await query.AsNoTracking().ToListAsync();

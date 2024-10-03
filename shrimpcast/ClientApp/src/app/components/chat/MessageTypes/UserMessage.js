@@ -63,7 +63,7 @@ const UserMessage = React.memo((props) => {
   const [showPromptDialog, setShowPromptDialog] = useState(false),
     openConfirmPrompt = () => setShowPromptDialog(true),
     closeConfirmPrompt = () => setShowPromptDialog(false),
-    { isAdmin, isMod, maxLengthTruncation } = props,
+    { isAdmin, isMod, isGolden, maxLengthTruncation } = props,
     escapedName = LocalStorageManager.getName().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
     // Use lookahead assertion to ensure we're matching the full name
     nameRegex = `@${escapedName}(?:\\s|$|\\.)`,
@@ -102,7 +102,7 @@ const UserMessage = React.memo((props) => {
           <Typography
             sx={TextSx(props.userColorDisplay, true)}
             className={`${props.enableChristmasTheme ? "santa-hat" : null} ${
-              isAdmin ? "admin-glow" : isMod ? "mod-glow" : null
+              isAdmin ? "admin-glow" : isMod ? "mod-glow" : isGolden ? "golden-glow" : null
             }`}
           >
             {isAdmin && <VerifiedUserIcon sx={VerifiedUserIconSx} />}

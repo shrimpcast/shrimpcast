@@ -148,6 +148,15 @@ namespace shrimpcast.Entities.DB
 
         public required string BTCServerInstanceURL { get; set; }
 
+        public required string BTCServerStoreId { get; set; }
+
+        [JsonIgnore]
+        public string? BTCServerWebhookSecret { get; set; } = string.Empty;
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [NotMapped]
+        public string? BTCServerWebhookSecretNotMapped { get; set; }
+
         [JsonIgnore]
         public string? BTCServerApiKey { get; set; } = string.Empty;
 
@@ -288,7 +297,9 @@ namespace shrimpcast.Entities.DB
                         new { name = nameof(config.GoldenPassValue).ToLower(), label = "Golden pass value (USD)", value = config.GoldenPassValue },
                         new { name = nameof(config.GoldenPassTitle).ToLower(), label = "Golden pass title", value = config.GoldenPassTitle },
                         new { name = nameof(config.BTCServerInstanceURL).ToLower(), label = "BTCServer instance URL", value = config.BTCServerInstanceURL },
+                        new { name = nameof(config.BTCServerStoreId).ToLower(), label = "BTCServer store ID", value = config.BTCServerStoreId },
                         new { name = nameof(config.BTCServerApiKeyNotMapped).ToLower(), label = "BTCServer API key", value = config.BTCServerApiKey },
+                        new { name = nameof(config.BTCServerWebhookSecretNotMapped).ToLower(), label = "BTCServer webhook secret", value = config.BTCServerWebhookSecret },
                     }
                 }
             };

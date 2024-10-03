@@ -22,6 +22,7 @@ class SignalRManager {
     bingoOptionAdded: "BingoOptionAdded",
     bingoOptionRemoved: "BingoOptionRemoved",
     bingoReset: "BingoReset",
+    goldStatusUpdate: "GoldStatusUpdate",
   };
 
   static async connect() {

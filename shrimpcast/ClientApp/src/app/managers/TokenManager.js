@@ -31,6 +31,11 @@ class TokenManager {
     return response;
   }
 
+  static async GetSessionInvoices(signalR) {
+    const response = await signalR.invoke("GetSessionInvoices").catch((ex) => console.log(ex));
+    return response || [];
+  }
+
   static async SaveData(token, name) {
     token && LocalStorageManager.saveToken(token);
     name && LocalStorageManager.saveName(name);

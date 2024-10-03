@@ -190,6 +190,13 @@ namespace shrimpcast.Data.Repositories
             Session.IsVerified = shouldVerify;
             return await _context.SaveChangesAsync() > 0 ? true : throw new Exception("Could not update record.");
         }
+
+        public async Task<bool> SetGoldStatus(int sessionId)
+        {
+            var Session = await GetExistingByIdAsync(sessionId, true);
+            Session.IsGolden = true;
+            return await _context.SaveChangesAsync() > 0 ? true : throw new Exception("Could not update record.");
+        }
     }
 }
 

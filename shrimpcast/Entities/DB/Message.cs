@@ -42,6 +42,9 @@ namespace shrimpcast.Entities.DB
 
         [NotMapped]
         public bool IsMod { get; set; }
+
+        [NotMapped]
+        public bool IsGolden { get; set; }
     }
 }
 
