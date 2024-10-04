@@ -30,6 +30,11 @@ const DialogSx = {
     "&:hover": {
       bgcolor: "#e68900",
     },
+  },
+  InvoiceSx = {
+    height: "520px",
+    border: "none",
+    width: "334px",
   };
 
 const GoldenPassDialog = (props) => {
@@ -110,7 +115,7 @@ const GoldenPassDialog = (props) => {
       )}
       {checkoutUrl && (
         <Dialog open={true} onClose={closeCheckoutDialog} sx={{ borderRadius: "5px" }}>
-          <iframe style={{ height: "520px" }} src={checkoutUrl} title="checkout-page" />
+          <iframe style={InvoiceSx} src={checkoutUrl} title="checkout-page" />
         </Dialog>
       )}
     </>

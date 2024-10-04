@@ -5,9 +5,8 @@ using System.Text.Json;
 
 namespace shrimpcast.Data.Repositories.Interfaces
 {
-    public class BTCServerRepository(APPContext context, ConfigurationSingleton configurationSingleton) : IBTCServerRepository
+    public class BTCServerRepository(ConfigurationSingleton configurationSingleton) : IBTCServerRepository
     {
-        private readonly APPContext _context = context;
         private readonly ConfigurationSingleton _configurationSingleton = configurationSingleton;
 
         public async Task<bool> CheckStatus()

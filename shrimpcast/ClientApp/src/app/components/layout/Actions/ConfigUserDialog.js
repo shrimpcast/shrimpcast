@@ -84,7 +84,7 @@ const ConfigUserDialog = (props) => {
         <SettingsIcon sx={{ color: "primary.500" }} />
       </IconButton>
       {config && (
-        <Dialog open={open} onClose={setClosed} maxWidth={"lg"} fullWidth>
+        <Dialog open={open} onClose={setClosed} maxWidth={"lg"}>
           <DialogTitle sx={{ fontSize: "24px", pb: "7.5px" }}>
             <Box display="flex" width="100%" mb={"10px"}>
               Configuration
