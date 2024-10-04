@@ -140,6 +140,30 @@ namespace shrimpcast.Entities.DB
         [NotMapped]
         public string? VAPIDMailNotMapped { get; set; }
 
+        public required bool ShowGoldenPassButton { get; set; }
+
+        public required int GoldenPassValue { get; set; }
+
+        public required string GoldenPassTitle { get; set; }
+
+        public required string BTCServerInstanceURL { get; set; }
+
+        public required string BTCServerStoreId { get; set; }
+
+        [JsonIgnore]
+        public string? BTCServerWebhookSecret { get; set; } = string.Empty;
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [NotMapped]
+        public string? BTCServerWebhookSecretNotMapped { get; set; }
+
+        [JsonIgnore]
+        public string? BTCServerApiKey { get; set; } = string.Empty;
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [NotMapped]
+        public string? BTCServerApiKeyNotMapped { get; set; }
+
         public object Clone() => MemberwiseClone();
     }
 
@@ -153,6 +177,7 @@ namespace shrimpcast.Entities.DB
                     values = new object[]
                     {
                         new { name = nameof(config.HideStreamTitle).ToLower(), label = "Hide stream title", value = config.HideStreamTitle },
+                        new { name = nameof(config.ShowGoldenPassButton).ToLower(), label = "Enable golden pass", value = config.ShowGoldenPassButton },
                         new { name = nameof(config.MaxConnectionsPerIP).ToLower(), label = "Max connections per IP", value = config.MaxConnectionsPerIP },
                         new { name = nameof(config.MinABTimeInMs).ToLower(), label = "Min auto-mod time (ms)", value = config.MinABTimeInMs },
                         new { name = nameof(config.MaxABTimeInMs).ToLower(), label = "Max auto-mod time (ms)", value = config.MaxABTimeInMs },
@@ -261,6 +286,20 @@ namespace shrimpcast.Entities.DB
                         new { name = nameof(config.VAPIDPublicKey).ToLower(), label = "VAPID Public key", value = config.VAPIDPublicKey },
                         new { name = nameof(config.VAPIDPrivateKeyNotMapped).ToLower(), label = "VAPID Private key", value = config.VAPIDPrivateKey },
                         new { name = nameof(config.VAPIDMailNotMapped).ToLower(), label = "VAPID Mail", value = config.VAPIDMail },
+                    }
+                },
+                new
+                {
+                    name = "Golden pass",
+                    values = new object[]
+                    {
+                        new { name = nameof(config.ShowGoldenPassButton).ToLower(), label = "Enable golden pass purchases", value = config.ShowGoldenPassButton },
+                        new { name = nameof(config.GoldenPassValue).ToLower(), label = "Golden pass value (USD)", value = config.GoldenPassValue },
+                        new { name = nameof(config.GoldenPassTitle).ToLower(), label = "Golden pass title", value = config.GoldenPassTitle },
+                        new { name = nameof(config.BTCServerInstanceURL).ToLower(), label = "BTCServer instance URL", value = config.BTCServerInstanceURL },
+                        new { name = nameof(config.BTCServerStoreId).ToLower(), label = "BTCServer store ID", value = config.BTCServerStoreId },
+                        new { name = nameof(config.BTCServerApiKeyNotMapped).ToLower(), label = "BTCServer API key", value = config.BTCServerApiKey },
+                        new { name = nameof(config.BTCServerWebhookSecretNotMapped).ToLower(), label = "BTCServer webhook secret", value = config.BTCServerWebhookSecret },
                     }
                 }
             };

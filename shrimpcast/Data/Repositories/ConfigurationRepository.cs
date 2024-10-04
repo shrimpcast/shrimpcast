@@ -25,6 +25,8 @@ namespace shrimpcast.Data.Repositories
             configuration.VAPIDPrivateKey = configuration.VAPIDPrivateKeyNotMapped;
             configuration.VAPIDMail = configuration.VAPIDMailNotMapped;
             configuration.IPServiceApiKey = configuration.IPServiceApiKeyNotMapped;
+            configuration.BTCServerApiKey = configuration.BTCServerApiKeyNotMapped;
+            configuration.BTCServerWebhookSecret = configuration.BTCServerWebhookSecretNotMapped;
             if (configuration.MaxConnectionsPerIP < 1) configuration.MaxConnectionsPerIP = 1;
             _context.Entry(config).CurrentValues.SetValues(configuration);
             var updated = await _context.SaveChangesAsync();
@@ -33,6 +35,8 @@ namespace shrimpcast.Data.Repositories
             configuration.VAPIDPrivateKeyNotMapped = null;
             configuration.VAPIDMailNotMapped = null;
             configuration.IPServiceApiKeyNotMapped = null;
+            configuration.BTCServerApiKeyNotMapped = null;
+            configuration.BTCServerWebhookSecretNotMapped = null;
             return updated > 0;
         }
     }

@@ -8,11 +8,11 @@ import SignalRManager from "../../managers/SignalRManager";
 import LocalStorageManager from "../../managers/LocalStorageManager";
 import ChatActionsManager from "../../managers/ChatActionsManager";
 
-const ChatMessagesSx = (activePoll, activeBingo, bingoButtonExpanded) => ({
+const ChatMessagesSx = (activePoll, activeBingo, bingoButtonExpanded, showGoldenPassButton) => ({
     width: "100%",
-    height: `calc(100% - 84px${activePoll ? " - 35px" : ""}${
+    height: `calc(100% - 56px - 28px${activePoll ? " - 35px" : ""}${
       activeBingo ? ` - ${bingoButtonExpanded ? 35 : 10}px` : ""
-    })`,
+    }${showGoldenPassButton ? " - 20px" : ""})`,
     overflowY: "scroll",
   }),
   Loader = {
@@ -40,7 +40,7 @@ const RenderChatMessages = (props) => {
   const [messages, setMessages] = useState([]),
     [pendingMessages, setPendingMessages] = useState(0),
     [loading, setLoading] = useState(true),
-    { signalR, configuration, bingoButtonExpanded } = props,
+    { signalR, configuration, bingoButtonExpanded, isAdmin, isGolden, goldenPassExpanded } = props,
     scrollReference = useRef(),
     scrollToBottom = () => {
       scrollReference.current.scrollIntoView();
@@ -76,10 +76,12 @@ const RenderChatMessages = (props) => {
                 if (isNameColourChangedType) {
                   const { content } = message,
                     isModAdded = content === "ModAdded",
-                    isModRemoved = content === "ModRemoved";
+                    isModRemoved = content === "ModRemoved",
+                    isGoldenAdded = content === "GoldenAdded";
 
                   if (isModAdded) m.isMod = true;
                   else if (isModRemoved) m.isMod = false;
+                  else if (isGoldenAdded) m.isGolden = true;
                   else m.userColorDisplay = content;
                 }
               });
@@ -153,7 +155,14 @@ const RenderChatMessages = (props) => {
   }, [messages]);
 
   return (
-    <Box sx={ChatMessagesSx(configuration.showPoll, configuration.showBingo, bingoButtonExpanded)}>
+    <Box
+      sx={ChatMessagesSx(
+        configuration.showPoll,
+        configuration.showBingo,
+        bingoButtonExpanded,
+        !isAdmin && !isGolden && configuration.showGoldenPassButton && goldenPassExpanded
+      )}
+    >
       {loading && (
         <Box sx={Loader}>
           <CircularProgress size={50} color="secondary" />

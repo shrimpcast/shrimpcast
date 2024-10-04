@@ -54,6 +54,7 @@ builder.Services.AddScoped<IAutoModFilterRepository, AutoModFilterRepository>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<IEmoteRepository, EmoteRepository>();
 builder.Services.AddScoped<IBingoRepository, BingoRepository>();
+builder.Services.AddScoped<IBTCServerRepository, BTCServerRepository>();
 builder.Services.AddHangfire(configuration => configuration
                 .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
                 .UseSimpleAssemblyNameTypeSerializer()

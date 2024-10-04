@@ -19,6 +19,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
         Task<bool> ToggleModStatus(int sessionId, bool shouldAdd);
         Task<List<object>> ListMods();
         Task<bool> ToggleVerifiedStatus(int sessionId, bool shouldVerify);
+        Task<bool> SetGoldStatus(int sessionId);
     }
 }
 

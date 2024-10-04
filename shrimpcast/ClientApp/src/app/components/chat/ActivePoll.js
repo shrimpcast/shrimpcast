@@ -14,19 +14,20 @@ const PollButtonSx = {
     display: "flex",
     justifyContent: "center",
   },
-  DrawerSx = {
-    maxHeight: "min(calc(100% - 63px - 56px), 225px)",
+  DrawerSx = (bottomHeight) => ({
+    maxHeight: `min(calc(100% - 63px - ${bottomHeight}px), 225px)`,
     backgroundColor: "primary.800",
     position: "absolute",
     width: "100%",
     zIndex: 2,
     overflowY: "auto",
-  };
+  });
 
 const ActivePoll = (props) => {
   const [show, setShow] = useState(true),
     toggleStatus = () => setShow(!show),
-    { showPoll } = props.configuration;
+    { isAdmin, isGolden, configuration, goldenPassExpanded } = props,
+    { showPoll, showGoldenPassButton } = configuration;
 
   useEffect(() => {
     if (showPoll) setShow(true);
@@ -46,7 +47,10 @@ const ActivePoll = (props) => {
         </Button>
       </Paper>
       <Slide direction="left" in={show}>
-        <Box sx={DrawerSx} className="scrollbar-custom">
+        <Box
+          sx={DrawerSx(!isAdmin && !isGolden && showGoldenPassButton && goldenPassExpanded ? 56 + 20 : 56)}
+          className="scrollbar-custom"
+        >
           <Poll {...props} />
         </Box>
       </Slide>
