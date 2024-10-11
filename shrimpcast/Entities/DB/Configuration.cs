@@ -164,6 +164,12 @@ namespace shrimpcast.Entities.DB
         [NotMapped]
         public string? BTCServerApiKeyNotMapped { get; set; }
 
+        public required string PalettePrimary { get; set; }
+
+        public required string PaletteSecondary { get; set; }
+
+        public required bool UseDarkTheme { get; set; }
+
         public object Clone() => MemberwiseClone();
     }
 
@@ -177,7 +183,6 @@ namespace shrimpcast.Entities.DB
                     values = new object[]
                     {
                         new { name = nameof(config.HideStreamTitle).ToLower(), label = "Hide stream title", value = config.HideStreamTitle },
-                        new { name = nameof(config.ShowGoldenPassButton).ToLower(), label = "Enable golden pass", value = config.ShowGoldenPassButton },
                         new { name = nameof(config.MaxConnectionsPerIP).ToLower(), label = "Max connections per IP", value = config.MaxConnectionsPerIP },
                         new { name = nameof(config.MinABTimeInMs).ToLower(), label = "Min auto-mod time (ms)", value = config.MinABTimeInMs },
                         new { name = nameof(config.MaxABTimeInMs).ToLower(), label = "Max auto-mod time (ms)", value = config.MaxABTimeInMs },
@@ -276,6 +281,9 @@ namespace shrimpcast.Entities.DB
                         new { name = nameof(config.EnableFireworks).ToLower(), label = "Enable fireworks", value = config.EnableFireworks },
                         new { name = nameof(config.EnableChristmasTheme).ToLower(), label = "Enable christmas theme", value = config.EnableChristmasTheme },
                         new { name = nameof(config.SnowflakeCount).ToLower(), label = "Christmas theme snowflake count", value = config.SnowflakeCount },
+                        new { name = nameof(config.UseDarkTheme).ToLower(), label = "Use dark contrast (recommended)", value = config.UseDarkTheme },
+                        new { name = nameof(config.PalettePrimary).ToLower(), label = "Primary color", value = config.PalettePrimary },
+                        new { name = nameof(config.PaletteSecondary).ToLower(), label = "Secondary color", value = config.PaletteSecondary },
                     }
                 },
                 new

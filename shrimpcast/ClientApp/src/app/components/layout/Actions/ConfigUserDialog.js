@@ -1,6 +1,6 @@
 import DialogTitle from "@mui/material/DialogTitle";
 import Dialog from "@mui/material/Dialog";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -16,6 +16,7 @@ import {
 import SettingsIcon from "@mui/icons-material/Settings";
 import AdminActionsManager from "../../../managers/AdminActionsManager";
 import TabPanel from "../TabPanel";
+import ColourPicker from "../../others/ColourPicker";
 
 const a11yProps = (index) => {
   return {
@@ -71,7 +72,18 @@ const ConfigUserDialog = (props) => {
       const hours = padStart(date.getHours());
       const minutes = padStart(date.getMinutes());
       return `${year}-${month}-${day}T${hours}:${minutes}`;
-    };
+    },
+    themeColors = (() => {
+      const colors = require("@mui/material/colors");
+      const parsedColors = Object.keys(colors)
+        .filter((color) => colors[color][500])
+        .map((color, i) => ({
+          nameColourId: i,
+          name: color,
+          colourHex: colors[color][500],
+        }));
+      return parsedColors;
+    })();
 
   useEffect(() => {
     if (open) fetchParsedConfig();
@@ -124,7 +136,7 @@ const ConfigUserDialog = (props) => {
                       type="number"
                       sx={{ mb: "10px", display: "block" }}
                     />
-                  ) : (
+                  ) : !config.colorPickerKeys.includes(configItem.name) ? (
                     <TextField
                       key={configItem.name}
                       onChange={(e) => updateConfig(e.target.value, configItem)}
@@ -138,6 +150,22 @@ const ConfigUserDialog = (props) => {
                       type={configItem.name !== config.openKey ? "text" : "datetime-local"}
                       sx={{ width: configItem.name !== config.openKey ? "100%" : "auto", marginBottom: "10px" }}
                     />
+                  ) : (
+                    <Box sx={{ mb: "10px" }} key={configItem.name}>
+                      <ColourPicker
+                        userDisplayColor={
+                          themeColors.find((tc) => tc.name === config.unorderedConfig[configItem.name])?.colourHex
+                        }
+                        colours={themeColors}
+                        executeCallback={(nameColourId) => {
+                          updateConfig(themeColors[nameColourId]?.name, configItem);
+                          return themeColors[nameColourId]?.colourHex;
+                        }}
+                        text={`${configItem.label} (${config.unorderedConfig[configItem.name]})`}
+                        width="100%"
+                        useBorderRadius
+                      />
+                    </Box>
                   )
                 )}
               </TabPanel>

@@ -58,8 +58,14 @@ namespace shrimpcast.Controllers
                 if (message != null) return new
                 {
                     version = Constants.BACKEND_VERSION,
-                    configuration = new { configuration.StreamTitle },
                     message,
+                    configuration = new
+                    {
+                        configuration.StreamTitle,
+                        configuration.PalettePrimary,
+                        configuration.PaletteSecondary,
+                        configuration.UseDarkTheme,
+                    },
                 };
             }
 

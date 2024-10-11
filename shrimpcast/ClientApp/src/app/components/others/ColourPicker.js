@@ -1,8 +1,7 @@
 import * as React from "react";
 import ClickAwayListener from "@mui/material/ClickAwayListener";
-import { Box, IconButton, Paper } from "@mui/material";
+import { Box, IconButton, Paper, Typography } from "@mui/material";
 import { useState } from "react";
-import ChatActionsManager from "../../../managers/ChatActionsManager";
 import ColorLensIcon from "@mui/icons-material/ColorLens";
 
 const ColoursWrapperSx = {
@@ -31,15 +30,21 @@ const ColoursWrapperSx = {
     ml: "7.5px",
     mb: "7.5px",
     border: selected ? "1px solid #f44336" : "none",
+  }),
+  IconButtonSx = (userDisplayColor, width, useBorderRadius) => ({
+    borderRadius: useBorderRadius ? "5px" : "1px",
+    backgroundColor: userDisplayColor,
+    width: width ? width : "auto",
   });
 
-const Colours = (props) => {
-  const [userDisplayColor, setUserDisplayColor] = useState(props.userDisplayColor),
+const ColourPicker = (props) => {
+  const { colours, executeCallback, text, width, useBorderRadius } = props,
+    [userDisplayColor, setUserDisplayColor] = useState(props.userDisplayColor),
     [showColours, setShowColours] = useState(false),
     toggleState = () => setShowColours(!showColours),
     handleClose = () => setShowColours(false),
     changeColour = async (nameColourId) => {
-      let colourChanged = await ChatActionsManager.ChangeColour(props.signalR, nameColourId);
+      const colourChanged = await executeCallback(nameColourId);
       if (!colourChanged) return;
       setUserDisplayColor(colourChanged);
       handleClose();
@@ -51,15 +56,20 @@ const Colours = (props) => {
         onClick={toggleState}
         type="button"
         size="small"
-        sx={{ borderRadius: "1px", backgroundColor: userDisplayColor }}
+        sx={IconButtonSx(userDisplayColor, width, useBorderRadius)}
       >
         <ColorLensIcon />
+        {text && (
+          <Typography mt="2.5px" ml="5px">
+            {text}
+          </Typography>
+        )}
       </IconButton>
       {showColours && (
         <ClickAwayListener onClickAway={handleClose}>
           <Paper sx={ColoursWrapperSx} elevation={2}>
             <Box sx={ColoursSx}>
-              {props.colours.map((colour) => (
+              {colours.map((colour) => (
                 <IconButton
                   onClick={() => changeColour(colour.nameColourId)}
                   key={colour.nameColourId}
@@ -76,4 +86,4 @@ const Colours = (props) => {
   );
 };
 
-export default Colours;
+export default ColourPicker;

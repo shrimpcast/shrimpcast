@@ -6,8 +6,7 @@ import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 import { ThemeProvider } from "@emotion/react";
-import { Alert, Snackbar, createTheme } from "@mui/material";
-import { orange, blueGrey } from "@mui/material/colors";
+import { Alert, Snackbar } from "@mui/material";
 import { useState } from "react";
 import SignalRManager from "./managers/SignalRManager";
 import { useEffect } from "react";
@@ -17,26 +16,7 @@ import TokenManager from "./managers/TokenManager";
 import { HelmetProvider, Helmet } from "react-helmet-async";
 import { ErrorBoundary } from "react-error-boundary";
 import FallbackError from "./components/layout/FallbackError";
-
-const theme = createTheme({
-  palette: {
-    mode: "dark",
-    primary: blueGrey,
-    secondary: orange,
-    background: {
-      default: blueGrey[900],
-    },
-  },
-  breakpoints: {
-    values: {
-      xs: 0,
-      sm: 600,
-      md: 900,
-      lg: 1200,
-      xl: 1600,
-    },
-  },
-});
+import makeTheme from "./theme/makeTheme";
 
 const App = () => {
   const [loading, setLoading] = useState(true),
@@ -149,7 +129,7 @@ const App = () => {
   }, []);
 
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={makeTheme(connectionDataState?.configuration)}>
       <CssBaseline />
       <HelmetProvider>
         <Helmet>
