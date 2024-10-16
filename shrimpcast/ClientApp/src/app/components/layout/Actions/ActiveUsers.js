@@ -20,11 +20,18 @@ const ActiveUsers = (props) => {
           const userExists = users.find((existingUser) => existingUser.sessionId === user.sessionId);
           return userExists ? users : users.concat(user);
         }),
-      removeUser = (sessionId) => setUsers((users) => users.filter((user) => user.sessionId !== sessionId));
+      removeUser = (sessionId) => setUsers((users) => users.filter((user) => user.sessionId !== sessionId)),
+      nameChange = ({ sessionId, newName }) =>
+        setUsers((users) =>
+          users.map((existingUser) =>
+            existingUser.sessionId !== sessionId ? existingUser : { ...existingUser, name: newName }
+          )
+        );
 
     const getUsers = async () => {
       signalR.on(SignalRManager.events.userConnected, addUser);
       signalR.on(SignalRManager.events.userDisconnected, removeUser);
+      signalR.on(SignalRManager.events.nameChange, nameChange);
       const activeUsers = await AdminActionsManager.GetActiveUsers(signalR);
       setUsers(activeUsers || []);
     };
@@ -33,6 +40,7 @@ const ActiveUsers = (props) => {
     return () => {
       signalR.off(SignalRManager.events.userConnected);
       signalR.off(SignalRManager.events.userDisconnected);
+      signalR.off(SignalRManager.events.nameChange);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

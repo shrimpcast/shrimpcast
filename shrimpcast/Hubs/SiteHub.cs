@@ -145,6 +145,15 @@ namespace shrimpcast.Hubs
             addedMessage.RemoteAddress = string.Empty;
             addedMessage.UserColorDisplay = string.Empty;
             await NotifyNewMessage(addedMessage);
+            await Clients.Clients(GetAdminSessions()).SendAsync("NameChange", new
+            {
+                addedMessage.SessionId,
+                newName,
+            });
+
+            var shouldBan = await _autoModFilterRepository.Contains(addedMessage.Content);
+            if (shouldBan) BackgroundJob.Enqueue(() => PerformBackgroundBan(addedMessage.SentBy, addedMessage.SessionId, Constants.FIREANDFORGET_TOKEN));
+
             return newName;
         }
 
