@@ -16,6 +16,8 @@ namespace shrimpcast.Entities
 
         public const string PLAY_MUSIC_MAIN_MUTED = $"{PLAY_COMMAND}music";
 
+        public const string TRY_IP_SERVICE_COMMAND = $"!tryipservice";
+
         public const string FILTERS = "filters.json";
 
         public static readonly string FIREANDFORGET_TOKEN = SecureToken.GenerateTokenThreadSafe();

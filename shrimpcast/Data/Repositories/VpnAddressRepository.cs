@@ -4,6 +4,7 @@ using shrimpcast.Entities;
 using shrimpcast.Entities.DB;
 using System.Net;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace shrimpcast.Data.Repositories.Interfaces
 {
@@ -24,7 +25,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
 
         public async Task VerifyRemoteAddress(string RemoteAddress)
         {
-            var BlockStatus = await InvokeVerificationService(RemoteAddress);
+            var BlockStatus = await VerifyAddress(RemoteAddress);
             if (BlockStatus == -1) return;
 
             var VPNAddress = new VpnAddress
@@ -40,24 +41,47 @@ namespace shrimpcast.Data.Repositories.Interfaces
             } catch (Exception) {}
         }
 
-        private async Task<int> InvokeVerificationService(string RemoteAddress)
+        public async Task<string> InvokeVerificationService(string RemoteAddress)
         {
-            // If the service is unavailable, return -1 and temporarily allow the IP.
-            var blockStatus = -1;
+            var client = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
+            var configuration = _configurationSingleton.Configuration;
+            var baseURL = configuration.IPServiceApiURL;
+            if (baseURL.Contains("{IP}")) baseURL = baseURL.Replace("{IP}", RemoteAddress);
+            else baseURL = $"{configuration.IPServiceApiURL}{RemoteAddress}";
+            var request = new HttpRequestMessage(HttpMethod.Get, baseURL);
+            if (!string.IsNullOrEmpty(configuration.OptionalApiKeyHeader))
+            {
+                request.Headers.Add(configuration.OptionalApiKeyHeader, configuration.IPServiceApiKey);
+            }
+            var response = await client.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+            var responseContent = await response.Content.ReadAsStringAsync();
+            return responseContent;
+        }
+
+        private async Task<int> VerifyAddress(string RemoteAddress)
+        {
             try
             {
-                var client = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
-                // For more information regarding the API, visit: https://iphub.info/api
-                var apiUrl = "https://v2.api.iphub.info/ip/";
-                var request = new HttpRequestMessage(HttpMethod.Get, $"{apiUrl}{RemoteAddress}");
-                request.Headers.Add("X-Key", _configurationSingleton.Configuration.IPServiceApiKey);
-                var response = await client.SendAsync(request);
-                response.EnsureSuccessStatusCode();
-                var responseContent = await response.Content.ReadAsStringAsync();
+                var responseContent = await InvokeVerificationService(RemoteAddress);
+                var matchCriteria = _configurationSingleton.Configuration.VPNDetectionMatchCriteria;
+                var matches = new Regex(@"(?<=\[)[^]]+(?=\])").Matches(matchCriteria);
+                
                 using var document = JsonDocument.Parse(responseContent);
-                blockStatus = document.RootElement.GetProperty("block").GetInt32();
+                foreach (var match in matches)
+                {
+                    var items = match.ToString()?.Split(":");
+                    if (items == null || items.Length != 2) continue;
+                    document.RootElement.TryGetProperty(items[0], out var element);
+                    if (element.ValueKind == JsonValueKind.Undefined) continue;
+                    var value = element.GetRawText().Replace("\"", string.Empty);
+                    if (value == items[1]) return 1;
+                }
+
+                return 0;
             } catch (Exception) {}
-            return blockStatus;
+            // If the service is unavailable, return -1 and temporarily allow the IP.
+            return -1;
         }
     }
 }

@@ -89,12 +89,18 @@ namespace shrimpcast.Entities.DB
 
         public required bool ChatBlockVPNConnections { get; set; }
 
+        public required string IPServiceApiURL { get; set; }
+
         [JsonIgnore]
         public string? IPServiceApiKey { get; set; } = string.Empty;
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         [NotMapped]
         public string? IPServiceApiKeyNotMapped { get; set; }
+
+        public required string OptionalApiKeyHeader { get; set; }
+
+        public required string VPNDetectionMatchCriteria { get; set; }
 
         [JsonIgnore]
         public string? OBSHost { get; set; } = string.Empty;
@@ -245,7 +251,10 @@ namespace shrimpcast.Entities.DB
                         new { name = nameof(config.ChatBlockTORConnections).ToLower(), label = "Block TOR connections for chat only", value = config.ChatBlockTORConnections },
                         new { name = nameof(config.SiteBlockVPNConnections).ToLower(), label = "Block VPN connections site-wide", value = config.SiteBlockVPNConnections },
                         new { name = nameof(config.ChatBlockVPNConnections).ToLower(), label = "Block VPN connections for chat only", value = config.ChatBlockVPNConnections },
-                        new { name = nameof(config.IPServiceApiKeyNotMapped).ToLower(), label = "API key for the VPN Detection Service (https://iphub.info)", value = config.IPServiceApiKey },
+                        new { name = nameof(config.IPServiceApiURL).ToLower(), label = "API URL for the IP detection service", value = config.IPServiceApiURL },
+                        new { name = nameof(config.IPServiceApiKeyNotMapped).ToLower(), label = "API key for the VPN Detection Service", value = config.IPServiceApiKey },
+                        new { name = nameof(config.OptionalApiKeyHeader).ToLower(), label = "Optional header to send the API key", value = config.OptionalApiKeyHeader },
+                        new { name = nameof(config.VPNDetectionMatchCriteria).ToLower(), label = "VPN detection match criteria", value = config.VPNDetectionMatchCriteria },
                     }
                 },
                 new
