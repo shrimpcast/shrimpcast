@@ -151,9 +151,8 @@ namespace shrimpcast.Hubs
                 newName,
             });
 
-            var shouldBan = await _autoModFilterRepository.Contains(addedMessage.Content);
+            var shouldBan = await _autoModFilterRepository.Contains(newName);
             if (shouldBan) BackgroundJob.Enqueue(() => PerformBackgroundBan(addedMessage.SentBy, addedMessage.SessionId, Constants.FIREANDFORGET_TOKEN));
-
             return newName;
         }
 
