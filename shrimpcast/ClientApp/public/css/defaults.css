@@ -118,6 +118,13 @@ html {
   left: -3px;
 }
 
+.halloween-hat:before {
+  content: url("../images/halloween-hat.png");
+  position: absolute;
+  z-index: 1;
+  left: -3px;
+}
+
 .santa-hat-primary {
   position: relative;
 }
@@ -128,6 +135,18 @@ html {
   z-index: 1;
   top: -12.5px;
   left: -5.5px;
+}
+
+.halloween-hat-primary {
+  position: relative;
+}
+
+.halloween-hat-primary:before {
+  content: url("../images/halloween-hat-big.png");
+  position: absolute;
+  z-index: 1;
+  top: -12.5px;
+  left: -10.5px;
 }
 
 .animated-background {

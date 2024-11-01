@@ -34,6 +34,21 @@ const MainGridSx = {
       height: "60%",
     },
   }),
+  HalloweenAnimSx = {
+    "&::after": {
+      content: '""',
+      position: "absolute",
+      bottom: "0px",
+      right: "0px",
+      height: "160px",
+      width: "160px",
+      filter: "opacity(0.6)",
+      backgroundRepeat: "no-repeat",
+      backgroundSize: "100%",
+      backgroundImage: 'url("../images/halloween-anim.gif")',
+      pointerEvents: "none",
+    },
+  },
   PlayerContainerSx = {
     height: "100%",
     margin: "0 auto",
@@ -74,7 +89,13 @@ const Layout = (props) => {
             />
           </Box>
         </Grid>
-        <Grid xs={12} md={4} lg={3} xl={2} sx={ChatBoxSx(theme)}>
+        <Grid
+          xs={12}
+          md={4}
+          lg={3}
+          xl={2}
+          sx={[ChatBoxSx(theme), props.configuration.enableHalloweenTheme && HalloweenAnimSx]}
+        >
           <Chat {...props} />
         </Grid>
       </Grid>

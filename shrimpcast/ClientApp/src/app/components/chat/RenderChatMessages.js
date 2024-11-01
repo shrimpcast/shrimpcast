@@ -182,6 +182,7 @@ const RenderChatMessages = (props) => {
               emotes={props.emotes}
               signalR={signalR}
               enableChristmasTheme={configuration.enableChristmasTheme}
+              enableHalloweenTheme={configuration.enableHalloweenTheme}
               userSessionId={props.sessionId}
               maxLengthTruncation={configuration.maxLengthTruncation}
               {...message}

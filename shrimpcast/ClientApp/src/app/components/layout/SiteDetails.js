@@ -24,8 +24,14 @@ const BlockSx = {
   };
 
 const SiteDetails = (props) => {
-  const { enableChristmasTheme, hideStreamTitle, streamDescription, enableMultistreams, streamEnabled } =
-      props.configuration,
+  const {
+      enableChristmasTheme,
+      hideStreamTitle,
+      streamDescription,
+      enableMultistreams,
+      streamEnabled,
+      enableHalloweenTheme,
+    } = props.configuration,
     streamTitle = hideStreamTitle ? null : props.configuration.streamTitle;
 
   return (
@@ -38,7 +44,15 @@ const SiteDetails = (props) => {
           <Box sx={{ wordBreak: "break-word" }}>
             <Typography
               color="secondary.main"
-              className={`neon-text ${enableChristmasTheme && streamTitle ? "santa-hat-primary" : null}`}
+              className={`neon-text ${
+                streamTitle
+                  ? enableChristmasTheme
+                    ? "santa-hat-primary"
+                    : enableHalloweenTheme
+                    ? "halloween-hat-primary"
+                    : null
+                  : null
+              }`}
               sx={TitleSx}
             >
               {streamTitle}

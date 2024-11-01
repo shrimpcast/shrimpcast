@@ -176,6 +176,8 @@ namespace shrimpcast.Entities.DB
 
         public required bool UseDarkTheme { get; set; }
 
+        public required bool EnableHalloweenTheme { get; set; }
+
         public object Clone() => MemberwiseClone();
     }
 
@@ -289,6 +291,7 @@ namespace shrimpcast.Entities.DB
                     {
                         new { name = nameof(config.EnableFireworks).ToLower(), label = "Enable fireworks", value = config.EnableFireworks },
                         new { name = nameof(config.EnableChristmasTheme).ToLower(), label = "Enable christmas theme", value = config.EnableChristmasTheme },
+                        new { name = nameof(config.EnableHalloweenTheme).ToLower(), label = "Enable halloween theme", value = config.EnableHalloweenTheme },
                         new { name = nameof(config.SnowflakeCount).ToLower(), label = "Christmas theme snowflake count", value = config.SnowflakeCount },
                         new { name = nameof(config.UseDarkTheme).ToLower(), label = "Use dark contrast (recommended)", value = config.UseDarkTheme },
                         new { name = nameof(config.PalettePrimary).ToLower(), label = "Primary color", value = config.PalettePrimary },
