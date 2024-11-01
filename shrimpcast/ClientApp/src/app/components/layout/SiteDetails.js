@@ -10,11 +10,13 @@ const BlockSx = {
   },
   TitleSx = {
     fontFamily: "Roboto, sans-serif",
-    textTransform: "uppercase",
     fontSize: "3rem",
     fontWeight: 600,
     letterSpacing: 0.5,
     lineHeight: 1.2,
+    "&::first-letter": {
+      textTransform: "uppercase",
+    },
   },
   DescriptionSx = {
     fontFamily: "'Roboto', sans-serif",
