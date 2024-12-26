@@ -14,7 +14,6 @@ const makeTheme = (configuration) => {
     primary = blueGrey;
     secondary = orange;
     useDarkTheme = true;
-    console.log("Using default theme due to corrupted palette.");
   }
 
   return createTheme({

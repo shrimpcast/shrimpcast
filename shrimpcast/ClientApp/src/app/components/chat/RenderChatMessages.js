@@ -151,6 +151,7 @@ const RenderChatMessages = (props) => {
     if (props.autoScroll) scrollToBottom();
     else setPendingMessages((state) => state + 1);
     updateNameSuggestions();
+    if (loading) setLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages]);
 
