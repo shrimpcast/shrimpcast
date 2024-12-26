@@ -33,7 +33,16 @@ class SignalRManager {
         transport: HttpTransportType.WebSockets,
         skipNegotiation: true,
       })
-      .withAutomaticReconnect()
+      .withAutomaticReconnect({
+        nextRetryDelayInMilliseconds: (retryContext) => {
+          const maxRetries = 20;
+          const retryCount = retryContext.previousRetryCount;
+          console.log(`Attempting to reconnect: ${retryCount} / ${maxRetries}`);
+          if (!retryCount) return 0;
+          if (retryCount === 1) return 3000;
+          return retryContext.previousRetryCount < maxRetries ? 5000 : null;
+        },
+      })
       .build();
     await connection.start().catch((ex) => console.log(ex));
     return connection;

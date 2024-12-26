@@ -140,7 +140,8 @@ const ManageUserDialog = (props) => {
                           target="_blank"
                         >
                           {userInfo.ip}
-                        </Link>
+                        </Link>{" "}
+                        with ID {props.messageId}
                       </Typography>
                     )}
                   </Grid>
