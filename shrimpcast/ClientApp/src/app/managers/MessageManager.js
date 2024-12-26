@@ -5,6 +5,7 @@ class MessageManager {
     const response = await axios
       .get(`/api/message/GetExisting`, { signal: abortSignal })
       .catch((ex) => console.log(ex));
+
     return response?.data || [];
   }
   static async NewMessage(signalR, message) {

@@ -121,11 +121,12 @@ const RenderChatMessages = (props) => {
     async function getMessages(abortControllerSignal) {
       if (!loading) return;
       let existingMessages = await MessageManager.GetExistingMessages(abortControllerSignal);
-      if (abortControllerSignal.aborted) return;
+      if (abortControllerSignal.aborted || !existingMessages.length) return;
       const ignoredUsers = LocalStorageManager.getIgnoredUsers().map((iu) => iu.sessionId);
       existingMessages = existingMessages.filter(
         (em) => em.isAdmin || em.isMod || !ignoredUsers.includes(em.sessionId)
       );
+
       existingMessages = existingMessages.reverse();
       setMessages(existingMessages);
       setLoading(false);
