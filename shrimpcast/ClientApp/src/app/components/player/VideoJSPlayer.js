@@ -46,9 +46,8 @@ const VideoJSPlayer = (props) => {
 
   // Dispose the Video.js player when the functional component unmounts
   useEffect(() => {
-    const player = playerRef.current;
-
     return () => {
+      const player = playerRef.current;
       if (player && !player.isDisposed()) {
         player.dispose();
         playerRef.current = null;
