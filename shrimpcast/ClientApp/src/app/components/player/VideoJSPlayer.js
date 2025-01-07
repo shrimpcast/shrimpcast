@@ -19,6 +19,7 @@ const VideoJSPlayer = (props) => {
     play = (player) => {
       player.muted(false);
       player.play().catch(() => {
+        if (player && player.isDisposed()) return;
         player.muted(true);
         player.play().catch(() => console.log("Could not autoplay"));
       });
