@@ -37,7 +37,6 @@ const Chat = (props) => {
       <ChatTextField
         autoScroll={autoScroll}
         toggleAutoScroll={toggleAutoScroll}
-        signalR={props.signalR}
         nameSuggestions={nameSuggestions}
         {...props}
       />

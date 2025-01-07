@@ -12,6 +12,7 @@ import {
   Typography,
   Alert,
   CircularProgress,
+  Tooltip,
 } from "@mui/material";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import SendIcon from "@mui/icons-material/Send";
@@ -73,9 +74,11 @@ const AccountInfo = (props) => {
 
   return (
     <>
-      <IconButton onClick={handleOpen} size="small" color="primary">
-        <AccountCircleIcon />
-      </IconButton>
+      <Tooltip title="Account info">
+        <IconButton onClick={handleOpen} size="small" color="primary">
+          <AccountCircleIcon />
+        </IconButton>
+      </Tooltip>
       <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth>
         <DialogTitle>
           <Box display="flex" alignItems="center" gap={1}>

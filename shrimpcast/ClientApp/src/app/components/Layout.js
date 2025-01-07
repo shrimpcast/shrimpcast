@@ -27,11 +27,11 @@ const MainGridSx = {
       display: "block",
     },
   }),
-  ChatBoxSx = (theme) => ({
+  ChatBoxSx = (theme, useFullChatMode) => ({
     height: "calc(100% - 35px)",
     backgroundColor: "primary.900",
     [theme.breakpoints.down("md")]: {
-      height: "60%",
+      height: useFullChatMode ? "calc(100% - 35px)" : "60%",
     },
   }),
   HalloweenAnimSx = {
@@ -66,7 +66,8 @@ const MainGridSx = {
 const Layout = (props) => {
   const theme = useTheme(),
     multistreamStatus = LocalStorageManager.shouldShowSecondaryMultistream(),
-    [useMultistreamSecondary, setMultistreamSecondary] = useState(multistreamStatus);
+    [useMultistreamSecondary, setMultistreamSecondary] = useState(multistreamStatus),
+    [useFullChatMode, setFullChatMode] = useState(false);
 
   return (
     <>
@@ -75,26 +76,28 @@ const Layout = (props) => {
       <ShowPing {...props} />
       <Grid container sx={MainGridSx}>
         <Grid xs={12}>
-          <SiteTop {...props} />
+          <SiteTop {...props} useFullChatMode={useFullChatMode} setFullChatMode={setFullChatMode} />
         </Grid>
-        <Grid xs={12} md={8} lg={9} xl={10} sx={PlayerBoxSx(theme)} className={"scrollbar-custom"}>
-          <Box sx={PlayerContainerSx}>
-            <SitePlayer {...props} useMultistreamSecondary={useMultistreamSecondary} />
-          </Box>
-          <Box sx={SiteDetailsSx}>
-            <SiteDetails
-              {...props}
-              useMultistreamSecondary={useMultistreamSecondary}
-              setMultistreamSecondary={setMultistreamSecondary}
-            />
-          </Box>
-        </Grid>
+        {!useFullChatMode && (
+          <Grid xs={12} md={8} lg={9} xl={10} sx={PlayerBoxSx(theme)} className={"scrollbar-custom"}>
+            <Box sx={PlayerContainerSx}>
+              <SitePlayer {...props} useMultistreamSecondary={useMultistreamSecondary} />
+            </Box>
+            <Box sx={SiteDetailsSx}>
+              <SiteDetails
+                {...props}
+                useMultistreamSecondary={useMultistreamSecondary}
+                setMultistreamSecondary={setMultistreamSecondary}
+              />
+            </Box>
+          </Grid>
+        )}
         <Grid
           xs={12}
-          md={4}
-          lg={3}
-          xl={2}
-          sx={[ChatBoxSx(theme), props.configuration.enableHalloweenTheme && HalloweenAnimSx]}
+          md={useFullChatMode ? 12 : 4}
+          lg={useFullChatMode ? 12 : 3}
+          xl={useFullChatMode ? 12 : 2}
+          sx={[ChatBoxSx(theme, useFullChatMode), props.configuration.enableHalloweenTheme && HalloweenAnimSx]}
         >
           <Chat {...props} />
         </Grid>

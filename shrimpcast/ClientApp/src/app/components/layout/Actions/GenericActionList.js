@@ -11,6 +11,7 @@ import {
   List,
   ListItem,
   ListItemText,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -48,9 +49,11 @@ const GenericActionList = (props) => {
   return (
     <>
       {!props.skipButton && (
-        <IconButton onClick={setOpened} type="button" size="small" sx={{ borderRadius: "0px" }}>
-          <Icon sx={{ color: "primary.500" }} />
-        </IconButton>
+        <Tooltip title={props.title}>
+          <IconButton onClick={setOpened} type="button" size="small" sx={{ borderRadius: "0px" }}>
+            <Icon sx={{ color: "primary.500" }} />
+          </IconButton>
+        </Tooltip>
       )}
       <Dialog open={open} onClose={setClosed} maxWidth={"sm"} fullWidth>
         <DialogTitle sx={{ fontSize: "24px", paddingBottom: "7.5px" }}>

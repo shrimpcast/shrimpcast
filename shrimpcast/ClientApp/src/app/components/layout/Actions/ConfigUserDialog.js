@@ -12,6 +12,7 @@ import {
   Tab,
   Tabs,
   TextField,
+  Tooltip,
 } from "@mui/material";
 import SettingsIcon from "@mui/icons-material/Settings";
 import AdminActionsManager from "../../../managers/AdminActionsManager";
@@ -92,9 +93,11 @@ const ConfigUserDialog = (props) => {
 
   return (
     <>
-      <IconButton onClick={setOpened} type="button" size="small" sx={{ borderRadius: "0px" }}>
-        <SettingsIcon sx={{ color: "primary.500" }} />
-      </IconButton>
+      <Tooltip title="Configuration">
+        <IconButton onClick={setOpened} type="button" size="small" sx={{ borderRadius: "0px" }}>
+          <SettingsIcon sx={{ color: "primary.500" }} />
+        </IconButton>
+      </Tooltip>
       {config && (
         <Dialog open={open} onClose={setClosed} maxWidth={"lg"}>
           <DialogTitle sx={{ fontSize: "24px", pb: "7.5px" }}>

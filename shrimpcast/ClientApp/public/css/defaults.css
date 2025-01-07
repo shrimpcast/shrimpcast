@@ -159,7 +159,8 @@ html {
     #009688 2rem,
     #009688 3rem
   );
-  background-size: 200% 200%;
+  /* Set a fixed background size based on the stripe width */
+  background-size: 8.485rem 8.485rem; /* 6rem * √2 to account for 45° angle */
   animation: barberpole 4s linear infinite;
 }
 
@@ -168,7 +169,7 @@ html {
     background-position: 0 0;
   }
   100% {
-    background-position: 100% 100%;
+    background-position: 8.485rem 8.485rem; /* Match background-size */
   }
 }
 

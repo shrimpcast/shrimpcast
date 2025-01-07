@@ -1,4 +1,4 @@
-import { Box, Button, CircularProgress, IconButton, TextField } from "@mui/material";
+import { Box, Button, CircularProgress, IconButton, TextField, Tooltip } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import React, { useState } from "react";
 import DoneIcon from "@mui/icons-material/Done";
@@ -9,6 +9,8 @@ import Grid from "@mui/material/Unstable_Grid2";
 import Actions from "./Actions/Actions";
 import ColourPicker from "../others/ColourPicker";
 import ChatActionsManager from "../../managers/ChatActionsManager";
+import { OpenInNew } from "@mui/icons-material";
+import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
 
 const SiteTopSx = {
     width: "100%",
@@ -23,7 +25,7 @@ const SiteTopSx = {
   ButtonSx = (isAdmin) => ({
     height: "35px",
     borderRadius: "0px",
-    width: `calc(100% - ${isAdmin ? "0px" : "34px"})`,
+    width: `calc(100% - ${isAdmin ? "34px" : "68px"})`,
     textTransform: "none",
   }),
   ButtonTextSx = {
@@ -34,7 +36,7 @@ const SiteTopSx = {
   };
 
 const SiteTop = (props) => {
-  const { isAdmin, isMod, isGolden, signalR, userDisplayColor, colours } = props,
+  const { isAdmin, isMod, isGolden, signalR, userDisplayColor, colours, useFullChatMode, setFullChatMode } = props,
     [registeredName, setRegisteredName] = useState(props.name),
     [newName, setNewName] = useState(registeredName),
     [editMode, setEditMode] = useState(false),
@@ -65,14 +67,32 @@ const SiteTop = (props) => {
     handleKeys = async (e) => {
       if (e.key === "Enter") await submitEditMode();
       else if (e.key === "Escape") closeEditMode();
-    };
+    },
+    toggleFullChatMode = () => setFullChatMode((chatMode) => !chatMode);
 
   return (
     <Box sx={SiteTopSx}>
       <Actions {...props} />
-      <Grid container xs={12} md={4} lg={3} xl={2} marginLeft={StatusSx}>
+      <Grid
+        container
+        xs={12}
+        md={useFullChatMode ? 12 : 4}
+        lg={useFullChatMode ? 12 : 3}
+        xl={useFullChatMode ? 12 : 2}
+        marginLeft={StatusSx}
+      >
         {!editMode ? (
           <>
+            <Tooltip title={`Pop ${useFullChatMode ? "in" : "out"} chat`}>
+              <IconButton
+                type="button"
+                size="small"
+                sx={{ backgroundColor: "primary.700", borderRadius: "0px", color: "primary.500" }}
+                onClick={toggleFullChatMode}
+              >
+                {useFullChatMode ? <CloseFullscreenIcon /> : <OpenInNew />}
+              </IconButton>
+            </Tooltip>
             <Button
               onClick={() => setEditMode(true)}
               variant="contained"

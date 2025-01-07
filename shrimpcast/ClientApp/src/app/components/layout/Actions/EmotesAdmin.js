@@ -11,6 +11,7 @@ import {
   Button,
   Avatar,
   Typography,
+  Tooltip,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import InsertEmoticonIcon from "@mui/icons-material/InsertEmoticon";
@@ -33,9 +34,11 @@ const EmotesAdmin = (props) => {
 
   return (
     <>
-      <IconButton onClick={setOpened} type="button" size="small" sx={{ borderRadius: "0px" }}>
-        <InsertEmoticonIcon sx={{ color: "primary.500" }} />
-      </IconButton>
+      <Tooltip title="Emotes">
+        <IconButton onClick={setOpened} type="button" size="small" sx={{ borderRadius: "0px" }}>
+          <InsertEmoticonIcon sx={{ color: "primary.500" }} />
+        </IconButton>
+      </Tooltip>
       {open && (
         <Dialog open={open} onClose={setClosed} maxWidth={"sm"} fullWidth>
           <DialogTitle sx={{ fontSize: "24px", paddingBottom: "7.5px" }}>

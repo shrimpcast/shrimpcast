@@ -1,7 +1,7 @@
 import DialogTitle from "@mui/material/DialogTitle";
 import Dialog from "@mui/material/Dialog";
 import React, { useEffect, useState } from "react";
-import { Box, DialogContent, Divider, IconButton, List, ListItem, ListItemText } from "@mui/material";
+import { Box, DialogContent, Divider, IconButton, List, ListItem, ListItemText, Tooltip } from "@mui/material";
 import AdminActionsManager from "../../../managers/AdminActionsManager";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import ManageUserDialog from "../../chat/ManageUserDialog";
@@ -47,9 +47,11 @@ const ActiveUsers = (props) => {
 
   return (
     <>
-      <IconButton onClick={setOpened} type="button" size="small" sx={{ borderRadius: "0px" }}>
-        <PeopleAltIcon sx={{ color: "primary.500" }} />
-      </IconButton>
+      <Tooltip title="Active users">
+        <IconButton onClick={setOpened} type="button" size="small" sx={{ borderRadius: "0px" }}>
+          <PeopleAltIcon sx={{ color: "primary.500" }} />
+        </IconButton>
+      </Tooltip>
       {open && (
         <Dialog open={open} onClose={setClosed} maxWidth={"sm"} fullWidth>
           <DialogTitle sx={{ fontSize: "24px", pb: "7.5px" }}>

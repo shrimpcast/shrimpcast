@@ -1,6 +1,6 @@
 import * as React from "react";
 import ClickAwayListener from "@mui/material/ClickAwayListener";
-import { Box, IconButton, Paper, Typography } from "@mui/material";
+import { Box, IconButton, Paper, Tooltip, Typography } from "@mui/material";
 import { useState } from "react";
 import ColorLensIcon from "@mui/icons-material/ColorLens";
 
@@ -52,19 +52,21 @@ const ColourPicker = (props) => {
 
   return (
     <>
-      <IconButton
-        onClick={toggleState}
-        type="button"
-        size="small"
-        sx={IconButtonSx(userDisplayColor, width, useBorderRadius)}
-      >
-        <ColorLensIcon />
-        {text && (
-          <Typography mt="2.5px" ml="5px">
-            {text}
-          </Typography>
-        )}
-      </IconButton>
+      <Tooltip title="Colour picker">
+        <IconButton
+          onClick={toggleState}
+          type="button"
+          size="small"
+          sx={IconButtonSx(userDisplayColor, width, useBorderRadius)}
+        >
+          <ColorLensIcon />
+          {text && (
+            <Typography mt="2.5px" ml="5px">
+              {text}
+            </Typography>
+          )}
+        </IconButton>
+      </Tooltip>
       {showColours && (
         <ClickAwayListener onClickAway={handleClose}>
           <Paper sx={ColoursWrapperSx} elevation={2}>

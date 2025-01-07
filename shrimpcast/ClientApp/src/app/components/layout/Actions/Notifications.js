@@ -1,7 +1,7 @@
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import ConfirmDialog from "../../others/ConfirmDialog";
 import { useState } from "react";
-import { Alert, IconButton, Snackbar } from "@mui/material";
+import { Alert, IconButton, Snackbar, Tooltip } from "@mui/material";
 import ServiceWorkerManager from "../../../managers/ServiceWorkerManager";
 
 const Notifications = (props) => {
@@ -25,9 +25,11 @@ const Notifications = (props) => {
 
   return (
     <>
-      <IconButton onClick={setOpened} type="button" size="small" sx={{ borderRadius: "0px" }}>
-        <NotificationsIcon sx={{ color: "primary.500" }} />
-      </IconButton>
+      <Tooltip title="Dispatch notifications">
+        <IconButton onClick={setOpened} type="button" size="small" sx={{ borderRadius: "0px" }}>
+          <NotificationsIcon sx={{ color: "primary.500" }} />
+        </IconButton>
+      </Tooltip>
       {open && (
         <ConfirmDialog
           isLoading={isLoading}
