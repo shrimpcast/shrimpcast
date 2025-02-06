@@ -6,7 +6,7 @@
   <img src="https://github.com/shrimpcast/shrimpcast/assets/167498236/d3159e68-60dd-4e8f-a8ca-be0a99a759a1" alt="Logo">
 </p>
 
-![Minimalist-Showcase-Project-Presentation](https://github.com/shrimpcast/shrimpcast/assets/167498236/4262b7b5-b307-47e8-b358-1c9138f77026)
+![Minimalist-Showcase-Project-Presentation](https://github.com/user-attachments/assets/2c0ad070-7c52-4609-a4e7-e36ef3008d2b)
 
 ## Introduction
 
@@ -25,9 +25,12 @@ Shrimpcast is a highly customizable, flexible, battle-tested, fast, and secure s
     - [Chat](#chat)
     - [Stream](#stream)
     - [Poll](#poll)
+    - [Tor & VPNs](#tor-and-vpns)
+    - [Bingo](#bingo)
     - [OBS](#obs)
     - [Theme](#theme)
     - [Notifications](#notifications)
+    - [Golden pass](#golden-pass)
   - [Active Users](#active-users)
   - [Bans](#bans)
   - [Mutes](#mutes)
@@ -35,6 +38,7 @@ Shrimpcast is a highly customizable, flexible, battle-tested, fast, and secure s
   - [Moderators](#moderators)
   - [Notify users](#notify-users)
   - [Emotes](#emotes)
+  - [Bingo options](#bingo)
   - [Message and user management](#message-and-user-management)
   - [Cloud OBS](#cloud-obs)
   - [Whispers](#whispers)
@@ -134,28 +138,31 @@ And that's it! You're now authenticated as an admin.
 
 Once you're authenticated as an admin, you will have the following options:
 
-![image](https://github.com/shrimpcast/shrimpcast/assets/167498236/3708fdda-18fc-4fdd-b6fe-060c5d79e420)
-
-- [Configuration](#configuration)
+![image](https://github.com/user-attachments/assets/32a73635-45bf-4b7a-bcdf-272c20ea8668)
+  - [Configuration](#configuration)
     - [Site](#site)
     - [Chat](#chat)
     - [Stream](#stream)
     - [Poll](#poll)
+    - [Tor & VPNs](#tor-and-vpns)
+    - [Bingo](#bingo)
     - [OBS](#obs)
     - [Theme](#theme)
     - [Notifications](#notifications)
-- [Active Users](#active-users)
-- [Bans](#bans)
-- [Mutes](#mutes)
-- [Auto-mod filters](#auto-mod-filters)
-- [Moderators](#moderators)
-- [Notify users](#notify-users)
-- [Emotes](#emotes)
+    - [Golden pass](#golden-pass)
+  - [Active Users](#active-users)
+  - [Bans](#bans)
+  - [Mutes](#mutes)
+  - [Auto-mod filters](#auto-mod-filters)
+  - [Moderators](#moderators)
+  - [Notify users](#notify-users)
+  - [Emotes](#emotes)
+  - [Bingo options](#bingo)
 
 #### Site
-![image](https://github.com/shrimpcast/shrimpcast/assets/167498236/05228ef8-30cf-40d0-85d3-056acb9fee85)
+![image](https://github.com/user-attachments/assets/acf1196d-28b5-43c8-8305-dc557b46a4e4)
 
-- **Block TOR connections**: Will block connections from TOR exit nodes.
+- **Hide stream title**: Hides the stream title that would otherwise show below the player.
 - **Max connections per IP**: The maximum number of simultaneous connections by a single IP address.
 - **Minimum auto-mod time**: The minimum delay time expressed in milliseconds for the auto-mod.
 - **Maximum auto-mod time**: The maximum delay time expressed in milliseconds for the auto-mod.
@@ -165,18 +172,20 @@ Once you're authenticated as an admin, you will have the following options:
 - **Stream description**: Description to show below the stream title.
 
 #### Chat
-![image](https://github.com/shrimpcast/shrimpcast/assets/167498236/dead4bd7-d876-488e-a76e-5f25aaae1425)
+![image](https://github.com/user-attachments/assets/9e127ae7-33cf-4288-a3d1-d5df95cf25b4)
 
 - **Enable chat:** Determines whether the chat feature is enabled or disabled for users.
+- **Allow verified users only:** Specifies whether chat is restricted to verified users only.
 - **Max visible messages:** Sets the maximum number of messages visible in the chat interface.
 - **Message age limit (mins):** Specifies the age threshold of messages to display in the chat.
 - **Required time for new users (mins):** Sets the minimum time (in minutes) that new users must wait before being allowed to send messages.
 - **Cooldown between messages:** Specifies the time interval users must wait between sending consecutive messages, in seconds.
 - **Mute time in minutes:** Determines the duration for which a user is muted after violating chat rules.
+- **Message length before truncation:** Defines the message length threshold at which it gets collapsed.
 - **Default name for new users:** Sets the default username assigned to new users.
 
 #### Stream
-![image](https://github.com/shrimpcast/shrimpcast/assets/167498236/9acf769b-3a82-4d5d-a62a-8fa4380dc10b)
+![image](https://github.com/user-attachments/assets/b949f460-2e46-4e91-92a8-323d12c95fc2)
 
 - **Enable stream:** Shows or hides the player.
 - **Use primary source:** Specifies whether to use the primary source for the stream. Fallbacks to the secondary source if disabled.
@@ -184,10 +193,12 @@ Once you're authenticated as an admin, you will have the following options:
 - **Treat URL as embed:** Dictates whether to treat URLs as embedded content for streaming purposes.
 - **Enable Multistreams:** Allows users to switch between the primary and secondary sources simultaneously.
 - **Primary stream URL:** Specifies the primary URL source for streaming content.
+- **(optional) Primary URL custom name** Sets the custom name for the primary source that shows on the multistream banner.
 - **Secondary stream URL:** Provides an alternative URL source for streaming content if the primary source is unavailable.
+- **(optional) Secondary URL custom name** Sets the custom name for the secondary source that shows on the multistream banner.
 
 #### Poll
-![image](https://github.com/shrimpcast/shrimpcast/assets/167498236/44b1004c-d2bd-43b0-8d35-0b5f2a3c7dce)
+![image](https://github.com/user-attachments/assets/972273c0-d0c7-4fd5-88ae-e6c13ff99bd6)
 - **Show poll:** Controls the visibility of the poll.
 - **Accept new options:** Determines whether new options can be added to an existing poll.
 - **Accept new votes:** Specifies whether new votes are allowed after a poll has started.
@@ -195,8 +206,27 @@ Once you're authenticated as an admin, you will have the following options:
 - **Minimum sent to participate:** Sets the minimum number of messages a user must have sent to participate in a poll.
 - **Poll title:** Specifies the title or topic of the poll being conducted.
 
+#### Tor and VPNs
+![image](https://github.com/user-attachments/assets/4df09ed9-1806-458d-9150-8e491433acdc)
+- **Block TOR connections site-wide:** Blocks access to the site for TOR users.
+- **Block TOR connections (chat only):** Prevents TOR users from chatting, but they can still access the site.
+- **Block VPN connections site-wide:** Blocks access to the site for VPN users.
+- **Block VPN connections (chat only):** Prevents VPN users from chatting, but they can still access the site.
+- **API URL for IP detection service:** The third-party service used for IP detection (default: ip-api.com).
+- **API key for VPN detection service:** Optional field for a token if the IP detection service requires one.
+- **Optional header for sending the API key:** Allows sending the API key in a custom header.
+- **VPN detection match criteria:** Customize how the JSON response is matched (e.g., `{"proxy": (value), "hosting": (value)}`).
+
+### Bingo 
+![image](https://github.com/user-attachments/assets/d835f252-2693-43a9-bdc3-4a9f9f3f593d)
+- **Show bingo:** Determines whether the bingo is displayed.
+- **Enable auto marking:** Specifies whether automatic marking of options is enabled once a certain threshold is met.
+- **Auto marking seconds threshold:** The number of seconds during which simultaneous suggestions are considered.
+- **Auto marking unique user threshold:** The minimum number of unique user suggestions required to trigger auto-marking.
+- **Bingo title:** A title for the bingo (self-explanatory).
+
 #### OBS
-![image](https://github.com/shrimpcast/shrimpcast/assets/167498236/8d626329-df9d-4caa-81df-056ff2d2b48b)
+![image](https://github.com/user-attachments/assets/2746737d-29ae-4ee4-b5ef-ffadc13a5ad6)
 > [!TIP]
 > You don't need any of these configurations unless you're using a cloud OBS instance and you want to control it remotely. If you're going to use them, make sure that your OBS has WebSockets enabled and is accepting incoming connections. See more on [cloud OBS](#cloud-obs)
 - **Host:** Specifies the host for OBS connection. Format: (ws://[IP]:4455)
@@ -207,10 +237,13 @@ Once you're authenticated as an admin, you will have the following options:
 - **Music source:** Specifies the audio source to be optionally played during the broadcast.
 
 #### Theme
-![image](https://github.com/shrimpcast/shrimpcast/assets/167498236/908360b0-3a7d-4d27-94e2-6c6474cfd549)
-- **Enable fireworks:** Enables or disables the display of fireworks animations.
-- **Enable Christmas theme:** Activates or deactivates the Christmas theme.
-- **Christmas theme snowflake count:** Specifies the number of snowflakes displayed as part of the Christmas theme.
+![image](https://github.com/user-attachments/assets/c3795652-41c5-4954-bf75-485364189f66)
+- **Enable fireworks:** Toggles the display of fireworks animations.
+- **Enable Christmas theme:** Enables or disables the Christmas theme.
+- **Enable Halloween theme:** Enables or disables the Halloween theme.
+- **Christmas theme snowflake count:** Specifies how many snowflakes are shown in the Christmas theme.
+- **Primary color:** Sets the default primary palette color (default: blueGrey).
+- **Secondary color:** Sets the secondary palette color (default: orange).
 
 #### Notifications
 ![image](https://github.com/shrimpcast/shrimpcast/assets/167498236/2449c7b8-f09a-4a7f-ad4e-c7447735aa46)
@@ -219,6 +252,10 @@ Once you're authenticated as an admin, you will have the following options:
 - **VAPID Public Key:** Specifies the public key for VAPID authentication.
 - **VAPID Private Key:** Specifies the private key for VAPID authentication.
 - **VAPID Mail:** Provides the email address associated with VAPID authentication.
+
+#### Golden pass
+![image](https://github.com/user-attachments/assets/c7baac87-d1fe-40c3-83c7-87dfad7875bd)
+- Fully automated integration with BTCPayServer, please see https://btcpayserver.org/
 
 ### Bans
 ![image](https://github.com/shrimpcast/shrimpcast/assets/167498236/c4066618-ae54-4930-ae06-7a773d339872)
@@ -255,6 +292,11 @@ Shows a dialog asking whether to notify the subscribed users that the stream has
 
 Shows the list of active emotes. To add a new emote, click on "ADD". Keep in mind that the size can't be greater than 36x36.
 
+### Bingo options
+![image](https://github.com/user-attachments/assets/4853a1c9-7ecb-44c1-93d8-fc02c8f6a50c)
+
+Shows the list of bingo options. To add a new option, click on "ADD".
+
 ### Message and user management
 ![image](https://github.com/shrimpcast/shrimpcast/assets/167498236/3f3f9780-c7e4-4106-a9e4-1ba28fa3cda8)
 
@@ -265,10 +307,11 @@ While authenticated as an admin, hover over a message and you will have the opti
    
 2. Manage the user (by clicking on the user button)
    
-   ![image](https://github.com/shrimpcast/shrimpcast/assets/167498236/395510c7-1417-485b-bd53-1fa483a8d32b)
+   ![image](https://github.com/user-attachments/assets/02d83a4b-87fa-4a06-838c-b8fbd7e21fa5)
 
    The following moderation options will be available:
    - **Make mod**: Grants the user moderator privileges.
+   - **Verify**: Verifies the user.
    - **Ignore**: Ignores the user. This option is available to all users.
    - **Mute**: mutes the user for the amount of time dettermined in the chat [configuration](#chat)
    - **Ban**: Bans the user and displays a public chat message indicating that the user has been removed from chat.
