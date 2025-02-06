@@ -52,6 +52,9 @@ Shrimpcast is a highly customizable, flexible, battle-tested, fast, and secure s
 - **Fast and lightweight**
 - **Flexible and highly customizable**
 - **Battle-tested with hundreds of concurrent users**
+  - Tested with:
+     - 700 unique users
+     - Throughput of 4 Gbps
 - **Out-of-the-box Cloudflare support**
 
 ## Installation
@@ -246,7 +249,7 @@ Once you're authenticated as an admin, you will have the following options:
 - **Secondary color:** Sets the secondary palette color (default: orange).
 
 #### Notifications
-![image](https://github.com/shrimpcast/shrimpcast/assets/167498236/2449c7b8-f09a-4a7f-ad4e-c7447735aa46)
+![image](https://github.com/user-attachments/assets/c1dd0572-6a2a-45b7-948e-b4b6148d3192)
 > [!CAUTION]
 > Do not change these values unless you know what you're doing.
 - **VAPID Public Key:** Specifies the public key for VAPID authentication.
