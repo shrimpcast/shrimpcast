@@ -38,7 +38,7 @@ Shrimpcast is a highly customizable, flexible, battle-tested, fast, and secure s
   - [Moderators](#moderators)
   - [Notify users](#notify-users)
   - [Emotes](#emotes)
-  - [Bingo options](#bingo)
+  - [Bingo options](#bingo-options)
   - [Message and user management](#message-and-user-management)
   - [Cloud OBS](#cloud-obs)
   - [Whispers](#whispers)
@@ -157,7 +157,7 @@ Once you're authenticated as an admin, you will have the following options:
   - [Moderators](#moderators)
   - [Notify users](#notify-users)
   - [Emotes](#emotes)
-  - [Bingo options](#bingo)
+  - [Bingo options](#bingo-options)
 
 #### Site
 ![image](https://github.com/user-attachments/assets/acf1196d-28b5-43c8-8305-dc557b46a4e4)
