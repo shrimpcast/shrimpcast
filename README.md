@@ -15,6 +15,7 @@ Shrimpcast is a highly customizable, flexible, battle-tested, fast, and secure s
 ## Table of Contents
 
 - [Features](#features)
+- [Demo](#demo)
 - [Installation](#installation)
 - [Media server](#media-server)
 - [Debug](#debug)
@@ -56,6 +57,9 @@ Shrimpcast is a highly customizable, flexible, battle-tested, fast, and secure s
      - 700 unique users
      - Throughput of 4 Gbps
 - **Out-of-the-box Cloudflare support**
+
+## Demo
+Check out the live demo at [shrimpcast.space](https://shrimpcast.space/).
 
 ## Installation
 
