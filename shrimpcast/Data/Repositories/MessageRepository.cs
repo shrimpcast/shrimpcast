@@ -75,9 +75,7 @@ namespace shrimpcast.Data.Repositories
         public async Task<bool> Remove(int MessageId, int DeletedBy)
         {
             var existingMessage = await _context.Messages.FirstAsync(message => message.MessageId == MessageId);
-            existingMessage.IsDeleted = true;
-            existingMessage.DeletedAt = DateTime.UtcNow;
-            existingMessage.DeletedBy = DeletedBy;
+            _context.Messages.Remove(existingMessage);
             var result = await _context.SaveChangesAsync();
             return result > 0 ? true : throw new Exception("Could not update record.");
         }
