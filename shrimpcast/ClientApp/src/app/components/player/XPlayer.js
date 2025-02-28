@@ -17,7 +17,8 @@ const XPlayer = (props) => {
       css: false,
       flv: false,
       player: false,
-    });
+    }),
+    [triggerCacheUpdate, setTriggerCacheUpdate] = useState(false);
 
   useEffect(() => {
     if (!loadState.css)
@@ -49,39 +50,50 @@ const XPlayer = (props) => {
 
   useEffect(() => {
     if (!loadState.css || !loadState.player || !loadState.flv) return;
-    let player = new window.Player({
-      id: elId,
-      isLive: true,
-      playsinline: true,
-      url: props.url,
-      autoplay: true,
-      height: undefined,
-      width: undefined,
-      plugins: [window.FlvPlayer],
-      lang: "en",
-      playbackRate: false,
-      cssFullscreen: false,
-      screenShot: true,
-      pip: true,
-    });
 
-    player.on("error", () => player.replay());
-    player.on("ended", () => player.replay());
+    const noCache = new Date().getTime(),
+      noCacheUrl = () => `${props.url}?nocache=${noCache}`,
+      player = new window.Player({
+        id: elId,
+        isLive: true,
+        playsinline: true,
+        url: noCacheUrl(),
+        autoplay: true,
+        height: undefined,
+        width: undefined,
+        plugins: [window.FlvPlayer],
+        lang: "en",
+        playbackRate: false,
+        cssFullscreen: false,
+        screenShot: true,
+        pip: true,
+      }),
+      restartPlayback = () => {
+        console.log("Attempting to restart playback.");
+        setTriggerCacheUpdate((triggerCacheUpdate) => !triggerCacheUpdate);
+      };
+
+    player.on("error", restartPlayback);
+    player.on("ended", restartPlayback);
     player.on("waiting", () => {
       clearTimeout(window.timeout);
       window.timeout = setTimeout(() => {
         try {
           if (player?.readyState <= 2) {
-            player.replay();
-            console.log("Playback restarted.");
+            restartPlayback();
           }
         } catch (e) {}
       }, 5000);
     });
 
-    return () => player.destroy();
+    console.log(`XGPlayer initialized. noCache: ${noCache}`);
+
+    return () => {
+      player.destroy();
+      console.log(`XGPlayer destroyed. noCache: ${noCache}`);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadState, props.url]);
+  }, [loadState, props.url, triggerCacheUpdate]);
 
   return (
     <div className="full-height">
