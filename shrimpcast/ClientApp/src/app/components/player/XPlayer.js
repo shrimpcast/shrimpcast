@@ -17,8 +17,7 @@ const XPlayer = (props) => {
       css: false,
       flv: false,
       player: false,
-    }),
-    [triggerCacheUpdate, setTriggerCacheUpdate] = useState(false);
+    });
 
   useEffect(() => {
     if (!loadState.css)
@@ -51,8 +50,7 @@ const XPlayer = (props) => {
   useEffect(() => {
     if (!loadState.css || !loadState.player || !loadState.flv) return;
 
-    const noCache = new Date().getTime(),
-      noCacheUrl = () => `${props.url}?nocache=${noCache}`,
+    const noCacheUrl = () => `${props.url}?nocache=${new Date().getTime()}`,
       player = new window.Player({
         id: elId,
         isLive: true,
@@ -68,32 +66,27 @@ const XPlayer = (props) => {
         screenShot: true,
         pip: true,
       }),
-      restartPlayback = () => {
+      restartPlayback = (player) => {
         console.log("Attempting to restart playback.");
-        setTriggerCacheUpdate((triggerCacheUpdate) => !triggerCacheUpdate);
+        player.switchURL(noCacheUrl());
       };
 
-    player.on("error", restartPlayback);
-    player.on("ended", restartPlayback);
+    player.on("error", () => restartPlayback(player));
+    player.on("ended", () => restartPlayback(player));
     player.on("waiting", () => {
       clearTimeout(window.timeout);
       window.timeout = setTimeout(() => {
         try {
           if (player?.readyState <= 2) {
-            restartPlayback();
+            restartPlayback(player);
           }
         } catch (e) {}
       }, 5000);
     });
 
-    console.log(`XGPlayer initialized. noCache: ${noCache}`);
-
-    return () => {
-      player.destroy();
-      console.log(`XGPlayer destroyed. noCache: ${noCache}`);
-    };
+    return () => player.destroy();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadState, props.url, triggerCacheUpdate]);
+  }, [loadState, props.url]);
 
   return (
     <div className="full-height">
