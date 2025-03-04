@@ -11,7 +11,7 @@ const SendInputSx = {
     width: "100%",
     position: "relative",
   },
-  SendTextFieldSx = (showBorderBottom) => ({
+  SendTextFieldSx = {
     input: {
       "&::placeholder": {
         opacity: 1,
@@ -19,13 +19,12 @@ const SendInputSx = {
       },
     },
     "& .MuiOutlinedInput-notchedOutline": {
-      px: 3.7,
-      borderBottomRightRadius: showBorderBottom ? "5px" : "0px",
-      borderBottomLeftRadius: showBorderBottom ? "5px" : "0px",
+      borderBottomRightRadius: "0px",
+      borderBottomLeftRadius: "0px",
     },
     label: { color: "secondary.main" },
     zIndex: 2,
-  }),
+  },
   ScrollSx = (isChecked) => ({
     position: "absolute",
     top: "1px",
@@ -155,7 +154,7 @@ const ChatTextField = (props) => {
         placeholder={isDisabled ? "Chat temporarily disabled" : "Write a message.."}
         color="secondary"
         fullWidth
-        sx={SendTextFieldSx(!configuration.showGoldenPassButton)}
+        sx={SendTextFieldSx}
         onKeyDown={handleKeys}
         onInput={changeInput}
         value={message}
