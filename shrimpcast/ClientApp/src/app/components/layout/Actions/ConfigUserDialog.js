@@ -94,8 +94,13 @@ const ConfigUserDialog = (props) => {
   return (
     <>
       <Tooltip title="Configuration">
-        <IconButton onClick={setOpened} type="button" size="small" sx={{ borderRadius: "0px" }}>
-          <SettingsIcon sx={{ color: "primary.500" }} />
+        <IconButton
+          onClick={setOpened}
+          type="button"
+          size="small"
+          sx={{ backgroundColor: "primary.700", borderRadius: "0px" }}
+        >
+          <SettingsIcon sx={{ color: "primary.300" }} />
         </IconButton>
       </Tooltip>
       {config && (

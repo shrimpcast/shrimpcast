@@ -35,8 +35,13 @@ const EmotesAdmin = (props) => {
   return (
     <>
       <Tooltip title="Emotes">
-        <IconButton onClick={setOpened} type="button" size="small" sx={{ borderRadius: "0px" }}>
-          <InsertEmoticonIcon sx={{ color: "primary.500" }} />
+        <IconButton
+          onClick={setOpened}
+          type="button"
+          size="small"
+          sx={{ backgroundColor: "primary.700", borderRadius: "0px" }}
+        >
+          <InsertEmoticonIcon sx={{ color: "primary.300" }} />
         </IconButton>
       </Tooltip>
       {open && (

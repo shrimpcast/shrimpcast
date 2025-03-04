@@ -50,8 +50,13 @@ const GenericActionList = (props) => {
     <>
       {!props.skipButton && (
         <Tooltip title={props.title}>
-          <IconButton onClick={setOpened} type="button" size="small" sx={{ borderRadius: "0px" }}>
-            <Icon sx={{ color: "primary.500" }} />
+          <IconButton
+            onClick={setOpened}
+            type="button"
+            size="small"
+            sx={{ backgroundColor: "primary.700", borderRadius: "0px" }}
+          >
+            <Icon sx={{ color: "primary.300" }} />
           </IconButton>
         </Tooltip>
       )}
