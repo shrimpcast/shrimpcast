@@ -829,7 +829,7 @@ namespace shrimpcast.Hubs
 
         private bool ShouldTriggerBingoAutoMarking (string RemoteAddress, int BingoSuggestionId)
         {
-            if (!Configuration.EnableAutoBingoMarking || Configuration.AutoMarkingUserCountThreshold < 1) return false;
+            if (!Configuration.EnableAutoBingoMarking) return false;
 
             var suggestions = _bingoSuggestions.All;
             var utcNow = DateTime.UtcNow;
