@@ -24,7 +24,6 @@ const MainGridSx = {
     flexDirection: "column",
     [theme.breakpoints.down("md")]: {
       height: "calc(40% - 35px)",
-      display: "block",
     },
   }),
   ChatBoxSx = (theme, useFullChatMode) => ({
