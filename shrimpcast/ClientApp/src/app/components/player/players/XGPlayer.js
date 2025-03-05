@@ -11,7 +11,7 @@ const Loader = {
   webkitTransform: "translate(-50%, -50%);",
 };
 
-const XPlayer = (props) => {
+const XGPlayer = (props) => {
   const elId = "xg-player-cont",
     [loadState, setLoadState] = useState({
       css: false,
@@ -103,4 +103,4 @@ const XPlayer = (props) => {
   );
 };
 
-export default XPlayer;
+export default XGPlayer;

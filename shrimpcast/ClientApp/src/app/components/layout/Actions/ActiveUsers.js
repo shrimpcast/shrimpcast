@@ -48,8 +48,13 @@ const ActiveUsers = (props) => {
   return (
     <>
       <Tooltip title="Active users">
-        <IconButton onClick={setOpened} type="button" size="small" sx={{ borderRadius: "0px" }}>
-          <PeopleAltIcon sx={{ color: "primary.500" }} />
+        <IconButton
+          onClick={setOpened}
+          type="button"
+          size="small"
+          sx={{ backgroundColor: "primary.700", borderRadius: "0px" }}
+        >
+          <PeopleAltIcon sx={{ color: "primary.300" }} />
         </IconButton>
       </Tooltip>
       {open && (

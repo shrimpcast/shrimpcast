@@ -69,6 +69,7 @@ namespace shrimpcast.Data.Repositories
             };
             await _context.AddAsync(Message);
             var result = await _context.SaveChangesAsync();
+            _context.Entry(Message).State = EntityState.Detached;
             return result > 0 ? Message : throw new Exception("Could not add message.");
         }
 

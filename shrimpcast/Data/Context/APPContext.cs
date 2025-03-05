@@ -21,6 +21,7 @@ namespace shrimpcast.Data
         public DbSet<Emote> Emotes { get; set; }
         public DbSet<BingoOption> BingoOptions { get; set; }
         public DbSet<VpnAddress> VpnAddresses { get; set; }
+        public DbSet<Source> Sources { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -48,6 +49,7 @@ namespace shrimpcast.Data
             modelBuild.Entity<Emote>().ToTable("Emote");
             modelBuild.Entity<BingoOption>().ToTable("BingoOption");
             modelBuild.Entity<VpnAddress>().ToTable("VpnAddress");
+            modelBuild.Entity<Source>().ToTable("Source");
         }
     }
 }

@@ -58,6 +58,13 @@ const Actions = (props) => {
         MenuListProps={{
           "aria-labelledby": "menu-button",
         }}
+        sx={{
+          "& .MuiPaper-root": {
+            backgroundColor: "primary.700",
+            backgroundImage: "none",
+            left: "0px !important",
+          },
+        }}
       >
         {actions.map((action, i) => (
           <MenuItem key={i}>{action}</MenuItem>

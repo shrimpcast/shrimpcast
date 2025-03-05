@@ -8,14 +8,30 @@ import TextField from "@mui/material/TextField";
 import { CircularProgress } from "@mui/material";
 
 const GenericAddTextItemDialog = (props) => {
-  const { setAddDialogOpened, gad_title, gad_description, gad_handleSubmit, signalR, setItems } = props,
+  const {
+      setAddDialogOpened,
+      gad_title,
+      gad_description,
+      gad_handleSubmit,
+      signalR,
+      setItems,
+      defaultValue,
+      editMode,
+      customCallback,
+      allowEmptyEdit,
+    } = props,
     [loading, setLoading] = useState(false),
-    [item, setItem] = useState(""),
+    [item, setItem] = useState(defaultValue || ""),
     closeDialog = () => {
       setItem("");
       setAddDialogOpened(false);
     },
     submit = async () => {
+      if (customCallback) {
+        customCallback(item);
+        closeDialog();
+        return;
+      }
       setLoading(true);
       const response = await gad_handleSubmit(signalR, item);
       setLoading(false);
@@ -43,8 +59,8 @@ const GenericAddTextItemDialog = (props) => {
         {loading ? (
           <CircularProgress size={24} />
         ) : (
-          <Button onClick={submit} disabled={!item}>
-            Add
+          <Button onClick={submit} disabled={!item && !allowEmptyEdit}>
+            {editMode ? "Edit" : "Add"}
           </Button>
         )}
       </DialogActions>

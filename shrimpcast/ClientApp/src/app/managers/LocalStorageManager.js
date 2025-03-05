@@ -5,7 +5,6 @@ class LocalStorageManager {
     ignoredUsers: "ignored_users",
     showNotificationsPrompt: "notifications_prompt_hidden",
     showGitHubPrompt: "github_prompt_hidden",
-    multistreamSecondaryStatus: "multistream_secondary_status",
   };
 
   static setStorage(key, value) {
@@ -69,16 +68,6 @@ class LocalStorageManager {
 
   static shouldShowGitHubPrompt() {
     return !Boolean(this.getStorage(this.localStorage.showGitHubPrompt));
-  }
-
-  static toggleMultistreamStatus() {
-    const status = !this.shouldShowSecondaryMultistream();
-    this.setStorage(this.localStorage.multistreamSecondaryStatus, status);
-    return status;
-  }
-
-  static shouldShowSecondaryMultistream() {
-    return this.getStorage(this.localStorage.multistreamSecondaryStatus) === "true";
   }
 }
 

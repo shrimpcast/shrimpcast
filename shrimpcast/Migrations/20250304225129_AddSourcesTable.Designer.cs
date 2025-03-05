@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using shrimpcast.Data;
@@ -11,9 +12,11 @@ using shrimpcast.Data;
 namespace shrimpcast.Migrations
 {
     [DbContext(typeof(APPContext))]
-    partial class APPContextModelSnapshot : ModelSnapshot
+    [Migration("20250304225129_AddSourcesTable")]
+    partial class AddSourcesTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -266,9 +269,6 @@ namespace shrimpcast.Migrations
                     b.Property<string>("StreamDescription")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<bool>("StreamEnabled")
-                        .HasColumnType("boolean");
 
                     b.Property<string>("StreamTitle")
                         .IsRequired()
@@ -601,9 +601,6 @@ namespace shrimpcast.Migrations
                     b.Property<int?>("ConfigurationId")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<bool>("IsEnabled")
                         .HasColumnType("boolean");
 
@@ -612,6 +609,7 @@ namespace shrimpcast.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Thumbnail")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Url")
@@ -628,10 +626,7 @@ namespace shrimpcast.Migrations
 
                     b.HasIndex("ConfigurationId");
 
-                    b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.ToTable("Source", (string)null);
+                    b.ToTable("Source");
                 });
 
             modelBuilder.Entity("shrimpcast.Entities.DB.TorExitNode", b =>

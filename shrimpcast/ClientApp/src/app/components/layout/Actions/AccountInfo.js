@@ -75,8 +75,13 @@ const AccountInfo = (props) => {
   return (
     <>
       <Tooltip title="Account info">
-        <IconButton onClick={handleOpen} size="small" color="primary">
-          <AccountCircleIcon />
+        <IconButton
+          sx={{ backgroundColor: "primary.700", borderRadius: "0px" }}
+          onClick={handleOpen}
+          size="small"
+          color="primary"
+        >
+          <AccountCircleIcon sx={{ color: "primary.300" }} />
         </IconButton>
       </Tooltip>
       <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth>

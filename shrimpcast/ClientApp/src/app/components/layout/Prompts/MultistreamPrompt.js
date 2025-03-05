@@ -1,33 +1,35 @@
 import { red } from "@mui/material/colors";
-import LocalStorageManager from "../../../managers/LocalStorageManager";
 import NotificationBar from "./NotificationBar";
 import LiveTvIcon from "@mui/icons-material/LiveTv";
+import { useState } from "react";
+import GenericActionList from "../Actions/GenericActionList";
 
-const getNameWithoutExtension = (url) => {
-  const parts = url.split("/");
-  const filename = parts[parts.length - 1];
-  const filenameWithoutExtension = filename.split(".")[0];
-  return filenameWithoutExtension;
-};
-
-const MultistreamPrompt = (props) => {
-  const { configuration, useMultistreamSecondary } = props,
-    { primaryStreamUrl, secondaryStreamUrl, primaryUrlName, secondaryUrlName } = configuration,
-    rawUrlName = getNameWithoutExtension(useMultistreamSecondary ? primaryStreamUrl : secondaryStreamUrl),
-    sourceName = useMultistreamSecondary ? primaryUrlName || rawUrlName : secondaryUrlName || rawUrlName,
-    toggleSource = () => {
-      const status = LocalStorageManager.toggleMultistreamStatus();
-      props.setMultistreamSecondary(status);
-    };
+const MultistreamPrompt = ({ streamStatus }) => {
+  const [openSwitchSource, setSwitchSource] = useState(false);
 
   return (
-    <NotificationBar
-      onClick={toggleSource}
-      text={`Multistreams: click here to watch ${sourceName}`}
-      icon={LiveTvIcon}
-      palette={red}
-      skipCloseButton={true}
-    />
+    <>
+      <NotificationBar
+        onClick={() => setSwitchSource(true)}
+        text={`Multistreams: click  to switch streams`}
+        icon={LiveTvIcon}
+        palette={red}
+        skipCloseButton={true}
+      />
+      {openSwitchSource && (
+        <GenericActionList
+          skipButton={true}
+          title="Active streams"
+          getItems={() => streamStatus.sources}
+          contentIdentifier="name"
+          imageIdentifier="thumbnail"
+          identifier="sourceId"
+          closeCallback={() => setSwitchSource(false)}
+          useLinks={true}
+          skipFullWidth={true}
+        />
+      )}
+    </>
   );
 };
 

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components.Web;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics;
 using System.Text.Json.Serialization;
 
 namespace shrimpcast.Entities.DB
@@ -19,19 +20,11 @@ namespace shrimpcast.Entities.DB
 
         public required int MaxMessagesToShow { get; set; }
 
-        public required string? PrimaryStreamUrl { get; set; }
-
-        public required string? PrimaryUrlName { get; set; }
-
-        public required string? SecondaryStreamUrl { get; set; }
-
-        public required string? SecondaryUrlName { get; set; }
+        public required bool HideStreamTitle { get; set; }
 
         public required bool StreamEnabled { get; set; }
 
-        public required bool EnableMultistreams { get; set; }
-
-        public required bool HideStreamTitle { get; set; }
+        public List<Source> Sources { get; set; } = [];
 
         public required string StreamTitle { get; set; }
 
@@ -66,12 +59,6 @@ namespace shrimpcast.Entities.DB
         public required string PollTitle { get; set; }
 
         public required int MinSentToParticipate { get; set; }
-
-        public required bool UseLegacyPlayer { get; set; }
-
-        public required bool UsePrimarySource { get; set; }
-
-        public required bool UseRTCEmbed { get; set; }
 
         public required int MuteLenghtInMinutes { get; set; }
 
@@ -221,14 +208,21 @@ namespace shrimpcast.Entities.DB
                     values = new object[]
                     {
                         new { name = nameof(config.StreamEnabled).ToLower(), label = "Enable stream", value = config.StreamEnabled },
-                        new { name = nameof(config.UsePrimarySource).ToLower(), label = "Use primary source", value = config.UsePrimarySource },
-                        new { name = nameof(config.UseLegacyPlayer).ToLower(), label = "Use native player", value = config.UseLegacyPlayer },
-                        new { name = nameof(config.UseRTCEmbed).ToLower(), label = "Treat URL as embed", value = config.UseRTCEmbed },
-                        new { name = nameof(config.EnableMultistreams).ToLower(), label = "Enable multistreams", value = config.EnableMultistreams },
-                        new { name = nameof(config.PrimaryStreamUrl).ToLower(), label = "Primary stream URL", value = config.PrimaryStreamUrl },
-                        new { name = nameof(config.PrimaryUrlName).ToLower(), label = " (optional) Primary URL custom name", value = config.PrimaryUrlName },
-                        new { name = nameof(config.SecondaryStreamUrl).ToLower(), label = "Secondary stream URL", value = config.SecondaryStreamUrl },
-                        new { name = nameof(config.SecondaryUrlName).ToLower(), label = "(optional) Secondary URL custom name", value = config.SecondaryUrlName },
+                        new
+                        {
+                            name = nameof(config.Sources).ToLower(),
+                            label = "Sources",
+                            fields = new[]
+                            {
+                                new { name = nameof(Source.IsEnabled).ToLower(), label = "Enabled" },
+                                new { name = nameof(Source.Name).ToLower(), label = "Name" },
+                                new { name = nameof(Source.Url).ToLower(), label = "URL" },
+                                new { name = nameof(Source.Thumbnail).ToLower(), label = "Thumbnail" },
+                                new { name = nameof(Source.UseLegacyPlayer).ToLower(), label = "Legacy player" },
+                                new { name = nameof(Source.UseRTCEmbed).ToLower(), label = "Embed" },
+                                new { name = "delete", label = string.Empty },
+                            }
+                        }
                     }
                 },
                 new

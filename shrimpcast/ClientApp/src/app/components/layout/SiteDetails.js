@@ -1,13 +1,16 @@
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, useTheme } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2";
 import NotificationPrompt from "./Prompts/NotificationPrompt";
 import GithubPrompt from "./Prompts/GithubPrompt";
 import MultistreamPrompt from "./Prompts/MultistreamPrompt";
 
-const BlockSx = {
+const BlockSx = (theme) => ({
     marginLeft: 3,
     marginRight: 5,
-  },
+    [theme.breakpoints.down("md")]: {
+      display: "none",
+    },
+  }),
   TitleSx = {
     fontFamily: "Roboto, sans-serif",
     fontSize: "3rem",
@@ -26,23 +29,18 @@ const BlockSx = {
   };
 
 const SiteDetails = (props) => {
-  const {
-      enableChristmasTheme,
-      hideStreamTitle,
-      streamDescription,
-      enableMultistreams,
-      streamEnabled,
-      enableHalloweenTheme,
-    } = props.configuration,
-    streamTitle = hideStreamTitle ? null : props.configuration.streamTitle;
+  const { enableChristmasTheme, hideStreamTitle, streamDescription, enableHalloweenTheme } = props.configuration,
+    { streamEnabled, isMultistreaming, mustPickStream } = props.streamStatus,
+    streamTitle = hideStreamTitle ? null : props.configuration.streamTitle,
+    theme = useTheme();
 
   return (
     <Grid width="100%" container>
-      {streamEnabled && enableMultistreams && <MultistreamPrompt {...props} />}
+      {streamEnabled && isMultistreaming && !mustPickStream && <MultistreamPrompt streamStatus={props.streamStatus} />}
       <NotificationPrompt {...props} />
       <GithubPrompt {...props} />
       <Grid>
-        <Box sx={BlockSx}>
+        <Box sx={BlockSx(theme)}>
           <Box sx={{ wordBreak: "break-word" }}>
             <Typography
               color="secondary.main"
