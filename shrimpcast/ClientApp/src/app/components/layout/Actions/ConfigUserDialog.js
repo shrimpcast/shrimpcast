@@ -18,6 +18,7 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import AdminActionsManager from "../../../managers/AdminActionsManager";
 import TabPanel from "../TabPanel";
 import ColourPicker from "../../others/ColourPicker";
+import SourceList from "./Sources/Sources";
 
 const a11yProps = (index) => {
   return {
@@ -143,6 +144,13 @@ const ConfigUserDialog = (props) => {
                       variant="outlined"
                       type="number"
                       sx={{ mb: "10px", display: "block" }}
+                    />
+                  ) : configItem.name === config.sourceKey ? (
+                    <SourceList
+                      key={configItem.name}
+                      fields={configItem.fields}
+                      sources={config.unorderedConfig[configItem.name]}
+                      setConfig={setConfig}
                     />
                   ) : !config.colorPickerKeys.includes(configItem.name) ? (
                     <TextField

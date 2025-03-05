@@ -617,6 +617,7 @@ namespace shrimpcast.Hubs
                 OrderedConfig = Configuration.BuildJSONConfiguration(),
                 UnorderedConfig = unorderedConfig,
                 OpenKey = nameof(unorderedConfig.OpenAt).ToLower(),
+                SourceKey = nameof(unorderedConfig.Sources).ToLower(),
                 ColorPickerKeys = new string[]
                 {
                     nameof(unorderedConfig.PalettePrimary).ToLower(),

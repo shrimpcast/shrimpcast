@@ -66,7 +66,7 @@ const Layout = (props) => {
   const theme = useTheme(),
     multistreamStatus = LocalStorageManager.shouldShowSecondaryMultistream(),
     [useMultistreamSecondary, setMultistreamSecondary] = useState(multistreamStatus),
-    [useFullChatMode, setFullChatMode] = useState(false);
+    [useFullChatMode, setFullChatMode] = useState(true);
 
   return (
     <>

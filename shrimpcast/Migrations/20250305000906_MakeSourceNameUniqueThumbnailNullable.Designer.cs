@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using shrimpcast.Data;
@@ -11,9 +12,11 @@ using shrimpcast.Data;
 namespace shrimpcast.Migrations
 {
     [DbContext(typeof(APPContext))]
-    partial class APPContextModelSnapshot : ModelSnapshot
+    [Migration("20250305000906_MakeSourceNameUniqueThumbnailNullable")]
+    partial class MakeSourceNameUniqueThumbnailNullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -597,9 +600,6 @@ namespace shrimpcast.Migrations
 
                     b.Property<int?>("ConfigurationId")
                         .HasColumnType("integer");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsEnabled")
                         .HasColumnType("boolean");

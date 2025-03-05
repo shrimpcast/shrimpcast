@@ -7,14 +7,21 @@ namespace shrimpcast.Data.Repositories
     public class ConfigurationRepository : IConfigurationRepository
     {
         private readonly APPContext _context;
+        private readonly ISourceRepository _sourceRepository;
 
-        public ConfigurationRepository(APPContext context)
+        public ConfigurationRepository(APPContext context, ISourceRepository sourceRepository)
         {
             _context = context;
+            _sourceRepository = sourceRepository;
         }
 
-        public async Task<Configuration> GetConfigurationAsync()=>
-            await _context.Configurations.AsNoTracking().FirstAsync();
+        public async Task<Configuration> GetConfigurationAsync()
+        {
+            var config = await _context.Configurations.AsNoTracking().FirstAsync();
+            config.Sources = await _sourceRepository.GetAll();
+            return config;
+        }
+            
 
         public async Task<bool> SaveAsync(Configuration configuration)
         {
@@ -37,7 +44,9 @@ namespace shrimpcast.Data.Repositories
             configuration.IPServiceApiKeyNotMapped = null;
             configuration.BTCServerApiKeyNotMapped = null;
             configuration.BTCServerWebhookSecretNotMapped = null;
-            return updated > 0;
+            var updateSources = await _sourceRepository.Save(configuration.Sources);
+            if (updateSources) configuration.Sources = await _sourceRepository.GetAll();
+            return updated > 0 || updateSources ? true : throw new Exception("Could not update record.");
         }
     }
 }
