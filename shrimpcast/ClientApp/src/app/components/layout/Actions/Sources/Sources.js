@@ -236,7 +236,7 @@ const Sources = ({ fields, sources, setConfig }) => {
                 <TableCell>
                   <TextField
                     value={newSourceData.name}
-                    onChange={(e) => setNewSourceData({ ...newSourceData, name: e.target.value })}
+                    onChange={(e) => setNewSourceData({ ...newSourceData, name: e.target.value.trim() })}
                     label="Name"
                     variant="outlined"
                     size="small"
@@ -247,7 +247,7 @@ const Sources = ({ fields, sources, setConfig }) => {
                 <TableCell>
                   <TextField
                     value={newSourceData.url}
-                    onChange={(e) => setNewSourceData({ ...newSourceData, url: e.target.value })}
+                    onChange={(e) => setNewSourceData({ ...newSourceData, url: e.target.value.trim() })}
                     label="URL"
                     variant="outlined"
                     size="small"
@@ -257,7 +257,7 @@ const Sources = ({ fields, sources, setConfig }) => {
                 <TableCell>
                   <TextField
                     value={newSourceData.thumbnail}
-                    onChange={(e) => setNewSourceData({ ...newSourceData, thumbnail: e.target.value })}
+                    onChange={(e) => setNewSourceData({ ...newSourceData, thumbnail: e.target.value.trim() })}
                     label="Thumbnail URL"
                     variant="outlined"
                     size="small"
