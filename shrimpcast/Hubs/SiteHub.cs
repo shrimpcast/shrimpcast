@@ -9,6 +9,7 @@ using shrimpcast.Entities;
 using shrimpcast.Entities.DB;
 using shrimpcast.Entities.DTO;
 using shrimpcast.Hubs.Dictionaries;
+using System;
 using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
 using Message = shrimpcast.Entities.DB.Message;
@@ -931,7 +932,7 @@ namespace shrimpcast.Hubs
                         await SendOBSCommand(message);
                         return true;
                     case string _message when _message.StartsWith(Constants.TRY_IP_SERVICE_COMMAND):
-                        await TryIPService(connection.RemoteAdress);
+                        await TryIPService(connection.RemoteAdress, message);
                         return true;
                     default:
                         return false;
@@ -999,8 +1000,10 @@ namespace shrimpcast.Hubs
             }
         }
 
-        private async Task TryIPService(string RemoteAddress)
+        private async Task TryIPService(string RemoteAddress, string Message)
         {
+            var matches = OBSRegex().Matches(Message);
+            if (matches.Count != 0) RemoteAddress = matches[0].Value.Trim();
             await DispatchSystemMessage($"Executing {Constants.TRY_IP_SERVICE_COMMAND} command...");
             string? result;
             try
