@@ -1,8 +1,8 @@
 import { Box, Typography } from "@mui/material";
 import { useRef, useState } from "react";
 import ReactPlayer from "react-player";
-import VideoJSPlayer from "./VideoJSPlayer";
-import XPlayer from "./XPlayer";
+import VideoJSPlayer from "./players/VideoJSPlayer";
+import XGPlayer from "./players/XGPlayer";
 
 const WrapperSx = {
   width: "100%",
@@ -13,23 +13,10 @@ const WrapperSx = {
 };
 
 const SitePlayer = (props) => {
-  const {
-      enableMultistreams,
-      usePrimarySource,
-      primaryStreamUrl,
-      secondaryStreamUrl,
-      streamEnabled,
-      useRTCEmbed,
-      useLegacyPlayer,
-    } = props.configuration,
-    url = enableMultistreams
-      ? props.useMultistreamSecondary
-        ? secondaryStreamUrl
-        : primaryStreamUrl
-      : usePrimarySource
-      ? primaryStreamUrl
-      : secondaryStreamUrl,
-    [muted, setMuted] = useState(false),
+  const { streamStatus } = props,
+    { source, streamEnabled, mustPickStream } = streamStatus,
+    { useRTCEmbed, useLegacyPlayer } = source,
+    url = source.url || "",
     video = useRef(),
     videoJsOptions = {
       autoplay: true,
@@ -43,6 +30,9 @@ const SitePlayer = (props) => {
         },
       ],
     },
+    isFLV = url.endsWith(".flv"),
+    forceM3U8 = isFLV && !window.MediaSource,
+    [muted, setMuted] = useState(false),
     tryPlay = () => {
       let player = video.current.getInternalPlayer();
       if (player.play !== undefined) {
@@ -50,9 +40,7 @@ const SitePlayer = (props) => {
       } else {
         player.playVideo();
       }
-    },
-    isFLV = url.endsWith(".flv"),
-    forceM3U8 = isFLV && !window.MediaSource;
+    };
 
   if (isFLV && forceM3U8) {
     videoJsOptions.sources[0].src = url.substr(0, url.lastIndexOf(".")) + ".m3u8";
@@ -60,16 +48,12 @@ const SitePlayer = (props) => {
   }
 
   return streamEnabled ? (
-    isFLV && !forceM3U8 ? (
-      <XPlayer url={url} />
+    mustPickStream ? (
+      "To be implemented"
+    ) : isFLV && !forceM3U8 ? (
+      <XGPlayer url={url} />
     ) : useRTCEmbed ? (
-      <iframe
-        src={`${url}?muted=false&autoplay=true`}
-        title="rtc-embed"
-        id="rtc-embed"
-        allow="autoplay"
-        allowFullScreen
-      ></iframe>
+      <iframe src={`${url}`} title="rtc-embed" id="rtc-embed" allow="autoplay" allowFullScreen></iframe>
     ) : !useLegacyPlayer ? (
       <VideoJSPlayer options={videoJsOptions} />
     ) : (

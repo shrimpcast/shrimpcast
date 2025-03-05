@@ -29,20 +29,14 @@ const BlockSx = (theme) => ({
   };
 
 const SiteDetails = (props) => {
-  const {
-      enableChristmasTheme,
-      hideStreamTitle,
-      streamDescription,
-      enableMultistreams,
-      streamEnabled,
-      enableHalloweenTheme,
-    } = props.configuration,
+  const { enableChristmasTheme, hideStreamTitle, streamDescription, enableHalloweenTheme } = props.configuration,
+    { streamEnabled, isMultistreaming, mustPickStream } = props.streamStatus,
     streamTitle = hideStreamTitle ? null : props.configuration.streamTitle,
     theme = useTheme();
 
   return (
     <Grid width="100%" container>
-      {streamEnabled && enableMultistreams && <MultistreamPrompt {...props} />}
+      {streamEnabled && isMultistreaming && !mustPickStream && <MultistreamPrompt streamStatus={props.streamStatus} />}
       <NotificationPrompt {...props} />
       <GithubPrompt {...props} />
       <Grid>

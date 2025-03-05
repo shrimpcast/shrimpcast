@@ -17,6 +17,7 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import ManageUserDialog from "../../chat/ManageUserDialog";
 import GenericAddTextItemDialog from "./GenericAddTextItemDialog";
+import StyledLink from "./Sources/StyledLink";
 
 const GenericActionList = (props) => {
   const [open, setOpen] = useState(props.skipButton || false),
@@ -60,7 +61,7 @@ const GenericActionList = (props) => {
           </IconButton>
         </Tooltip>
       )}
-      <Dialog open={open} onClose={setClosed} maxWidth={"sm"} fullWidth>
+      <Dialog open={open} onClose={setClosed} maxWidth={"sm"} fullWidth={!props.skipFullWidth}>
         <DialogTitle sx={{ fontSize: "24px", paddingBottom: "7.5px" }}>
           <Box display="flex" width="100%" marginBottom={"10px"}>
             {props.title}
@@ -85,6 +86,7 @@ const GenericActionList = (props) => {
                 items.map((item) => (
                   <ListItem
                     key={item[props.identifier]}
+                    sx={props.useLinks ? { paddingRight: "16px" } : null}
                     secondaryAction={
                       <>
                         {item.sessionId && (
@@ -104,7 +106,20 @@ const GenericActionList = (props) => {
                       </>
                     }
                   >
-                    <ListItemText primary={item[props.contentIdentifier]} sx={{ wordBreak: "break-word" }} />
+                    <ListItemText
+                      primary={
+                        !props.useLinks ? (
+                          item[props.contentIdentifier]
+                        ) : (
+                          <StyledLink
+                            content={item[props.contentIdentifier]}
+                            backgroundUrl={item[props.imageIdentifier]}
+                            setClosed={setClosed}
+                          />
+                        )
+                      }
+                      sx={{ wordBreak: "break-word" }}
+                    />
                   </ListItem>
                 ))
               )}

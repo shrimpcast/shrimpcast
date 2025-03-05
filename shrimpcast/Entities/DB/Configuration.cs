@@ -22,6 +22,8 @@ namespace shrimpcast.Entities.DB
 
         public required bool HideStreamTitle { get; set; }
 
+        public required bool StreamEnabled { get; set; }
+
         public List<Source> Sources { get; set; } = [];
 
         public required string StreamTitle { get; set; }
@@ -205,6 +207,7 @@ namespace shrimpcast.Entities.DB
                     name = "Stream",
                     values = new object[]
                     {
+                        new { name = nameof(config.StreamEnabled).ToLower(), label = "Enable stream", value = config.StreamEnabled },
                         new
                         {
                             name = nameof(config.Sources).ToLower(),

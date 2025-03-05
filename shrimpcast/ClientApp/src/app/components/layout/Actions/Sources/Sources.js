@@ -24,62 +24,60 @@ import CheckIcon from "@mui/icons-material/Check";
 import CancelIcon from "@mui/icons-material/Cancel";
 
 const styles = {
-  container: {
-    p: 3,
-    display: "flex",
-    flexDirection: "column",
-    height: "100%",
-    gap: 2,
-  },
-  tableContainer: {
-    boxShadow: 3,
-    borderRadius: 2,
-    flexGrow: 1,
-  },
-  thumbnail: {
-    height: 50,
-    borderRadius: 1,
-    boxShadow: 1,
-    transition: "transform 0.3s ease-in-out",
-    "&:hover": {
-      transform: "scale(1.05)",
+    container: {
+      display: "flex",
+      flexDirection: "column",
+      height: "100%",
+      gap: 2,
+    },
+    tableContainer: {
+      boxShadow: 3,
+      borderRadius: 2,
+      flexGrow: 1,
+    },
+    thumbnail: {
+      height: 50,
+      borderRadius: 1,
+      boxShadow: 1,
+      transition: "transform 0.3s ease-in-out",
+      "&:hover": {
+        transform: "scale(1.05)",
+      },
+    },
+    thumbnailContainer: {
+      position: "relative",
+      display: "inline-block",
+    },
+    thumbnailOverlay: {
+      position: "absolute",
+      top: 0,
+      right: 0,
+      bottom: 0,
+      left: 0,
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      opacity: 0,
+      transition: "opacity 0.3s ease-in-out",
+      "&:hover": {
+        opacity: 1,
+      },
+    },
+    editThumbnailButton: {
+      backgroundColor: "rgba(0, 0, 0, 0.5)",
+      color: "white",
+      "&:hover": {
+        backgroundColor: "rgba(0, 0, 0, 0.7)",
+      },
+    },
+    addButton: {
+      width: "100%",
+      display: "flex",
+      alignItems: "center",
+      gap: 1,
     },
   },
-  thumbnailContainer: {
-    position: "relative",
-    display: "inline-block",
-  },
-  thumbnailOverlay: {
-    position: "absolute",
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    opacity: 0,
-    transition: "opacity 0.3s ease-in-out",
-    "&:hover": {
-      opacity: 1,
-    },
-  },
-  editThumbnailButton: {
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    color: "white",
-    "&:hover": {
-      backgroundColor: "rgba(0, 0, 0, 0.7)",
-    },
-  },
-  addButton: {
-    width: "100%",
-    display: "flex",
-    alignItems: "center",
-    gap: 1,
-  },
-};
-
-const DEFAULT_THUMBNAIL = "/images/video-thumbnail.jpg";
+  DEFAULT_THUMBNAIL = "/images/video-thumbnail.jpg";
 
 const Sources = ({ fields, sources, setConfig }) => {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false),

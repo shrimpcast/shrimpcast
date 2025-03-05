@@ -9,7 +9,7 @@ import Chat from "./chat/Chat";
 import ShowFireworks from "./others/ShowFireworks";
 import ShowSnow from "./others/ShowSnow";
 import ShowPing from "./others/ShowPing";
-import LocalStorageManager from "../managers/LocalStorageManager";
+import { useLocation } from "react-router-dom";
 
 const MainGridSx = {
     overflow: "hidden",
@@ -64,9 +64,35 @@ const MainGridSx = {
 
 const Layout = (props) => {
   const theme = useTheme(),
-    multistreamStatus = LocalStorageManager.shouldShowSecondaryMultistream(),
-    [useMultistreamSecondary, setMultistreamSecondary] = useState(multistreamStatus),
-    [useFullChatMode, setFullChatMode] = useState(true);
+    [useFullChatMode, setFullChatMode] = useState(false),
+    ResolveSources = () => {
+      const { configuration } = props,
+        { sources } = configuration,
+        location = useLocation(),
+        sourceLocation = location.pathname?.replace("/", ""),
+        enabledSources = sources.filter((source) => source.isEnabled),
+        locationMatchesSource = enabledSources.find(
+          (source) => source.name.toLowerCase() === sourceLocation.toLowerCase()
+        ),
+        isMultistreaming = enabledSources?.length > 1,
+        source = locationMatchesSource
+          ? locationMatchesSource
+          : !isMultistreaming && enabledSources?.length
+          ? enabledSources[0]
+          : {},
+        mustPickStream = isMultistreaming && !locationMatchesSource;
+
+      const StreamStatus = {
+        streamEnabled: props.configuration.streamEnabled && enabledSources?.length ? true : false,
+        isMultistreaming: enabledSources?.length > 1,
+        source,
+        mustPickStream,
+        sources: enabledSources,
+      };
+
+      return StreamStatus;
+    },
+    streamStatus = ResolveSources();
 
   return (
     <>
@@ -80,14 +106,10 @@ const Layout = (props) => {
         {!useFullChatMode && (
           <Grid xs={12} md={8} lg={9} xl={10} sx={PlayerBoxSx(theme)} className={"scrollbar-custom"}>
             <Box sx={PlayerContainerSx}>
-              <SitePlayer {...props} useMultistreamSecondary={useMultistreamSecondary} />
+              <SitePlayer streamStatus={streamStatus} {...props} />
             </Box>
             <Box sx={SiteDetailsSx}>
-              <SiteDetails
-                {...props}
-                useMultistreamSecondary={useMultistreamSecondary}
-                setMultistreamSecondary={setMultistreamSecondary}
-              />
+              <SiteDetails {...props} streamStatus={streamStatus} />
             </Box>
           </Grid>
         )}

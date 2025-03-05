@@ -21,6 +21,7 @@
     "react-flip-toolkit": "^7.1.0",
     "react-helmet-async": "^2.0.4",
     "react-player": "^2.13.0",
+    "react-router-dom": "^7.2.0",
     "react-scripts": "^5.0.1",
     "react-snowfall": "^1.2.1",
     "react-string-replace": "^1.1.1",
