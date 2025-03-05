@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import ReactPlayer from "react-player";
 import VideoJSPlayer from "./players/VideoJSPlayer";
 import XGPlayer from "./players/XGPlayer";
+import PickSource from "../layout/Actions/Sources/PickSource";
 
 const WrapperSx = {
   width: "100%",
@@ -49,7 +50,7 @@ const SitePlayer = (props) => {
 
   return streamEnabled ? (
     mustPickStream ? (
-      "To be implemented"
+      <PickSource sources={streamStatus.sources} />
     ) : isFLV && !forceM3U8 ? (
       <XGPlayer url={url} />
     ) : useRTCEmbed ? (

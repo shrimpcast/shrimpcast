@@ -18,6 +18,7 @@ const GenericAddTextItemDialog = (props) => {
       defaultValue,
       editMode,
       customCallback,
+      allowEmptyEdit,
     } = props,
     [loading, setLoading] = useState(false),
     [item, setItem] = useState(defaultValue || ""),
@@ -58,7 +59,7 @@ const GenericAddTextItemDialog = (props) => {
         {loading ? (
           <CircularProgress size={24} />
         ) : (
-          <Button onClick={submit} disabled={!item}>
+          <Button onClick={submit} disabled={!item && !allowEmptyEdit}>
             {editMode ? "Edit" : "Add"}
           </Button>
         )}

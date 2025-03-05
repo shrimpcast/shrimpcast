@@ -77,7 +77,7 @@ const styles = {
       gap: 1,
     },
   },
-  DEFAULT_THUMBNAIL = "/images/video-thumbnail.jpg";
+  DEFAULT_THUMBNAIL = "/images/video_thumbnail.png";
 
 const Sources = ({ fields, sources, setConfig }) => {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false),
@@ -89,6 +89,7 @@ const Sources = ({ fields, sources, setConfig }) => {
       value: null,
       sourceId: null,
       field: null,
+      allowEmptyEdit: false,
     }),
     [isAddingSource, setIsAddingSource] = useState(false),
     defaultNewSource = {
@@ -104,9 +105,9 @@ const Sources = ({ fields, sources, setConfig }) => {
       setSourceToDelete(source);
       setDeleteConfirmOpen(true);
     },
-    openEditContent = (title, description, value, sourceId, field) => {
+    openEditContent = (title, description, value, sourceId, field, allowEmptyEdit) => {
       setEditOpen(true);
-      setEditContent({ title, description, value, sourceId, field });
+      setEditContent({ title, description, value, sourceId, field, allowEmptyEdit });
     },
     closeAdd = () => {
       setIsAddingSource(false);
@@ -191,7 +192,7 @@ const Sources = ({ fields, sources, setConfig }) => {
                     <Box sx={styles.thumbnailOverlay}>
                       <IconButton
                         onClick={() =>
-                          openEditContent("Thumbnail", "URL", source.thumbnail, source.sourceId, "thumbnail")
+                          openEditContent("Thumbnail", "URL", source.thumbnail, source.sourceId, "thumbnail", true)
                         }
                         sx={styles.editThumbnailButton}
                       >
@@ -322,6 +323,7 @@ const Sources = ({ fields, sources, setConfig }) => {
           defaultValue={editContent.value}
           setAddDialogOpened={setEditOpen}
           editMode={true}
+          allowEmptyEdit={editContent.allowEmptyEdit}
           customCallback={(value) => updateConfig(value, { sourceId: editContent.sourceId }, editContent.field)}
         />
       )}

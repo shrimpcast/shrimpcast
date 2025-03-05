@@ -65,9 +65,9 @@ const MainGridSx = {
 const Layout = (props) => {
   const theme = useTheme(),
     [useFullChatMode, setFullChatMode] = useState(false),
+    { configuration } = props,
     ResolveSources = () => {
-      const { configuration } = props,
-        { sources } = configuration,
+      const { sources } = configuration,
         location = useLocation(),
         sourceLocation = location.pathname?.replace("/", ""),
         enabledSources = sources.filter((source) => source.isEnabled),
@@ -83,7 +83,7 @@ const Layout = (props) => {
         mustPickStream = isMultistreaming && !locationMatchesSource;
 
       const StreamStatus = {
-        streamEnabled: props.configuration.streamEnabled && enabledSources?.length ? true : false,
+        streamEnabled: configuration.streamEnabled && enabledSources?.length ? true : false,
         isMultistreaming: enabledSources?.length > 1,
         source,
         mustPickStream,
@@ -118,7 +118,7 @@ const Layout = (props) => {
           md={useFullChatMode ? 12 : 4}
           lg={useFullChatMode ? 12 : 3}
           xl={useFullChatMode ? 12 : 2}
-          sx={[ChatBoxSx(theme, useFullChatMode), props.configuration.enableHalloweenTheme && HalloweenAnimSx]}
+          sx={[ChatBoxSx(theme, useFullChatMode), configuration.enableHalloweenTheme && HalloweenAnimSx]}
         >
           <Chat {...props} />
         </Grid>
