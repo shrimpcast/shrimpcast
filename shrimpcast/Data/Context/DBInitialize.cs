@@ -30,19 +30,28 @@ namespace shrimpcast.Data
 
             List<string> types = ["ConfigurationId", "ChatEnabled", "MaxConnectionsPerIP", "DefaultName", "MaxMessagesToShow", "PrimaryStreamUrl", "SecondaryStreamUrl", "StreamEnabled", "StreamTitle", "StreamDescription", "MessageDelayTime", "RequiredTokenTimeInMinutes", "OffsetDateTimeInMinutes", "ShowPoll", "AcceptNewOptions", "AcceptNewVotes", "PollTitle", "MinSentToParticipate", "UseLegacyPlayer", "UsePrimarySource", "UseRTCEmbed", "MuteLenghtInMinutes", "EnableFireworks", "EnableChristmasTheme", "SnowflakeCount", "BlockTORConnections", "OBSMainScene", "OBSMainSource", "OBSKinoSource", "OBSMusicSource", "OpenAt", "MinABTimeInMs", "MaxABTimeInMs", "VAPIDPublicKey", "VAPIDPrivateKey", "VAPIDMail"];
             List<object?> values = [];
-            
+            var RemovedTypes = new Dictionary<string, object> 
+            {
+                { "BlockTORConnections", false },
+                { "PrimaryStreamUrl", string.Empty },
+                { "SecondaryStreamUrl", string.Empty },
+                { "UseRTCEmbed", false },
+                { "UsePrimarySource", false},
+                { "UseLegacyPlayer", false }
+            };
+
             foreach (string type in types)
             {
                 var property = typeof(Configuration).GetProperty(type);
-                if (property == null) continue;
+                if (property == null)
+                {
+                    values.Add(RemovedTypes[type]);
+                    continue;
+                };
                 Type propType = property.PropertyType;
                 if (typeof(string) == propType) values.Add(string.Empty);
                 else values.Add(Activator.CreateInstance(propType));
             }
-
-            // Manually add renamed columns:
-            // -- BlockTORConnections to SiteBlockTORConnections
-            values.Insert(types.IndexOf("BlockTORConnections"), false);
 
             values[types.IndexOf("MaxConnectionsPerIP")] = 3;
             values[types.IndexOf("DefaultName")] = "Anonymous";
