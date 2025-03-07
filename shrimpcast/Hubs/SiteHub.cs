@@ -934,6 +934,9 @@ namespace shrimpcast.Hubs
                     case string _message when _message.StartsWith(Constants.TRY_IP_SERVICE_COMMAND):
                         await TryIPService(connection.RemoteAdress, message);
                         return true;
+                    case string _message when _message.StartsWith(Constants.RESET_VPN_RECORDS):
+                        await ResetVPNRecords();
+                        return true;
                     default:
                         return false;
                 }
@@ -1016,6 +1019,20 @@ namespace shrimpcast.Hubs
                 result = ex.Message;
             }
             await DispatchSystemMessage(result);
+        }
+
+        private async Task ResetVPNRecords()
+        {
+            await DispatchSystemMessage($"Executing {Constants.RESET_VPN_RECORDS} command...");
+            try
+            {
+                var result = await _vpnAddressRepository.ResetRecords();
+                await DispatchSystemMessage($"Removed {result} records");
+            }
+            catch (Exception ex)
+            {
+                await DispatchSystemMessage(ex.Message);
+            }
         }
 
         [GeneratedRegex(@"(\d+) (.+)$")]

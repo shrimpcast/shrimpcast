@@ -59,6 +59,9 @@ namespace shrimpcast.Data.Repositories.Interfaces
             return responseContent;
         }
 
+        public async Task<int> ResetRecords() =>
+            await _context.VpnAddresses.ExecuteDeleteAsync();
+
         private async Task<int> VerifyAddress(string RemoteAddress)
         {
             try
@@ -83,5 +86,6 @@ namespace shrimpcast.Data.Repositories.Interfaces
             // If the service is unavailable, return -1 and temporarily allow the IP.
             return -1;
         }
+
     }
 }

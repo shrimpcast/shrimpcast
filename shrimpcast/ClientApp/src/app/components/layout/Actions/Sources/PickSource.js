@@ -54,29 +54,31 @@ const DEFAULT_THUMBNAIL = "/images/video_thumbnail.png",
     left: 0,
     width: "100%",
     zIndex: 2,
-    ml: "10px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
   },
   TextSx = (hoveredIndex, index) => ({
-    fontSize: { xs: "23px", sm: "26px", md: "30px" },
+    fontSize: { xs: "20px", sm: "24px", md: "32px", lg: "48px" },
     color: "white",
-    fontWeight: 600,
+    fontWeight: 700,
     textTransform: "uppercase",
     fontFamily: "'Inter', sans-serif",
-    letterSpacing: "-0.5px",
-    transform: hoveredIndex === index ? "translateY(0)" : "translateY(5px)",
-    transition: "transform 0.3s ease",
+    letterSpacing: "-0.75px",
+    textShadow: "2px 2px 6px rgba(0, 0, 0, 0.6)",
+    transition: "transform 0.3s ease, opacity 0.3s ease",
+    opacity: hoveredIndex === index ? 1 : 0.9,
+    mb: 1,
+    ml: 2,
   }),
   PlayButtonSx = (hoveredIndex, index) => ({
     fontSize: 48,
     color: "white",
-    filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.3))",
     opacity: hoveredIndex === index ? 1 : 0,
-    transform: hoveredIndex === index ? "scale(1)" : "scale(0.8)",
     transition: "all 0.3s ease",
-    mr: 2,
+    position: "absolute",
+    left: "50%",
+    top: "50%",
+    transform: "translate(-50%, -50%)",
+    webkitTransform: "translate(-50%, -50%)",
+    textAlign: "center",
   });
 
 const PickSource = ({ sources }) => {
@@ -103,8 +105,8 @@ const PickSource = ({ sources }) => {
               <Box sx={HoverSx(hoveredIndex, index)} />
               <Box sx={TextContainerSx}>
                 <Typography sx={TextSx(hoveredIndex, index)}>{source.name}</Typography>
-                <PlayCircleFilledIcon sx={PlayButtonSx(hoveredIndex, index)} />
               </Box>
+              <PlayCircleFilledIcon sx={PlayButtonSx(hoveredIndex, index)} />
             </Box>
           </Link>
         </Box>
