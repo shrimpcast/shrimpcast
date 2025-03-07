@@ -192,17 +192,14 @@ Once you're authenticated as an admin, you will have the following options:
 - **Default name for new users:** Sets the default username assigned to new users.
 
 #### Stream
-![image](https://github.com/user-attachments/assets/b949f460-2e46-4e91-92a8-323d12c95fc2)
+![image](https://github.com/user-attachments/assets/12a213b0-e15b-4275-b16c-0eef40a4cc6c)
 
 - **Enable stream:** Shows or hides the player.
-- **Use primary source:** Specifies whether to use the primary source for the stream. Fallbacks to the secondary source if disabled.
-- **Use native player:** Determines whether to use the browser's native player for streaming.
-- **Treat URL as embed:** Dictates whether to treat URLs as embedded content for streaming purposes.
-- **Enable Multistreams:** Allows users to switch between the primary and secondary sources simultaneously.
-- **Primary stream URL:** Specifies the primary URL source for streaming content.
-- **(optional) Primary URL custom name** Sets the custom name for the primary source that shows on the multistream banner.
-- **Secondary stream URL:** Provides an alternative URL source for streaming content if the primary source is unavailable.
-- **(optional) Secondary URL custom name** Sets the custom name for the secondary source that shows on the multistream banner.
+- **Name:** Source name, also used for routing.
+- **URL:** URL source for the stream feed.
+- **Thumbnail:** Determines the thumbnail used on the multistream preview for each source.
+- **Legacy player:** Determines whether to use the browser's native player for streaming.
+- **Embed:** Dictates whether to treat URLs as embedded content.
 
 #### Poll
 ![image](https://github.com/user-attachments/assets/972273c0-d0c7-4fd5-88ae-e6c13ff99bd6)
