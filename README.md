@@ -76,8 +76,9 @@ To install Shrimpcast, follow these steps:
    ```
 
    Make sure to replace `[YOUR_DOMAIN_NAME]` with your domain name.
+   >Note: as of v1.2.1, you can pass the flag --restreamer to install [restreamer](https://github.com/datarhei/restreamer) instead of [srs-stack/5.12.21](https://github.com/ossrs/oryx/releases/tag/v5.12.21)
 
-2. (Optional) If you're using Cloudflare as a reverse proxy, run:
+3. (Optional) If you're using Cloudflare as a reverse proxy, run:
 
    ```bash
    wget -O cloudflare_setup.sh https://github.com/shrimpcast/shrimpcast/releases/latest/download/cloudflare_setup.sh
@@ -93,6 +94,9 @@ And that's it! Shrimpcast should now be up and running. You can now try to acces
 
 Shrimpcast doesn't come with its own built-in media server; instead, it relies on [srs-stack/5.12.21](https://github.com/ossrs/oryx/releases/tag/v5.12.21).
 
+> [!NOTE]
+> As of v1.2.1, you can pass the flag --restreamer to install [restreamer](https://github.com/datarhei/restreamer) instead of [srs-stack/5.12.21](https://github.com/ossrs/oryx/releases/tag/v5.12.21)
+
 You can access its panel by visiting {your_domain}:2053.
 
 If you're using Cloudflare, for RTMP broadcast, you'll need to bypass the domain proxy (but don't worry, it's already configured to allow 1935!) and stream directly to the VPS IP (e.g., rtmp://{your_vps_ip}/live/livestream).
@@ -100,6 +104,7 @@ If you're using Cloudflare, for RTMP broadcast, you'll need to bypass the domain
 ### Why [srs-stack/5.12.21](https://github.com/ossrs/oryx/releases/tag/v5.12.21)?
 
 Because it's entirely open-source, supports HTTP-FLV for low-latency streaming, and performs admirably.
+>Note: due to certain issues with srs-stack, as of v1.2.1, we are testing [restreamer](https://github.com/datarhei/restreamer). You can pass the flag --restreamer on the install script to use it instead of [srs-stack/5.12.21](https://github.com/ossrs/oryx/releases/tag/v5.12.21)
 
 ### Can I use another media server?
 
