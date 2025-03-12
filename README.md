@@ -16,6 +16,7 @@ Shrimpcast is a highly customizable, flexible, battle-tested, fast, and secure s
 
 - [Features](#features)
 - [Installation](#installation)
+- [Troubleshooting](#troubleshooting)
 - [Media server](#media-server)
 - [Debug](#debug)
 - [Usage](#usage)
@@ -89,6 +90,18 @@ To install Shrimpcast, follow these steps:
    This script will restrict traffic outside Cloudflare and apply a few required configuration tweaks.
 
 And that's it! Shrimpcast should now be up and running. You can now try to access your domain URL. Make sure to save the admin session that was generated during the installation, which you can find at `/root/shrimpcast/setup/GeneratedAdminToken.txt`, or at the end of step 1.
+
+## Troubleshooting
+
+- .NET SDK installed but not found: <br>
+  run `sudo snap remove dotnet-sdk && sudo apt remove -y 'dotnet*' 'aspnetcore*' 'netstandard*' && sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list /etc/apt/sources.list.d/microsoft-prod.list.save && sudo apt update && sudo apt install -y dotnet8`
+  then add the `--skipdotnet` flag to the install script and re-run it: `./install.sh [...] --skipdotnet`
+- Certbot fails: <br>
+  Ensure that port 80 on your VPS is publicly accessible and that your domain’s DNS is correctly configured. Then run:
+  `sudo apt-get remove --purge nginx nginx-common`  <br>
+  `sudo rm -rf /etc/nginx`  <br>
+  `sudo apt-get autoremove --purge`  <br>
+  then re-run the install script.
 
 ## Media Server
 
