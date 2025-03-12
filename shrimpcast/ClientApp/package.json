@@ -36,8 +36,7 @@
   "devDependencies": {
     "cross-env": "^7.0.3",
     "eslint": "^8.39.0",
-    "eslint-config-react-app": "^7.0.1",
-    "video.js": "^8.6.1"
+    "eslint-config-react-app": "^7.0.1"
   },
   "overrides": {
     "autoprefixer": "10.4.5",

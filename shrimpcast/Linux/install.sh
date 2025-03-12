@@ -8,6 +8,7 @@ handle_error() {
 
 APPLICATION=""
 NGINX=""
+RESTREAMER=false
 
 if [ "$(id -u)" -ne 0 ]; then
     echo "This script requires root privileges. Please run this script as root (sudo -i)."
@@ -16,20 +17,22 @@ fi
 
 # Parse command-line options
 DOMAIN=""
-while getopts ":d:" opt; do
-  case $opt in
-    d)
-      DOMAIN="$OPTARG"
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -d)
+      DOMAIN="$2"
+      shift 2
       ;;
-    \?)
-      echo "Invalid option: -$OPTARG" >&2
+    --restreamer)
+      RESTREAMER=true
+      shift
+      ;;
+    *)
+      echo "Invalid option: $1" >&2
       exit 1
       ;;
   esac
 done
-
-# Shift the option arguments to handle positional arguments if any
-shift $((OPTIND - 1))
 
 # Check if the DOMAIN parameter is provided
 if [ -z "$DOMAIN" ]; then
@@ -37,7 +40,14 @@ if [ -z "$DOMAIN" ]; then
   exit 1
 fi
 
+# Output the parsed parameters
 echo "Using domain: $DOMAIN"
+if [ "$RESTREAMER" = true ]; then
+  echo "Restreamer option enabled."
+else
+  echo "Restreamer option not enabled."
+fi
+
 
 # Check if UFW is installed
 if command -v ufw &> /dev/null
@@ -161,29 +171,91 @@ docker --version || handle_error "Docker installation verification failed"
 usermod -aG docker $USER || handle_error "Failed to add user to docker group"
 echo "Docker installed successfully."
 
-# Download and install SRS Stack
-echo "Downloading and installing SRS Stack..."
-download_url="https://github.com/ossrs/srs-stack/releases/download/v5.12.21/linux-srs_stack-en.tar.gz"
-download_dest="/tmp/linux-srs_stack-en.tar.gz"
-wget -O $download_dest $download_url || handle_error "Failed to download the file from $download_url"
-extracted_dir="/tmp/srs_stack"
-mkdir -p $extracted_dir || handle_error "Failed to create directory $extracted_dir"
-tar -xzf $download_dest -C $extracted_dir || handle_error "Failed to extract $download_dest to $extracted_dir"
-sed -i 's/HTTPS_PORT=2443/HTTPS_PORT=2053/' $extracted_dir/srs_stack/mgmt/bootstrap
-setup_dir="$extracted_dir/srs_stack/scripts/setup-ubuntu"
-cd $setup_dir || handle_error "Failed to navigate to $setup_dir"
-./install.sh || handle_error "Failed to execute install.sh"
-echo "SRS Stack installed successfully."
+# If --restreamer flag is set, install the SRS Stack
+if [ "$RESTREAMER" = false ]; then
+  echo "Downloading and installing SRS Stack..."
+  
+  download_url="https://github.com/ossrs/srs-stack/releases/download/v5.12.21/linux-srs_stack-en.tar.gz"
+  download_dest="/tmp/linux-srs_stack-en.tar.gz"
+  wget -O $download_dest $download_url || handle_error "Failed to download the file from $download_url"
+  
+  extracted_dir="/tmp/srs_stack"
+  mkdir -p $extracted_dir || handle_error "Failed to create directory $extracted_dir"
+  tar -xzf $download_dest -C $extracted_dir || handle_error "Failed to extract $download_dest to $extracted_dir"
+  
+  sed -i 's/HTTPS_PORT=2443/HTTPS_PORT=2053/' $extracted_dir/srs_stack/mgmt/bootstrap
+  
+  setup_dir="$extracted_dir/srs_stack/scripts/setup-ubuntu"
+  cd $setup_dir || handle_error "Failed to navigate to $setup_dir"
+  ./install.sh || handle_error "Failed to execute install.sh"
+  echo "SRS Stack installed successfully."
+  
+  # Install the SSL certificate into the SRS container
+  CERT=$(echo "/etc/letsencrypt/live/{0}" | sed "s/{0}/$DOMAIN/");
 
-# Install the certificate
-CERT=$(echo "/etc/letsencrypt/live/{0}" | sed "s/{0}/$DOMAIN/");
-while ! docker inspect -f '{{.State.Running}}' srs-stack &>/dev/null; do
-    sleep 1
-done
+  while ! docker inspect -f '{{.State.Running}}' srs-stack &>/dev/null; do
+      sleep 1
+  done
 
-cat $CERT/privkey.pem | docker exec -i srs-stack sh -c 'cat > /usr/local/srs-stack/platform/containers/data/config/nginx.key'
-cat $CERT/fullchain.pem | docker exec -i srs-stack sh -c 'cat > /usr/local/srs-stack/platform/containers/data/config/nginx.crt'
-systemctl restart srs-stack
+  cat $CERT/privkey.pem | docker exec -i srs-stack sh -c 'cat > /usr/local/srs-stack/platform/containers/data/config/nginx.key'
+  cat $CERT/fullchain.pem | docker exec -i srs-stack sh -c 'cat > /usr/local/srs-stack/platform/containers/data/config/nginx.crt'
+  
+  systemctl restart srs-stack
+else
+  # Otherwise, set up the Restreamer service
+  echo "Setting up the Restreamer service..."
+  
+  # Create directories for SSL and data
+  mkdir -p /opt/core/config/ssl /opt/core/data
+  
+  # Copy the SSL certificate and key files
+  cp /etc/letsencrypt/live/$DOMAIN/privkey.pem /opt/core/config/ssl/
+  cp /etc/letsencrypt/live/$DOMAIN/fullchain.pem /opt/core/config/ssl/
+
+  # Create systemd service file for Restreamer
+  cat <<EOF | tee /etc/systemd/system/restreamer.service >/dev/null
+[Unit]
+Description=Restreamer service
+After=network.target
+
+[Service]
+User=root
+TimeoutStartSec=0
+Restart=always
+ExecStartPre=-/usr/bin/docker rm -f core
+ExecStart=/usr/bin/docker run \
+  --name core --privileged \
+  --env CORE_TLS_ENABLE=true \
+  --env CORE_TLS_AUTO=false \
+  --env CORE_HOST_NAME=$DOMAIN \
+  --env CORE_HOST_AUTO=false \
+  --env CORE_TLS_ADDRESS=":2053" \
+  --env CORE_TLS_CERT_FILE=/core/config/ssl/fullchain.pem \
+  --env CORE_TLS_KEY_FILE=/core/config/ssl/privkey.pem \
+  --env CORE_RTMP_ENABLE=true \
+  --volume /opt/core/config:/core/config \
+  --volume /opt/core/data:/core/data \
+  --publish 8080:8080 \
+  --publish 2053:2053 \
+  --publish 1935:1935 \
+  --publish 1936:1936 \
+  --publish 6000:6000/udp \
+  datarhei/restreamer:latest
+ExecStop=/usr/bin/docker stop core
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+  # Reload systemd manager configuration
+  systemctl daemon-reload || handle_error "Failed to reload systemd manager configuration"
+
+  # Enable and start the Restreamer service
+  systemctl enable restreamer || handle_error "Failed to enable restreamer service"
+  systemctl start restreamer || handle_error "Failed to start restreamer service"
+  
+  echo "Restreamer installed successfully."
+fi
 
 # Install TOR nodes
 TOR_EXIT_NODES_URL="https://www.dan.me.uk/torlist/?exit"
