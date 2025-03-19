@@ -11,12 +11,11 @@ const Loader = {
   webkitTransform: "translate(-50%, -50%);",
 };
 
-const XGPlayer = ({ isFlv, url }) => {
+const XGPlayer = (props) => {
   const elId = "xg-player-cont",
     [loadState, setLoadState] = useState({
       css: false,
       flv: false,
-      hls: false,
       player: false,
     });
 
@@ -37,7 +36,7 @@ const XGPlayer = ({ isFlv, url }) => {
           done: () => setLoadState((state) => ({ ...state, player: true })),
         }
       );
-    if (isFlv && !loadState.flv)
+    if (!loadState.flv)
       postscribe(
         "#player-xg-flv",
         `<script src="./lib/xg/xg.flv.js?cacheBurst=${process.env.REACT_APP_CACHE_BUST}"></script>`,
@@ -45,21 +44,13 @@ const XGPlayer = ({ isFlv, url }) => {
           done: () => setLoadState((state) => ({ ...state, flv: true })),
         }
       );
-    if (!isFlv && !loadState.hls)
-      postscribe(
-        "#player-xg-hls",
-        `<script src="./lib/xg/xg.hls.js?cacheBurst=${process.env.REACT_APP_CACHE_BUST}"></script>`,
-        {
-          done: () => setLoadState((state) => ({ ...state, hls: true })),
-        }
-      );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [url]);
+  }, []);
 
   useEffect(() => {
-    if (!loadState.css || !loadState.player || (isFlv && !loadState.flv) || (!isFlv && !loadState.hls)) return;
+    if (!loadState.css || !loadState.player || !loadState.flv) return;
 
-    const noCacheUrl = () => `${url}?nocache=${new Date().getTime()}`,
+    const noCacheUrl = () => `${props.url}?nocache=${new Date().getTime()}`,
       player = new window.Player({
         id: elId,
         isLive: true,
@@ -68,12 +59,13 @@ const XGPlayer = ({ isFlv, url }) => {
         autoplay: true,
         height: undefined,
         width: undefined,
-        plugins: [isFlv ? window.FlvPlayer : window.HlsPlayer],
+        plugins: [window.FlvPlayer],
         lang: "en",
         playbackRate: false,
         cssFullscreen: false,
         screenShot: true,
         pip: true,
+        rotate: true,
       }),
       restartPlayback = (player) => {
         console.log("Attempting to restart playback.");
@@ -95,18 +87,18 @@ const XGPlayer = ({ isFlv, url }) => {
 
     return () => player.destroy();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadState, url]);
+  }, [loadState, props.url]);
 
   return (
     <div className="full-height">
-      {(!loadState.css || !loadState.player || (isFlv && !loadState.flv) || (!isFlv && !loadState.hls)) && (
+      {(!loadState.css || !loadState.player || !loadState.flv) && (
         <Box sx={Loader}>
           <CircularProgress size={50} color="secondary" />
         </Box>
       )}
       <div id="player-xg-css" />
       <div id="player-xg" />
-      <div id={`player-xg-${isFlv ? "flv" : "hls"}`} />
+      <div id="player-xg-flv" />
       <div id={elId} />
     </div>
   );

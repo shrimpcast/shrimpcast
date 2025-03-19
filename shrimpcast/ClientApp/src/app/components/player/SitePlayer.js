@@ -1,8 +1,9 @@
 import { Box, Typography } from "@mui/material";
 import { useRef, useState } from "react";
 import ReactPlayer from "react-player";
-import XGPlayer from "./XGPlayer";
 import PickSource from "../layout/Actions/Sources/PickSource";
+import XGPlayer from "./XGPlayer";
+import VideoJSPlayer from "./VideoJSPlayer";
 
 const WrapperSx = {
   width: "100%",
@@ -15,9 +16,21 @@ const WrapperSx = {
 const SitePlayer = (props) => {
   const { streamStatus } = props,
     { source, streamEnabled, mustPickStream } = streamStatus,
-    { useRTCEmbed, useLegacyPlayer } = source;
-  let url = source.url || "";
-  const video = useRef(),
+    { useRTCEmbed, useLegacyPlayer } = source,
+    url = source.url || "",
+    video = useRef(),
+    videoJsOptions = {
+      autoplay: true,
+      controls: true,
+      fill: true,
+      playsinline: true,
+      sources: [
+        {
+          src: url,
+          type: "application/x-mpegURL",
+        },
+      ],
+    },
     isFLV = url.endsWith(".flv"),
     forceM3U8 = isFLV && !window.MediaSource,
     [muted, setMuted] = useState(false),
@@ -31,17 +44,27 @@ const SitePlayer = (props) => {
     };
 
   if (isFLV && forceM3U8) {
-    url = url.substr(0, url.lastIndexOf(".")) + ".m3u8";
+    videoJsOptions.sources[0].src = url.substr(0, url.lastIndexOf(".")) + ".m3u8";
     console.log("Forcing M3U8 because FLV is not supported.");
   }
 
   return streamEnabled ? (
     mustPickStream ? (
       <PickSource sources={streamStatus.sources} />
+    ) : isFLV && !forceM3U8 ? (
+      <XGPlayer url={url} />
     ) : useRTCEmbed ? (
-      <iframe src={`${url}`} title="rtc-embed" id="rtc-embed" allow="autoplay" allowFullScreen></iframe>
+      <iframe
+        src={`${url}`}
+        title="rtc-embed"
+        id="rtc-embed"
+        allow="autoplay"
+        frameborder="no"
+        scrolling="no"
+        allowFullScreen
+      ></iframe>
     ) : !useLegacyPlayer ? (
-      <XGPlayer isFlv={isFLV} url={url} />
+      <VideoJSPlayer options={videoJsOptions} />
     ) : (
       <ReactPlayer
         width={"100%"}
