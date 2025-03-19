@@ -8,6 +8,7 @@ using shrimpcast.Data.Repositories.Interfaces;
 using shrimpcast.Entities;
 using shrimpcast.Entities.DB;
 using shrimpcast.Entities.DTO;
+using shrimpcast.Helpers;
 using shrimpcast.Hubs.Dictionaries;
 using System;
 using System.Collections.Concurrent;
@@ -937,6 +938,9 @@ namespace shrimpcast.Hubs
                     case string _message when _message.StartsWith(Constants.RESET_VPN_RECORDS):
                         await ResetVPNRecords();
                         return true;
+                    case string _message when _message.StartsWith(Constants.DOCKER_RESTART):
+                        await DockerRestart();
+                        return true;
                     default:
                         return false;
                 }
@@ -1028,6 +1032,21 @@ namespace shrimpcast.Hubs
             {
                 var result = await _vpnAddressRepository.ResetRecords();
                 await DispatchSystemMessage($"Removed {result} records");
+            }
+            catch (Exception ex)
+            {
+                await DispatchSystemMessage(ex.Message);
+            }
+        }
+
+
+        private async Task DockerRestart()
+        {
+            await DispatchSystemMessage($"Executing {Constants.DOCKER_RESTART} command...");
+            try
+            {
+                var result = await ProcessHelper.DockerRestart();
+                await DispatchSystemMessage(result);
             }
             catch (Exception ex)
             {

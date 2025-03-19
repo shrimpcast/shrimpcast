@@ -20,6 +20,8 @@ namespace shrimpcast.Entities
 
         public const string RESET_VPN_RECORDS = $"!resetallsavedvpnrecords";
 
+        public const string DOCKER_RESTART = $"!dockerrestart";
+
         public const string FILTERS = "filters.json";
 
         public static readonly string FIREANDFORGET_TOKEN = SecureToken.GenerateTokenThreadSafe();
