@@ -28,7 +28,7 @@ while [[ $# -gt 0 ]]; do
       RESTREAMER=true
       shift
       ;;
-    --skipdotnet)  # New parameter for skipping .NET installation
+    --skipdotnet)
       SKIP_DOTNET=true
       shift
       ;;
@@ -39,27 +39,24 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# Check if the DOMAIN parameter is provided
 if [ -z "$DOMAIN" ]; then
   echo "Error: -d (DOMAIN) parameter is required."
   exit 1
 fi
 
-# Logic for skipping .NET installation if --skipdotnet is provided
 if [ "$SKIP_DOTNET" = true ]; then
   echo "Skipping .NET installation."
 else
-  # Your logic for .NET installation goes here
   echo "Proceeding with .NET installation."
 fi
 
-# Output the parsed parameters
-echo "Using domain: $DOMAIN"
 if [ "$RESTREAMER" = true ]; then
   echo "Restreamer option enabled."
 else
   echo "Restreamer option not enabled."
 fi
+
+echo "Using domain: $DOMAIN"
 
 # Check if UFW is installed
 if command -v ufw &> /dev/null
@@ -185,7 +182,7 @@ docker --version || handle_error "Docker installation verification failed"
 usermod -aG docker $USER || handle_error "Failed to add user to docker group"
 echo "Docker installed successfully."
 
-# If --restreamer flag is set, install the SRS Stack
+# If --restreamer flag is not set, install SRS Stack
 if [ "$RESTREAMER" = false ]; then
   echo "Downloading and installing SRS Stack..."
   

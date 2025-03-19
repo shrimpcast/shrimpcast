@@ -216,7 +216,7 @@ const Sources = ({ fields, sources, setConfig }) => {
                   />
                 </TableCell>
                 <TableCell>
-                  <Tooltip title="Delete Source">
+                  <Tooltip title="Delete source">
                     <IconButton color="error" onClick={() => openDeleteConfirmation(source)}>
                       <DeleteIcon />
                     </IconButton>
