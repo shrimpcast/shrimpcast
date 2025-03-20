@@ -54,7 +54,7 @@ Shrimpcast is a highly customizable, flexible, battle-tested, fast, and secure s
 - **Flexible and highly customizable**
 - **Battle-tested with hundreds of concurrent users**
   - Tested with:
-     - 700 unique users
+     - 1000 unique users
      - Throughput of 4 Gbps
 - **Out-of-the-box Cloudflare support**
 
@@ -117,7 +117,7 @@ If you're using Cloudflare, for RTMP broadcast, you'll need to bypass the domain
 ### Why [srs-stack/5.12.21](https://github.com/ossrs/oryx/releases/tag/v5.12.21)?
 
 Because it's entirely open-source, supports HTTP-FLV for low-latency streaming, and performs admirably.
->Note: As of v1.2.1, we are also testing [restreamer](https://github.com/datarhei/restreamer). You can pass the flag --restreamer on the install script to use it instead of [srs-stack/5.12.21](https://github.com/ossrs/oryx/releases/tag/v5.12.21)
+>Note: As of v1.2.1, you can pass the flag --restreamer on the install script to use [restreamer](https://github.com/datarhei/restreamer) instead of [srs-stack/5.12.21](https://github.com/ossrs/oryx/releases/tag/v5.12.21)
 
 ### Can I use another media server?
 
