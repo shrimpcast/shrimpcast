@@ -16,7 +16,7 @@ const GithubPrompt = () => {
     <NotificationBar
       onClick={openRepository}
       close={hidePrompt}
-      text="Shrimpcast is now available on github"
+      text="Shrimpcast is open source. Check it out on GitHub"
       icon={GitHubIcon}
       palette={indigo}
     />

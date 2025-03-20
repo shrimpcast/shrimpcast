@@ -111,7 +111,7 @@ const PickSource = ({ sources }) => {
                   sx={TextSx(
                     hoveredIndex,
                     index,
-                    // This sucks
+                    // This sucks and should certainly be improved
                     sources.length > 6 ? 0 : sources.length === 6 ? 0.3 : sources.length === 5 ? 0.5 : 1
                   )}
                 >
