@@ -3,15 +3,24 @@ import NotificationBar from "./NotificationBar";
 import LiveTvIcon from "@mui/icons-material/LiveTv";
 import { useState } from "react";
 import GenericActionList from "../Actions/GenericActionList";
+import { useNavigate } from "react-router-dom";
 
-const MultistreamPrompt = ({ streamStatus }) => {
-  const [openSwitchSource, setSwitchSource] = useState(false);
+const MultistreamPrompt = ({ streamStatus, goHomeOnStreamSwitch }) => {
+  const [openSwitchSource, setSwitchSource] = useState(false),
+    navigate = useNavigate(),
+    switchStreams = () => {
+      if (goHomeOnStreamSwitch) {
+        navigate("/");
+      } else {
+        setSwitchSource(true);
+      }
+    };
 
   return (
     <>
       <NotificationBar
-        onClick={() => setSwitchSource(true)}
-        text={`Multistreams: click  to switch streams`}
+        onClick={switchStreams}
+        text={`Multistreams: click to switch streams`}
         icon={LiveTvIcon}
         palette={red}
         skipCloseButton={true}

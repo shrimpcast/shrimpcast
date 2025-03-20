@@ -33,7 +33,7 @@ html {
 }
 
 .mod-glow {
-  color: #00e5ff !important;
+  color: #66ccff !important;
   animation-name: mod-glow;
   animation-duration: 1s;
   animation-iteration-count: infinite;
@@ -42,11 +42,11 @@ html {
 
 @keyframes mod-glow {
   from {
-    text-shadow: 0 0 5px #00e5ff, 0 0 5px #33eaff;
+    text-shadow: 0 0 5px #66ccff, 0 0 5px #99eaff;
   }
 
   to {
-    text-shadow: 0 0 20px #00e5ff, 0 0 20px #33eaff;
+    text-shadow: 0 0 20px #66ccff, 0 0 20px #99eaff;
   }
 }
 

@@ -55,7 +55,7 @@ const DEFAULT_THUMBNAIL = "/images/video_thumbnail.png",
     width: "100%",
     zIndex: 2,
   },
-  TextSx = (hoveredIndex, index) => ({
+  TextSx = (hoveredIndex, index, mbXs) => ({
     fontSize: { xs: "20px", sm: "24px", md: "32px", lg: "48px" },
     color: "white",
     fontWeight: 700,
@@ -64,9 +64,10 @@ const DEFAULT_THUMBNAIL = "/images/video_thumbnail.png",
     letterSpacing: "-0.75px",
     textShadow: "2px 2px 6px rgba(0, 0, 0, 0.6)",
     transition: "transform 0.3s ease, opacity 0.3s ease",
-    opacity: hoveredIndex === index ? 1 : 0.9,
-    mb: 1,
-    ml: 2,
+    opacity: hoveredIndex === index ? 1 : 0.8,
+    lineHeight: 0.8,
+    ml: { xs: 1, sm: 1, md: 1, lg: 2 },
+    mb: { xs: mbXs, sm: mbXs, md: 1, lg: 2 },
   }),
   PlayButtonSx = (hoveredIndex, index) => ({
     fontSize: 48,
@@ -92,6 +93,8 @@ const PickSource = ({ sources }) => {
           sx={SourceSx(hoveredIndex, index)}
           onMouseEnter={() => setHoveredIndex(index)}
           onMouseLeave={() => setHoveredIndex(null)}
+          onTouchStart={() => setHoveredIndex(index)}
+          onTouchEnd={() => setHoveredIndex(null)}
         >
           <Link
             to={`/${source.name.toLowerCase()}`}
@@ -104,7 +107,16 @@ const PickSource = ({ sources }) => {
             <Box sx={ImageSx(source.thumbnail, hoveredIndex, index)}>
               <Box sx={HoverSx(hoveredIndex, index)} />
               <Box sx={TextContainerSx}>
-                <Typography sx={TextSx(hoveredIndex, index)}>{source.name}</Typography>
+                <Typography
+                  sx={TextSx(
+                    hoveredIndex,
+                    index,
+                    // This sucks and should certainly be improved
+                    sources.length > 6 ? 0 : sources.length === 6 ? 0.3 : sources.length === 5 ? 0.5 : 1
+                  )}
+                >
+                  {source.name}
+                </Typography>
               </Box>
               <PlayCircleFilledIcon sx={PlayButtonSx(hoveredIndex, index)} />
             </Box>
