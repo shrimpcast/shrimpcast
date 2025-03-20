@@ -8,6 +8,7 @@ import ChatActionsManager from "../../../managers/ChatActionsManager";
 import ManageUserDialog from "../ManageUserDialog";
 import ConfirmDialog from "../../others/ConfirmDialog";
 import MessageWrapper from "./MessageWrapper";
+import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
 
 const WrapperTextBoxSx = {
     margin: "10px",
@@ -105,7 +106,11 @@ const UserMessage = React.memo((props) => {
               props.enableChristmasTheme ? "santa-hat" : props.enableHalloweenTheme ? "halloween-hat" : null
             } ${isAdmin ? "admin-glow" : isMod ? "mod-glow" : isGolden ? "golden-glow" : null}`}
           >
-            {isAdmin && <VerifiedUserIcon sx={VerifiedUserIconSx} />}
+            {isAdmin || isMod ? (
+              <VerifiedUserIcon sx={VerifiedUserIconSx} />
+            ) : isGolden ? (
+              <WorkspacePremiumIcon sx={VerifiedUserIconSx} />
+            ) : null}
             {props.sentBy}
           </Typography>
         </Box>

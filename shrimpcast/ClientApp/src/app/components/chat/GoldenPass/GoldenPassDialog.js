@@ -87,7 +87,7 @@ const GoldenPassDialog = (props) => {
           </Typography>
           <Box marginTop="10px" mb={3}>
             <Typography variant="body2" className="golden-glow">
-              - Glowie username
+              - <WorkspacePremiumIcon sx={{ fontSize: "13px", position: "relative", top: "1px" }} /> Glowie username
             </Typography>
             <Typography variant="body2">- Unlimited duration </Typography>
             <Typography variant="body2">- 100% anonymous via crypto</Typography>
