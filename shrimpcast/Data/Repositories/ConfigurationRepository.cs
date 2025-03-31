@@ -23,7 +23,7 @@ namespace shrimpcast.Data.Repositories
         }
             
 
-        public async Task<bool> SaveAsync(Configuration configuration)
+        public async Task<(bool updated, bool updatedSources)> SaveAsync(Configuration configuration)
         {
             var config = await _context.Configurations.FirstAsync();
             configuration.ConfigurationId = config.ConfigurationId;
@@ -44,9 +44,9 @@ namespace shrimpcast.Data.Repositories
             configuration.IPServiceApiKeyNotMapped = null;
             configuration.BTCServerApiKeyNotMapped = null;
             configuration.BTCServerWebhookSecretNotMapped = null;
-            var updateSources = await _sourceRepository.Save(configuration.Sources);
-            if (updateSources) configuration.Sources = await _sourceRepository.GetAll();
-            return updated > 0 || updateSources ? true : throw new Exception("Could not update record.");
+            var updatedSources = await _sourceRepository.Save(configuration.Sources);
+            if (updatedSources) configuration.Sources = await _sourceRepository.GetAll();
+            return updated > 0 || updatedSources ? (true, updatedSources) : throw new Exception("Could not update record.");
         }
     }
 }

@@ -21,7 +21,7 @@ import AddIcon from "@mui/icons-material/Add";
 import ConfirmDialog from "../../../others/ConfirmDialog";
 import GenericAddTextItemDialog from "../GenericAddTextItemDialog";
 import CheckIcon from "@mui/icons-material/Check";
-import CancelIcon from "@mui/icons-material/Cancel";
+import CloseIcon from "@mui/icons-material/Close";
 
 const styles = {
     container: {
@@ -79,7 +79,7 @@ const styles = {
   },
   DEFAULT_THUMBNAIL = "/images/video_thumbnail.png";
 
-const Sources = ({ fields, sources, setConfig }) => {
+const Sources = ({ fields, sources, setConfig, utcToLocal }) => {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false),
     [sourceToDelete, setSourceToDelete] = useState(null),
     [editOpen, setEditOpen] = useState(false),
@@ -136,7 +136,8 @@ const Sources = ({ fields, sources, setConfig }) => {
     removeItem = (sourceToDelete) => {
       updateConfig(null, sourceToDelete, null, true);
       setDeleteConfirmOpen(false);
-    };
+    },
+    dateToISO = (value) => (value ? new Date(value).toISOString() : null);
 
   return (
     <Box sx={styles.container}>
@@ -216,6 +217,24 @@ const Sources = ({ fields, sources, setConfig }) => {
                   />
                 </TableCell>
                 <TableCell>
+                  <TextField
+                    onChange={(e) => updateConfig(dateToISO(e.target.value), source, "startsAt")}
+                    defaultValue={source.startsAt && utcToLocal(source.startsAt)}
+                    variant="outlined"
+                    type={"datetime-local"}
+                    sx={{ width: "200px" }}
+                  />
+                </TableCell>
+                <TableCell>
+                  <TextField
+                    onChange={(e) => updateConfig(dateToISO(e.target.value), source, "endsAt")}
+                    defaultValue={source.endsAt && utcToLocal(source.endsAt)}
+                    variant="outlined"
+                    type={"datetime-local"}
+                    sx={{ width: "200px" }}
+                  />
+                </TableCell>
+                <TableCell>
                   <Tooltip title="Delete source">
                     <IconButton color="error" onClick={() => openDeleteConfirmation(source)}>
                       <DeleteIcon />
@@ -279,7 +298,23 @@ const Sources = ({ fields, sources, setConfig }) => {
                   />
                 </TableCell>
                 <TableCell>
-                  <Box sx={{ display: "flex", justifyContent: "flex-start", gap: 1 }}>
+                  <TextField
+                    onChange={(e) => setNewSourceData({ ...newSourceData, startsAt: dateToISO(e.target.value) })}
+                    variant="outlined"
+                    type={"datetime-local"}
+                    sx={{ width: "200px" }}
+                  />
+                </TableCell>
+                <TableCell>
+                  <TextField
+                    onChange={(e) => setNewSourceData({ ...newSourceData, endsAt: dateToISO(e.target.value) })}
+                    variant="outlined"
+                    type={"datetime-local"}
+                    sx={{ width: "200px" }}
+                  />
+                </TableCell>
+                <TableCell>
+                  <Box sx={{}}>
                     <IconButton
                       color="primary"
                       onClick={() => updateConfig(null, null, null, null, true)}
@@ -288,7 +323,7 @@ const Sources = ({ fields, sources, setConfig }) => {
                       <CheckIcon />
                     </IconButton>
                     <IconButton color="secondary" onClick={closeAdd}>
-                      <CancelIcon />
+                      <CloseIcon />
                     </IconButton>
                   </Box>
                 </TableCell>

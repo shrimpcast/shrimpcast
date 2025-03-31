@@ -32,13 +32,14 @@ namespace shrimpcast.Hubs
         private readonly IEmoteRepository _emoteRepository;
         private readonly IBingoRepository _bingoRepository;
         private readonly IBTCServerRepository _btcServerRepository;
+        private readonly ISourceRepository _sourceRepository;
         private readonly IHubContext<SiteHub> _hubContext;
         private readonly ConfigurationSingleton _configurationSigleton;
         private readonly Connections<SiteHub> _activeConnections;
         private readonly Pings<SiteHub> _pings;
         private readonly BingoSuggestions<SiteHub> _bingoSuggestions;
 
-        public SiteHub(IConfigurationRepository configurationRepository, ISessionRepository sessionRepository, IMessageRepository messageRepository, IBanRepository banRepository, IPollRepository pollRepository, ITorExitNodeRepository torExitNodeRepository, IHubContext<SiteHub> hubContext, ConfigurationSingleton configurationSingleton, Connections<SiteHub> activeConnections, Pings<SiteHub> pings, IOBSCommandsRepository obsCommandsRepository, IAutoModFilterRepository autoModFilterRepository, INotificationRepository notificationRepository, IEmoteRepository emoteRepository, IBingoRepository bingoRepository, IVpnAddressRepository vpnAddressRepository, BingoSuggestions<SiteHub> bingoSuggestions, IBTCServerRepository btcServerRepository)
+        public SiteHub(IConfigurationRepository configurationRepository, ISessionRepository sessionRepository, IMessageRepository messageRepository, IBanRepository banRepository, IPollRepository pollRepository, ITorExitNodeRepository torExitNodeRepository, IHubContext<SiteHub> hubContext, ConfigurationSingleton configurationSingleton, Connections<SiteHub> activeConnections, Pings<SiteHub> pings, IOBSCommandsRepository obsCommandsRepository, IAutoModFilterRepository autoModFilterRepository, INotificationRepository notificationRepository, IEmoteRepository emoteRepository, IBingoRepository bingoRepository, IVpnAddressRepository vpnAddressRepository, BingoSuggestions<SiteHub> bingoSuggestions, IBTCServerRepository btcServerRepository, ISourceRepository sourceRepository)
         {
             _configurationRepository = configurationRepository;
             _sessionRepository = sessionRepository;
@@ -58,6 +59,7 @@ namespace shrimpcast.Hubs
             _vpnAddressRepository = vpnAddressRepository;
             _bingoSuggestions = bingoSuggestions;
             _btcServerRepository = btcServerRepository;
+            _sourceRepository = sourceRepository;
         }
 
         private Configuration Configuration => _configurationSigleton.Configuration;
@@ -321,18 +323,18 @@ namespace shrimpcast.Hubs
             await ShouldGrantAccess(true);
             var session = GetCurrentConnection().Session;
             var mutedUntil = await _sessionRepository.Mute(SessionId);
-            
+
             foreach (var connection in ActiveConnections.Where(ac => ac.Value.Session.SessionId == SessionId))
-            { 
+            {
                 connection.Value.Session.MutedUntil = mutedUntil;
             }
 
-            if (session.IsMod) 
+            if (session.IsMod)
             {
                 var name = await _sessionRepository.GetCurrentName(SessionId);
                 var message = $"{session.SessionNames.Last().Name} muted {name}";
                 await DispatchSystemMessage(message, true, false, GetAdminSessions());
-            } 
+            }
             return true;
         }
 
@@ -525,7 +527,7 @@ namespace shrimpcast.Hubs
         #region Bingo
         public async Task<List<BingoOption>> GetAll() => await _bingoRepository.GetAllOptions();
 
-        public async Task<BingoOption?> AddBingoOption ([FromBody] string Content)
+        public async Task<BingoOption?> AddBingoOption([FromBody] string Content)
         {
             await ShouldGrantAccess();
             Content = Content.Trim();
@@ -535,7 +537,7 @@ namespace shrimpcast.Hubs
                 return null;
             }
 
-            var newOption = await _bingoRepository.AddOption(Content); 
+            var newOption = await _bingoRepository.AddOption(Content);
             await Clients.All.SendAsync("BingoOptionAdded", newOption);
             return newOption;
         }
@@ -597,10 +599,49 @@ namespace shrimpcast.Hubs
         public async Task<bool> SaveConfig([FromBody] Configuration updatedConfiguration)
         {
             await ShouldGrantAccess();
-            var ConfigUpdated = await _configurationRepository.SaveAsync(updatedConfiguration);
+            var (updated, updatedSources) = await _configurationRepository.SaveAsync(updatedConfiguration);
             _configurationSigleton.Configuration = updatedConfiguration;
-            await Clients.All.SendAsync("ConfigUpdated", updatedConfiguration);
-            return ConfigUpdated;
+            await _hubContext.Clients.All.SendAsync("ConfigUpdated", updatedConfiguration);
+            if (updatedSources) ScheduleBackgroundJobs();
+            return updated;
+        }
+
+        private void ScheduleBackgroundJobs()
+        {
+            static string dateToCron(DateTime scheduledTime) => $"{scheduledTime.Minute} {scheduledTime.Hour} {scheduledTime.Day} {scheduledTime.Month} *";
+            var UtcNow = DateTime.UtcNow;
+
+            foreach (var source in _configurationSigleton.Configuration.Sources)
+            {
+                if (source.StartsAt > UtcNow)
+                {
+                    RecurringJob.AddOrUpdate(
+                        $"{source.Name}-enable", 
+                        () => ChangeSourceStatusBackground(Constants.FIREANDFORGET_TOKEN, source.Name, true)
+                        , dateToCron(source.StartsAt.Value));
+                }
+                else RecurringJob.RemoveIfExists($"{source.Name}-enable");
+
+                if (source.EndsAt > UtcNow)
+                {
+                    RecurringJob.AddOrUpdate(
+                        $"{source.Name}-disable", 
+                        () => ChangeSourceStatusBackground(Constants.FIREANDFORGET_TOKEN, source.Name, false), 
+                        dateToCron(source.EndsAt.Value));
+                }
+                else RecurringJob.RemoveIfExists($"{source.Name}-disable");
+            }
+        }
+        public async Task ChangeSourceStatusBackground(string VerificationToken, string sourceName, bool status)
+        {
+            if (VerificationToken != Constants.FIREANDFORGET_TOKEN) throw new Exception("Permission denied");
+            try
+            {
+                await _sourceRepository.ChangeSourceStatus(sourceName, status);
+            } catch (Exception) { }
+            _configurationSigleton.Configuration.Sources = await _sourceRepository.GetAll();
+            await _hubContext.Clients.All.SendAsync("ConfigUpdated", _configurationSigleton.Configuration);
+            RecurringJob.RemoveIfExists($"{sourceName}-{(status ? "enable" : "disable")}");
         }
 
         public async Task<object> GetOrderedConfig()

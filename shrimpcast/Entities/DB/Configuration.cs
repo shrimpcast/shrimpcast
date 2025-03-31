@@ -1,6 +1,4 @@
-using Microsoft.AspNetCore.Components.Web;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Diagnostics;
 using System.Text.Json.Serialization;
 
 namespace shrimpcast.Entities.DB
@@ -23,8 +21,6 @@ namespace shrimpcast.Entities.DB
         public required bool HideStreamTitle { get; set; }
 
         public required bool StreamEnabled { get; set; }
-
-        public required bool GoHomeOnStreamSwitch { get; set; }
 
         public List<Source> Sources { get; set; } = [];
 
@@ -210,7 +206,6 @@ namespace shrimpcast.Entities.DB
                     values = new object[]
                     {
                         new { name = nameof(config.StreamEnabled).ToLower(), label = "Enable stream", value = config.StreamEnabled },
-                        new { name = nameof(config.GoHomeOnStreamSwitch).ToLower(), label = "Navigate home on multistream switch", value = config.GoHomeOnStreamSwitch },
                         new
                         {
                             name = nameof(config.Sources).ToLower(),
@@ -223,6 +218,8 @@ namespace shrimpcast.Entities.DB
                                 new { name = nameof(Source.Thumbnail).ToLower(), label = "Thumbnail" },
                                 new { name = nameof(Source.UseLegacyPlayer).ToLower(), label = "Native player" },
                                 new { name = nameof(Source.UseRTCEmbed).ToLower(), label = "Embed" },
+                                new { name = nameof(Source.StartsAt).ToLower(), label = "Schedule start" },
+                                new { name = nameof(Source.EndsAt).ToLower(), label = "Schedule end" },
                                 new { name = "delete", label = string.Empty },
                             }
                         }

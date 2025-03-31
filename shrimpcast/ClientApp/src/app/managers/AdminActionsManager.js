@@ -4,7 +4,8 @@ class AdminActionsManager {
     return response;
   }
   static async SaveConfig(signalR, config, openKey) {
-    config[openKey] = new Date(config[openKey]).toISOString();
+    if (config[openKey]) config[openKey] = new Date(config[openKey]).toISOString();
+    else config[openKey] = new Date().toISOString();
     const response = await signalR.invoke("SaveConfig", config).catch((ex) => console.log(ex));
     return response;
   }
