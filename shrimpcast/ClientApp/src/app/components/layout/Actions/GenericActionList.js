@@ -17,7 +17,6 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import ManageUserDialog from "../../chat/ManageUserDialog";
 import GenericAddTextItemDialog from "./GenericAddTextItemDialog";
-import StyledLink from "./Sources/StyledLink";
 
 const GenericActionList = (props) => {
   const [open, setOpen] = useState(props.skipButton || false),
@@ -106,20 +105,7 @@ const GenericActionList = (props) => {
                       </>
                     }
                   >
-                    <ListItemText
-                      primary={
-                        !props.useLinks ? (
-                          item[props.contentIdentifier]
-                        ) : (
-                          <StyledLink
-                            content={item[props.contentIdentifier]}
-                            backgroundUrl={item[props.imageIdentifier]}
-                            setClosed={setClosed}
-                          />
-                        )
-                      }
-                      sx={{ wordBreak: "break-word" }}
-                    />
+                    <ListItemText primary={item[props.contentIdentifier]} sx={{ wordBreak: "break-word" }} />
                   </ListItem>
                 ))
               )}

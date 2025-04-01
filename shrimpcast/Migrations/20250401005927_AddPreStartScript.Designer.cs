@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using shrimpcast.Data;
@@ -11,9 +12,11 @@ using shrimpcast.Data;
 namespace shrimpcast.Migrations
 {
     [DbContext(typeof(APPContext))]
-    partial class APPContextModelSnapshot : ModelSnapshot
+    [Migration("20250401005927_AddPreStartScript")]
+    partial class AddPreStartScript
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -614,8 +617,8 @@ namespace shrimpcast.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<bool>("ResetOnScheduledSwitch")
-                        .HasColumnType("boolean");
+                    b.Property<string>("PreStart")
+                        .HasColumnType("text");
 
                     b.Property<DateTime?>("StartsAt")
                         .HasColumnType("timestamp with time zone");

@@ -5,7 +5,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
     public interface IConfigurationRepository
     {
         Task<Configuration> GetConfigurationAsync();
-        Task<bool> SaveAsync(Configuration configuration);
+        Task<(bool updated, bool updatedSources)> SaveAsync(Configuration configuration);
     }
 }
 

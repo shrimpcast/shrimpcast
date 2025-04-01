@@ -6,6 +6,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
     {
         Task<List<Source>> GetAll();
         Task<bool> Save(List<Source> sources);
+        Task<bool> ChangeSourceStatus(string sourceName, bool status);
     }
 }
 

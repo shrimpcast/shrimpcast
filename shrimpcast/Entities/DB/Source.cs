@@ -20,5 +20,11 @@ namespace shrimpcast.Entities.DB
         public required bool UseRTCEmbed { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public DateTime? StartsAt {  get; set; }
+
+        public DateTime? EndsAt {  get; set; }
+
+        public required bool ResetOnScheduledSwitch { get; set; }
     }
 }

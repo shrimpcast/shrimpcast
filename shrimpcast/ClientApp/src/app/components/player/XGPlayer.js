@@ -13,6 +13,7 @@ const Loader = {
 
 const XGPlayer = (props) => {
   const elId = "xg-player-cont",
+    errorState = "__xgforcedrestart",
     [loadState, setLoadState] = useState({
       css: false,
       flv: false,
@@ -70,8 +71,18 @@ const XGPlayer = (props) => {
       restartPlayback = (player) => {
         console.log("Attempting to restart playback.");
         player.switchURL(noCacheUrl());
+        window[errorState] = true;
       };
 
+    // Workaround for a XGPlayer bug where the player loses audio if it initializes while the source is offline and then comes online
+    player.on("loadeddata", () => {
+      if (window[errorState]) {
+        console.log("Forcing pause/unpause to reset audio stream");
+        window[errorState] = false;
+        player.pause();
+        setTimeout(() => player.play(), 500);
+      }
+    });
     player.on("error", () => restartPlayback(player));
     player.on("ended", () => restartPlayback(player));
     player.on("waiting", () => {

@@ -29,6 +29,7 @@ const a11yProps = (index) => {
 
 const ConfigUserDialog = (props) => {
   const [open, setOpen] = useState(false),
+    [isSaving, setSaving] = useState(false),
     setClosed = () => {
       setOpen(false);
       setConfig(null);
@@ -62,8 +63,11 @@ const ConfigUserDialog = (props) => {
         },
       })),
     saveConfig = async () => {
-      let configSaved = await AdminActionsManager.SaveConfig(props.signalR, config.unorderedConfig, config.openKey);
+      setSaving(true);
+      const configSaved = await AdminActionsManager.SaveConfig(props.signalR, config.unorderedConfig, config.openKey);
+      setSaving(false);
       if (configSaved) setClosed();
+      else setTimeout(() => alert("Could not update configuration"), 200);
     },
     utcToLocal = (time) => {
       const date = new Date(time);
@@ -105,11 +109,17 @@ const ConfigUserDialog = (props) => {
         </IconButton>
       </Tooltip>
       {config && (
-        <Dialog open={open} onClose={setClosed} maxWidth={"lg"}>
+        <Dialog open={open} onClose={setClosed} maxWidth={"xl"}>
           <DialogTitle sx={{ fontSize: "24px", pb: "7.5px" }}>
             <Box display="flex" width="100%" mb={"10px"}>
               Configuration
-              <Button onClick={saveConfig} sx={{ marginLeft: "auto" }} variant="contained" color="success">
+              <Button
+                onClick={saveConfig}
+                sx={{ marginLeft: "auto" }}
+                variant="contained"
+                color="success"
+                disabled={isSaving}
+              >
                 Save
               </Button>
             </Box>
@@ -151,6 +161,7 @@ const ConfigUserDialog = (props) => {
                       fields={configItem.fields}
                       sources={config.unorderedConfig[configItem.name]}
                       setConfig={setConfig}
+                      utcToLocal={utcToLocal}
                     />
                   ) : !config.colorPickerKeys.includes(configItem.name) ? (
                     <TextField

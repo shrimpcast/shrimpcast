@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using shrimpcast.Data.Repositories.Interfaces;
@@ -40,6 +41,9 @@ namespace shrimpcast.Data.Repositories
                     entity.Thumbnail = newSource.Thumbnail;
                     entity.UseLegacyPlayer = newSource.UseLegacyPlayer;
                     entity.UseRTCEmbed = newSource.UseRTCEmbed;
+                    entity.StartsAt = newSource.StartsAt;
+                    entity.EndsAt = newSource.EndsAt;
+                    entity.ResetOnScheduledSwitch = newSource.ResetOnScheduledSwitch;
                 }
             }
 
@@ -53,8 +57,14 @@ namespace shrimpcast.Data.Repositories
                 }
             }
 
-            var result = await _context.SaveChangesAsync();
-            return result > 0;
+            return await _context.SaveChangesAsync() > 0;
+        }
+
+        public async Task<bool> ChangeSourceStatus(string sourceName, bool status)
+        {
+            var source = _context.Sources.First(s => s.Name == sourceName);
+            source.IsEnabled = status;
+            return await _context.SaveChangesAsync() > 0;
         }
     }
 }
