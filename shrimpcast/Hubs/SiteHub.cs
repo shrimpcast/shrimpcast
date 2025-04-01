@@ -635,12 +635,19 @@ namespace shrimpcast.Hubs
         public async Task ChangeSourceStatusBackground(string VerificationToken, string sourceName, bool status)
         {
             if (VerificationToken != Constants.FIREANDFORGET_TOKEN) throw new Exception("Permission denied");
+            var sourceUpdated = false;
             try
             {
-                await _sourceRepository.ChangeSourceStatus(sourceName, status);
+                sourceUpdated = await _sourceRepository.ChangeSourceStatus(sourceName, status);
             } catch (Exception) { }
-            _configurationSigleton.Configuration.Sources = await _sourceRepository.GetAll();
-            await _hubContext.Clients.All.SendAsync("ConfigUpdated", _configurationSigleton.Configuration);
+
+            if (sourceUpdated)
+            {
+                _configurationSigleton.Configuration.Sources = await _sourceRepository.GetAll();
+                await _hubContext.Clients.All.SendAsync("ConfigUpdated", _configurationSigleton.Configuration);
+            }
+
+            await DispatchSystemMessage($"{(sourceUpdated ? "Executed" : "Could not execute")} scheduled job for [{sourceName}, {status}]", true, false, GetAdminSessions());
             RecurringJob.RemoveIfExists($"{sourceName}-{(status ? "enable" : "disable")}");
         }
 

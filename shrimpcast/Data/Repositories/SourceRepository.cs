@@ -59,11 +59,11 @@ namespace shrimpcast.Data.Repositories
             return await _context.SaveChangesAsync() > 0;
         }
 
-        public async Task ChangeSourceStatus(string sourceName, bool status)
+        public async Task<bool> ChangeSourceStatus(string sourceName, bool status)
         {
             var source = _context.Sources.First(s => s.Name == sourceName);
             source.IsEnabled = status;
-            await _context.SaveChangesAsync();
+            return await _context.SaveChangesAsync() > 0;
         }
     }
 }

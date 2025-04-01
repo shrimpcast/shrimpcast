@@ -59,7 +59,7 @@ const SitePlayer = (props) => {
         title="rtc-embed"
         id="rtc-embed"
         allow="autoplay"
-        frameborder="no"
+        frameBorder="no"
         scrolling="no"
         allowFullScreen
       ></iframe>
