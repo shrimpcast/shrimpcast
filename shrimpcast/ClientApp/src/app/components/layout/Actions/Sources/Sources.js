@@ -99,6 +99,9 @@ const Sources = ({ fields, sources, setConfig, utcToLocal }) => {
       thumbnail: "",
       useLegacyPlayer: false,
       useRTCEmbed: false,
+      startAt: null,
+      endAt: null,
+      resetOnScheduledSwitch: false,
     },
     [newSourceData, setNewSourceData] = useState(defaultNewSource),
     openDeleteConfirmation = (source) => {
@@ -217,25 +220,11 @@ const Sources = ({ fields, sources, setConfig, utcToLocal }) => {
                   />
                 </TableCell>
                 <TableCell>
-                  <Tooltip title={source.preStart}>
-                    <Button
-                      onClick={() =>
-                        openEditContent(
-                          "Pre-start command",
-                          "Paste the pre-start command here....",
-                          source.preStart,
-                          source.sourceId,
-                          "preStart",
-                          true
-                        )
-                      }
-                      variant="outlined"
-                      color="warning"
-                      size="small"
-                    >
-                      Show
-                    </Button>
-                  </Tooltip>
+                  <Switch
+                    checked={source.resetOnScheduledSwitch}
+                    onChange={(e) => updateConfig(e.target.checked, source, "resetOnScheduledSwitch")}
+                    color="secondary"
+                  />
                 </TableCell>
                 <TableCell>
                   <TextField
@@ -319,12 +308,10 @@ const Sources = ({ fields, sources, setConfig, utcToLocal }) => {
                   />
                 </TableCell>
                 <TableCell>
-                  <TextField
-                    value={newSourceData.preStart}
-                    onChange={(e) => setNewSourceData({ ...newSourceData, preStart: e.target.value.trim() })}
-                    label="Pre-start"
-                    variant="outlined"
-                    size="small"
+                  <Switch
+                    checked={newSourceData.resetOnScheduledSwitch}
+                    onChange={(e) => setNewSourceData({ ...newSourceData, resetOnScheduledSwitch: e.target.checked })}
+                    color="secondary"
                   />
                 </TableCell>
                 <TableCell>

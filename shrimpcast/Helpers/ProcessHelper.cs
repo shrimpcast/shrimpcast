@@ -30,9 +30,5 @@ namespace shrimpcast.Helpers
 
         public static async Task<string> DockerRestart() =>
             await StartProcess("sudo", "systemctl restart docker", "Docker restarted successfully");
-
-
-        public static async Task<string> ExecPreStartJobCommand(string command, string sourceName) =>
-            await StartProcess("bash", $"-c \"{command}\"", $"Pre-start command for {sourceName} executed successfully");
     }
 }

@@ -43,7 +43,7 @@ namespace shrimpcast.Data.Repositories
                     entity.UseRTCEmbed = newSource.UseRTCEmbed;
                     entity.StartsAt = newSource.StartsAt;
                     entity.EndsAt = newSource.EndsAt;
-                    entity.PreStart = newSource.PreStart;
+                    entity.ResetOnScheduledSwitch = newSource.ResetOnScheduledSwitch;
                 }
             }
 

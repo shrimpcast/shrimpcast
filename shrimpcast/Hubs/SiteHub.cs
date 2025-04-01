@@ -617,7 +617,7 @@ namespace shrimpcast.Hubs
                 {
                     RecurringJob.AddOrUpdate(
                         $"{source.Name}-enable", 
-                        () => ChangeSourceStatusBackground(Constants.FIREANDFORGET_TOKEN, source.Name, true, source.PreStart)
+                        () => ChangeSourceStatusBackground(Constants.FIREANDFORGET_TOKEN, source.Name, true, source.ResetOnScheduledSwitch)
                         , dateToCron(source.StartsAt.Value));
                 }
                 else RecurringJob.RemoveIfExists($"{source.Name}-enable");
@@ -626,13 +626,13 @@ namespace shrimpcast.Hubs
                 {
                     RecurringJob.AddOrUpdate(
                         $"{source.Name}-disable", 
-                        () => ChangeSourceStatusBackground(Constants.FIREANDFORGET_TOKEN, source.Name, false, null), 
+                        () => ChangeSourceStatusBackground(Constants.FIREANDFORGET_TOKEN, source.Name, false, false), 
                         dateToCron(source.EndsAt.Value));
                 }
                 else RecurringJob.RemoveIfExists($"{source.Name}-disable");
             }
         }
-        public async Task ChangeSourceStatusBackground(string VerificationToken, string sourceName, bool status, string? preStartCommand)
+        public async Task ChangeSourceStatusBackground(string VerificationToken, string sourceName, bool status, bool resetOnScheduledSwitch)
         {
             if (VerificationToken != Constants.FIREANDFORGET_TOKEN) throw new Exception("Permission denied");
             var sourceUpdated = false;
@@ -644,17 +644,16 @@ namespace shrimpcast.Hubs
             if (sourceUpdated)
             {
                 _configurationSigleton.Configuration.Sources = await _sourceRepository.GetAll();
-                await _hubContext.Clients.All.SendAsync("ConfigUpdated", _configurationSigleton.Configuration);
-                if (status && !string.IsNullOrEmpty(preStartCommand))
+                if (status && resetOnScheduledSwitch)
                 {
                     string cmdResult;
                     try
                     {
-                        cmdResult = await ProcessHelper.ExecPreStartJobCommand(preStartCommand, sourceName);
-                    }
-                    catch (Exception ex) { cmdResult = ex.Message; }
+                        cmdResult = await ProcessHelper.DockerRestart();
+                    } catch (Exception ex) { cmdResult = ex.Message; }
                     await DispatchSystemMessage(cmdResult, true, false, GetAdminSessions());
                 }
+                await _hubContext.Clients.All.SendAsync("ConfigUpdated", _configurationSigleton.Configuration);
             }
 
             await DispatchSystemMessage($"{(sourceUpdated ? "Executed" : "Could not execute")} scheduled job for [{sourceName}, {status}]", true, false, GetAdminSessions());
