@@ -141,7 +141,7 @@ const Sources = ({ fields, sources, setConfig, utcToLocal }) => {
 
   return (
     <Box sx={styles.container}>
-      <TableContainer component={Paper} sx={styles.tableContainer}>
+      <TableContainer component={Paper} className="scrollbar-custom" sx={styles.tableContainer}>
         <Table>
           <TableHead>
             <TableRow>
@@ -215,6 +215,27 @@ const Sources = ({ fields, sources, setConfig, utcToLocal }) => {
                     checked={source.useRTCEmbed}
                     color="secondary"
                   />
+                </TableCell>
+                <TableCell>
+                  <Tooltip title={source.preStart}>
+                    <Button
+                      onClick={() =>
+                        openEditContent(
+                          "Pre-start command",
+                          "Paste the pre-start command here....",
+                          source.preStart,
+                          source.sourceId,
+                          "preStart",
+                          true
+                        )
+                      }
+                      variant="outlined"
+                      color="warning"
+                      size="small"
+                    >
+                      Show
+                    </Button>
+                  </Tooltip>
                 </TableCell>
                 <TableCell>
                   <TextField
@@ -295,6 +316,15 @@ const Sources = ({ fields, sources, setConfig, utcToLocal }) => {
                     checked={newSourceData.useRTCEmbed}
                     onChange={(e) => setNewSourceData({ ...newSourceData, useRTCEmbed: e.target.checked })}
                     color="secondary"
+                  />
+                </TableCell>
+                <TableCell>
+                  <TextField
+                    value={newSourceData.preStart}
+                    onChange={(e) => setNewSourceData({ ...newSourceData, preStart: e.target.value.trim() })}
+                    label="Pre-start"
+                    variant="outlined"
+                    size="small"
                   />
                 </TableCell>
                 <TableCell>

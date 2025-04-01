@@ -109,7 +109,7 @@ const ConfigUserDialog = (props) => {
         </IconButton>
       </Tooltip>
       {config && (
-        <Dialog open={open} onClose={setClosed} maxWidth={"lg"}>
+        <Dialog open={open} onClose={setClosed} maxWidth={"xl"}>
           <DialogTitle sx={{ fontSize: "24px", pb: "7.5px" }}>
             <Box display="flex" width="100%" mb={"10px"}>
               Configuration

@@ -218,6 +218,7 @@ namespace shrimpcast.Entities.DB
                                 new { name = nameof(Source.Thumbnail).ToLower(), label = "Thumbnail" },
                                 new { name = nameof(Source.UseLegacyPlayer).ToLower(), label = "Native player" },
                                 new { name = nameof(Source.UseRTCEmbed).ToLower(), label = "Embed" },
+                                new { name = nameof(Source.EndsAt).ToLower(), label = "Pre-start" },
                                 new { name = nameof(Source.StartsAt).ToLower(), label = "Schedule start" },
                                 new { name = nameof(Source.EndsAt).ToLower(), label = "Schedule end" },
                                 new { name = "delete", label = string.Empty },
