@@ -23,7 +23,15 @@ const VideoJSPlayer = (props) => {
         player.muted(true);
         player.play().catch(() => console.log("Could not autoplay"));
       });
-    };
+    },
+    destroy = () => {
+      const player = playerRef.current;
+      if (player && !player.isDisposed()) {
+        player.dispose();
+        playerRef.current = null;
+      }
+    },
+    [isError, setIsError] = useState(false);
 
   useEffect(() => {
     if (!cssLoaded) return;
@@ -35,7 +43,19 @@ const VideoJSPlayer = (props) => {
       videoElement.classList.add("vjs-big-play-centered");
       videoRef.current.appendChild(videoElement);
       const player = (playerRef.current = videojs(videoElement, options, () => play(player)));
-
+      player.on("waiting", () => {
+        clearTimeout(window._vjstimeout);
+        window._vjstimeout = setTimeout(() => {
+          try {
+            if (player?.readyState() <= 2) {
+              console.log("Attempting to restart playback.");
+              destroy();
+              setIsError(true);
+            }
+          } catch (e) {}
+        }, 5000);
+      });
+      if (isError) setIsError(false);
       // Update an existing player in the `else` block here
     } else {
       const player = playerRef.current;
@@ -43,17 +63,11 @@ const VideoJSPlayer = (props) => {
       player.src(options.sources);
       play(player);
     }
-  }, [options, videoRef, cssLoaded]);
+  }, [options, videoRef, cssLoaded, isError]);
 
   // Dispose the Video.js player when the functional component unmounts
   useEffect(() => {
-    return () => {
-      const player = playerRef.current;
-      if (player && !player.isDisposed()) {
-        player.dispose();
-        playerRef.current = null;
-      }
-    };
+    return () => destroy();
   }, [playerRef]);
 
   useEffect(() => {
