@@ -617,7 +617,7 @@ namespace shrimpcast.Hubs
                 {
                     RecurringJob.AddOrUpdate(
                         $"{source.Name}-enable", 
-                        () => ChangeSourceStatusBackground(Constants.FIREANDFORGET_TOKEN, source.Name, true)
+                        () => ChangeSourceStatusBackground(Constants.FIREANDFORGET_TOKEN, source.Name, true, source.PreStart)
                         , dateToCron(source.StartsAt.Value));
                 }
                 else RecurringJob.RemoveIfExists($"{source.Name}-enable");
@@ -626,13 +626,13 @@ namespace shrimpcast.Hubs
                 {
                     RecurringJob.AddOrUpdate(
                         $"{source.Name}-disable", 
-                        () => ChangeSourceStatusBackground(Constants.FIREANDFORGET_TOKEN, source.Name, false), 
+                        () => ChangeSourceStatusBackground(Constants.FIREANDFORGET_TOKEN, source.Name, false, null), 
                         dateToCron(source.EndsAt.Value));
                 }
                 else RecurringJob.RemoveIfExists($"{source.Name}-disable");
             }
         }
-        public async Task ChangeSourceStatusBackground(string VerificationToken, string sourceName, bool status)
+        public async Task ChangeSourceStatusBackground(string VerificationToken, string sourceName, bool status, string? preStartCommand)
         {
             if (VerificationToken != Constants.FIREANDFORGET_TOKEN) throw new Exception("Permission denied");
             var sourceUpdated = false;
@@ -645,6 +645,16 @@ namespace shrimpcast.Hubs
             {
                 _configurationSigleton.Configuration.Sources = await _sourceRepository.GetAll();
                 await _hubContext.Clients.All.SendAsync("ConfigUpdated", _configurationSigleton.Configuration);
+                if (status && !string.IsNullOrEmpty(preStartCommand))
+                {
+                    string cmdResult;
+                    try
+                    {
+                        cmdResult = await ProcessHelper.ExecPreStartJobCommand(preStartCommand, sourceName);
+                    }
+                    catch (Exception ex) { cmdResult = ex.Message; }
+                    await DispatchSystemMessage(cmdResult, true, false, GetAdminSessions());
+                }
             }
 
             await DispatchSystemMessage($"{(sourceUpdated ? "Executed" : "Could not execute")} scheduled job for [{sourceName}, {status}]", true, false, GetAdminSessions());
