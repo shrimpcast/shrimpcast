@@ -10,7 +10,6 @@ using shrimpcast.Entities.DB;
 using shrimpcast.Entities.DTO;
 using shrimpcast.Helpers;
 using shrimpcast.Hubs.Dictionaries;
-using System;
 using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
 using Message = shrimpcast.Entities.DB.Message;
@@ -32,6 +31,7 @@ namespace shrimpcast.Hubs
         private readonly IEmoteRepository _emoteRepository;
         private readonly IBingoRepository _bingoRepository;
         private readonly IBTCServerRepository _btcServerRepository;
+        private readonly IStripeRepository _stripeRepository;
         private readonly ISourceRepository _sourceRepository;
         private readonly IHubContext<SiteHub> _hubContext;
         private readonly ConfigurationSingleton _configurationSigleton;
@@ -39,7 +39,7 @@ namespace shrimpcast.Hubs
         private readonly Pings<SiteHub> _pings;
         private readonly BingoSuggestions<SiteHub> _bingoSuggestions;
 
-        public SiteHub(IConfigurationRepository configurationRepository, ISessionRepository sessionRepository, IMessageRepository messageRepository, IBanRepository banRepository, IPollRepository pollRepository, ITorExitNodeRepository torExitNodeRepository, IHubContext<SiteHub> hubContext, ConfigurationSingleton configurationSingleton, Connections<SiteHub> activeConnections, Pings<SiteHub> pings, IOBSCommandsRepository obsCommandsRepository, IAutoModFilterRepository autoModFilterRepository, INotificationRepository notificationRepository, IEmoteRepository emoteRepository, IBingoRepository bingoRepository, IVpnAddressRepository vpnAddressRepository, BingoSuggestions<SiteHub> bingoSuggestions, IBTCServerRepository btcServerRepository, ISourceRepository sourceRepository)
+        public SiteHub(IConfigurationRepository configurationRepository, ISessionRepository sessionRepository, IMessageRepository messageRepository, IBanRepository banRepository, IPollRepository pollRepository, ITorExitNodeRepository torExitNodeRepository, IHubContext<SiteHub> hubContext, ConfigurationSingleton configurationSingleton, Connections<SiteHub> activeConnections, Pings<SiteHub> pings, IOBSCommandsRepository obsCommandsRepository, IAutoModFilterRepository autoModFilterRepository, INotificationRepository notificationRepository, IEmoteRepository emoteRepository, IBingoRepository bingoRepository, IVpnAddressRepository vpnAddressRepository, BingoSuggestions<SiteHub> bingoSuggestions, IBTCServerRepository btcServerRepository, ISourceRepository sourceRepository, IStripeRepository stripeRepository)
         {
             _configurationRepository = configurationRepository;
             _sessionRepository = sessionRepository;
@@ -60,6 +60,7 @@ namespace shrimpcast.Hubs
             _bingoSuggestions = bingoSuggestions;
             _btcServerRepository = btcServerRepository;
             _sourceRepository = sourceRepository;
+            _stripeRepository = stripeRepository;
         }
 
         private Configuration Configuration => _configurationSigleton.Configuration;
@@ -632,6 +633,7 @@ namespace shrimpcast.Hubs
                 else RecurringJob.RemoveIfExists($"{source.Name}-disable");
             }
         }
+
         public async Task ChangeSourceStatusBackground(string VerificationToken, string sourceName, bool status, bool resetOnScheduledSwitch)
         {
             if (VerificationToken != Constants.FIREANDFORGET_TOKEN) throw new Exception("Permission denied");
@@ -671,6 +673,8 @@ namespace shrimpcast.Hubs
             unorderedConfig.IPServiceApiKeyNotMapped = unorderedConfig.IPServiceApiKey;
             unorderedConfig.BTCServerApiKeyNotMapped = unorderedConfig.BTCServerApiKey;
             unorderedConfig.BTCServerWebhookSecretNotMapped = unorderedConfig.BTCServerWebhookSecret;
+            unorderedConfig.StripeSecretKeyNotMapped = unorderedConfig.StripeSecretKey;
+            unorderedConfig.StripeWebhookSecretNotMapped = unorderedConfig.StripeWebhookSecret;
             return new
             {
                 OrderedConfig = Configuration.BuildJSONConfiguration(),
@@ -738,13 +742,29 @@ namespace shrimpcast.Hubs
         #endregion
 
         #region Golden pass
-        public async Task<string> BeginPurchase()
+        public async Task<string> BeginPurchase(bool isCrypto)
         {
             string? response;
             try
             {
                 var session = GetCurrentConnection().Session;
-                response = await _btcServerRepository.GenerateInvoice(session.SessionNames.Last().Name, session.SessionId);
+                if (isCrypto)
+                {
+                    if (Configuration.EnableBTCServer)
+                    {
+                        response = await _btcServerRepository.GenerateInvoice(session.SessionNames.Last().Name, session.SessionId);
+                    }
+                    else response = "Error: BTCServer is disabled.";
+                }
+                else
+                {
+                    if (Configuration.EnableStripe)
+                    {
+                        var host = Context.GetHttpContext()?.Request.Host.Value ?? string.Empty;
+                        response = await _stripeRepository.GenerateInvoice(session.SessionNames.Last().Name, session.SessionId, host);
+                    }
+                    else response = "Error: Stripe is disabled.";
+                }
             }
             catch (Exception ex)
             {
@@ -753,8 +773,16 @@ namespace shrimpcast.Hubs
             return response;
         }
 
-        public async Task<List<InvoiceDTO>?> GetSessionInvoices() =>
-            await _btcServerRepository.GetInvoices(GetCurrentConnection().Session.SessionId);
+        public async Task<List<InvoiceDTO>?> GetSessionInvoices()
+        {
+            var sessionId = GetCurrentConnection().Session.SessionId;
+            List<Task<List<InvoiceDTO>?>> invoices = [];
+            if (Configuration.EnableBTCServer) invoices.Add(_btcServerRepository.GetInvoices(sessionId));
+            // Retrieving invoices from stripe currently not implemented because Stripe's list API is a mess
+            // if (Configuration.EnableStripe) invoices.Add(_stripeRepository.GetInvoices(sessionId));
+            var result = await Task.WhenAll(invoices);
+            return result.SelectMany(task => task ?? []).ToList();
+        }
         #endregion
 
         #region Private methods

@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using Stripe;
+using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -25,6 +26,27 @@ namespace shrimpcast.Helpers
             }
 
             return ParsePayload(requestBody);
+        }
+
+        public static async Task<int> VerifyPayloadStripe(HttpRequest request, string? webhookSecret)
+        {
+            if (string.IsNullOrEmpty(webhookSecret)) throw new Exception("webhookSecret must be supplied");
+
+            using var reader = new StreamReader(request.Body);
+            var requestBody = await reader.ReadToEndAsync();
+            var stripeSignature = request.Headers["Stripe-Signature"].ToString();
+
+            try
+            {
+                var stripeEvent = EventUtility.ConstructEvent(requestBody, stripeSignature, webhookSecret);
+                if (stripeEvent.Type != "checkout.session.completed") throw new Exception("Expected checkout.session.completed");
+                if (stripeEvent.Data.Object is not Stripe.Checkout.Session payload || payload.Metadata == null) throw new Exception("Metadata expected.");
+                return int.Parse(payload.Metadata["orderId"]);
+            }
+            catch (Exception ex)
+            {
+                throw new ProtocolViolationException(ex.Message);
+            }
         }
 
         private static int ParsePayload(string requestBody)

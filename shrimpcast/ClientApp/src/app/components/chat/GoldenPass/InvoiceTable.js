@@ -43,6 +43,7 @@ const InvoiceTable = ({ invoices, setCheckoutUrl }) => {
             <TableHead>
               <TableRow>
                 <TableCell>Status</TableCell>
+                <TableCell>Type</TableCell>
                 <TableCell>Checkout</TableCell>
                 <TableCell>Created at</TableCell>
               </TableRow>
@@ -56,8 +57,17 @@ const InvoiceTable = ({ invoices, setCheckoutUrl }) => {
                       <CircularProgress size={12} sx={StatusLoaderSx} />
                     )}
                   </TableCell>
+                  <TableCell>{invoice.isStripe ? "Stripe" : "Crypto"}</TableCell>
                   <TableCell>
-                    <Button onClick={() => setCheckoutUrl(invoice.checkoutLink)}>open</Button>
+                    <Button
+                      onClick={() =>
+                        invoice.isStripe
+                          ? window.open(invoice.checkoutLink, "_blank")
+                          : setCheckoutUrl(invoice.checkoutLink)
+                      }
+                    >
+                      open
+                    </Button>
                   </TableCell>
                   <TableCell>{new Date(invoice.createdTime * 1000).toLocaleString()}</TableCell>
                 </TableRow>

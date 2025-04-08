@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using shrimpcast.Data;
@@ -11,9 +12,11 @@ using shrimpcast.Data;
 namespace shrimpcast.Migrations
 {
     [DbContext(typeof(APPContext))]
-    partial class APPContextModelSnapshot : ModelSnapshot
+    [Migration("20250408000541_AddGoldenPassStripe")]
+    partial class AddGoldenPassStripe
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -278,12 +281,6 @@ namespace shrimpcast.Migrations
 
                     b.Property<string>("StreamTitle")
                         .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("StripeSecretKey")
-                        .HasColumnType("text");
-
-                    b.Property<string>("StripeWebhookSecret")
                         .HasColumnType("text");
 
                     b.Property<bool>("UseDarkTheme")

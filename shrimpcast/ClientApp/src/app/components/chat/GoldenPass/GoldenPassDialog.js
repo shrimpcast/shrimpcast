@@ -39,6 +39,7 @@ const DialogSx = {
 
 const GoldenPassDialog = (props) => {
   const { closeDialog, configuration, goldenPassTitle, signalR } = props,
+    { enableStripe, enableBTCServer } = configuration,
     [loading, setLoading] = useState(false),
     [invoices, setInvoices] = useState(null),
     [toastMessage, setToastMessage] = useState(""),
@@ -50,9 +51,9 @@ const GoldenPassDialog = (props) => {
       const invoices = await TokenManager.GetSessionInvoices(signalR);
       setInvoices(invoices);
     },
-    beginPurchase = async () => {
+    beginPurchase = async (isCrypto) => {
       setLoading(true);
-      const response = await TokenManager.BeginGoldenPassPurchase(signalR);
+      const response = await TokenManager.BeginGoldenPassPurchase(signalR, isCrypto);
       setLoading(false);
       if (!response || response.includes("Error")) {
         setToastMessage(response || "Error: could not complete purchase.");
@@ -60,12 +61,14 @@ const GoldenPassDialog = (props) => {
         return;
       }
 
-      setCheckoutUrl(response);
+      if (isCrypto) setCheckoutUrl(response);
+      else window.open(response, "_blank");
       getInvoices();
     };
 
   useEffect(() => {
     getInvoices();
+    return () => setInvoices(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -91,14 +94,34 @@ const GoldenPassDialog = (props) => {
             </Typography>
             <Typography variant="body2">- Unlimited duration </Typography>
             <Typography variant="body2">- 100% anonymous via crypto</Typography>
+            <Typography variant="body2">- All payments are processed automatically</Typography>
           </Box>
-          <Box justifyContent="center" display="flex">
-            <Button disabled={loading} onClick={beginPurchase} variant="contained" sx={BuyButtonSx}>
-              Buy Golden Pass (USD ${configuration.goldenPassValue}){" "}
-              {loading && <CircularProgress color="primary" sx={{ ml: "10px" }} size={14} />}
-            </Button>
-          </Box>
-
+          {enableBTCServer && (
+            <Box justifyContent="center" display="flex">
+              <Button
+                disabled={loading || !enableBTCServer}
+                onClick={() => beginPurchase(true)}
+                variant="contained"
+                sx={BuyButtonSx}
+              >
+                Buy with crypto - USD ${configuration.goldenPassValue}
+                {loading && <CircularProgress color="primary" sx={{ ml: "10px" }} size={14} />}
+              </Button>
+            </Box>
+          )}
+          {enableStripe && (
+            <Box justifyContent="center" display="flex" mt={2}>
+              <Button
+                disabled={loading || !enableStripe}
+                onClick={() => beginPurchase(false)}
+                variant="contained"
+                sx={BuyButtonSx}
+              >
+                Buy with credit card (stripe) - USD ${configuration.goldenPassValue}
+                {loading && <CircularProgress color="primary" sx={{ ml: "10px" }} size={14} />}
+              </Button>
+            </Box>
+          )}
           <InvoiceTable invoices={invoices} setCheckoutUrl={setCheckoutUrl} />
         </DialogContent>
       </Dialog>

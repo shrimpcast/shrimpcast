@@ -26,8 +26,8 @@ class TokenManager {
     return response;
   }
 
-  static async BeginGoldenPassPurchase(signalR) {
-    const response = await signalR.invoke("BeginPurchase").catch((ex) => console.log(ex));
+  static async BeginGoldenPassPurchase(signalR, isCrypto) {
+    const response = await signalR.invoke("BeginPurchase", isCrypto).catch((ex) => console.log(ex));
     return response;
   }
 
