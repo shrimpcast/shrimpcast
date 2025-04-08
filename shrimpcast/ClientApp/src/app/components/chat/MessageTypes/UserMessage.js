@@ -10,6 +10,7 @@ import ConfirmDialog from "../../others/ConfirmDialog";
 import MessageWrapper from "./MessageWrapper";
 import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
 import ShieldIcon from "@mui/icons-material/Shield";
+import KeyframesManager from "../../../managers/KeyframesManager";
 
 const WrapperTextBoxSx = {
     margin: "10px",
@@ -59,13 +60,17 @@ const WrapperTextBoxSx = {
     height: "20px",
     borderRadius: "5px",
     marginRight: "2px",
-  };
+  },
+  GoldenPassGlow = (color) => ({
+    color,
+    animation: `${KeyframesManager.getGoldenGlowKeyframes(color)} 1s infinite alternate`,
+  });
 
 const UserMessage = React.memo((props) => {
   const [showPromptDialog, setShowPromptDialog] = useState(false),
     openConfirmPrompt = () => setShowPromptDialog(true),
     closeConfirmPrompt = () => setShowPromptDialog(false),
-    { isAdmin, isMod, isGolden, maxLengthTruncation } = props,
+    { isAdmin, isMod, isGolden, maxLengthTruncation, userColorDisplay } = props,
     escapedName = LocalStorageManager.getName().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
     // Use lookahead assertion to ensure we're matching the full name
     nameRegex = `@${escapedName}(?:\\s|$|\\.)`,
@@ -102,10 +107,10 @@ const UserMessage = React.memo((props) => {
         </Box>
         <Box display="inline-block">
           <Typography
-            sx={TextSx(props.userColorDisplay, true)}
+            sx={[TextSx(userColorDisplay, true), isGolden ? GoldenPassGlow(userColorDisplay) : null]}
             className={`${
               props.enableChristmasTheme ? "santa-hat" : props.enableHalloweenTheme ? "halloween-hat" : null
-            } ${isAdmin ? "admin-glow" : isMod ? "mod-glow" : isGolden ? "golden-glow" : null}`}
+            } ${isAdmin ? "admin-glow" : isMod ? "mod-glow" : null}`}
           >
             {isAdmin ? (
               <VerifiedUserIcon sx={VerifiedUserIconSx} />

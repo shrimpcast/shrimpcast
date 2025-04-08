@@ -101,7 +101,7 @@ namespace shrimpcast.Controllers
             var configuration = _configurationSingleton.Configuration;
             var sessionId = await HMACSHA256Auth.VerifyPayload(Request, configuration.BTCServerWebhookSecret);
             var isGolden = await _sessionRepository.SetGoldStatus(sessionId);
-            return await GiveGoldStatus(sessionId, isGolden);
+            return await NotifyGoldStatus(sessionId, isGolden);
         }
 
         [HttpPost, Route("ConfirmGoldStatusStripe")]
@@ -111,10 +111,10 @@ namespace shrimpcast.Controllers
             var configuration = _configurationSingleton.Configuration;
             var sessionId = await HMACSHA256Auth.VerifyPayloadStripe(Request, configuration.StripeWebhookSecret);
             var isGolden = await _sessionRepository.SetGoldStatus(sessionId);
-            return await GiveGoldStatus(sessionId, isGolden);
+            return await NotifyGoldStatus(sessionId, isGolden);
         }
 
-        private async Task<IActionResult> GiveGoldStatus (int sessionId, bool isGolden)
+        private async Task<IActionResult> NotifyGoldStatus(int sessionId, bool isGolden)
         {
             var configuration = _configurationSingleton.Configuration;
             var connections = _activeConnections.All.Where(ac => ac.Value.Session.SessionId == sessionId);

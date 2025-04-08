@@ -5,6 +5,7 @@ import { Box, DialogContent, Divider, Typography, Button, CircularProgress, Snac
 import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
 import TokenManager from "../../../managers/TokenManager";
 import InvoiceTable from "./InvoiceTable";
+import KeyframesManager from "../../../managers/KeyframesManager";
 
 const DialogSx = {
     borderRadius: "10px",
@@ -35,11 +36,16 @@ const DialogSx = {
     height: "520px",
     border: "none",
     width: "334px",
-  };
+  },
+  GoldenPassGlow = (color) => ({
+    color,
+    animation: `${KeyframesManager.getGoldenGlowKeyframes(color)} 1s infinite alternate`,
+  });
 
 const GoldenPassDialog = (props) => {
-  const { closeDialog, configuration, goldenPassTitle, signalR } = props,
+  const { closeDialog, configuration, goldenPassTitle, signalR, colours } = props,
     { enableStripe, enableBTCServer } = configuration,
+    [colour, setColour] = useState(colours[0].colourHex),
     [loading, setLoading] = useState(false),
     [invoices, setInvoices] = useState(null),
     [toastMessage, setToastMessage] = useState(""),
@@ -68,7 +74,19 @@ const GoldenPassDialog = (props) => {
 
   useEffect(() => {
     getInvoices();
-    return () => setInvoices(null);
+    window.__glowShowcaseInterval = setInterval(
+      () =>
+        setColour((colour) => {
+          let index = colours.findIndex((c) => c.colourHex === colour);
+          if (index + 1 === colours.length) index = -1;
+          return colours[index + 1].colourHex;
+        }),
+      2000
+    );
+    return () => {
+      setInvoices(null);
+      clearInterval(window.__glowShowcaseInterval);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -89,11 +107,12 @@ const GoldenPassDialog = (props) => {
             as:
           </Typography>
           <Box marginTop="10px" mb={3}>
-            <Typography variant="body2" className="golden-glow">
+            <Typography variant="body2" sx={GoldenPassGlow(colour)}>
               - <WorkspacePremiumIcon sx={{ fontSize: "13px", position: "relative", top: "1px" }} /> Glowie username
             </Typography>
+            <Typography variant="body2">- No cooldown between messages</Typography>
             <Typography variant="body2">- Unlimited duration </Typography>
-            <Typography variant="body2">- 100% anonymous via crypto</Typography>
+            {enableBTCServer && <Typography variant="body2">- 100% anonymous via crypto</Typography>}
             <Typography variant="body2">- All payments are processed automatically</Typography>
           </Box>
           {enableBTCServer && (

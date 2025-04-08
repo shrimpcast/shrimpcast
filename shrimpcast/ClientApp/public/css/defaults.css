@@ -172,21 +172,3 @@ html {
     background-position: 8.485rem 8.485rem; /* Match background-size */
   }
 }
-
-.golden-glow {
-  color: #ffca28 !important;
-  animation-name: golden-glow;
-  animation-duration: 1s;
-  animation-iteration-count: infinite;
-  animation-direction: alternate;
-}
-
-@keyframes golden-glow {
-  from {
-    text-shadow: 0 0 5px #ffca28, 0 0 5px #ffb300;
-  }
-
-  to {
-    text-shadow: 0 0 20px #ffca28, 0 0 20px #ffb300;
-  }
-}
