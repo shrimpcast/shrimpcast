@@ -69,7 +69,7 @@ const GoldenPassDialog = (props) => {
       }
 
       if (isCrypto) setCheckoutUrl(response);
-      else window.open(response, "_blank");
+      else window.open(response, "_self");
       getInvoices();
     };
 
