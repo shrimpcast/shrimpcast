@@ -1131,6 +1131,7 @@ namespace shrimpcast.Hubs
             await DispatchSystemMessage($"Executing {Constants.DOCKER_RESTART} command...");
             try
             {
+                await DispatchSystemMessage($"[SYSTEM] Restarting media server. Playback will automatically resume shortly.", true, true);
                 var result = await ProcessHelper.DockerRestart();
                 await DispatchSystemMessage(result);
             }
