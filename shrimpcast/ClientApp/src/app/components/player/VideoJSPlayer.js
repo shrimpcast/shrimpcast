@@ -54,6 +54,10 @@ const VideoJSPlayer = (props) => {
         clearTimeout(window._vjstimeout);
       };
 
+      player.on("error", () => {
+        clearTimeout(window._vjstimeout);
+        setTimeout(restart, 3000);
+      });
       player.on("ended", restart);
       player.on("waiting", () => {
         clearTimeout(window._vjstimeout);
