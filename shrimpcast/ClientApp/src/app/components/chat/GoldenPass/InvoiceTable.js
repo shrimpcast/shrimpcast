@@ -61,7 +61,9 @@ const InvoiceTable = ({ invoices, setCheckoutUrl }) => {
                   <TableCell>
                     <Button
                       onClick={() =>
-                        invoice.isStripe ? window.open(invoice.checkoutLink) : setCheckoutUrl(invoice.checkoutLink)
+                        invoice.isStripe
+                          ? window.open(invoice.checkoutLink, "_self")
+                          : setCheckoutUrl(invoice.checkoutLink)
                       }
                     >
                       open
