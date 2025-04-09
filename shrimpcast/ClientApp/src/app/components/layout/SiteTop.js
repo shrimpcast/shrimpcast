@@ -36,7 +36,7 @@ const SiteTopSx = {
   };
 
 const SiteTop = (props) => {
-  const { isAdmin, isMod, isGolden, signalR, userDisplayColor, colours, useFullChatMode, setFullChatMode } = props,
+  const { isAdmin, isMod, signalR, userDisplayColor, colours, useFullChatMode, setFullChatMode } = props,
     [registeredName, setRegisteredName] = useState(props.name),
     [newName, setNewName] = useState(registeredName),
     [editMode, setEditMode] = useState(false),
@@ -98,11 +98,11 @@ const SiteTop = (props) => {
               variant="contained"
               endIcon={<EditIcon />}
               size="small"
-              sx={ButtonSx(isAdmin || isMod || isGolden)}
+              sx={ButtonSx(isAdmin || isMod)}
             >
               <Box sx={ButtonTextSx}>{registeredName}</Box>
             </Button>
-            {!isAdmin && !isMod && !isGolden && (
+            {!isAdmin && !isMod && (
               <ColourPicker
                 userDisplayColor={userDisplayColor}
                 colours={colours}

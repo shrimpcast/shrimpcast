@@ -39,20 +39,23 @@ namespace shrimpcast.Data.Repositories.Interfaces
             response.EnsureSuccessStatusCode();
             var responseContent = await response.Content.ReadAsStringAsync();
             var invoice = JsonConvert.DeserializeObject<InvoiceDTO>(responseContent);
-            return invoice.CheckoutLink ?? throw new Exception("Could not get checkout link.");
+            return invoice?.CheckoutLink ?? throw new Exception("Could not get checkout link.");
         }
 
         public async Task<List<InvoiceDTO>?> GetInvoices(int sessionId)
         {
-            if (!await CheckStatus()) return null; 
-            var configuration = _configurationSingleton.Configuration;
-            using var client = new HttpClient() { Timeout = TimeSpan.FromSeconds(15) };
-            var request = GetRequest($"stores/{configuration.BTCServerStoreId}/invoices?orderId={sessionId}");
-            var response = await client.SendAsync(request);
-            response.EnsureSuccessStatusCode();
-            var responseContent = await response.Content.ReadAsStringAsync();
-            var invoices = JsonConvert.DeserializeObject<List<InvoiceDTO>>(responseContent);
-            return invoices;
+            try
+            {
+                if (!await CheckStatus()) return null;
+                var configuration = _configurationSingleton.Configuration;
+                using var client = new HttpClient() { Timeout = TimeSpan.FromSeconds(15) };
+                var request = GetRequest($"stores/{configuration.BTCServerStoreId}/invoices?orderId={sessionId}");
+                var response = await client.SendAsync(request);
+                response.EnsureSuccessStatusCode();
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var invoices = JsonConvert.DeserializeObject<List<InvoiceDTO>>(responseContent);
+                return invoices;
+            } catch (Exception) { return null; }
         }
 
         private HttpRequestMessage GetRequest(string path, bool usePost = false)

@@ -163,6 +163,24 @@ namespace shrimpcast.Entities.DB
 
         public required bool EnableHalloweenTheme { get; set; }
 
+        public required bool EnableStripe { get; set; }
+
+        public required bool EnableBTCServer { get; set; }
+
+        [JsonIgnore]
+        public string? StripeSecretKey { get; set; } = string.Empty;
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [NotMapped]
+        public string? StripeSecretKeyNotMapped { get; set; }
+
+        [JsonIgnore]
+        public string? StripeWebhookSecret { get; set; } = string.Empty;
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [NotMapped]
+        public string? StripeWebhookSecretNotMapped { get; set; }
+
         public object Clone() => MemberwiseClone();
     }
 
@@ -309,12 +327,16 @@ namespace shrimpcast.Entities.DB
                     values = new object[]
                     {
                         new { name = nameof(config.ShowGoldenPassButton).ToLower(), label = "Enable golden pass purchases", value = config.ShowGoldenPassButton },
+                        new { name = nameof(config.EnableBTCServer).ToLower(), label = "Enable crypto purchases", value = config.EnableBTCServer },
+                        new { name = nameof(config.EnableStripe).ToLower(), label = "Enable stripe purchases", value = config.EnableStripe },
                         new { name = nameof(config.GoldenPassValue).ToLower(), label = "Golden pass value (USD)", value = config.GoldenPassValue },
                         new { name = nameof(config.GoldenPassTitle).ToLower(), label = "Golden pass title", value = config.GoldenPassTitle },
                         new { name = nameof(config.BTCServerInstanceURL).ToLower(), label = "BTCServer instance URL", value = config.BTCServerInstanceURL },
                         new { name = nameof(config.BTCServerStoreId).ToLower(), label = "BTCServer store ID", value = config.BTCServerStoreId },
                         new { name = nameof(config.BTCServerApiKeyNotMapped).ToLower(), label = "BTCServer API key", value = config.BTCServerApiKey },
                         new { name = nameof(config.BTCServerWebhookSecretNotMapped).ToLower(), label = "BTCServer webhook secret", value = config.BTCServerWebhookSecret },
+                        new { name = nameof(config.StripeSecretKeyNotMapped).ToLower(), label = "Stripe secret key", value = config.StripeSecretKey },
+                        new { name = nameof(config.StripeWebhookSecretNotMapped).ToLower(), label = "Stripe webhook secret", value = config.StripeWebhookSecret },
                     }
                 }
             };
