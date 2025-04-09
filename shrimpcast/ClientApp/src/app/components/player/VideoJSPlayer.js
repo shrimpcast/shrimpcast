@@ -18,11 +18,15 @@ const VideoJSPlayer = (props) => {
     { options } = props,
     play = (player) => {
       player.muted(false);
-      player.play().catch(() => {
-        if (player && player.isDisposed()) return;
-        player.muted(true);
-        player.play().catch(() => console.log("Could not autoplay"));
-      });
+      setTimeout(() => {
+        player.play().catch(() => {
+          if (player && player.isDisposed()) return;
+          player.muted(true);
+          setTimeout(() => {
+            player.play().catch(() => console.log("Could not autoplay"));
+          }, 100);
+        });
+      }, 100);
     },
     destroy = () => {
       const player = playerRef.current;
@@ -43,18 +47,25 @@ const VideoJSPlayer = (props) => {
       videoElement.classList.add("vjs-big-play-centered");
       videoRef.current.appendChild(videoElement);
       const player = (playerRef.current = videojs(videoElement, options, () => play(player)));
+      const restart = () => {
+        console.log("Attempting to restart playback.");
+        destroy();
+        setIsError(true);
+        clearTimeout(window._vjstimeout);
+      };
+
+      player.on("ended", restart);
       player.on("waiting", () => {
         clearTimeout(window._vjstimeout);
         window._vjstimeout = setTimeout(() => {
           try {
             if (player?.readyState() <= 2) {
-              console.log("Attempting to restart playback.");
-              destroy();
-              setIsError(true);
+              restart();
             }
           } catch (e) {}
         }, 5000);
       });
+
       if (isError) setIsError(false);
       // Update an existing player in the `else` block here
     } else {

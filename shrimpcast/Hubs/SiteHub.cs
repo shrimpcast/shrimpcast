@@ -648,6 +648,7 @@ namespace shrimpcast.Hubs
                 _configurationSigleton.Configuration.Sources = await _sourceRepository.GetAll();
                 if (status && resetOnScheduledSwitch)
                 {
+                    await DispatchSystemMessage($"[SYSTEM] Restarting media server. Playback will automatically resume shortly.", true, true);
                     string cmdResult;
                     try
                     {
@@ -956,7 +957,7 @@ namespace shrimpcast.Hubs
 
             var Action = "ChatMessage";
             if (!useCallers) await Clients.Caller.SendAsync(Action, obj);
-            else if (useAll) await Clients.All.SendAsync(Action, obj);
+            else if (useAll) await _hubContext.Clients.All.SendAsync(Action, obj);
             else if (Callers != null) await _hubContext.Clients.Clients(Callers).SendAsync(Action, obj);
         }
 

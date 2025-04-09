@@ -38,6 +38,7 @@ const DialogSx = {
     width: "334px",
   },
   GoldenPassGlow = (color) => ({
+    fontWeight: "bold",
     color,
     animation: `${KeyframesManager.getGoldenGlowKeyframes(color)} 1s infinite alternate`,
   });
