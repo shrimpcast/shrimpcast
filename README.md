@@ -120,6 +120,7 @@ nload
 
 Open a second SSH session and run:
 
+- Option 1 ([LibreSpeed CLI tool](https://github.com/librespeed/speedtest-cli))
 ```bash
 # Download and extract librespeed-cli
 wget https://github.com/librespeed/speedtest-cli/releases/download/v1.0.11/librespeed-cli_1.0.11_linux_386.tar.gz
@@ -132,17 +133,27 @@ done
 wait
 ```
 
+- Option 2 (Speedtest CLI)
+```bash
+# Download and install speedtest-cli
+apt update && apt install speedtest-cli
+
+# Launch multiple parallel upload tests
+for i in {1..8}; do 
+  speedtest-cli --no-download --secure &
+done
+wait
+```
+
 This will:
-- Download the [LibreSpeed CLI tool](https://github.com/librespeed/speedtest-cli)
-- Launch 8 parallel upload tests
-- Run each test for 30 seconds
 - Provide a realistic measurement of your server's maximum upload capacity
 
 ## Example output
 
 When running properly, you'll see real-time throughput statistics in your first terminal window while the tests are executing in your second window.
 
-![Upload speed test results example](https://github.com/user-attachments/assets/1b7a8fd0-9cec-429c-9ca5-f50c7802bb78)
+![Upload speed test results example](https://github.com/user-attachments/assets/3f035573-3408-4cfb-857a-03637f6bf2e6)
+
 
 ## Why this works
 
