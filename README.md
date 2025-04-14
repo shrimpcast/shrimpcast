@@ -112,14 +112,9 @@ This guide will help you accurately measure your server's actual upload speed us
 Open your first SSH session and run:
 
 ```bash
-apt update && apt install ifstat
-ifstat -i $(ip -o -4 route show to default | awk '{print $5}') 1 | awk '{if ($2 ~ /^[0-9]/) print $2*8/1024 " Mbps"}'
+apt update && apt install nload
+nload
 ```
-
-This command:
-- Installs the `ifstat` utility
-- Automatically detects your default network interface
-- Displays real-time upload throughput in Mbps
 
 ### 2. Run the speed test
 
