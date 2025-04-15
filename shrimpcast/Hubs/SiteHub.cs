@@ -111,10 +111,13 @@ namespace shrimpcast.Hubs
 
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
-            var SessionId = GetCurrentConnection().Session.SessionId;
-            ActiveConnections.TryRemove(Context.ConnectionId, out _);
-            await TriggerUserCountChange(false, null, SessionId);
-            await base.OnDisconnectedAsync(exception);
+            try
+            {
+                var SessionId = GetCurrentConnection().Session.SessionId;
+                ActiveConnections.TryRemove(Context.ConnectionId, out _);
+                await TriggerUserCountChange(false, null, SessionId);
+                await base.OnDisconnectedAsync(exception);
+            } catch (Exception) {} // Session already disconnected
         }
 
         public async Task GetUserCount() => await TriggerUserCountChange(true, null, null);
