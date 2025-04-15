@@ -75,9 +75,13 @@ namespace shrimpcast.Hubs
             var accessToken = (Context.GetHttpContext()?.Request.Query["accessToken"].ToString()) ?? throw new Exception("AccessToken can't be null.");
             var Session = await _sessionRepository.GetExistingAsync(accessToken, RemoteAddress);
             var isClosed = !(Session?.IsAdmin).GetValueOrDefault() && Configuration.OpenAt > DateTime.UtcNow;
-            if (Session == null || isClosed)
+            var reachedMaxUsers = Configuration.MaxConnectedUsers != 0 && ActiveConnections.Count >= Configuration.MaxConnectedUsers
+                                  && !(Session?.IsAdmin).GetValueOrDefault() && !(Session?.IsMod).GetValueOrDefault()  && !(Session?.IsGolden).GetValueOrDefault();
+            
+            if (Session == null || isClosed || reachedMaxUsers)
             {
                 if (isClosed) await ForceDisconnect([Context.ConnectionId], Configuration.OpenAt);
+                if (reachedMaxUsers) await ForceDisconnect([Context.ConnectionId], Constants.MAX_USERS_REACHED);
                 Context.Abort();
                 return;
             }
