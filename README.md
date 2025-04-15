@@ -17,6 +17,7 @@ Shrimpcast is a highly customizable, flexible, battle-tested, fast, and secure s
 - [Features](#features)
 - [Installation](#installation)
 - [Troubleshooting](#troubleshooting)
+- [Throughput estimation](#throughput-estimation)
 - [Media server](#media-server)
 - [Debug](#debug)
 - [Usage](#usage)
@@ -102,6 +103,61 @@ And that's it! Shrimpcast should now be up and running. You can now try to acces
   `sudo rm -rf /etc/nginx`  <br>
   `sudo apt-get autoremove --purge`  <br>
   then re-run the install script.
+
+## Throughput estimation
+This guide will help you accurately measure your server's actual upload speed using parallel connections, simulating real-world network usage.
+
+### 1. Set up real-time monitoring
+
+Open your first SSH session and run:
+
+```bash
+apt update && apt install nload
+nload
+```
+
+### 2. Run the speed test
+
+Open a second SSH session and run:
+
+- Option 1 ([LibreSpeed CLI tool](https://github.com/librespeed/speedtest-cli))
+```bash
+# Download and extract librespeed-cli
+wget https://github.com/librespeed/speedtest-cli/releases/download/v1.0.11/librespeed-cli_1.0.11_linux_386.tar.gz
+tar -xzf librespeed-cli_1.0.11_linux_386.tar.gz
+
+# Launch multiple parallel upload tests
+for i in {1..8}; do 
+  ./librespeed-cli --no-download --no-icmp --duration 30 &
+done
+wait
+```
+
+- Option 2 (Speedtest CLI)
+```bash
+# Download and install speedtest-cli
+apt update && apt install speedtest-cli
+
+# Launch multiple parallel upload tests
+for i in {1..8}; do 
+  speedtest-cli --no-download --secure &
+done
+wait
+```
+
+This will:
+- Provide a realistic measurement of your server's maximum upload capacity
+
+## Example output
+
+When running properly, you'll see real-time throughput statistics in your first terminal window while the tests are executing in your second window.
+
+![Upload speed test results example](https://github.com/user-attachments/assets/3f035573-3408-4cfb-857a-03637f6bf2e6)
+
+
+## Why this works
+
+By running multiple parallel upload tests, you simulate real-world conditions where multiple connections share your server's bandwidth, giving you a more accurate picture of your server's true upload capabilities than a single-threaded test.
 
 ## Media Server
 
