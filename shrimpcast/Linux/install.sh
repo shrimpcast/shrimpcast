@@ -319,5 +319,5 @@ EOF
 
 echo "Setup completed successfully. Admin key: $(cat /root/shrimpcast/setup/GeneratedAdminToken.txt)"
 echo "Rebooting to apply system wide changes"
-
+sleep 0.5
 reboot
