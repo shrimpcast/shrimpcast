@@ -52,12 +52,13 @@ namespace shrimpcast.Controllers
                         var IsVpnAndBlocked = configuration.SiteBlockVPNConnections && await _vpnAddressRepository.IsVpnAddress(remoteAddress);
                         if (IsVpnAndBlocked) message = Constants.VPN_DISABLED_MESSAGE;
                     }
-                }
-
-                if (configuration.MaxConnectedUsers != 0 && _activeConnections.All.Count >= configuration.MaxConnectedUsers
-                    && !ensureCreated.IsMod && !ensureCreated.IsGolden)
-                {
-                    message = Constants.MAX_USERS_REACHED;
+                    else if (configuration.MaxConnectedUsers != 0 
+                        && _activeConnections.All.Count >= configuration.MaxConnectedUsers 
+                        && !ensureCreated.IsMod 
+                        && !ensureCreated.IsGolden)
+                    {
+                        message = Constants.MAX_USERS_REACHED;
+                    }
                 }
 
                 if (message != null) return new
