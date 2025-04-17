@@ -4,6 +4,7 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import App from "./app/App";
 import { BrowserRouter, Routes, Route } from "react-router";
+import serviceWorkerStatus from "./serviceworkerstatus.json";
 
 const rootElement = document.getElementById("root");
 const root = createRoot(rootElement);
@@ -18,4 +19,6 @@ root.render(
   </React.StrictMode>
 );
 
-serviceWorkerRegistration.register();
+console.log("Service worker enabled: " + serviceWorkerStatus.enabled);
+if (serviceWorkerStatus.enabled) serviceWorkerRegistration.register();
+else serviceWorkerRegistration.unregister();

@@ -5,8 +5,12 @@ class TokenManager {
   static async EnsureTokenExists(abortSignal) {
     let url = "/api/session/GetNewOrExisting?accessToken=" + LocalStorageManager.getToken();
     let response = await axios.get(url, { signal: abortSignal }).catch((ex) => {
-      if (!abortSignal.aborted)
+      if (!abortSignal.aborted) {
+        if (ex.message.includes("Request failed with status code 403")) {
+          ex.message = "likely a CDN-related issue. Please try a hard refresh (Ctrl + F5)";
+        }
         return { data: { message: `Could not load the site: ${ex.message}. Refresh to try again.` } };
+      }
     });
     this.SaveData(response?.data?.sessionToken, response?.data?.name);
     return response?.data;
