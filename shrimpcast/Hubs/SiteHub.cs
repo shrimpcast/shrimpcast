@@ -77,11 +77,13 @@ namespace shrimpcast.Hubs
             var isClosed = !(Session?.IsAdmin).GetValueOrDefault() && Configuration.OpenAt > DateTime.UtcNow;
             var reachedMaxUsers = Configuration.MaxConnectedUsers != 0 && ActiveConnections.Count >= Configuration.MaxConnectedUsers
                                   && !(Session?.IsAdmin).GetValueOrDefault() && !(Session?.IsMod).GetValueOrDefault()  && !(Session?.IsGolden).GetValueOrDefault();
-            
-            if (Session == null || isClosed || reachedMaxUsers)
+            var reachedMaxConnectionsPerAddress = ActiveConnections.Where(ac => ac.Value.RemoteAdress == RemoteAddress).Count() >= Configuration.MaxConnectionsPerIP;
+
+            if (Session == null || isClosed || reachedMaxUsers || reachedMaxConnectionsPerAddress)
             {
                 if (isClosed) await ForceDisconnect([Context.ConnectionId], Configuration.OpenAt);
                 if (reachedMaxUsers) await ForceDisconnect([Context.ConnectionId], Constants.MAX_USERS_REACHED);
+                if (reachedMaxConnectionsPerAddress) await ForceDisconnect([Context.ConnectionId], Constants.MAX_IP_USER_REACHED);
                 Context.Abort();
                 return;
             }
@@ -94,17 +96,6 @@ namespace shrimpcast.Hubs
             });
 
             await AbortIfBanned();
-
-            int MAX_CONNECTIONS_PER_IP = Configuration.MaxConnectionsPerIP;
-            var ExistingConnectionsPerIP = ActiveConnections.Where(ac => ac.Value.RemoteAdress == RemoteAddress);
-            if (ExistingConnectionsPerIP.Count() > MAX_CONNECTIONS_PER_IP)
-            {
-                var connectionsToRemove = ExistingConnectionsPerIP.OrderBy(ac => ac.Value.ConnectedAt)
-                                                                  .Take(ExistingConnectionsPerIP.Count() - MAX_CONNECTIONS_PER_IP)
-                                                                  .Select(connection => connection.Key);
-                await ForceDisconnect(connectionsToRemove, "You have exceeded the maximum amount of permitted simultaneous connections. Refresh to try again.");
-            }
-
             await TriggerUserCountChange(false, Session, null);
             await base.OnConnectedAsync();
         }

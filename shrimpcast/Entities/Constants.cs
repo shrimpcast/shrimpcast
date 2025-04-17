@@ -4,7 +4,7 @@ namespace shrimpcast.Entities
 {
     public class Constants
     {
-        public const string BACKEND_VERSION = "1.2.5";
+        public const string BACKEND_VERSION = "1.2.6";
 
         public const string PING_COMMAND = "!ping";
 
@@ -33,7 +33,9 @@ namespace shrimpcast.Entities
         public const string VPN_DISABLED_MESSAGE = "VPN connections are temporarily disabled.";
 
         public const string MAX_USERS_REACHED = "Our site is currently experiencing high traffic and can't accommodate new users at the moment. Please try again later.";
-        
+
+        public const string MAX_IP_USER_REACHED = "You have exceeded the maximum amount of permitted simultaneous connections. Refresh to try again.";
+
         public static string EMOTE_GET (string name) => $"/api/emote/get/{name}";
 
         #region OBS
