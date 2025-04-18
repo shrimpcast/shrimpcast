@@ -5,6 +5,7 @@ class LocalStorageManager {
     ignoredUsers: "ignored_users",
     showNotificationsPrompt: "notifications_prompt_hidden",
     showGitHubPrompt: "github_prompt_hidden",
+    turnstileSuccessToken: "turnstile_success_token",
   };
 
   static setStorage(key, value) {
@@ -31,6 +32,14 @@ class LocalStorageManager {
 
   static getToken() {
     return this.getStorage(this.localStorage.token);
+  }
+
+  static saveTurnstileToken(token) {
+    this.setStorage(this.localStorage.turnstileSuccessToken, token);
+  }
+
+  static getTurnstileToken() {
+    return this.getStorage(this.localStorage.turnstileSuccessToken);
   }
 
   static saveName(name) {

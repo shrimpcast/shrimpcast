@@ -139,7 +139,7 @@ const App = () => {
       {loading ? (
         <CenteredSpinner />
       ) : signalR.errorAtLoad || disconnectMessage ? (
-        <ErrorAlert disconnectMessage={disconnectMessage} />
+        <ErrorAlert config={connectionDataState?.configuration} disconnectMessage={disconnectMessage} />
       ) : (
         <ErrorBoundary fallbackRender={FallbackError}>
           <Layout signalR={signalR} {...connectionDataState} />

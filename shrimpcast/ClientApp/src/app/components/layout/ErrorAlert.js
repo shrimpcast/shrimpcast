@@ -1,5 +1,6 @@
 import { Alert, Container } from "@mui/material";
 import CountdownTimer from "../others/CountdownTimer";
+import CloudflareTurnstile from "../others/CloudflareTurnstile";
 
 const Centered = {
   position: "absolute",
@@ -11,19 +12,24 @@ const Centered = {
 
 const ErrorAlert = (props) => {
   const { disconnectMessage } = props,
-    isCountdown = disconnectMessage && new Date(disconnectMessage).toString() !== "Invalid Date";
+    isCountdown = disconnectMessage && new Date(disconnectMessage).toString() !== "Invalid Date",
+    turnstileMode = disconnectMessage === "TURNSTILE_VERIFICATION_REQUIRED";
 
   return (
     <Container sx={Centered}>
-      <Alert severity={isCountdown ? "info" : "error"}>
-        {isCountdown ? (
-          <CountdownTimer timestamp={disconnectMessage} />
-        ) : disconnectMessage ? (
-          disconnectMessage
-        ) : (
-          "Could not establish a connection with the server. Refresh to try again."
-        )}
-      </Alert>
+      {turnstileMode ? (
+        <CloudflareTurnstile {...props} />
+      ) : (
+        <Alert severity={isCountdown ? "info" : "error"}>
+          {isCountdown ? (
+            <CountdownTimer timestamp={disconnectMessage} />
+          ) : disconnectMessage ? (
+            disconnectMessage
+          ) : (
+            "Could not establish a connection with the server. Refresh to try again."
+          )}
+        </Alert>
+      )}
     </Container>
   );
 };

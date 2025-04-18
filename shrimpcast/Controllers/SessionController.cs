@@ -10,10 +10,11 @@ using shrimpcast.Hubs.Dictionaries;
 namespace shrimpcast.Controllers
 {
     [ApiController, Route("api/[controller]")]
-    public class SessionController(ILogger<SessionController> logger, ISessionRepository sessionRepository, IBanRepository banRepository, IPollRepository pollRepository, INameColourRepository nameColourRepository, ITorExitNodeRepository torExitNodeRepository, IVpnAddressRepository vpnAddressRepository, INotificationRepository notificationRepository, IEmoteRepository emoteRepository, IHubContext<SiteHub> hubContext, ConfigurationSingleton configurationSingleton, Connections<SiteHub> activeConnections) : ControllerBase
+    public class SessionController(ILogger<SessionController> logger, ISessionRepository sessionRepository, IMessageRepository messageRepository, IBanRepository banRepository, IPollRepository pollRepository, INameColourRepository nameColourRepository, ITorExitNodeRepository torExitNodeRepository, IVpnAddressRepository vpnAddressRepository, INotificationRepository notificationRepository, IEmoteRepository emoteRepository, IHubContext<SiteHub> hubContext, ConfigurationSingleton configurationSingleton, Connections<SiteHub> activeConnections) : ControllerBase
     {
         private readonly ILogger<SessionController> _logger = logger;
         private readonly ISessionRepository _sessionRepository = sessionRepository;
+        private readonly IMessageRepository _messageRepository = messageRepository;
         private readonly IBanRepository _banRepository = banRepository;
         private readonly IPollRepository _pollRepository = pollRepository;
         private readonly INameColourRepository _nameColourRepository = nameColourRepository;
@@ -27,7 +28,7 @@ namespace shrimpcast.Controllers
 
 
         [HttpGet, Route("GetNewOrExisting")]
-        public async Task<object> GetNewOrExisting([FromQuery] string accessToken)
+        public async Task<object> GetNewOrExisting([FromQuery] string accessToken, [FromQuery] string? turnstileToken)
         {
             var remoteAddress = (HttpContext.Connection.RemoteIpAddress?.ToString()) ?? throw new Exception("RemoteAddress can't be null");
             var ensureCreated = await _sessionRepository.GetNewOrExistingAsync(accessToken, remoteAddress);
@@ -49,20 +50,42 @@ namespace shrimpcast.Controllers
                     {
                         message = configuration.OpenAt;
                     }
-                    else if (!ensureCreated.IsVerified)
+                    else
                     {
-                        var IsTorAndBlocked = configuration.SiteBlockTORConnections && await _torExitNodeRepository.IsTorExitNode(remoteAddress);
-                        if (IsTorAndBlocked) message = Constants.TOR_DISABLED_MESSAGE;
+                        if (configuration.EnableTurnstileMode 
+                            && !ensureCreated.PassedTurnstile
+                            && !ensureCreated.IsVerified
+                            && !ensureCreated.IsGolden
+                            && !ensureCreated.IsMod)
+                        {
+                            bool isTokenValid = false;
+                            if (!string.IsNullOrEmpty(turnstileToken))
+                            {
+                                isTokenValid = await _sessionRepository.IsTurnstileTokenValid(turnstileToken, remoteAddress);
+                                if (isTokenValid) await _sessionRepository.SetTurnstilePassed(ensureCreated.SessionId);
+                            }
 
-                        var IsVpnAndBlocked = configuration.SiteBlockVPNConnections && await _vpnAddressRepository.IsVpnAddress(remoteAddress);
-                        if (IsVpnAndBlocked) message = Constants.VPN_DISABLED_MESSAGE;
-                    }
-                    else if (configuration.MaxConnectedUsers != 0 
-                        && _activeConnections.All.Count >= configuration.MaxConnectedUsers 
-                        && !ensureCreated.IsMod 
-                        && !ensureCreated.IsGolden)
-                    {
-                        message = Constants.MAX_USERS_REACHED;
+                            if (!isTokenValid && !await _messageRepository.HasEnoughCountBySessionId(ensureCreated.SessionId, 1))
+                            {
+                                message = Constants.TURNSTILE_REQUIRED;
+                            }
+                        }
+                        else if (!ensureCreated.IsVerified)
+                        {
+                            var IsTorAndBlocked = configuration.SiteBlockTORConnections && await _torExitNodeRepository.IsTorExitNode(remoteAddress);
+                            if (IsTorAndBlocked) message = Constants.TOR_DISABLED_MESSAGE;
+
+                            var IsVpnAndBlocked = configuration.SiteBlockVPNConnections && await _vpnAddressRepository.IsVpnAddress(remoteAddress);
+                            if (IsVpnAndBlocked) message = Constants.VPN_DISABLED_MESSAGE;
+                        }
+
+                        if (configuration.MaxConnectedUsers != 0
+                            && _activeConnections.All.Count >= configuration.MaxConnectedUsers
+                            && !ensureCreated.IsMod
+                            && !ensureCreated.IsGolden)
+                        {
+                            message = Constants.MAX_USERS_REACHED;
+                        }
                     }
                 }
 
@@ -76,6 +99,8 @@ namespace shrimpcast.Controllers
                         configuration.PalettePrimary,
                         configuration.PaletteSecondary,
                         configuration.UseDarkTheme,
+                        configuration.TurnstilePublicKey,
+                        configuration.TurnstileTitle,
                     },
                 };
             }
@@ -157,5 +182,6 @@ namespace shrimpcast.Controllers
 
             return Ok();
         }
+        
     }
 }

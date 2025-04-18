@@ -4,6 +4,8 @@ import LocalStorageManager from "./LocalStorageManager";
 class TokenManager {
   static async EnsureTokenExists(abortSignal) {
     let url = "/api/session/GetNewOrExisting?accessToken=" + LocalStorageManager.getToken();
+    const turnstileToken = LocalStorageManager.getTurnstileToken();
+    if (turnstileToken) url += "&turnstileToken=" + turnstileToken;
     let response = await axios.get(url, { signal: abortSignal }).catch((ex) => {
       if (!abortSignal.aborted) {
         if (ex.message.includes("Request failed with status code 403")) {

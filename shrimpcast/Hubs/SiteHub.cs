@@ -78,12 +78,14 @@ namespace shrimpcast.Hubs
             var reachedMaxUsers = Configuration.MaxConnectedUsers != 0 && ActiveConnections.Count >= Configuration.MaxConnectedUsers
                                   && !(Session?.IsAdmin).GetValueOrDefault() && !(Session?.IsMod).GetValueOrDefault()  && !(Session?.IsGolden).GetValueOrDefault();
             var reachedMaxConnectionsPerAddress = ActiveConnections.Where(ac => ac.Value.RemoteAdress == RemoteAddress).Count() >= Configuration.MaxConnectionsPerIP;
+            var mustPassTurnstail = await NeedsPassTurnstail(Session);
 
-            if (Session == null || isClosed || reachedMaxUsers || reachedMaxConnectionsPerAddress)
+            if (Session == null || isClosed || reachedMaxUsers || reachedMaxConnectionsPerAddress || mustPassTurnstail)
             {
                 if (isClosed) await ForceDisconnect([Context.ConnectionId], Configuration.OpenAt);
                 if (reachedMaxUsers) await ForceDisconnect([Context.ConnectionId], Constants.MAX_USERS_REACHED);
                 if (reachedMaxConnectionsPerAddress) await ForceDisconnect([Context.ConnectionId], Constants.MAX_IP_USER_REACHED);
+                if (mustPassTurnstail) await ForceDisconnect([Context.ConnectionId], Constants.TURNSTILE_REQUIRED);
                 Context.Abort();
                 return;
             }
@@ -674,6 +676,7 @@ namespace shrimpcast.Hubs
             unorderedConfig.BTCServerWebhookSecretNotMapped = unorderedConfig.BTCServerWebhookSecret;
             unorderedConfig.StripeSecretKeyNotMapped = unorderedConfig.StripeSecretKey;
             unorderedConfig.StripeWebhookSecretNotMapped = unorderedConfig.StripeWebhookSecret;
+            unorderedConfig.TurnstileSecretKeyNotMapped = unorderedConfig.TurnstileSecretKey;
             return new
             {
                 OrderedConfig = Configuration.BuildJSONConfiguration(),
@@ -993,9 +996,17 @@ namespace shrimpcast.Hubs
             }
             var IsVpnAndBlocked = !IsVerified && Configuration.SiteBlockVPNConnections && triggeredVPNVerification;
             var IsTorAndBlocked = !IsVerified && Configuration.SiteBlockTORConnections && await _torExitNodeRepository.IsTorExitNode(Connection.RemoteAdress);
-            if (IsBanned || IsTorAndBlocked || IsVpnAndBlocked)
+            var NeedsTurnstile = await NeedsPassTurnstail(Connection.Session);
+            string? message = null;
+            
+            if (IsBanned) message = Constants.BANNED_MESSAGE;
+            else if (IsVpnAndBlocked) message = Constants.VPN_DISABLED_MESSAGE;
+            else if (IsTorAndBlocked) message = Constants.TOR_DISABLED_MESSAGE;
+            else if (NeedsTurnstile) message = Constants.TURNSTILE_REQUIRED;
+
+            if (message != null)
             {
-                await ForceDisconnect([Context.ConnectionId], IsBanned ? Constants.BANNED_MESSAGE : (IsVpnAndBlocked ? Constants.VPN_DISABLED_MESSAGE : Constants.TOR_DISABLED_MESSAGE));
+                await ForceDisconnect([Context.ConnectionId], message);
                 Context.Abort();
             }
         }
@@ -1137,6 +1148,18 @@ namespace shrimpcast.Hubs
             {
                 await DispatchSystemMessage(ex.Message);
             }
+        }
+
+        private async Task<bool> NeedsPassTurnstail(Session? session)
+        {
+           return Configuration.EnableTurnstileMode 
+                && session != null
+                && !session.PassedTurnstile
+                && !session.IsVerified
+                && !session.IsMod
+                && !session.IsAdmin
+                && !session.IsGolden
+                && !await _messageRepository.HasEnoughCountBySessionId(session.SessionId, 1);
         }
 
         [GeneratedRegex(@"(\d+) (.+)$")]

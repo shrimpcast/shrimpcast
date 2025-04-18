@@ -183,6 +183,19 @@ namespace shrimpcast.Entities.DB
         [NotMapped]
         public string? StripeWebhookSecretNotMapped { get; set; }
 
+        public required bool EnableTurnstileMode { get; set; }
+
+        public string? TurnstileTitle { get; set; }
+
+        public string? TurnstilePublicKey { get; set; }
+
+        [JsonIgnore]
+        public string? TurnstileSecretKey { get; set; } = string.Empty;
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [NotMapped]
+        public string? TurnstileSecretKeyNotMapped { get; set; }
+
         public object Clone() => MemberwiseClone();
     }
 
@@ -340,6 +353,17 @@ namespace shrimpcast.Entities.DB
                         new { name = nameof(config.BTCServerWebhookSecretNotMapped).ToLower(), label = "BTCServer webhook secret", value = config.BTCServerWebhookSecret },
                         new { name = nameof(config.StripeSecretKeyNotMapped).ToLower(), label = "Stripe secret key", value = config.StripeSecretKey },
                         new { name = nameof(config.StripeWebhookSecretNotMapped).ToLower(), label = "Stripe webhook secret", value = config.StripeWebhookSecret },
+                    }
+                },
+                new
+                {
+                    name = "Turnstile",
+                    values = new object[]
+                    {
+                        new { name = nameof(config.EnableTurnstileMode).ToLower(), label = "Enable turnstile for new users", value = config.EnableTurnstileMode },
+                        new { name = nameof(config.TurnstileTitle).ToLower(), label = "Turnstile title ", value = config.TurnstileTitle },
+                        new { name = nameof(config.TurnstilePublicKey).ToLower(), label = "Turnstile public key", value = config.TurnstilePublicKey },
+                        new { name = nameof(config.TurnstileSecretKeyNotMapped).ToLower(), label = "Turnstile private key", value = config.TurnstileSecretKey },
                     }
                 }
             };

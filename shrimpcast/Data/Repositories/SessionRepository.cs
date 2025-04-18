@@ -1,8 +1,13 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using shrimpcast.Controllers;
 using shrimpcast.Data.Repositories.Interfaces;
 using shrimpcast.Entities;
 using shrimpcast.Entities.DB;
+using shrimpcast.Entities.DTO;
 using shrimpcast.Helpers;
+using System.Reflection.Metadata;
 
 namespace shrimpcast.Data.Repositories
 {
@@ -11,12 +16,14 @@ namespace shrimpcast.Data.Repositories
         private readonly APPContext _context;
         private readonly ConfigurationSingleton _configurationSingleton;
         private readonly INameColourRepository _nameColourRepository;
+        private readonly ILogger<SessionRepository> _logger;
 
-        public SessionRepository(APPContext context, ConfigurationSingleton configurationSingleton, INameColourRepository nameColourRepository)
+        public SessionRepository(APPContext context, ConfigurationSingleton configurationSingleton, INameColourRepository nameColourRepository, ILogger<SessionRepository> logger)
         {
             _context = context;
             _configurationSingleton = configurationSingleton;
             _nameColourRepository = nameColourRepository;
+            _logger = logger;
         }
 
         public async Task<Session?> GetExistingAsync(string accessToken, string RemoteAddress)
@@ -198,6 +205,39 @@ namespace shrimpcast.Data.Repositories
             await _context.SaveChangesAsync();
             // Get the updated status in case multiple hooks are fired simultaneously 
             return (await GetExistingByIdAsync(sessionId, true)).IsGolden ? true : throw new Exception("Could not update record");
+        }
+
+        public async Task<bool> SetTurnstilePassed(int sessionId)
+        {
+            var Session = await GetExistingByIdAsync(sessionId, true);
+            Session.PassedTurnstile = true;
+            return await _context.SaveChangesAsync() > 0;
+        }
+
+        public async Task<bool> IsTurnstileTokenValid(string token, string remoteAddress)
+        {
+            var secret = _configurationSingleton.Configuration.TurnstileSecretKey;
+            if (string.IsNullOrEmpty(secret)) return true;
+
+            var client = new HttpClient();
+            var request = new HttpRequestMessage(HttpMethod.Post, "https://challenges.cloudflare.com/turnstile/v0/siteverify");
+            var collection = new List<KeyValuePair<string, string>>
+            {
+                new("secret", secret),
+                new("response", token),
+                new("remoteip", remoteAddress)
+            };
+            var content = new FormUrlEncodedContent(collection);
+            request.Content = content;
+            var response = await client.SendAsync(request);
+            var json = await response.Content.ReadAsStringAsync();
+            var responseContent = JsonConvert.DeserializeObject<TurnstileDTO>(json);
+            if (responseContent == null) return false;
+            if (!responseContent.Success)
+            {
+                _logger.LogWarning("Turnstile false status: {response}", json);
+            }
+            return responseContent.Success;
         }
     }
 }
