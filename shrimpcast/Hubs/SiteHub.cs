@@ -77,7 +77,8 @@ namespace shrimpcast.Hubs
             var isClosed = !(Session?.IsAdmin).GetValueOrDefault() && Configuration.OpenAt > DateTime.UtcNow;
             var reachedMaxUsers = Configuration.MaxConnectedUsers != 0 && ActiveConnections.Count >= Configuration.MaxConnectedUsers
                                   && !(Session?.IsAdmin).GetValueOrDefault() && !(Session?.IsMod).GetValueOrDefault()  && !(Session?.IsGolden).GetValueOrDefault();
-            var reachedMaxConnectionsPerAddress = ActiveConnections.Where(ac => ac.Value.RemoteAdress == RemoteAddress).Count() >= Configuration.MaxConnectionsPerIP;
+            var reachedMaxConnectionsPerAddress = ActiveConnections.Where(ac => ac.Value.RemoteAdress == RemoteAddress || ac.Value.Session.SessionToken == accessToken).Count() 
+                >= Configuration.MaxConnectionsPerIP;
             var mustPassTurnstail = await NeedsPassTurnstail(Session);
 
             if (Session == null || isClosed || reachedMaxUsers || reachedMaxConnectionsPerAddress || mustPassTurnstail)

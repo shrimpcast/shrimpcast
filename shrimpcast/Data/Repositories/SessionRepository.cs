@@ -1,13 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using shrimpcast.Controllers;
 using shrimpcast.Data.Repositories.Interfaces;
 using shrimpcast.Entities;
 using shrimpcast.Entities.DB;
 using shrimpcast.Entities.DTO;
 using shrimpcast.Helpers;
-using System.Reflection.Metadata;
 
 namespace shrimpcast.Data.Repositories
 {

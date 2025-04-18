@@ -1,12 +1,10 @@
 import { Box, Typography } from "@mui/material";
 import postscribe from "postscribe";
-import { useState, useEffect, useRef } from "react";
-import LocalStorageManager from "../../managers/LocalStorageManager";
+import { useState, useEffect } from "react";
 import CenteredSpinner from "../loaders/CenteredSpinner";
 
 const CloudflareTurnstile = ({ config }) => {
-  const [turnstileLoaded, setTurnstileLoaded] = useState(false),
-    turnstileRef = useRef();
+  const [turnstileLoaded, setTurnstileLoaded] = useState(false);
 
   useEffect(() => {
     if (!turnstileLoaded) {
@@ -23,8 +21,7 @@ const CloudflareTurnstile = ({ config }) => {
         sitekey: config.turnstilePublicKey,
         callback: function (token) {
           console.log("Succeded challenge: " + token);
-          LocalStorageManager.saveTurnstileToken(token);
-          window.location.reload();
+          window.location.search = `?TT=${token}`;
         },
       });
     }
@@ -43,7 +40,7 @@ const CloudflareTurnstile = ({ config }) => {
               {config.turnstileTitle}
             </Typography>
           )}
-          <div id="turnstile" data-theme={config.useDarkTheme ? "dark" : "light"} ref={turnstileRef}></div>
+          <div id="turnstile" data-theme={config.useDarkTheme ? "dark" : "light"}></div>
         </>
       )}
     </Box>
