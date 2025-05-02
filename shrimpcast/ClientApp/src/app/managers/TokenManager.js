@@ -11,7 +11,7 @@ class TokenManager {
       console.log("TT: " + turnstileToken);
     }
     let response = await axios.get(url, { signal: abortSignal }).catch((ex) => {
-      if (!abortSignal.aborted) {
+      if (!abortSignal?.aborted) {
         if (ex.message.includes("Request failed with status code 403")) {
           ex.message = "likely a CDN-related issue. Please try a hard refresh (Ctrl + F5)";
         }

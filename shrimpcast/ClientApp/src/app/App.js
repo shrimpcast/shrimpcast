@@ -34,7 +34,7 @@ const App = () => {
       }));
 
     const fetchLatestData = async () => {
-      const updatedData = await TokenManager.EnsureTokenExists({}, {});
+      const updatedData = await TokenManager.EnsureTokenExists(null, {});
       if (updatedData.message) {
         setDisconnectMessage(updatedData.message);
         return;
