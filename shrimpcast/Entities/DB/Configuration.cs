@@ -196,6 +196,8 @@ namespace shrimpcast.Entities.DB
         [NotMapped]
         public string? TurnstileSecretKeyNotMapped { get; set; }
 
+        public required bool EnablePWA { get; set; }
+
         public object Clone() => MemberwiseClone();
     }
 
@@ -208,6 +210,7 @@ namespace shrimpcast.Entities.DB
                     name = "Site",
                     values = new object[]
                     {
+                        new { name = nameof(config.EnablePWA).ToLower(), label = "Enable PWA", value = config.EnablePWA },
                         new { name = nameof(config.HideStreamTitle).ToLower(), label = "Hide stream title", value = config.HideStreamTitle },
                         new { name = nameof(config.MaxConnectionsPerIP).ToLower(), label = "Max connections per IP", value = config.MaxConnectionsPerIP },
                         new { name = nameof(config.MaxConnectedUsers).ToLower(), label = "Max connected users (0 = ∞)", value = config.MaxConnectedUsers },
