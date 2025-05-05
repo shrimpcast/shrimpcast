@@ -113,7 +113,7 @@ const App = () => {
 
       const enablePWA = response?.configuration?.enablePWA;
       if (enablePWA !== undefined) {
-        console.log("Service worker enabled: " + enablePWA);
+        console.log("Service worker status: " + enablePWA);
         if (enablePWA) serviceWorkerRegistration.register();
         else serviceWorkerRegistration.unregister();
       }
