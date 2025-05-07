@@ -75,6 +75,8 @@ const WrapperTextBoxSx = {
     },
   },
   SourceLinkSx = {
+    ml: "2.5px",
+    mr: "2.5px",
     fontWeight: "bold",
     fontSize: "15px",
     color: "secondary.main",
@@ -175,12 +177,11 @@ const UserMessage = React.memo((props) => {
               <DefaultLink key={i} href={match} target="_blank">
                 {match}
               </DefaultLink>
-            ) : match.match(sourcesRegex) ? (
-              <RouterLink key={i} to={match.toLowerCase()} style={{ textDecoration: "none" }}>
+            ) : match.toLowerCase().match(sourcesRegex) ? (
+              <RouterLink key={i} to={match.toLowerCase().trim()} style={{ textDecoration: "none" }}>
                 <Typography sx={SourceLinkSx}>
-                  &nbsp;
                   <PlayArrowIcon sx={{ fontSize: "10px", color: "secondary.main" }} />
-                  {match.trim()}&nbsp;
+                  {match.trim().toLowerCase()}
                 </Typography>
               </RouterLink>
             ) : (
