@@ -40,7 +40,10 @@ const RenderChatMessages = (props) => {
   const [messages, setMessages] = useState([]),
     [pendingMessages, setPendingMessages] = useState(0),
     [loading, setLoading] = useState(true),
-    { signalR, configuration, bingoButtonExpanded, isAdmin, isGolden, goldenPassExpanded } = props,
+    { signalR, configuration, bingoButtonExpanded, isAdmin, isGolden, goldenPassExpanded, enabledSources, emotes } =
+      props,
+    sources = enabledSources.map((source) => `/${source.name}`).join("|"),
+    emotesRegex = emotes.map((emote) => emote.name).join("|"),
     scrollReference = useRef(),
     scrollToBottom = () => {
       scrollReference.current.scrollIntoView();
@@ -187,6 +190,8 @@ const RenderChatMessages = (props) => {
               enableHalloweenTheme={configuration.enableHalloweenTheme}
               userSessionId={props.sessionId}
               maxLengthTruncation={configuration.maxLengthTruncation}
+              sources={sources}
+              emotesRegex={emotesRegex}
               {...message}
             />
           ))

@@ -1,4 +1,4 @@
-import { Box, IconButton, Link, Typography } from "@mui/material";
+import { Box, IconButton, Typography, Link as DefaultLink } from "@mui/material";
 import React, { useState } from "react";
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 import LocalStorageManager from "../../../managers/LocalStorageManager";
@@ -11,6 +11,8 @@ import MessageWrapper from "./MessageWrapper";
 import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
 import ShieldIcon from "@mui/icons-material/Shield";
 import KeyframesManager from "../../../managers/KeyframesManager";
+import { Link as RouterLink } from "react-router-dom";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 
 const WrapperTextBoxSx = {
     margin: "10px",
@@ -61,6 +63,22 @@ const WrapperTextBoxSx = {
     borderRadius: "5px",
     marginRight: "2px",
   },
+  ExpandButtonSx = {
+    color: "secondary.500",
+    ml: "2.5px",
+    fontWeight: "bold",
+  },
+  SourceLinkSx = {
+    fontWeight: "bold",
+    fontSize: "15px",
+    color: "secondary.main",
+    display: "inline-flex",
+    alignItems: "center",
+    textDecoration: "none",
+    "&:hover": {
+      textDecoration: "underline",
+    },
+  },
   GoldenPassGlow = (color) => ({
     color,
     animation: `${KeyframesManager.getGoldenGlowKeyframes(color)} 1s infinite alternate`,
@@ -70,16 +88,16 @@ const UserMessage = React.memo((props) => {
   const [showPromptDialog, setShowPromptDialog] = useState(false),
     openConfirmPrompt = () => setShowPromptDialog(true),
     closeConfirmPrompt = () => setShowPromptDialog(false),
-    { isAdmin, isMod, isGolden, maxLengthTruncation, userColorDisplay } = props,
+    { isAdmin, isMod, isGolden, maxLengthTruncation, userColorDisplay, sources, emotesRegex, emotes } = props,
     escapedName = LocalStorageManager.getName().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
     // Use lookahead assertion to ensure we're matching the full name
     nameRegex = `@${escapedName}(?:\\s|$|\\.)`,
-    emotes = props.emotes.map((emote) => emote.name).join("|"),
+    sourcesRegex = `(?<!\\S)(?:${sources})(?:\\s|$)`,
     urlRegex = "https?://\\S+",
-    regex = new RegExp(`(${nameRegex}|${emotes}|${urlRegex})`, "giu"),
+    regex = new RegExp(`(${nameRegex}|${emotesRegex}|${urlRegex}|${sourcesRegex})`, "giu"),
     removeMessage = async () => {
-      let resp = await ChatActionsManager.RemoveMessage(props.signalR, props.messageId);
-      if (resp) closeConfirmPrompt();
+      const response = await ChatActionsManager.RemoveMessage(props.signalR, props.messageId);
+      if (response) closeConfirmPrompt();
     },
     [isMiniminized, setMinimized] = useState(!isAdmin),
     openMinimized = () => setMinimized(false),
@@ -87,7 +105,7 @@ const UserMessage = React.memo((props) => {
       props.content.length > maxLengthTruncation && isMiniminized
         ? props.content.substring(0, maxLengthTruncation)
         : props.content,
-    getEmote = (emoteName) => props.emotes.find((emote) => emote.name === emoteName);
+    getEmote = (emoteName) => emotes.find((emote) => emote.name === emoteName);
 
   return (
     <MessageWrapper useTransition={props.useTransition}>
@@ -128,9 +146,16 @@ const UserMessage = React.memo((props) => {
             getEmote(match.toLowerCase()) ? (
               <img key={i} alt={match.toLowerCase()} className="emote" src={getEmote(match.toLowerCase()).url} />
             ) : match.match(urlRegex) ? (
-              <Link key={i} href={match} target="_blank">
+              <DefaultLink key={i} href={match} target="_blank">
                 {match}
-              </Link>
+              </DefaultLink>
+            ) : match.match(sourcesRegex) ? (
+              <RouterLink key={i} to={match.toLowerCase()} style={{ textDecoration: "none" }}>
+                <Typography sx={SourceLinkSx}>
+                  <PlayArrowIcon sx={{ fontSize: "10px", color: "secondary.main" }} />
+                  {match.trim()}&nbsp;
+                </Typography>
+              </RouterLink>
             ) : (
               <Typography key={i} component="span" sx={HighlightSx}>
                 {match}
@@ -138,14 +163,9 @@ const UserMessage = React.memo((props) => {
             )
           )}
           {isMiniminized && props.content.length > maxLengthTruncation && (
-            <Link
-              component="button"
-              sx={{ color: "secondary.500", ml: "2.5px" }}
-              title="Click to expand"
-              onClick={openMinimized}
-            >
-              {" [+]"}
-            </Link>
+            <DefaultLink component="button" sx={ExpandButtonSx} title="Click to expand" onClick={openMinimized}>
+              [+]
+            </DefaultLink>
           )}
         </Typography>
       </Box>
