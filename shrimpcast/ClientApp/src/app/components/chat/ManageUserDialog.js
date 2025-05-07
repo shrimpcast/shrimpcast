@@ -1,7 +1,17 @@
 import DialogTitle from "@mui/material/DialogTitle";
 import Dialog from "@mui/material/Dialog";
 import React, { useEffect, useState } from "react";
-import { Box, Button, CircularProgress, DialogContent, Divider, IconButton, Link, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  DialogContent,
+  Divider,
+  IconButton,
+  Link,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import ChatActionsManager from "../../managers/ChatActionsManager";
 import VirtualizedList from "./VirtualizedList";
 import Grid from "@mui/material/Unstable_Grid2";
@@ -107,17 +117,19 @@ const ManageUserDialog = (props) => {
 
   return (
     <>
-      <IconButton sx={props.OverlayButtonSx} onClick={setOpened}>
-        {siteAdmin || siteMod ? (
-          <ManageAccountsIcon sx={{ fontSize: "16px" }} />
-        ) : (
-          <InfoIcon sx={{ fontSize: "16px" }} />
-        )}
-      </IconButton>
+      <Tooltip title="User profile">
+        <IconButton sx={props.OverlayButtonSx} onClick={setOpened}>
+          {siteAdmin || siteMod ? (
+            <ManageAccountsIcon sx={{ fontSize: "16px" }} />
+          ) : (
+            <InfoIcon sx={{ fontSize: "16px" }} />
+          )}
+        </IconButton>
+      </Tooltip>
       {open && (
         <Dialog open={open} onClose={setClosed} maxWidth={"sm"} fullWidth>
           <DialogTitle sx={{ fontSize: "24px", paddingBottom: "7.5px" }}>
-            {targetUserPublic ? `Manage` : `Details`}
+            User profile
             <Divider />
           </DialogTitle>
           <DialogContent>

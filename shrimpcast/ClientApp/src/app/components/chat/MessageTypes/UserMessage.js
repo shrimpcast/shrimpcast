@@ -1,4 +1,4 @@
-import { Box, IconButton, Typography, Link as DefaultLink } from "@mui/material";
+import { Box, IconButton, Typography, Link as DefaultLink, Tooltip } from "@mui/material";
 import React, { useState } from "react";
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 import LocalStorageManager from "../../../managers/LocalStorageManager";
@@ -13,7 +13,7 @@ import ShieldIcon from "@mui/icons-material/Shield";
 import KeyframesManager from "../../../managers/KeyframesManager";
 import { Link as RouterLink } from "react-router-dom";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
-
+import ReplyIcon from "@mui/icons-material/Reply";
 const WrapperTextBoxSx = {
     margin: "10px",
     wordWrap: "break-word",
@@ -112,12 +112,23 @@ const UserMessage = React.memo((props) => {
       props.content.length > maxLengthTruncation && isMiniminized
         ? props.content.substring(0, maxLengthTruncation)
         : props.content,
-    getEmote = (emoteName) => emotes.find((emote) => emote.name === emoteName);
+    getEmote = (emoteName) => emotes.find((emote) => emote.name === emoteName),
+    replyToUser = () => {
+      const event = new CustomEvent("userReply", {
+        detail: { content: ` @${props.sentBy} ` },
+      });
+      document.dispatchEvent(event);
+    };
 
   return (
     <MessageWrapper useTransition={props.useTransition}>
       <Box className="wrapper-comment" sx={WrapperTextBoxSx}>
         <Box className="wrapper-overlay" sx={OverlaySx}>
+          <Tooltip title="Reply">
+            <IconButton sx={OverlayButtonSx} onClick={replyToUser}>
+              <ReplyIcon sx={{ fontSize: "16px" }} />
+            </IconButton>
+          </Tooltip>
           <ManageUserDialog
             OverlayButtonSx={OverlayButtonSx}
             externalOpenUserDialog={externalOpenUserDialog}
@@ -126,9 +137,11 @@ const UserMessage = React.memo((props) => {
           />
           {props.siteAdmin && (
             <>
-              <IconButton sx={OverlayButtonSx} onClick={openConfirmPrompt}>
-                <DeleteIcon sx={{ fontSize: "16px" }} />
-              </IconButton>
+              <Tooltip title="Remove message">
+                <IconButton sx={OverlayButtonSx} onClick={openConfirmPrompt}>
+                  <DeleteIcon sx={{ fontSize: "16px" }} />
+                </IconButton>
+              </Tooltip>
               {showPromptDialog && (
                 <ConfirmDialog title="Remove message?" confirm={removeMessage} cancel={closeConfirmPrompt} />
               )}
