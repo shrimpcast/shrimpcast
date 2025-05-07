@@ -62,7 +62,7 @@ const ChatTextField = (props) => {
     [loading, setLoading] = useState(false),
     [showAutocomplete, setShowAutocomplete] = useState(false),
     [autoCompleteIndex, setAutoCompleteIndex] = useState(0),
-    { signalR, configuration, isAdmin } = props,
+    { signalR, configuration, isAdmin, connectionStatus } = props,
     changeInput = (e) => {
       const target = e.target,
         ne = e.nativeEvent;
@@ -173,7 +173,7 @@ const ChatTextField = (props) => {
         onBlur={() => setFocused(false)}
         inputRef={textFieldReference}
       />
-      <WiFiSignalStrength {...props} />
+      {connectionStatus === "Connected" && <WiFiSignalStrength {...props} />}
       <Box sx={ScrollSx(props.autoScroll)}>
         <Typography className="noselect" variant="overline" sx={LabelSx(props.autoScroll)}>
           Autoscroll
