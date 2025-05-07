@@ -27,7 +27,8 @@ const ManageUserDialog = (props) => {
   const [userInfo, setUserInfo] = useState(null),
     sentBy = userInfo?.basicResponse?.previousNames[userInfo?.basicResponse?.previousNames?.length - 1],
     { isAdmin, isMod } = userInfo?.basicResponse || {},
-    { siteAdmin, siteMod, sessionId, userSessionId, signalR } = props,
+    //component manages its own open/close state, but it can be overriden by using externalOpenUserDialog & closeExternalUserDialog
+    { siteAdmin, siteMod, sessionId, userSessionId, signalR, externalOpenUserDialog, closeExternalUserDialog } = props,
     //targetUserPublic means that the user is authenticated as an admin and the target is not an admin
     targetUserPublic = siteAdmin && !isAdmin,
     showActionsPanel = !isAdmin && (!isMod || siteAdmin) && sessionId !== userSessionId,
@@ -39,7 +40,10 @@ const ManageUserDialog = (props) => {
     actionKeys = Object.keys(actions),
     [open, setOpen] = useState(false),
     setOpened = () => setOpen(true),
-    setClosed = () => setOpen(false),
+    setClosed = () => {
+      setOpen(false);
+      closeExternalUserDialog && closeExternalUserDialog();
+    },
     [showPromptDialog, setShowPromptDialog] = useState({
       open: false,
       type: "",
@@ -96,6 +100,10 @@ const ManageUserDialog = (props) => {
     if (open) getInfo();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
+
+  useEffect(() => {
+    if (externalOpenUserDialog) setOpened();
+  }, [externalOpenUserDialog]);
 
   return (
     <>

@@ -68,6 +68,12 @@ const WrapperTextBoxSx = {
     ml: "2.5px",
     fontWeight: "bold",
   },
+  HoverUnderlineSx = {
+    "&:hover": {
+      textDecoration: "underline",
+      cursor: "pointer",
+    },
+  },
   SourceLinkSx = {
     fontWeight: "bold",
     fontSize: "15px",
@@ -75,9 +81,7 @@ const WrapperTextBoxSx = {
     display: "inline-flex",
     alignItems: "center",
     textDecoration: "none",
-    "&:hover": {
-      textDecoration: "underline",
-    },
+    ...HoverUnderlineSx,
   },
   GoldenPassGlow = (color) => ({
     color,
@@ -88,6 +92,9 @@ const UserMessage = React.memo((props) => {
   const [showPromptDialog, setShowPromptDialog] = useState(false),
     openConfirmPrompt = () => setShowPromptDialog(true),
     closeConfirmPrompt = () => setShowPromptDialog(false),
+    [externalOpenUserDialog, setExternalOpenUserDialog] = useState(false),
+    openExternalUserDialog = () => setExternalOpenUserDialog(true),
+    closeExternalUserDialog = () => setExternalOpenUserDialog(false),
     { isAdmin, isMod, isGolden, maxLengthTruncation, userColorDisplay, sources, emotesRegex, emotes } = props,
     escapedName = LocalStorageManager.getName().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
     // Use lookahead assertion to ensure we're matching the full name
@@ -111,7 +118,12 @@ const UserMessage = React.memo((props) => {
     <MessageWrapper useTransition={props.useTransition}>
       <Box className="wrapper-comment" sx={WrapperTextBoxSx}>
         <Box className="wrapper-overlay" sx={OverlaySx}>
-          <ManageUserDialog OverlayButtonSx={OverlayButtonSx} {...props} />
+          <ManageUserDialog
+            OverlayButtonSx={OverlayButtonSx}
+            externalOpenUserDialog={externalOpenUserDialog}
+            closeExternalUserDialog={closeExternalUserDialog}
+            {...props}
+          />
           {props.siteAdmin && (
             <>
               <IconButton sx={OverlayButtonSx} onClick={openConfirmPrompt}>
@@ -125,10 +137,11 @@ const UserMessage = React.memo((props) => {
         </Box>
         <Box display="inline-block">
           <Typography
-            sx={[TextSx(userColorDisplay, true), isGolden ? GoldenPassGlow(userColorDisplay) : null]}
+            sx={[TextSx(userColorDisplay, true), HoverUnderlineSx, isGolden ? GoldenPassGlow(userColorDisplay) : null]}
             className={`${
               props.enableChristmasTheme ? "santa-hat" : props.enableHalloweenTheme ? "halloween-hat" : null
             } ${isAdmin ? "admin-glow" : isMod ? "mod-glow" : null}`}
+            onClick={openExternalUserDialog}
           >
             {isAdmin ? (
               <VerifiedUserIcon sx={VerifiedUserIconSx} />
