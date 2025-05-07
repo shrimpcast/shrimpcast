@@ -1,7 +1,17 @@
 import DialogTitle from "@mui/material/DialogTitle";
 import Dialog from "@mui/material/Dialog";
 import React, { useEffect, useState } from "react";
-import { Box, Button, CircularProgress, DialogContent, Divider, IconButton, Link, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  DialogContent,
+  Divider,
+  IconButton,
+  Link,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import ChatActionsManager from "../../managers/ChatActionsManager";
 import VirtualizedList from "./VirtualizedList";
 import Grid from "@mui/material/Unstable_Grid2";
@@ -27,7 +37,8 @@ const ManageUserDialog = (props) => {
   const [userInfo, setUserInfo] = useState(null),
     sentBy = userInfo?.basicResponse?.previousNames[userInfo?.basicResponse?.previousNames?.length - 1],
     { isAdmin, isMod } = userInfo?.basicResponse || {},
-    { siteAdmin, siteMod, sessionId, userSessionId, signalR } = props,
+    //component manages its own open/close state, but it can be overriden by using externalOpenUserDialog & closeExternalUserDialog
+    { siteAdmin, siteMod, sessionId, userSessionId, signalR, externalOpenUserDialog, closeExternalUserDialog } = props,
     //targetUserPublic means that the user is authenticated as an admin and the target is not an admin
     targetUserPublic = siteAdmin && !isAdmin,
     showActionsPanel = !isAdmin && (!isMod || siteAdmin) && sessionId !== userSessionId,
@@ -39,7 +50,10 @@ const ManageUserDialog = (props) => {
     actionKeys = Object.keys(actions),
     [open, setOpen] = useState(false),
     setOpened = () => setOpen(true),
-    setClosed = () => setOpen(false),
+    setClosed = () => {
+      setOpen(false);
+      closeExternalUserDialog && closeExternalUserDialog();
+    },
     [showPromptDialog, setShowPromptDialog] = useState({
       open: false,
       type: "",
@@ -97,19 +111,25 @@ const ManageUserDialog = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
+  useEffect(() => {
+    if (externalOpenUserDialog) setOpened();
+  }, [externalOpenUserDialog]);
+
   return (
     <>
-      <IconButton sx={props.OverlayButtonSx} onClick={setOpened}>
-        {siteAdmin || siteMod ? (
-          <ManageAccountsIcon sx={{ fontSize: "16px" }} />
-        ) : (
-          <InfoIcon sx={{ fontSize: "16px" }} />
-        )}
-      </IconButton>
+      <Tooltip title="User profile">
+        <IconButton sx={props.OverlayButtonSx} onClick={setOpened}>
+          {siteAdmin || siteMod ? (
+            <ManageAccountsIcon sx={{ fontSize: "16px" }} />
+          ) : (
+            <InfoIcon sx={{ fontSize: "16px" }} />
+          )}
+        </IconButton>
+      </Tooltip>
       {open && (
         <Dialog open={open} onClose={setClosed} maxWidth={"sm"} fullWidth>
           <DialogTitle sx={{ fontSize: "24px", paddingBottom: "7.5px" }}>
-            {targetUserPublic ? `Manage` : `Details`}
+            User profile
             <Divider />
           </DialogTitle>
           <DialogContent>

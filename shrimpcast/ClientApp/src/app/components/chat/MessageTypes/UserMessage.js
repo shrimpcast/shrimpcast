@@ -1,4 +1,4 @@
-import { Box, IconButton, Link, Typography } from "@mui/material";
+import { Box, IconButton, Typography, Link as DefaultLink, Tooltip } from "@mui/material";
 import React, { useState } from "react";
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 import LocalStorageManager from "../../../managers/LocalStorageManager";
@@ -11,7 +11,9 @@ import MessageWrapper from "./MessageWrapper";
 import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
 import ShieldIcon from "@mui/icons-material/Shield";
 import KeyframesManager from "../../../managers/KeyframesManager";
-
+import { Link as RouterLink } from "react-router-dom";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import ReplyIcon from "@mui/icons-material/Reply";
 const WrapperTextBoxSx = {
     margin: "10px",
     wordWrap: "break-word",
@@ -61,6 +63,26 @@ const WrapperTextBoxSx = {
     borderRadius: "5px",
     marginRight: "2px",
   },
+  ExpandButtonSx = {
+    color: "secondary.500",
+    ml: "2.5px",
+    fontWeight: "bold",
+  },
+  HoverUnderlineSx = {
+    "&:hover": {
+      textDecoration: "underline",
+      cursor: "pointer",
+    },
+  },
+  SourceLinkSx = {
+    fontWeight: "bold",
+    fontSize: "15px",
+    color: "secondary.main",
+    display: "inline-flex",
+    alignItems: "center",
+    textDecoration: "none",
+    ...HoverUnderlineSx,
+  },
   GoldenPassGlow = (color) => ({
     color,
     animation: `${KeyframesManager.getGoldenGlowKeyframes(color)} 1s infinite alternate`,
@@ -70,16 +92,19 @@ const UserMessage = React.memo((props) => {
   const [showPromptDialog, setShowPromptDialog] = useState(false),
     openConfirmPrompt = () => setShowPromptDialog(true),
     closeConfirmPrompt = () => setShowPromptDialog(false),
-    { isAdmin, isMod, isGolden, maxLengthTruncation, userColorDisplay } = props,
+    [externalOpenUserDialog, setExternalOpenUserDialog] = useState(false),
+    openExternalUserDialog = () => setExternalOpenUserDialog(true),
+    closeExternalUserDialog = () => setExternalOpenUserDialog(false),
+    { isAdmin, isMod, isGolden, maxLengthTruncation, userColorDisplay, sources, emotesRegex, emotes } = props,
     escapedName = LocalStorageManager.getName().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
     // Use lookahead assertion to ensure we're matching the full name
     nameRegex = `@${escapedName}(?:\\s|$|\\.)`,
-    emotes = props.emotes.map((emote) => emote.name).join("|"),
+    sourcesRegex = `(?<!\\S)(?:${sources})(?:\\s|$)`,
     urlRegex = "https?://\\S+",
-    regex = new RegExp(`(${nameRegex}|${emotes}|${urlRegex})`, "giu"),
+    regex = new RegExp(`(${nameRegex}|${emotesRegex}|${urlRegex}|${sourcesRegex})`, "giu"),
     removeMessage = async () => {
-      let resp = await ChatActionsManager.RemoveMessage(props.signalR, props.messageId);
-      if (resp) closeConfirmPrompt();
+      const response = await ChatActionsManager.RemoveMessage(props.signalR, props.messageId);
+      if (response) closeConfirmPrompt();
     },
     [isMiniminized, setMinimized] = useState(!isAdmin),
     openMinimized = () => setMinimized(false),
@@ -87,18 +112,36 @@ const UserMessage = React.memo((props) => {
       props.content.length > maxLengthTruncation && isMiniminized
         ? props.content.substring(0, maxLengthTruncation)
         : props.content,
-    getEmote = (emoteName) => props.emotes.find((emote) => emote.name === emoteName);
+    getEmote = (emoteName) => emotes.find((emote) => emote.name === emoteName),
+    replyToUser = () => {
+      const event = new CustomEvent("userReply", {
+        detail: { content: ` @${props.sentBy} ` },
+      });
+      document.dispatchEvent(event);
+    };
 
   return (
     <MessageWrapper useTransition={props.useTransition}>
       <Box className="wrapper-comment" sx={WrapperTextBoxSx}>
         <Box className="wrapper-overlay" sx={OverlaySx}>
-          <ManageUserDialog OverlayButtonSx={OverlayButtonSx} {...props} />
+          <Tooltip title="Reply">
+            <IconButton sx={OverlayButtonSx} onClick={replyToUser}>
+              <ReplyIcon sx={{ fontSize: "16px" }} />
+            </IconButton>
+          </Tooltip>
+          <ManageUserDialog
+            OverlayButtonSx={OverlayButtonSx}
+            externalOpenUserDialog={externalOpenUserDialog}
+            closeExternalUserDialog={closeExternalUserDialog}
+            {...props}
+          />
           {props.siteAdmin && (
             <>
-              <IconButton sx={OverlayButtonSx} onClick={openConfirmPrompt}>
-                <DeleteIcon sx={{ fontSize: "16px" }} />
-              </IconButton>
+              <Tooltip title="Remove message">
+                <IconButton sx={OverlayButtonSx} onClick={openConfirmPrompt}>
+                  <DeleteIcon sx={{ fontSize: "16px" }} />
+                </IconButton>
+              </Tooltip>
               {showPromptDialog && (
                 <ConfirmDialog title="Remove message?" confirm={removeMessage} cancel={closeConfirmPrompt} />
               )}
@@ -107,10 +150,11 @@ const UserMessage = React.memo((props) => {
         </Box>
         <Box display="inline-block">
           <Typography
-            sx={[TextSx(userColorDisplay, true), isGolden ? GoldenPassGlow(userColorDisplay) : null]}
+            sx={[TextSx(userColorDisplay, true), HoverUnderlineSx, isGolden ? GoldenPassGlow(userColorDisplay) : null]}
             className={`${
               props.enableChristmasTheme ? "santa-hat" : props.enableHalloweenTheme ? "halloween-hat" : null
             } ${isAdmin ? "admin-glow" : isMod ? "mod-glow" : null}`}
+            onClick={openExternalUserDialog}
           >
             {isAdmin ? (
               <VerifiedUserIcon sx={VerifiedUserIconSx} />
@@ -128,9 +172,16 @@ const UserMessage = React.memo((props) => {
             getEmote(match.toLowerCase()) ? (
               <img key={i} alt={match.toLowerCase()} className="emote" src={getEmote(match.toLowerCase()).url} />
             ) : match.match(urlRegex) ? (
-              <Link key={i} href={match} target="_blank">
+              <DefaultLink key={i} href={match} target="_blank">
                 {match}
-              </Link>
+              </DefaultLink>
+            ) : match.match(sourcesRegex) ? (
+              <RouterLink key={i} to={match.toLowerCase()} style={{ textDecoration: "none" }}>
+                <Typography sx={SourceLinkSx}>
+                  <PlayArrowIcon sx={{ fontSize: "10px", color: "secondary.main" }} />
+                  {match.trim()}&nbsp;
+                </Typography>
+              </RouterLink>
             ) : (
               <Typography key={i} component="span" sx={HighlightSx}>
                 {match}
@@ -138,14 +189,9 @@ const UserMessage = React.memo((props) => {
             )
           )}
           {isMiniminized && props.content.length > maxLengthTruncation && (
-            <Link
-              component="button"
-              sx={{ color: "secondary.500", ml: "2.5px" }}
-              title="Click to expand"
-              onClick={openMinimized}
-            >
-              {" [+]"}
-            </Link>
+            <DefaultLink component="button" sx={ExpandButtonSx} title="Click to expand" onClick={openMinimized}>
+              [+]
+            </DefaultLink>
           )}
         </Typography>
       </Box>

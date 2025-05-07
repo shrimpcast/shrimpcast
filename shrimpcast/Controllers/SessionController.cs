@@ -101,6 +101,7 @@ namespace shrimpcast.Controllers
                         configuration.UseDarkTheme,
                         configuration.TurnstilePublicKey,
                         configuration.TurnstileTitle,
+                        configuration.EnablePWA
                     },
                 };
             }

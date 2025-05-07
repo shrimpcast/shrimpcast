@@ -1,5 +1,4 @@
 import "react-app-polyfill/stable";
-import * as serviceWorkerRegistration from "./serviceWorkerRegistration";
 import React from "react";
 import { createRoot } from "react-dom/client";
 import App from "./app/App";
@@ -17,14 +16,3 @@ root.render(
     </BrowserRouter>
   </React.StrictMode>
 );
-
-fetch("/serviceworkerstatus.json", {
-  cache: "no-store",
-})
-  .then(async (res) => {
-    const serviceWorkerStatus = await res.json();
-    console.log("Service worker enabled: " + serviceWorkerStatus.enabled);
-    if (serviceWorkerStatus.enabled) serviceWorkerRegistration.register();
-    else serviceWorkerRegistration.unregister();
-  })
-  .catch((ex) => console.log(ex));

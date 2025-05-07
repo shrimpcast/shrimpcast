@@ -18,6 +18,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import FallbackError from "./components/layout/FallbackError";
 import makeTheme from "./theme/makeTheme";
 import { useLocation } from "react-router-dom";
+import * as serviceWorkerRegistration from "../serviceWorkerRegistration";
 
 const App = () => {
   const [loading, setLoading] = useState(true),
@@ -109,6 +110,13 @@ const App = () => {
         ...response,
         FRONTEND_NEEDS_UPDATE: process.env.REACT_APP_VERSION !== response.version,
       }));
+
+      const enablePWA = response?.configuration?.enablePWA;
+      if (enablePWA !== undefined) {
+        console.log("Service worker status: " + enablePWA);
+        if (enablePWA) serviceWorkerRegistration.register();
+        else serviceWorkerRegistration.unregister();
+      }
 
       if (response.message) {
         setLoading(false);

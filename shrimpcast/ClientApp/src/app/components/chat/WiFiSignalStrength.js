@@ -48,7 +48,7 @@ const RTTSx = {
   };
 
 const WiFiSignalStrength = (props) => {
-  const { signalR, connectionStatus } = props,
+  const { signalR } = props,
     [rtt, setRtt] = useState(0),
     rttName = rtt < 250 ? WiFiColours.high : rtt > 250 && rtt < 500 ? WiFiColours.medium : WiFiColours.low,
     RttComponent = WiFIIcons[rttName];
@@ -70,7 +70,7 @@ const WiFiSignalStrength = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return rtt && connectionStatus === "Connected" ? (
+  return rtt ? (
     <Box sx={RTTSx}>
       <RttComponent ml="auto" sx={SignalIconSx(rttName)} />
       <Typography className="noselect" variant="caption" sx={SignalTextSx(rttName)}>

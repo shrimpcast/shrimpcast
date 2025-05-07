@@ -1,6 +1,6 @@
 import SendIcon from "@mui/icons-material/Send";
 import { Box, Checkbox, CircularProgress, IconButton, InputAdornment, TextField, Typography } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import MessageManager from "../../managers/MessageManager";
 import InsertEmoticonIcon from "@mui/icons-material/InsertEmoticon";
 import Emotes from "./Emotes/Emotes";
@@ -62,7 +62,7 @@ const ChatTextField = (props) => {
     [loading, setLoading] = useState(false),
     [showAutocomplete, setShowAutocomplete] = useState(false),
     [autoCompleteIndex, setAutoCompleteIndex] = useState(0),
-    { signalR, configuration, isAdmin } = props,
+    { signalR, configuration, isAdmin, connectionStatus } = props,
     changeInput = (e) => {
       const target = e.target,
         ne = e.nativeEvent;
@@ -105,9 +105,19 @@ const ChatTextField = (props) => {
       }
     },
     isDisabled = !configuration.chatEnabled && !isAdmin,
+    textFieldReference = useRef(),
     [emotes, setEmotes] = useState(false),
     setEmotesOpen = () => setEmotes(true),
-    toggleAutoScroll = () => props.toggleAutoScroll((state) => !state);
+    toggleAutoScroll = () => props.toggleAutoScroll((state) => !state),
+    replyToUser = (e) => {
+      setMessage((message) => message + e.detail.content);
+      textFieldReference.current.focus();
+    };
+
+  useEffect(() => {
+    document.addEventListener("userReply", replyToUser);
+    return () => document.removeEventListener("userReply", replyToUser);
+  }, []);
 
   return (
     <Box sx={SendInputSx}>
@@ -161,8 +171,9 @@ const ChatTextField = (props) => {
         disabled={isDisabled}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
+        inputRef={textFieldReference}
       />
-      <WiFiSignalStrength {...props} />
+      {connectionStatus === "Connected" && <WiFiSignalStrength {...props} />}
       <Box sx={ScrollSx(props.autoScroll)}>
         <Typography className="noselect" variant="overline" sx={LabelSx(props.autoScroll)}>
           Autoscroll
