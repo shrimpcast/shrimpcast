@@ -101,7 +101,7 @@ const UserMessage = React.memo((props) => {
     escapedName = LocalStorageManager.getName().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
     // Use lookahead assertion to ensure we're matching the full name
     nameRegex = `@${escapedName}(?:\\s|$|\\.)`,
-    sourcesRegex = `(?:^|\\s)(?:${sources})(?:\\s|$)`,
+    sourcesRegex = `(?:^|\\s)(?:${sources})(?=\\s|$)`,
     urlRegex = "https?://\\S+",
     regex = new RegExp(
       `(${nameRegex}|${urlRegex}${emotesRegex ? "|" + emotesRegex : ""}${sources ? "|" + sourcesRegex : ""})`,
