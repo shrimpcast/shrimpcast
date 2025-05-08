@@ -75,8 +75,6 @@ const WrapperTextBoxSx = {
     },
   },
   SourceLinkSx = {
-    ml: "2.5px",
-    mr: "2.5px",
     fontWeight: "bold",
     fontSize: "15px",
     color: "secondary.main",
@@ -101,7 +99,7 @@ const UserMessage = React.memo((props) => {
     escapedName = LocalStorageManager.getName().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
     // Use lookahead assertion to ensure we're matching the full name
     nameRegex = `@${escapedName}(?=[\\s.]|$)`,
-    sourcesRegex = `(?:^|\\s)(?:${sources})(?=\\s|$)`,
+    sourcesRegex = `(?:^|)(?:${sources})(?=\\s|$)`,
     urlRegex = "https?://\\S+",
     regex = new RegExp(
       `(${nameRegex}|${urlRegex}${emotesRegex ? "|" + emotesRegex : ""}${sources ? "|" + sourcesRegex : ""})`,
