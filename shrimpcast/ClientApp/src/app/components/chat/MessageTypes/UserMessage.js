@@ -180,8 +180,8 @@ const UserMessage = React.memo((props) => {
               <DefaultLink key={i} href={match} target="_blank">
                 {match}
               </DefaultLink>
-            ) : sources && match.toLowerCase().match(sourcesRegex) ? (
-              <RouterLink key={i} to={match.toLowerCase().trim()} style={{ textDecoration: "none" }}>
+            ) : sources && match.trim().toLowerCase().match(sourcesRegex) ? (
+              <RouterLink key={i} to={match.trim().toLowerCase()} style={{ textDecoration: "none" }}>
                 <Typography sx={SourceLinkSx}>
                   <PlayArrowIcon sx={{ fontSize: "10px", color: "secondary.main" }} />
                   {match.trim().toLowerCase()}
