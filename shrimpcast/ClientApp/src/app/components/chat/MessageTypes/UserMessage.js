@@ -103,7 +103,10 @@ const UserMessage = React.memo((props) => {
     nameRegex = `@${escapedName}(?:\\s|$|\\.)`,
     sourcesRegex = `(?:^|\\s)(?:${sources})(?:\\s|$)`,
     urlRegex = "https?://\\S+",
-    regex = new RegExp(`(${nameRegex}|${emotesRegex}|${urlRegex}|${sourcesRegex})`, "giu"),
+    regex = new RegExp(
+      `(${nameRegex}|${urlRegex}${emotesRegex ? "|" + emotesRegex : ""}${sources ? "|" + sourcesRegex : ""})`,
+      "giu"
+    ),
     removeMessage = async () => {
       const response = await ChatActionsManager.RemoveMessage(props.signalR, props.messageId);
       if (response) closeConfirmPrompt();
@@ -177,7 +180,7 @@ const UserMessage = React.memo((props) => {
               <DefaultLink key={i} href={match} target="_blank">
                 {match}
               </DefaultLink>
-            ) : match.toLowerCase().match(sourcesRegex) ? (
+            ) : sources && match.toLowerCase().match(sourcesRegex) ? (
               <RouterLink key={i} to={match.toLowerCase().trim()} style={{ textDecoration: "none" }}>
                 <Typography sx={SourceLinkSx}>
                   <PlayArrowIcon sx={{ fontSize: "10px", color: "secondary.main" }} />
