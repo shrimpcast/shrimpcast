@@ -95,7 +95,8 @@ const UserMessage = React.memo((props) => {
     [externalOpenUserDialog, setExternalOpenUserDialog] = useState(false),
     openExternalUserDialog = () => setExternalOpenUserDialog(true),
     closeExternalUserDialog = () => setExternalOpenUserDialog(false),
-    { isAdmin, isMod, isGolden, maxLengthTruncation, userColorDisplay, sources, emotesRegex, emotes } = props,
+    { isAdmin, isMod, isGolden, maxLengthTruncation, userColorDisplay, sources, emotesRegex, emotes, enabledSources } =
+      props,
     escapedName = LocalStorageManager.getName().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
     // Use lookahead assertion to ensure we're matching the full name
     nameRegex = `@${escapedName}(?=[\\s.]|$)`,
@@ -116,6 +117,7 @@ const UserMessage = React.memo((props) => {
         ? props.content.substring(0, maxLengthTruncation)
         : props.content,
     getEmote = (emoteName) => emotes.find((emote) => emote.name === emoteName),
+    getSource = (sourceName) => enabledSources.find((eS) => `/${eS.name.toLowerCase()}` === sourceName),
     replyToUser = () => {
       const event = new CustomEvent("userReply", {
         detail: { content: ` @${props.sentBy} ` },
@@ -178,7 +180,7 @@ const UserMessage = React.memo((props) => {
               <DefaultLink key={i} href={match} target="_blank">
                 {match}
               </DefaultLink>
-            ) : sources && match.trim().toLowerCase().match(sourcesRegex) ? (
+            ) : getSource(match.trim().toLowerCase()) ? (
               <RouterLink key={i} to={match.trim().toLowerCase()} style={{ textDecoration: "none" }}>
                 <Typography sx={SourceLinkSx}>
                   <PlayArrowIcon sx={{ fontSize: "10px", color: "secondary.main" }} />

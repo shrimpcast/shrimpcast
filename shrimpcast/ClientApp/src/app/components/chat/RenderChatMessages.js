@@ -191,6 +191,7 @@ const RenderChatMessages = (props) => {
               userSessionId={props.sessionId}
               maxLengthTruncation={configuration.maxLengthTruncation}
               sources={sources}
+              enabledSources={enabledSources}
               emotesRegex={emotesRegex}
               {...message}
             />
