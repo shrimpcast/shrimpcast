@@ -58,6 +58,7 @@ Shrimpcast is a highly customizable, flexible, battle-tested, fast, and secure s
      - 1000 unique users
      - Throughput of 4 Gbps
 - **Out-of-the-box Cloudflare support**
+- **Fully denial of service proof**
 
 ## Installation
 
