@@ -45,7 +45,7 @@ const ConnectedUsersCount = (props) => {
           <CircularProgress color="secondary" size={14} />
         )}
       </Box>
-      <Typography ml="5px" mt="2.5px">
+      <Typography component="span" ml="5px" mt="2px">
         {isConnected ? (
           <>
             {`${connectedUsers.byIp ?? "-"} connected ${

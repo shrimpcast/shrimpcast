@@ -1067,6 +1067,9 @@ namespace shrimpcast.Hubs
                     case string _message when _message.StartsWith(Constants.DOCKER_RESTART):
                         await DockerRestart();
                         return true;
+                    case string _message when _message.StartsWith(Constants.REDIRECT_SOURCE):
+                        await RedirectFromSource(message);
+                        return true;
                     default:
                         return false;
                 }
@@ -1174,6 +1177,36 @@ namespace shrimpcast.Hubs
                 await DispatchSystemMessage($"[SYSTEM] Restarting media server. Playback will automatically resume shortly.", true, true);
                 var result = await ProcessHelper.DockerRestart();
                 await DispatchSystemMessage(result);
+            }
+            catch (Exception ex)
+            {
+                await DispatchSystemMessage(ex.Message);
+            }
+        }
+
+        private async Task RedirectFromSource(string Message)
+        {
+            await DispatchSystemMessage($"Executing {Constants.REDIRECT_SOURCE} command...");
+            try
+            {
+                var strings = Message.Split(" ");
+                var from = strings[1].Trim();
+                var to = strings[2].Trim();
+
+                var isFromValid = await _sourceRepository.ExistsByName(from);
+                var isToValid = await _sourceRepository.ExistsByName(to);
+                if (!isFromValid || !isToValid)
+                {
+                    await DispatchSystemMessage($"One or more sources are invalid [{from}] [{to}]"); 
+                    return;  
+                }
+
+                await Clients.All.SendAsync("RedirectSource", new
+                {
+                    from,
+                    to,
+                });
+                await DispatchSystemMessage($"Redirected users from {from} to {to}");
             }
             catch (Exception ex)
             {

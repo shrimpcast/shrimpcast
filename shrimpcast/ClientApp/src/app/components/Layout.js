@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Grid from "@mui/material/Unstable_Grid2";
 import { useTheme } from "@emotion/react";
 import SitePlayer from "./player/SitePlayer";
@@ -9,7 +9,8 @@ import Chat from "./chat/Chat";
 import ShowFireworks from "./others/ShowFireworks";
 import ShowSnow from "./others/ShowSnow";
 import ShowPing from "./others/ShowPing";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import SignalRManager from "../managers/SignalRManager";
 
 const MainGridSx = {
     overflow: "hidden",
@@ -66,7 +67,7 @@ const MainGridSx = {
 const Layout = (props) => {
   const theme = useTheme(),
     [useFullChatMode, setFullChatMode] = useState(false),
-    { configuration } = props,
+    { configuration, signalR } = props,
     ResolveSources = () => {
       const { sources } = configuration,
         location = useLocation(),
@@ -93,7 +94,20 @@ const Layout = (props) => {
 
       return StreamStatus;
     },
-    streamStatus = ResolveSources();
+    streamStatus = ResolveSources(),
+    navigate = useNavigate();
+
+  useEffect(() => {
+    signalR.on(SignalRManager.events.redirectSource, (data) => {
+      const { from, to } = data;
+      if (from === streamStatus?.source?.name) {
+        console.log(`Redirecting from ${from} to ${to}`);
+        navigate(`/${to}`);
+      }
+    });
+    return () => signalR.off(SignalRManager.events.redirectSource);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [streamStatus, navigate]);
 
   return (
     <>

@@ -24,6 +24,7 @@ class SignalRManager {
     bingoReset: "BingoReset",
     goldStatusUpdate: "GoldStatusUpdate",
     nameChange: "NameChange",
+    redirectSource: "RedirectSource",
   };
 
   static async connect() {
