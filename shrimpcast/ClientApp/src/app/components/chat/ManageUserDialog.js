@@ -38,7 +38,16 @@ const ManageUserDialog = (props) => {
     sentBy = userInfo?.basicResponse?.previousNames[userInfo?.basicResponse?.previousNames?.length - 1],
     { isAdmin, isMod } = userInfo?.basicResponse || {},
     //component manages its own open/close state, but it can be overriden by using externalOpenUserDialog & closeExternalUserDialog
-    { siteAdmin, siteMod, sessionId, userSessionId, signalR, externalOpenUserDialog, closeExternalUserDialog } = props,
+    {
+      siteAdmin,
+      siteMod,
+      sessionId,
+      userSessionId,
+      signalR,
+      externalOpenUserDialog,
+      closeExternalUserDialog,
+      skipUserDialogButton,
+    } = props,
     //targetUserPublic means that the user is authenticated as an admin and the target is not an admin
     targetUserPublic = siteAdmin && !isAdmin,
     showActionsPanel = !isAdmin && (!isMod || siteAdmin) && sessionId !== userSessionId,
@@ -117,15 +126,17 @@ const ManageUserDialog = (props) => {
 
   return (
     <>
-      <Tooltip title="User profile">
-        <IconButton sx={props.OverlayButtonSx} onClick={setOpened}>
-          {siteAdmin || siteMod ? (
-            <ManageAccountsIcon sx={{ fontSize: "16px" }} />
-          ) : (
-            <InfoIcon sx={{ fontSize: "16px" }} />
-          )}
-        </IconButton>
-      </Tooltip>
+      {!skipUserDialogButton && (
+        <Tooltip title="User profile">
+          <IconButton sx={props.OverlayButtonSx} onClick={setOpened}>
+            {siteAdmin || siteMod ? (
+              <ManageAccountsIcon sx={{ fontSize: "16px" }} />
+            ) : (
+              <InfoIcon sx={{ fontSize: "16px" }} />
+            )}
+          </IconButton>
+        </Tooltip>
+      )}
       {open && (
         <Dialog open={open} onClose={setClosed} maxWidth={"sm"} fullWidth>
           <DialogTitle sx={{ fontSize: "24px", paddingBottom: "7.5px" }}>
