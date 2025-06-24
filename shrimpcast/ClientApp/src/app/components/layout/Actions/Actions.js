@@ -2,7 +2,6 @@ import { IconButton, Menu, MenuItem, useMediaQuery, useTheme } from "@mui/materi
 import React, { useState } from "react";
 import ConfigUserDialog from "./ConfigUserDialog";
 import Bans from "./Bans";
-import ActiveUsers from "./ActiveUsers";
 import AutoModFilters from "./AutoModFilters";
 import Notifications from "./Notifications";
 import AccountInfo from "./AccountInfo";
@@ -19,7 +18,6 @@ const Actions = (props) => {
   const actions = props.isAdmin
     ? [
         <ConfigUserDialog {...props} />,
-        <ActiveUsers {...props} />,
         <Bans {...props} />,
         <Mutes {...props} />,
         <AutoModFilters {...props} />,

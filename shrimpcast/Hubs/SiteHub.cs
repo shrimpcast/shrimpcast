@@ -721,7 +721,7 @@ namespace shrimpcast.Hubs
 
         public async Task<List<object>> ListActiveUsers()
         {
-            await ShouldGrantAccess();
+            if (!Configuration.ShowConnectedUsers) await ShouldGrantAccess();
             var users = ActiveConnections.OrderBy(ac => ac.Value.ConnectedAt).DistinctBy(ac => ac.Value.Session.SessionId).Select(ac => (object)new
             {
                 ac.Value.Session.SessionId,
@@ -846,12 +846,15 @@ namespace shrimpcast.Hubs
         {
             var admins = GetAdminSessions();
             var eventType = session != null ? "UserConnected" : "UserDisconnected";
-            await Clients.Clients(admins).SendAsync(eventType, session != null ? new
+            object? value = session != null ? new
             {
                 session.SessionId,
                 session.SessionNames.Last().Name,
-                session.IsAdmin
-            } : sessionId);
+                session.IsAdmin,
+            } : sessionId;
+            
+            if (Configuration.ShowConnectedUsers) await Clients.All.SendAsync(eventType, value);
+            else await Clients.Clients(admins).SendAsync(eventType, value);
         }
 
         private async Task<string?> IsChatActionAllowed()

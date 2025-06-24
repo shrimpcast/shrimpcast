@@ -1,18 +1,27 @@
 import DialogTitle from "@mui/material/DialogTitle";
 import Dialog from "@mui/material/Dialog";
-import React, { useEffect, useState } from "react";
-import { Box, DialogContent, Divider, IconButton, List, ListItem, ListItemText, Tooltip } from "@mui/material";
+import { useEffect, useState } from "react";
+import { Box, Chip, DialogContent, Divider, List, ListItem, ListItemText, Tooltip } from "@mui/material";
 import AdminActionsManager from "../../../managers/AdminActionsManager";
-import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import ManageUserDialog from "../../chat/ManageUserDialog";
 import SignalRManager from "../../../managers/SignalRManager";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+
+const ConnectedUsersSx = (isAdmin) => ({
+  borderRadius: "5px",
+  width: "24px",
+  height: "20px",
+  position: "relative",
+  bottom: "1px",
+  ml: isAdmin ? "5px" : "2.5px",
+});
 
 const ActiveUsers = (props) => {
   const [open, setOpen] = useState(false),
     [users, setUsers] = useState([]),
     setClosed = () => setOpen(false),
     setOpened = () => setOpen(true),
-    { signalR } = props;
+    { signalR, isAdmin } = props;
 
   useEffect(() => {
     const addUser = (user) =>
@@ -47,21 +56,20 @@ const ActiveUsers = (props) => {
 
   return (
     <>
-      <Tooltip title="Active users">
-        <IconButton
-          onClick={setOpened}
-          type="button"
+      <Tooltip title="Show connected users">
+        <Chip
+          icon={<VisibilityIcon sx={{ position: "relative", left: "4px" }} />}
           size="small"
-          sx={{ backgroundColor: "primary.700", borderRadius: "0px" }}
-        >
-          <PeopleAltIcon sx={{ color: "primary.300" }} />
-        </IconButton>
+          color="primary"
+          sx={ConnectedUsersSx(isAdmin)}
+          onClick={setOpened}
+        />
       </Tooltip>
       {open && (
         <Dialog open={open} onClose={setClosed} maxWidth={"sm"} fullWidth>
           <DialogTitle sx={{ fontSize: "24px", pb: "7.5px" }}>
             <Box display="flex" width="100%" mb={"10px"}>
-              Active users
+              Connected users
             </Box>
             <Divider />
           </DialogTitle>

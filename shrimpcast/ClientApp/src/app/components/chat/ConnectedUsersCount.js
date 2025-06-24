@@ -4,6 +4,7 @@ import Paper from "@mui/material/Paper";
 import CircleIcon from "@mui/icons-material/Circle";
 import ChatActionsManager from "../../managers/ChatActionsManager";
 import SignalRManager from "../../managers/SignalRManager";
+import ActiveUsers from "../layout/Actions/ActiveUsers";
 
 const UserCountSx = {
   bgcolor: "primary.900",
@@ -20,7 +21,7 @@ const UserCountSx = {
 
 const ConnectedUsersCount = (props) => {
   const isConnected = props.connectionStatus === "Connected",
-    signalR = props.signalR,
+    { signalR, configuration, isAdmin } = props,
     [connectedUsers, setConnected] = useState({
       byIp: null,
       byConnection: null,
@@ -44,12 +45,17 @@ const ConnectedUsersCount = (props) => {
           <CircularProgress color="secondary" size={14} />
         )}
       </Box>
-      <Typography ml="5px" mt="2px">
-        {isConnected
-          ? `${connectedUsers.byIp ?? "-"} connected ${
+      <Typography ml="5px" mt="2.5px">
+        {isConnected ? (
+          <>
+            {`${connectedUsers.byIp ?? "-"} connected ${
               props.isAdmin ? ` (${connectedUsers.byConnection ?? "-"} total)` : ""
-            }`
-          : props.connectionStatus}
+            }`}
+            {isAdmin || configuration.showConnectedUsers ? <ActiveUsers {...props} /> : null}
+          </>
+        ) : (
+          props.connectionStatus
+        )}
       </Typography>
     </Paper>
   );
