@@ -7,7 +7,7 @@ import GenericActionList from "./GenericActionList";
 const Bans = (props) => {
   return (
     <GenericActionList
-      title="Banned users list"
+      title="Banned users"
       getItems={AdminActionsManager.GetBans}
       removeItem={ChatActionsManager.Unban}
       icon={BlockIcon}

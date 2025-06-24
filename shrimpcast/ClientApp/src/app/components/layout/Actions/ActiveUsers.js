@@ -61,14 +61,15 @@ const ActiveUsers = (props) => {
         <Dialog open={open} onClose={setClosed} maxWidth={"sm"} fullWidth>
           <DialogTitle sx={{ fontSize: "24px", pb: "7.5px" }}>
             <Box display="flex" width="100%" mb={"10px"}>
-              Active users list
+              Active users
             </Box>
             <Divider />
           </DialogTitle>
           <DialogContent>
-            <List sx={{ width: "100%", bgcolor: "background.paper" }}>
-              {users?.map((user) => (
+            <List sx={{ width: "100%", bgcolor: "background.paper", borderRadius: 1 }}>
+              {users?.map((user, index) => (
                 <ListItem
+                  divider={index !== users.length - 1}
                   key={user.sessionId}
                   secondaryAction={
                     <ManageUserDialog
