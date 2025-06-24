@@ -65,6 +65,7 @@ const PollOptionSx = (selected) => ({
   },
   ViewBtnSx = {
     marginTop: "3px",
+    fontWeight: "bold",
     cursor: "pointer",
     "&:hover": {
       backgroundColor: "secondary.900",
@@ -120,7 +121,7 @@ const PollOption = React.memo((props) => {
             label={props.voteCount}
             size="small"
             color="secondary"
-            sx={showPublicVotes ? ViewBtnSx : { marginTop: "3px" }}
+            sx={showPublicVotes ? ViewBtnSx : { marginTop: "3px", fontWeight: "bold" }}
             onClick={showPublicVotes ? openVotes : null}
           />
           {showVotes && (
@@ -133,6 +134,12 @@ const PollOption = React.memo((props) => {
               {...props}
               createdAt={null}
               closeCallback={closeVotes}
+              responseIsTitleObject={{
+                appendTitle: "[{0} connected user(s)]",
+                appendKey: "activeUsers",
+                value: "votes",
+                greenFlag: "connected",
+              }}
             />
           )}
           {isAdmin && (

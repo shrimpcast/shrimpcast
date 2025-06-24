@@ -29,10 +29,14 @@ const GenericActionList = (props) => {
       props.closeCallback && props.closeCallback();
     },
     setOpened = () => setOpen(true),
-    { signalR } = props,
+    { signalR, responseIsTitleObject } = props,
+    [titleAppend, setTitleAppend] = useState(""),
     getItems = async () => {
       const items = await props.getItems(signalR);
-      setItems(items);
+      if (responseIsTitleObject) {
+        setItems(items[responseIsTitleObject.value]);
+        setTitleAppend(` ${responseIsTitleObject.appendTitle.replace("{0}", items[responseIsTitleObject.appendKey])}`);
+      } else setItems(items);
     },
     removeItem = async (itemId) => {
       const isRemoved = props.removeItem(signalR, itemId);
@@ -63,7 +67,12 @@ const GenericActionList = (props) => {
       <Dialog open={open} onClose={setClosed} maxWidth={"sm"} fullWidth={!props.skipFullWidth}>
         <DialogTitle sx={{ fontSize: "24px", paddingBottom: "7.5px" }}>
           <Box display="flex" width="100%" marginBottom={"10px"}>
-            {props.title}
+            <Typography variant="h5" fontWeight="bold">
+              {props.title}
+              <Typography component="span" variant="subtitle1" color="text.secondary">
+                {titleAppend}
+              </Typography>
+            </Typography>
             {props.customButton && (
               <Button onClick={openAddDialog} sx={{ marginLeft: "auto" }} variant="contained" color="success">
                 {props.customButton}
@@ -78,12 +87,13 @@ const GenericActionList = (props) => {
               <CircularProgress color="secondary" />
             </Box>
           ) : (
-            <List sx={{ width: "100%", bgcolor: "background.paper" }}>
+            <List sx={{ width: "100%", bgcolor: "background.paper", borderRadius: 1 }}>
               {!items.length ? (
                 <Typography ml={1}>No entries found</Typography>
               ) : (
-                items.map((item) => (
+                items.map((item, index) => (
                   <ListItem
+                    divider={index !== items.length - 1}
                     key={item[props.identifier]}
                     sx={props.useLinks ? { paddingRight: "16px" } : null}
                     secondaryAction={
@@ -98,14 +108,31 @@ const GenericActionList = (props) => {
                           />
                         )}
                         {props.removeItem && (
-                          <IconButton onClick={() => removeItem(item[props.identifier])} edge="end" aria-label="delete">
+                          <IconButton
+                            onClick={() => removeItem(item[props.identifier])}
+                            edge="end"
+                            aria-label="delete"
+                            sx={{
+                              "&:hover": {
+                                color: "error.main",
+                              },
+                            }}
+                          >
                             <DeleteIcon />
                           </IconButton>
                         )}
                       </>
                     }
                   >
-                    <ListItemText primary={item[props.contentIdentifier]} sx={{ wordBreak: "break-word" }} />
+                    <ListItemText
+                      primary={item[props.contentIdentifier]}
+                      sx={[
+                        { wordBreak: "break-word" },
+                        responseIsTitleObject?.greenFlag
+                          ? { color: item[responseIsTitleObject.greenFlag] ? "success.main" : "warning.main" }
+                          : null,
+                      ]}
+                    />
                   </ListItem>
                 ))
               )}

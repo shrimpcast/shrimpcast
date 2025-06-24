@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import PollOption from "./PollOption";
 import SignalRManager from "../../managers/SignalRManager";
 import { Flipper, Flipped } from "react-flip-toolkit";

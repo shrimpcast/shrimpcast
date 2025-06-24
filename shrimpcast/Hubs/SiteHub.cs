@@ -511,7 +511,7 @@ namespace shrimpcast.Hubs
             return result ? existingPollOptionId == pollOptionId ? -1 : pollOptionId : 0;
         }
 
-        public async Task<List<object>> GetPollVotes([FromBody] int pollOptionId)
+        public async Task<object> GetPollVotes([FromBody] int pollOptionId)
         {
             var Connection = GetCurrentConnection();
             var Session = Connection.Session;
@@ -522,7 +522,19 @@ namespace shrimpcast.Hubs
                 throw new Exception("Access denied.");
             }
 
-            return await _pollRepository.GetOptionVotes(pollOptionId);
+            var votes = await _pollRepository.GetOptionVotes(pollOptionId);
+            var activeConnectionsCount = votes.Where(v => ActiveConnections.Any(ac => ac.Value.Session.SessionId == v.SessionId
+                                                                                   || ac.Value.RemoteAdress == v.RemoteAddress));
+            return new
+            {
+                activeUsers = activeConnectionsCount.Count(),
+                votes = votes.Select(vote => new
+                {
+                    vote.SessionId,
+                    vote.SessionName,
+                    connected = activeConnectionsCount.Any(v => v.SessionId == vote.SessionId),
+                })
+            };
         }
         #endregion
 
