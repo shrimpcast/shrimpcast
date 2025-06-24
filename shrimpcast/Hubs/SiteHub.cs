@@ -571,8 +571,15 @@ namespace shrimpcast.Hubs
             var Session = Connection.Session;
             if (!Session.IsMod && !Session.IsAdmin)
             {
+                var bingoOptionVotesCount = GetBingoOptionVoteCount(existingOption.BingoOptionId);
+                var autoMarkingThreshold = Configuration.AutoMarkingUserCountThreshold;
+                var shouldPreAddVote = CanVote(Connection.RemoteAdress, existingOption.BingoOptionId) ? 1 : 0;
+                var remainingVotes = Configuration.EnableAutoBingoMarking && autoMarkingThreshold > 1
+                                     ? $" ({bingoOptionVotesCount + shouldPreAddVote}/{autoMarkingThreshold})" 
+                                     : string.Empty; 
+                
                 if (existingOption.IsChecked ||
-                   await NewMessage($"[BINGO]: I suggest marking [{existingOption.Content}].") == -1) return true;
+                   await NewMessage($"[BINGO]: I suggest marking [{existingOption.Content}]{remainingVotes}.") == -1) return true;
                 var ShouldTriggerAutoMarking = ShouldTriggerBingoAutoMarking(Connection.RemoteAdress, existingOption.BingoOptionId);
                 if (!ShouldTriggerAutoMarking) return true;
             }
@@ -918,28 +925,36 @@ namespace shrimpcast.Hubs
             return null;
         }
 
-        private bool ShouldTriggerBingoAutoMarking (string RemoteAddress, int BingoSuggestionId)
+        private int GetBingoOptionVoteCount(int BingoSuggestionId)
         {
-            if (!Configuration.EnableAutoBingoMarking) return false;
-
             var suggestions = _bingoSuggestions.All;
             var utcNow = DateTime.UtcNow;
-
-            suggestions.TryAdd(Guid.NewGuid().ToString(), new BingoSuggestion
-            {
-                BingoSuggestionId = BingoSuggestionId,
-                RemoteAddress = RemoteAddress,
-                Timestamp = utcNow
-            });
-
             var keysToRemove = suggestions.Where(suggestion => (utcNow - suggestion.Value.Timestamp).TotalSeconds >= Configuration.AutoMarkingSecondsThreshold)
-                                          .Select(suggestion => suggestion.Key);
+                              .Select(suggestion => suggestion.Key);
 
             foreach (var key in keysToRemove) suggestions.TryRemove(key, out _);
 
-            var uniqueSuggestions = suggestions.Where(suggestion => suggestion.Value.BingoSuggestionId == BingoSuggestionId)
-                                               .DistinctBy(suggestion => suggestion.Value.RemoteAddress).Count();
-            return uniqueSuggestions >= Configuration.AutoMarkingUserCountThreshold;
+            return _bingoSuggestions.All.Where(suggestion => suggestion.Value.BingoSuggestionId == BingoSuggestionId)
+                                        .DistinctBy(suggestion => suggestion.Value.RemoteAddress).Count();
+        }
+
+        private bool CanVote(string RemoteAddress, int BingoSuggestionId) =>
+            !_bingoSuggestions.All.Any(bS => bS.Value.RemoteAddress == RemoteAddress && bS.Value.BingoSuggestionId == BingoSuggestionId);
+
+        private bool ShouldTriggerBingoAutoMarking (string RemoteAddress, int BingoSuggestionId)
+        {
+            if (!Configuration.EnableAutoBingoMarking) return false;
+            if (CanVote(RemoteAddress, BingoSuggestionId))
+            {
+                _bingoSuggestions.All.TryAdd(Guid.NewGuid().ToString(), new BingoSuggestion
+                {
+                    BingoSuggestionId = BingoSuggestionId,
+                    RemoteAddress = RemoteAddress,
+                    Timestamp = DateTime.UtcNow
+                });
+            }
+
+            return GetBingoOptionVoteCount(BingoSuggestionId) >= Configuration.AutoMarkingUserCountThreshold;
         }
 
         private async Task NotifyNewMessage(Message message) =>
