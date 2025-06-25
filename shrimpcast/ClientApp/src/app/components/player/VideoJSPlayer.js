@@ -54,7 +54,7 @@ const VideoJSPlayer = (props) => {
         clearTimeout(window._vjstimeout);
         console.log(`Attempting to restart playback, reason = ${reason}.`);
         destroy();
-        setIsError(true);
+        setIsError(Date.now());
       };
 
       player.on("error", () => {
