@@ -83,6 +83,8 @@ const ActiveUsers = (props) => {
                     <ManageUserDialog
                       {...props}
                       siteAdmin={props.isAdmin}
+                      siteMod={props.isMod}
+                      userSessionId={props.sessionId}
                       useSession={true}
                       sessionId={user.sessionId}
                     />
