@@ -1190,8 +1190,8 @@ namespace shrimpcast.Hubs
             try
             {
                 var strings = Message.Split(" ");
-                var from = strings[1].Trim();
-                var to = strings[2].Trim();
+                var from = strings[1].Trim().ToLower();
+                var to = strings[2].Trim().ToLower();
 
                 var isFromValid = await _sourceRepository.ExistsByName(from);
                 var isToValid = await _sourceRepository.ExistsByName(to);
