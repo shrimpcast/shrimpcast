@@ -47,30 +47,40 @@ const VideoJSPlayer = (props) => {
       videoElement.classList.add("vjs-big-play-centered");
       videoRef.current.appendChild(videoElement);
       const player = (playerRef.current = videojs(videoElement, options, () => play(player)));
-      const restart = () => {
-        console.log("Attempting to restart playback.");
-        destroy();
-        setIsError(true);
+
+      // Reconnect logic
+
+      const restart = (reason) => {
         clearTimeout(window._vjstimeout);
+        console.log(`Attempting to restart playback, reason = ${reason}.`);
+        destroy();
+        setIsError(Date.now());
       };
 
       player.on("error", () => {
         clearTimeout(window._vjstimeout);
-        setTimeout(restart, 3000);
+        window._vjstimeout = setTimeout(() => restart("error"), 3000);
       });
-      player.on("ended", restart);
+
+      player.on("ended", () => {
+        clearTimeout(window._vjstimeout);
+        restart("ended");
+      });
+
       player.on("waiting", () => {
         clearTimeout(window._vjstimeout);
         window._vjstimeout = setTimeout(() => {
           try {
             if (player?.readyState() <= 2) {
-              restart();
+              restart("waiting");
             }
           } catch (e) {}
         }, 5000);
       });
 
-      if (isError) setIsError(false);
+      if (isError) {
+        setIsError(false);
+      }
       // Update an existing player in the `else` block here
     } else {
       const player = playerRef.current;

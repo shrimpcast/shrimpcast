@@ -13,7 +13,7 @@ namespace shrimpcast.Data.Repositories
             _context = context;
         }
 
-        public async Task<List<object>> GetOptionVotes(int PollOptionId)
+        public async Task<List<dynamic>> GetOptionVotes(int PollOptionId)
         {
             var votes = from pvotes in _context.PollVotes
                         join poptions in _context.PollOptions on pvotes.PollOptionId equals poptions.PollOptionId
@@ -21,6 +21,9 @@ namespace shrimpcast.Data.Repositories
                         select new
                         {
                             pvotes.SessionId,
+                            // RemoteAddress must always be removed before being sent to the response
+                            // Only used to determine if the user is connected or not
+                            pvotes.RemoteAddress,
                             SessionName = (from sn in _context.SessionNames where sn.SessionId == pvotes.SessionId orderby sn.CreatedAt select sn.Name).Last(),
                         };
             var result = await votes.AsNoTracking().ToListAsync();

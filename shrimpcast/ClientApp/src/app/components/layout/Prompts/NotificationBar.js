@@ -23,7 +23,7 @@ const ColorButtonSx = {
   CloseIconSx = (palette) => ({
     zIndex: "2",
     backgroundColor: palette["A700"],
-    height: "20px",
+    height: "100%",
     width: "20px",
     fontSize: "14px",
   }),
@@ -54,7 +54,7 @@ const NotificationBar = (props) => {
         </Typography>
       </ColorButton>
       {!skipCloseButton && (
-        <IconButton onClick={props.close} type="button" size="small" sx={{ p: 0 }}>
+        <IconButton onClick={props.close} sx={{ p: 0 }}>
           <CloseIcon sx={CloseIconSx(palette)} />
         </IconButton>
       )}

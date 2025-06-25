@@ -66,6 +66,9 @@ namespace shrimpcast.Data.Repositories
             source.IsEnabled = status;
             return await _context.SaveChangesAsync() > 0;
         }
+
+        public async Task<bool> ExistsByName(string sourceName) =>
+            await _context.Sources.AsNoTracking().AnyAsync(s => s.Name == sourceName && s.IsEnabled);
     }
 }
 

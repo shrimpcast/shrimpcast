@@ -65,12 +65,22 @@ const EmotesAdmin = (props) => {
             <Divider />
           </DialogTitle>
           <DialogContent>
-            <List sx={{ width: "100%", bgcolor: "background.paper" }}>
-              {emotes.map((emote) => (
+            <List sx={{ width: "100%", bgcolor: "background.paper", borderRadius: 1 }}>
+              {emotes.map((emote, index) => (
                 <ListItem
+                  divider={index !== emotes.length - 1}
                   key={emote.emoteId}
                   secondaryAction={
-                    <IconButton onClick={() => removeEmote(emote.emoteId)} edge="end" aria-label="delete">
+                    <IconButton
+                      onClick={() => removeEmote(emote.emoteId)}
+                      edge="end"
+                      aria-label="delete"
+                      sx={{
+                        "&:hover": {
+                          color: "error.main",
+                        },
+                      }}
+                    >
                       <DeleteIcon />
                     </IconButton>
                   }

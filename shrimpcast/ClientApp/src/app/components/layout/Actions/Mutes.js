@@ -7,7 +7,7 @@ import VolumeOffIcon from "@mui/icons-material/VolumeOff";
 const Mutes = (props) => {
   return (
     <GenericActionList
-      title="Muted users list"
+      title="Muted users"
       getItems={AdminActionsManager.GetActiveMutes}
       removeItem={ChatActionsManager.Unmute}
       icon={VolumeOffIcon}

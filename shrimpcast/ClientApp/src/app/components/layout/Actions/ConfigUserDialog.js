@@ -51,6 +51,10 @@ const ConfigUserDialog = (props) => {
     },
     fetchParsedConfig = async () => {
       const response = await AdminActionsManager.GetOrderedConfig(props.signalR);
+      if (!response) {
+        setClosed();
+        return;
+      }
       response.unorderedConfig = lowercaseKeys(response.unorderedConfig);
       setConfig(response);
     },

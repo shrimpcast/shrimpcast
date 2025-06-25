@@ -1,9 +1,11 @@
 import { Box, Typography } from "@mui/material";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ReactPlayer from "react-player";
 import PickSource from "../layout/Actions/Sources/PickSource";
 import XGPlayer from "./XGPlayer";
 import VideoJSPlayer from "./VideoJSPlayer";
+import SignalRManager from "../../managers/SignalRManager";
+import { useNavigate } from "react-router-dom";
 
 const WrapperSx = {
   width: "100%",
@@ -14,7 +16,7 @@ const WrapperSx = {
 };
 
 const SitePlayer = (props) => {
-  const { streamStatus } = props,
+  const { streamStatus, signalR } = props,
     { source, streamEnabled, mustPickStream } = streamStatus,
     { useRTCEmbed, useLegacyPlayer } = source,
     url = source.url || "",
@@ -41,12 +43,25 @@ const SitePlayer = (props) => {
       } else {
         player.playVideo();
       }
-    };
+    },
+    navigate = useNavigate();
 
   if (isFLV && forceM3U8) {
     videoJsOptions.sources[0].src = url.substr(0, url.lastIndexOf(".")) + ".m3u8";
     console.log("Forcing M3U8 because FLV is not supported.");
   }
+
+  useEffect(() => {
+    signalR.on(SignalRManager.events.redirectSource, (data) => {
+      const { from, to } = data;
+      if (from === source?.name) {
+        console.log(`Redirecting from ${from} to ${to}`);
+        navigate(`/${to}`);
+      }
+    });
+    return () => signalR.off(SignalRManager.events.redirectSource);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [source, navigate]);
 
   return streamEnabled ? (
     mustPickStream ? (

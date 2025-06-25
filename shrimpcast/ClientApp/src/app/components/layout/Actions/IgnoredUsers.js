@@ -1,4 +1,3 @@
-import React from "react";
 import ChatActionsManager from "../../../managers/ChatActionsManager";
 import GenericActionList from "./GenericActionList";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";

@@ -4,7 +4,7 @@ namespace shrimpcast.Entities
 {
     public class Constants
     {
-        public const string BACKEND_VERSION = "1.2.8";
+        public const string BACKEND_VERSION = "1.2.9";
 
         public const string PING_COMMAND = "!ping";
 
@@ -21,6 +21,8 @@ namespace shrimpcast.Entities
         public const string RESET_VPN_RECORDS = $"!resetallsavedvpnrecords";
 
         public const string DOCKER_RESTART = $"!dockerrestart";
+
+        public const string REDIRECT_SOURCE = $"!redirectsource";
 
         public const string FILTERS = "filters.json";
 

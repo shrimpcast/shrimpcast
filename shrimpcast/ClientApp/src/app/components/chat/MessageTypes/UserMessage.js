@@ -140,6 +140,7 @@ const UserMessage = React.memo((props) => {
             OverlayButtonSx={OverlayButtonSx}
             externalOpenUserDialog={externalOpenUserDialog}
             closeExternalUserDialog={closeExternalUserDialog}
+            skipUserDialogButton={true}
             {...props}
           />
           {props.siteAdmin && (
