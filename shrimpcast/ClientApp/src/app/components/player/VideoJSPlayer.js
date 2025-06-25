@@ -35,7 +35,7 @@ const VideoJSPlayer = (props) => {
         playerRef.current = null;
       }
     },
-    [isError, setIsError] = useState(false);
+    [isError, setIsError] = useState(null);
 
   useEffect(() => {
     if (!cssLoaded) return;
@@ -50,7 +50,7 @@ const VideoJSPlayer = (props) => {
       const restart = () => {
         console.log("Attempting to restart playback.");
         destroy();
-        setIsError(true);
+        setIsError(Date.now());
         clearTimeout(window._vjstimeout);
       };
 
@@ -58,7 +58,9 @@ const VideoJSPlayer = (props) => {
         clearTimeout(window._vjstimeout);
         setTimeout(restart, 3000);
       });
-      player.on("ended", restart);
+      player.on("ended", () => {
+        restart();
+      });
       player.on("waiting", () => {
         clearTimeout(window._vjstimeout);
         window._vjstimeout = setTimeout(() => {
@@ -70,7 +72,7 @@ const VideoJSPlayer = (props) => {
         }, 5000);
       });
 
-      if (isError) setIsError(false);
+      if (isError) setIsError(null);
       // Update an existing player in the `else` block here
     } else {
       const player = playerRef.current;
