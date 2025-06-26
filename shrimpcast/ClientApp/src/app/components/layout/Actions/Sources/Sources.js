@@ -185,7 +185,7 @@ const Sources = ({ fields, sources, setConfig, utcToLocal }) => {
                         )
                       }
                       variant="outlined"
-                      color="info"
+                      color="success"
                       size="small"
                     >
                       Show
