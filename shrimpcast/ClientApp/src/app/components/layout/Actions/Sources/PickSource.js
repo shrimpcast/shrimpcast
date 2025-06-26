@@ -115,7 +115,7 @@ const PickSource = ({ sources }) => {
                     sources.length > 6 ? 0 : sources.length === 6 ? 0.3 : sources.length === 5 ? 0.5 : 1
                   )}
                 >
-                  {source.name}
+                  {source.title ? source.title.trim() : source.name}
                 </Typography>
               </Box>
               <PlayCircleFilledIcon sx={PlayButtonSx(hoveredIndex, index)} />

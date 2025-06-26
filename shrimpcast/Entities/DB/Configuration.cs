@@ -254,6 +254,7 @@ namespace shrimpcast.Entities.DB
                             {
                                 new { name = nameof(Source.IsEnabled).ToLower(), label = "Enabled" },
                                 new { name = nameof(Source.Name).ToLower(), label = "Name" },
+                                new { name = nameof(Source.Title).ToLower(), label = "Title" },
                                 new { name = nameof(Source.Url).ToLower(), label = "URL" },
                                 new { name = nameof(Source.Thumbnail).ToLower(), label = "Thumbnail" },
                                 new { name = nameof(Source.UseLegacyPlayer).ToLower(), label = "Native player" },

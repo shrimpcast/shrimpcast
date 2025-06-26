@@ -95,6 +95,7 @@ const Sources = ({ fields, sources, setConfig, utcToLocal }) => {
     defaultNewSource = {
       isEnabled: false,
       name: "",
+      title: "",
       url: "",
       thumbnail: "",
       useLegacyPlayer: false,
@@ -169,6 +170,27 @@ const Sources = ({ fields, sources, setConfig, utcToLocal }) => {
                 </TableCell>
                 <TableCell>
                   <Typography variant="body2">{source.name}</Typography>
+                </TableCell>
+                <TableCell>
+                  <Tooltip title={source.title}>
+                    <Button
+                      onClick={() =>
+                        openEditContent(
+                          "Source title",
+                          "Title to display...",
+                          source.title,
+                          source.sourceId,
+                          "title",
+                          true
+                        )
+                      }
+                      variant="outlined"
+                      color="info"
+                      size="small"
+                    >
+                      Show
+                    </Button>
+                  </Tooltip>
                 </TableCell>
                 <TableCell>
                   <Tooltip title={source.url}>
@@ -272,6 +294,15 @@ const Sources = ({ fields, sources, setConfig, utcToLocal }) => {
                     size="small"
                     required
                     autoFocus
+                  />
+                </TableCell>
+                <TableCell>
+                  <TextField
+                    value={newSourceData.title}
+                    onChange={(e) => setNewSourceData({ ...newSourceData, title: e.target.value })}
+                    label="Title"
+                    variant="outlined"
+                    size="small"
                   />
                 </TableCell>
                 <TableCell>
