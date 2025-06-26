@@ -63,7 +63,7 @@ const SitePlayer = (props) => {
     });
     return () => signalR.off(SignalRManager.events.redirectSource);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [source, navigate]);
+  }, [source]);
 
   return streamEnabled ? (
     mustPickStream ? (
