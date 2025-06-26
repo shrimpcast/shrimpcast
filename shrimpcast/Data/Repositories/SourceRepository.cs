@@ -37,6 +37,7 @@ namespace shrimpcast.Data.Repositories
                     var entity = await _context.Sources.FirstAsync(s => s.Name == existingSource.Name);
                     entity.IsEnabled = newSource.IsEnabled;
                     entity.Name = newSource.Name;
+                    entity.Title = newSource.Title;
                     entity.Url = newSource.Url;
                     entity.Thumbnail = newSource.Thumbnail;
                     entity.UseLegacyPlayer = newSource.UseLegacyPlayer;

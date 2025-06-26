@@ -6,7 +6,7 @@
   <img src="https://github.com/shrimpcast/shrimpcast/assets/167498236/d3159e68-60dd-4e8f-a8ca-be0a99a759a1" alt="Logo">
 </p>
 
-![Minimalist-Showcase-Project-Presentation](https://github.com/user-attachments/assets/2c0ad070-7c52-4609-a4e7-e36ef3008d2b)
+![Project-showcase)](https://github.com/user-attachments/assets/1b58cf67-1545-4bb4-b129-029cad9a5cf6)
 
 ## Introduction
 
@@ -31,8 +31,9 @@ Shrimpcast is a highly customizable, flexible, battle-tested, fast, and secure s
     - [Bingo](#bingo)
     - [OBS](#obs)
     - [Theme](#theme)
-    - [Notifications](#notifications)
+    - [Vapid](#vapid)
     - [Golden pass](#golden-pass)
+    - [Turnstile](#turnstile)
   - [Active Users](#active-users)
   - [Bans](#bans)
   - [Mutes](#mutes)
@@ -42,10 +43,14 @@ Shrimpcast is a highly customizable, flexible, battle-tested, fast, and secure s
   - [Emotes](#emotes)
   - [Bingo options](#bingo-options)
   - [Message and user management](#message-and-user-management)
-  - [Cloud OBS](#cloud-obs)
-  - [Whispers](#whispers)
+  - [Chat commands](chat-commands)
+    - [Cloud OBS](#cloud-obs)
+    - [Whispers](#whispers)
+    - [Others](#others)
 - [Update](#update)
 - [License](#license)
+
+_Last revision: **1.3.0** (not fully complete)_
 
 ## Features
 
@@ -53,12 +58,9 @@ Shrimpcast is a highly customizable, flexible, battle-tested, fast, and secure s
 - **Strong anti-spam foundations**
 - **Fast and lightweight**
 - **Flexible and highly customizable**
-- **Battle-tested with hundreds of concurrent users**
-  - Tested with:
-     - 1000 unique users
-     - Throughput of 4 Gbps
+- **Battle-tested with thousands of concurrent users**
 - **Out-of-the-box Cloudflare support**
-- **Fully denial of service proof**
+- **Feature rich**
 
 ## Installation
 
@@ -216,7 +218,7 @@ And that's it! You're now authenticated as an admin.
 
 Once you're authenticated as an admin, you will have the following options:
 
-![image](https://github.com/user-attachments/assets/32a73635-45bf-4b7a-bcdf-272c20ea8668)
+![image](https://github.com/user-attachments/assets/06ab5f4b-05e0-4221-9630-b8ef69e05b1a)
   - [Configuration](#configuration)
     - [Site](#site)
     - [Chat](#chat)
@@ -226,8 +228,9 @@ Once you're authenticated as an admin, you will have the following options:
     - [Bingo](#bingo)
     - [OBS](#obs)
     - [Theme](#theme)
-    - [Notifications](#notifications)
+    - [Vapid](#vapid)
     - [Golden pass](#golden-pass)
+    - [Turnstile](#turnstile)
   - [Active Users](#active-users)
   - [Bans](#bans)
   - [Mutes](#mutes)
@@ -238,9 +241,11 @@ Once you're authenticated as an admin, you will have the following options:
   - [Bingo options](#bingo-options)
 
 #### Site
-![image](https://github.com/user-attachments/assets/acf1196d-28b5-43c8-8305-dc557b46a4e4)
+![image](https://github.com/user-attachments/assets/5a86144a-bc0b-462d-9aa8-7e31ccbc6c01)
 
+- **Enable PWA**: Toggles [Progressive Web App (PWA)](https://en.wikipedia.org/wiki/Progressive_web_app) support on or off.
 - **Hide stream title**: Hides the stream title that would otherwise show below the player.
+- **Publicly display connected users**: Shows or hides the list of connected users for non-admin users.
 - **Max connections per IP**: The maximum number of simultaneous connections by a single IP address.
 - **Minimum auto-mod time**: The minimum delay time expressed in milliseconds for the auto-mod.
 - **Maximum auto-mod time**: The maximum delay time expressed in milliseconds for the auto-mod.
@@ -250,7 +255,7 @@ Once you're authenticated as an admin, you will have the following options:
 - **Stream description**: Description to show below the stream title.
 
 #### Chat
-![image](https://github.com/user-attachments/assets/9e127ae7-33cf-4288-a3d1-d5df95cf25b4)
+![image](https://github.com/user-attachments/assets/e3135195-1419-464b-adb4-efebecb97d1a)
 
 - **Enable chat:** Determines whether the chat feature is enabled or disabled for users.
 - **Allow verified users only:** Specifies whether chat is restricted to verified users only.
@@ -263,17 +268,21 @@ Once you're authenticated as an admin, you will have the following options:
 - **Default name for new users:** Sets the default username assigned to new users.
 
 #### Stream
-![image](https://github.com/user-attachments/assets/12a213b0-e15b-4275-b16c-0eef40a4cc6c)
+![image](https://github.com/user-attachments/assets/1db74380-4b58-41b2-90f9-c444fc4248c4)
 
 - **Enable stream:** Shows or hides the player.
 - **Name:** Source name, also used for routing.
+- **Title**: Optional source title displayed on the stream selection page. If left empty, the source name will be used instead.
 - **URL:** URL source for the stream feed.
 - **Thumbnail:** Determines the thumbnail used on the multistream preview for each source.
-- **Legacy player:** Determines whether to use the browser's native player for streaming.
+- **Legacy player**: Uses the browser’s native player for streaming. Also compatible with platforms like YouTube, Twitch, Streamable, and others.
 - **Embed:** Dictates whether to treat URLs as embedded content.
+- **Reset on Start**: If enabled, restarts Docker when the scheduled start time is triggered. Useful for restarting queued movies.
+- **Schedule Start**: Schedules a background job to automatically enable the source. If already enabled, a countdown timer will be displayed.
+- **Schedule End**: Schedules a background job to automatically disable the source.
 
 #### Poll
-![image](https://github.com/user-attachments/assets/972273c0-d0c7-4fd5-88ae-e6c13ff99bd6)
+![image](https://github.com/user-attachments/assets/40d82667-cc50-41b8-b142-23260028102e)
 - **Show poll:** Controls the visibility of the poll.
 - **Accept new options:** Determines whether new options can be added to an existing poll.
 - **Accept new votes:** Specifies whether new votes are allowed after a poll has started.
@@ -282,7 +291,7 @@ Once you're authenticated as an admin, you will have the following options:
 - **Poll title:** Specifies the title or topic of the poll being conducted.
 
 #### Tor and VPNs
-![image](https://github.com/user-attachments/assets/4df09ed9-1806-458d-9150-8e491433acdc)
+![image)](https://github.com/user-attachments/assets/f8aee1d3-524a-4fb5-b31c-d094ea051da3)
 - **Block TOR connections site-wide:** Blocks access to the site for TOR users.
 - **Block TOR connections (chat only):** Prevents TOR users from chatting, but they can still access the site.
 - **Block VPN connections site-wide:** Blocks access to the site for VPN users.
@@ -293,7 +302,7 @@ Once you're authenticated as an admin, you will have the following options:
 - **VPN detection match criteria:** Customize how the JSON response is matched (e.g., `{"proxy": (value), "hosting": (value)}`).
 
 ### Bingo 
-![image](https://github.com/user-attachments/assets/d835f252-2693-43a9-bdc3-4a9f9f3f593d)
+![image](https://github.com/user-attachments/assets/32a9a460-d2ac-4724-b426-d8a8dd3b22d6)
 - **Show bingo:** Determines whether the bingo is displayed.
 - **Enable auto marking:** Specifies whether automatic marking of options is enabled once a certain threshold is met.
 - **Auto marking seconds threshold:** The number of seconds during which simultaneous suggestions are considered.
@@ -301,7 +310,7 @@ Once you're authenticated as an admin, you will have the following options:
 - **Bingo title:** A title for the bingo (self-explanatory).
 
 #### OBS
-![image](https://github.com/user-attachments/assets/2746737d-29ae-4ee4-b5ef-ffadc13a5ad6)
+![image](https://github.com/user-attachments/assets/72f665d9-1c13-44b9-b779-ea8546af281e)
 > [!TIP]
 > You don't need any of these configurations unless you're using a cloud OBS instance and you want to control it remotely. If you're going to use them, make sure that your OBS has WebSockets enabled and is accepting incoming connections. See more on [cloud OBS](#cloud-obs)
 - **Host:** Specifies the host for OBS connection. Format: (ws://[IP]:4455)
@@ -312,7 +321,7 @@ Once you're authenticated as an admin, you will have the following options:
 - **Music source:** Specifies the audio source to be optionally played during the broadcast.
 
 #### Theme
-![image](https://github.com/user-attachments/assets/c3795652-41c5-4954-bf75-485364189f66)
+![image](https://github.com/user-attachments/assets/7bd254ed-84d3-42c3-bf40-2abd8cdb4a76)
 - **Enable fireworks:** Toggles the display of fireworks animations.
 - **Enable Christmas theme:** Enables or disables the Christmas theme.
 - **Enable Halloween theme:** Enables or disables the Halloween theme.
@@ -320,8 +329,8 @@ Once you're authenticated as an admin, you will have the following options:
 - **Primary color:** Sets the default primary palette color (default: blueGrey).
 - **Secondary color:** Sets the secondary palette color (default: orange).
 
-#### Notifications
-![image](https://github.com/user-attachments/assets/c1dd0572-6a2a-45b7-948e-b4b6148d3192)
+#### Vapid
+![image](https://github.com/user-attachments/assets/40642056-f6e7-45f5-b55a-643c1e22c998)
 > [!CAUTION]
 > Do not change these values unless you know what you're doing.
 - **VAPID Public Key:** Specifies the public key for VAPID authentication.
@@ -329,8 +338,12 @@ Once you're authenticated as an admin, you will have the following options:
 - **VAPID Mail:** Provides the email address associated with VAPID authentication.
 
 #### Golden pass
-![image](https://github.com/user-attachments/assets/c7baac87-d1fe-40c3-83c7-87dfad7875bd)
-- Fully automated integration with BTCPayServer, please see https://btcpayserver.org/
+![image](https://github.com/user-attachments/assets/7621cd84-1fe5-45ce-80f9-99098e01e17b)
+- Fully automated integrations with BTCPayServer & Stripe, 
+
+#### Turnstile
+![image](https://github.com/user-attachments/assets/072a8c57-a9f8-413e-ac10-2325ba83d86f)
+- Requires [Cloudflare Turnstile](https://www.cloudflare.com/products/turnstile/) verification for new users.
 
 ### Bans
 ![image](https://github.com/shrimpcast/shrimpcast/assets/167498236/c4066618-ae54-4930-ae06-7a773d339872)
@@ -397,6 +410,8 @@ While authenticated as an admin, hover over a message and you will have the opti
 > [!WARNING]
 > The auto-mod tool isn't intended for censorhip but to ease the removal of spam. Note that adding a filter will result in any user whose message contains the filter being banned.
 
+## Chat commands
+
 ### Cloud OBS
 
 If you're utilizing a cloud OBS instance, manage it effortlessly through chat commands:
@@ -412,6 +427,12 @@ Admins can securely send private messages to users using the following chat comm
 - `!ping [SessionId] [Message]`
 
 Retrieve the SessionId from the [Message and User Management](#message-and-user-management) section.
+
+#### Others
+- `!dockerrestart` — Restarts Docker.
+- `!resetallsavedvpnrecords` — Clears all saved VPN-related IP records.
+- `!tryipservice [IP?]` — Tests the IP service. If no IP is provided, it defaults to the requester’s IP.
+- `!redirectsource [FROM] [TO]` — Redirects users watching source `FROM` to source `TO`.
 
 ## Update
 If you want to update to the latest version of shrimpcast, you can do so by running
