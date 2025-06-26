@@ -6,6 +6,7 @@ import XGPlayer from "./XGPlayer";
 import VideoJSPlayer from "./VideoJSPlayer";
 import SignalRManager from "../../managers/SignalRManager";
 import { useNavigate } from "react-router-dom";
+import SourceCountdown from "../layout/Actions/Sources/SourceCountdown";
 
 const WrapperSx = {
   width: "100%",
@@ -18,7 +19,7 @@ const WrapperSx = {
 const SitePlayer = (props) => {
   const { streamStatus, signalR } = props,
     { source, streamEnabled, mustPickStream } = streamStatus,
-    { useRTCEmbed, useLegacyPlayer } = source,
+    { useRTCEmbed, useLegacyPlayer, startsAt } = source,
     url = source.url || "",
     video = useRef(),
     videoJsOptions = {
@@ -44,7 +45,8 @@ const SitePlayer = (props) => {
         player.playVideo();
       }
     },
-    navigate = useNavigate();
+    navigate = useNavigate(),
+    showCountdown = startsAt && new Date(startsAt).getTime() - Date.now() > 0;
 
   if (isFLV && forceM3U8) {
     videoJsOptions.sources[0].src = url.substr(0, url.lastIndexOf(".")) + ".m3u8";
@@ -66,6 +68,8 @@ const SitePlayer = (props) => {
   return streamEnabled ? (
     mustPickStream ? (
       <PickSource sources={streamStatus.sources} />
+    ) : showCountdown ? (
+      <SourceCountdown startsAt={startsAt} />
     ) : isFLV && !forceM3U8 ? (
       <XGPlayer url={url} />
     ) : useRTCEmbed ? (
