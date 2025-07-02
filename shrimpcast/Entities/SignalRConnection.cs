@@ -8,6 +8,8 @@ namespace shrimpcast.Entities
 
         public required string RemoteAdress { get; set; }
 
+        public string? QueryParams { get; set; }
+
         public required Session Session { get; set; }
     }
 }

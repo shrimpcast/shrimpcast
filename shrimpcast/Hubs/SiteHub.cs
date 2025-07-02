@@ -76,8 +76,8 @@ namespace shrimpcast.Hubs
             var Session = await _sessionRepository.GetExistingAsync(accessToken, RemoteAddress);
             var isClosed = !(Session?.IsAdmin).GetValueOrDefault() && Configuration.OpenAt > DateTime.UtcNow;
             var reachedMaxUsers = Configuration.MaxConnectedUsers != 0 && ActiveConnections.Count >= Configuration.MaxConnectedUsers
-                                  && !(Session?.IsAdmin).GetValueOrDefault() && !(Session?.IsMod).GetValueOrDefault()  && !(Session?.IsGolden).GetValueOrDefault();
-            var reachedMaxConnectionsPerAddress = ActiveConnections.Where(ac => ac.Value.RemoteAdress == RemoteAddress || ac.Value.Session.SessionToken == accessToken).Count() 
+                                  && !(Session?.IsAdmin).GetValueOrDefault() && !(Session?.IsMod).GetValueOrDefault() && !(Session?.IsGolden).GetValueOrDefault();
+            var reachedMaxConnectionsPerAddress = ActiveConnections.Where(ac => ac.Value.RemoteAdress == RemoteAddress || ac.Value.Session.SessionToken == accessToken).Count()
                 >= Configuration.MaxConnectionsPerIP;
             var mustPassTurnstail = await NeedsPassTurnstail(Session);
 
@@ -110,11 +110,32 @@ namespace shrimpcast.Hubs
                 var SessionId = GetCurrentConnection().Session.SessionId;
                 ActiveConnections.TryRemove(Context.ConnectionId, out _);
                 await TriggerUserCountChange(false, null, SessionId);
+                await TriggerSourceViewerCountChange();
                 await base.OnDisconnectedAsync(exception);
-            } catch (Exception) {} // Session already disconnected
+            } catch (Exception) { } // Session already disconnected
         }
 
         public async Task GetUserCount() => await TriggerUserCountChange(true, null, null);
+
+        public async void SetQueryParams([FromBody] string source)
+        {
+            GetCurrentConnection().QueryParams = source;
+            await TriggerSourceViewerCountChange();
+        }
+
+        public async Task TriggerSourceViewerCountChange()
+        {
+           var values =  Configuration.Sources.Where(source => source.IsEnabled)
+                                              .Select(source => new
+                                              {
+                                                  name = source.Name,
+                                                  count = ActiveConnections.Where(ac => ac.Value.QueryParams == source.Name)
+                                                                           .DistinctBy(ac => ac.Value.RemoteAdress)
+                                                                           .Count()
+                                              });
+           await Clients.All.SendAsync("SourceViewerCountChange", values);
+        }
+
         #endregion
 
         #region Chat

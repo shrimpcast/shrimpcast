@@ -1,7 +1,9 @@
 import { Box, Typography, alpha } from "@mui/material";
 import { Link } from "react-router-dom";
 import PlayCircleFilledIcon from "@mui/icons-material/PlayCircleFilled";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
+import SignalRManager from "../../../../managers/SignalRManager";
 
 const DEFAULT_THUMBNAIL = "/images/video_thumbnail.png",
   ContainerSx = {
@@ -80,10 +82,48 @@ const DEFAULT_THUMBNAIL = "/images/video_thumbnail.png",
     transform: "translate(-50%, -50%)",
     webkitTransform: "translate(-50%, -50%)",
     textAlign: "center",
-  });
+  }),
+  ViewerCountSx = {
+    position: "absolute",
+    top: "10px",
+    right: "10px",
+    backgroundColor: "info.main",
+    color: "white",
+    padding: "4px 8px",
+    borderRadius: "4px",
+    fontSize: "0.75rem",
+    fontWeight: "bold",
+    zIndex: 2,
+    display: "flex",
+    alignItems: "center",
+    gap: "4px",
+    textShadow: "1px 1px 2px rgba(0,0,0,0.5)",
+    boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+    animation: "pulse 2s infinite",
+    "@keyframes pulse": {
+      "0%": {
+        opacity: 1,
+      },
+      "50%": {
+        opacity: 0.7,
+      },
+      "100%": {
+        opacity: 1,
+      },
+    },
+  };
 
-const PickSource = ({ sources }) => {
-  const [hoveredIndex, setHoveredIndex] = useState(null);
+const PickSource = ({ sources, signalR }) => {
+  const [hoveredIndex, setHoveredIndex] = useState(null),
+    [viewerCount, setViewerCount] = useState(null);
+
+  useEffect(() => {
+    signalR.on(SignalRManager.events.sourceViewerCountChange, (viewerCount) => setViewerCount(viewerCount));
+    return () => {
+      signalR.off(SignalRManager.events.sourceViewerCountChange);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <Box sx={ContainerSx}>
@@ -102,8 +142,13 @@ const PickSource = ({ sources }) => {
               textDecoration: "none",
               display: "block",
               height: "100%",
+              position: "relative",
             }}
           >
+            <Box sx={ViewerCountSx}>
+              <PeopleAltIcon sx={{ width: "12px", height: "12px" }} />
+              {viewerCount?.find((s) => s.name === source.name)?.count}
+            </Box>
             <Box sx={ImageSx(source.thumbnail, hoveredIndex, index)}>
               <Box sx={HoverSx(hoveredIndex, index)} />
               <Box sx={TextContainerSx}>
