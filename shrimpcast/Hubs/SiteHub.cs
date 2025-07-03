@@ -117,7 +117,7 @@ namespace shrimpcast.Hubs
 
         public async Task GetUserCount() => await TriggerUserCountChange(true, null, null);
 
-        public async void SetQueryParams([FromBody] string source)
+        public async void SetQueryParams([FromBody] string? source)
         {
             GetCurrentConnection().QueryParams = source;
             await TriggerSourceViewerCountChange();
