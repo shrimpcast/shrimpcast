@@ -105,17 +105,23 @@ const App = () => {
       const response = await TokenManager.EnsureTokenExists(abortControllerSignal, location);
       if (abortControllerSignal.aborted) return;
 
+      const FRONTEND_NEEDS_UPDATE = process.env.REACT_APP_VERSION !== response.version;
       setConnectionDataState((state) => ({
         ...state,
         ...response,
-        FRONTEND_NEEDS_UPDATE: process.env.REACT_APP_VERSION !== response.version,
+        FRONTEND_NEEDS_UPDATE,
       }));
 
       const enablePWA = response?.configuration?.enablePWA;
       if (enablePWA !== undefined) {
         console.log("Service worker status: " + enablePWA);
         if (enablePWA) serviceWorkerRegistration.register();
-        else serviceWorkerRegistration.unregister();
+        else {
+          serviceWorkerRegistration.unregister();
+          if (FRONTEND_NEEDS_UPDATE) {
+            setTimeout(() => window.location.reload(true), 1000);
+          }
+        }
       }
 
       if (response.message) {

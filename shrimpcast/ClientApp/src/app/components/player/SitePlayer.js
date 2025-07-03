@@ -7,6 +7,7 @@ import VideoJSPlayer from "./VideoJSPlayer";
 import SignalRManager from "../../managers/SignalRManager";
 import { useNavigate } from "react-router-dom";
 import SourceCountdown from "../layout/Actions/Sources/SourceCountdown";
+import ChatActionsManager from "../../managers/ChatActionsManager";
 
 const WrapperSx = {
   width: "100%",
@@ -61,13 +62,15 @@ const SitePlayer = (props) => {
         navigate(`/${to}`);
       }
     });
+
+    ChatActionsManager.SetQueryParams(signalR, source?.name);
     return () => signalR.off(SignalRManager.events.redirectSource);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source]);
 
   return streamEnabled ? (
     mustPickStream ? (
-      <PickSource sources={streamStatus.sources} />
+      <PickSource sources={streamStatus.sources} signalR={signalR} />
     ) : showCountdown ? (
       <SourceCountdown startsAt={startsAt} />
     ) : isFLV && !forceM3U8 ? (

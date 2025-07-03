@@ -14,6 +14,7 @@ class TokenManager {
       if (!abortSignal?.aborted) {
         if (ex.message.includes("Request failed with status code 403")) {
           ex.message = "likely a CDN-related issue. Please try a hard refresh (Ctrl + F5)";
+          setTimeout(() => window.location.reload(true), 1000);
         }
         return { data: { message: `Could not load the site: ${ex.message}. Refresh to try again.` } };
       }

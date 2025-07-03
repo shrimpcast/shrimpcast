@@ -1,7 +1,9 @@
 import { Box, Typography, alpha } from "@mui/material";
 import { Link } from "react-router-dom";
 import PlayCircleFilledIcon from "@mui/icons-material/PlayCircleFilled";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
+import SignalRManager from "../../../../managers/SignalRManager";
 
 const DEFAULT_THUMBNAIL = "/images/video_thumbnail.png",
   ContainerSx = {
@@ -13,6 +15,7 @@ const DEFAULT_THUMBNAIL = "/images/video_thumbnail.png",
     bgcolor: "background.paper",
     borderRadius: 1,
     boxShadow: 3,
+    overflowY: "auto",
   },
   SourceSx = (hoveredIndex, index) => ({
     flex: 1,
@@ -23,11 +26,12 @@ const DEFAULT_THUMBNAIL = "/images/video_thumbnail.png",
     transition: "all 0.3s ease",
     transform: hoveredIndex === index ? "scale(1.01)" : "scale(1)",
     opacity: hoveredIndex === index ? 1 : 0.95,
+    minHeight: { xs: "50px", sm: "50px", md: "50px", lg: "100px" },
   }),
   ImageSx = (thumbnail, hoveredIndex, index) => ({
     width: "100%",
     height: "100%",
-    backgroundImage: `url(${thumbnail || DEFAULT_THUMBNAIL})`,
+    backgroundImage: `url(${thumbnail}), url(${DEFAULT_THUMBNAIL})`,
     backgroundSize: "cover",
     backgroundPosition: "center",
     position: "relative",
@@ -67,7 +71,7 @@ const DEFAULT_THUMBNAIL = "/images/video_thumbnail.png",
     opacity: hoveredIndex === index ? 1 : 0.8,
     lineHeight: 0.8,
     ml: { xs: 1, sm: 1, md: 1, lg: 2 },
-    mb: { xs: mbXs, sm: mbXs, md: 1, lg: 2 },
+    mb: { xs: 1, sm: 1, md: 1, lg: 2 },
   }),
   PlayButtonSx = (hoveredIndex, index) => ({
     fontSize: 48,
@@ -80,13 +84,51 @@ const DEFAULT_THUMBNAIL = "/images/video_thumbnail.png",
     transform: "translate(-50%, -50%)",
     webkitTransform: "translate(-50%, -50%)",
     textAlign: "center",
-  });
+  }),
+  ViewerCountSx = {
+    position: "absolute",
+    top: "10px",
+    right: "10px",
+    backgroundColor: "info.main",
+    color: "white",
+    padding: "4px 8px",
+    borderRadius: "4px",
+    fontSize: "0.75rem",
+    fontWeight: "bold",
+    zIndex: 2,
+    display: "flex",
+    alignItems: "center",
+    gap: "4px",
+    textShadow: "1px 1px 2px rgba(0,0,0,0.5)",
+    boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+    animation: "pulse 2s infinite",
+    "@keyframes pulse": {
+      "0%": {
+        opacity: 1,
+      },
+      "50%": {
+        opacity: 0.7,
+      },
+      "100%": {
+        opacity: 1,
+      },
+    },
+  };
 
-const PickSource = ({ sources }) => {
-  const [hoveredIndex, setHoveredIndex] = useState(null);
+const PickSource = ({ sources, signalR }) => {
+  const [hoveredIndex, setHoveredIndex] = useState(null),
+    [viewerCount, setViewerCount] = useState(null);
+
+  useEffect(() => {
+    signalR.on(SignalRManager.events.sourceViewerCountChange, (viewerCount) => setViewerCount(viewerCount));
+    return () => {
+      signalR.off(SignalRManager.events.sourceViewerCountChange);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
-    <Box sx={ContainerSx}>
+    <Box sx={ContainerSx} className="scrollbar-custom">
       {sources.map((source, index) => (
         <Box
           key={source.name}
@@ -102,19 +144,17 @@ const PickSource = ({ sources }) => {
               textDecoration: "none",
               display: "block",
               height: "100%",
+              position: "relative",
             }}
           >
+            <Box sx={ViewerCountSx}>
+              <PeopleAltIcon sx={{ width: "12px", height: "12px" }} />
+              {viewerCount?.find((s) => s.name === source.name)?.count}
+            </Box>
             <Box sx={ImageSx(source.thumbnail, hoveredIndex, index)}>
               <Box sx={HoverSx(hoveredIndex, index)} />
               <Box sx={TextContainerSx}>
-                <Typography
-                  sx={TextSx(
-                    hoveredIndex,
-                    index,
-                    // This sucks and should certainly be improved
-                    sources.length > 6 ? 0 : sources.length === 6 ? 0.3 : sources.length === 5 ? 0.5 : 1
-                  )}
-                >
+                <Typography sx={TextSx(hoveredIndex, index)}>
                   {source.title ? source.title.trim() : source.name}
                 </Typography>
               </Box>
