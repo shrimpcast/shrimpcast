@@ -15,6 +15,7 @@ const DEFAULT_THUMBNAIL = "/images/video_thumbnail.png",
     bgcolor: "background.paper",
     borderRadius: 1,
     boxShadow: 3,
+    overflowY: "auto",
   },
   SourceSx = (hoveredIndex, index) => ({
     flex: 1,
@@ -25,11 +26,12 @@ const DEFAULT_THUMBNAIL = "/images/video_thumbnail.png",
     transition: "all 0.3s ease",
     transform: hoveredIndex === index ? "scale(1.01)" : "scale(1)",
     opacity: hoveredIndex === index ? 1 : 0.95,
+    minHeight: { xs: "50px", sm: "50px", md: "50px", lg: "100px" },
   }),
   ImageSx = (thumbnail, hoveredIndex, index) => ({
     width: "100%",
     height: "100%",
-    backgroundImage: `url(${thumbnail || DEFAULT_THUMBNAIL})`,
+    backgroundImage: `url(${thumbnail}), url(${DEFAULT_THUMBNAIL})`,
     backgroundSize: "cover",
     backgroundPosition: "center",
     position: "relative",
@@ -69,7 +71,7 @@ const DEFAULT_THUMBNAIL = "/images/video_thumbnail.png",
     opacity: hoveredIndex === index ? 1 : 0.8,
     lineHeight: 0.8,
     ml: { xs: 1, sm: 1, md: 1, lg: 2 },
-    mb: { xs: mbXs, sm: mbXs, md: 1, lg: 2 },
+    mb: { xs: 1, sm: 1, md: 1, lg: 2 },
   }),
   PlayButtonSx = (hoveredIndex, index) => ({
     fontSize: 48,
@@ -126,7 +128,7 @@ const PickSource = ({ sources, signalR }) => {
   }, []);
 
   return (
-    <Box sx={ContainerSx}>
+    <Box sx={ContainerSx} className="scrollbar-custom">
       {sources.map((source, index) => (
         <Box
           key={source.name}
@@ -152,14 +154,7 @@ const PickSource = ({ sources, signalR }) => {
             <Box sx={ImageSx(source.thumbnail, hoveredIndex, index)}>
               <Box sx={HoverSx(hoveredIndex, index)} />
               <Box sx={TextContainerSx}>
-                <Typography
-                  sx={TextSx(
-                    hoveredIndex,
-                    index,
-                    // This sucks and should certainly be improved
-                    sources.length > 6 ? 0 : sources.length === 6 ? 0.3 : sources.length === 5 ? 0.5 : 1
-                  )}
-                >
+                <Typography sx={TextSx(hoveredIndex, index)}>
                   {source.title ? source.title.trim() : source.name}
                 </Typography>
               </Box>
