@@ -38,6 +38,7 @@ const SitePlayer = (props) => {
     isFLV = url.endsWith(".flv"),
     forceM3U8 = isFLV && !window.MediaSource,
     [muted, setMuted] = useState(false),
+    [queryParams, setQueryParams] = useState(undefined),
     tryPlay = () => {
       let player = video.current.getInternalPlayer();
       if (player.play !== undefined) {
@@ -63,7 +64,10 @@ const SitePlayer = (props) => {
       }
     });
 
-    ChatActionsManager.SetQueryParams(signalR, source?.name);
+    if (queryParams !== source?.name) {
+      ChatActionsManager.SetQueryParams(signalR, source?.name);
+      setQueryParams(source?.name);
+    }
     return () => signalR.off(SignalRManager.events.redirectSource);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source]);

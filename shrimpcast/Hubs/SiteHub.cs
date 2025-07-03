@@ -119,7 +119,9 @@ namespace shrimpcast.Hubs
 
         public async void SetQueryParams([FromBody] string? source)
         {
-            GetCurrentConnection().QueryParams = source;
+            var Connection = GetCurrentConnection();
+            if (Connection.QueryParams == source) return;
+            Connection.QueryParams = source;
             await TriggerSourceViewerCountChange();
         }
 
