@@ -110,34 +110,22 @@ namespace shrimpcast.Hubs
                 var SessionId = GetCurrentConnection().Session.SessionId;
                 ActiveConnections.TryRemove(Context.ConnectionId, out _);
                 await TriggerUserCountChange(false, null, SessionId);
-                await TriggerSourceViewerCountChange();
+                await TriggerSourceViewerCountChange(false);
                 await base.OnDisconnectedAsync(exception);
             } catch (Exception) { } // Session already disconnected
         }
 
         public async Task GetUserCount() => await TriggerUserCountChange(true, null, null);
 
+        public async Task GetSourceViewerCount() => await TriggerSourceViewerCountChange(true);
+
         public async void SetQueryParams([FromBody] string? source)
         {
             var Connection = GetCurrentConnection();
             if (Connection.QueryParams == source) return;
             Connection.QueryParams = source;
-            await TriggerSourceViewerCountChange();
+            await TriggerSourceViewerCountChange(false);
         }
-
-        public async Task TriggerSourceViewerCountChange()
-        {
-           var values =  Configuration.Sources.Where(source => source.IsEnabled)
-                                              .Select(source => new
-                                              {
-                                                  name = source.Name,
-                                                  count = ActiveConnections.Where(ac => ac.Value.QueryParams == source.Name)
-                                                                           .DistinctBy(ac => ac.Value.RemoteAdress)
-                                                                           .Count()
-                                              });
-           await Clients.All.SendAsync("SourceViewerCountChange", values);
-        }
-
         #endregion
 
         #region Chat
@@ -867,6 +855,21 @@ namespace shrimpcast.Hubs
                 }
             }
         }
+
+        private async Task TriggerSourceViewerCountChange(bool SelfInvoked)
+        {
+            var values = Configuration.Sources.Where(source => source.IsEnabled)
+                                               .Select(source => new
+                                               {
+                                                   name = source.Name,
+                                                   count = ActiveConnections.Where(ac => ac.Value.QueryParams == source.Name)
+                                                                            .DistinctBy(ac => ac.Value.RemoteAdress)
+                                                                            .Count()
+                                               });
+            if (SelfInvoked) await Clients.Caller.SendAsync("SourceViewerCountChange", values);
+            else await Clients.All.SendAsync("SourceViewerCountChange", values);
+        }
+
 
         private async Task SendAdminUserStatusUpdate(Session? session = null, int? sessionId = null)
         {

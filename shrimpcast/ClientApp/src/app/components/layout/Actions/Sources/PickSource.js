@@ -1,9 +1,10 @@
 import { Box, Typography, alpha } from "@mui/material";
 import { Link } from "react-router-dom";
 import PlayCircleFilledIcon from "@mui/icons-material/PlayCircleFilled";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import SignalRManager from "../../../../managers/SignalRManager";
+import ChatActionsManager from "../../../../managers/ChatActionsManager";
 
 const DEFAULT_THUMBNAIL = "/images/video_thumbnail.png",
   ContainerSx = {
@@ -117,13 +118,21 @@ const DEFAULT_THUMBNAIL = "/images/video_thumbnail.png",
 
 const PickSource = ({ sources, signalR }) => {
   const [hoveredIndex, setHoveredIndex] = useState(null),
-    [viewerCount, setViewerCount] = useState(null);
+    [viewerCount, setViewerCount] = useState(null),
+    viewerCountRef = useRef(viewerCount);
 
   useEffect(() => {
-    signalR.on(SignalRManager.events.sourceViewerCountChange, (viewerCount) => setViewerCount(viewerCount));
-    return () => {
-      signalR.off(SignalRManager.events.sourceViewerCountChange);
-    };
+    viewerCountRef.current = viewerCount;
+  }, [viewerCount]);
+
+  useEffect(() => {
+    signalR.on(SignalRManager.events.sourceViewerCountChange, (count) => setViewerCount(count));
+
+    setTimeout(() => {
+      if (!viewerCountRef.current) ChatActionsManager.GetSourceViewerCount(signalR);
+    }, 500);
+
+    return () => signalR.off(SignalRManager.events.sourceViewerCountChange);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
