@@ -54,12 +54,12 @@ const ActiveUsers = (props) => {
         );
 
     const getUsers = async () => {
-      signalR.on(SignalRManager.events.userConnected, addUser);
-      signalR.on(SignalRManager.events.userDisconnected, removeUser);
-      signalR.on(SignalRManager.events.nameChange, nameChange);
       const activeUsers = await AdminActionsManager.GetActiveUsers(signalR);
       setUsers(activeUsers || []);
       if (!activeUsers) setOpenedOnce(false);
+      signalR.on(SignalRManager.events.userConnected, addUser);
+      signalR.on(SignalRManager.events.userDisconnected, removeUser);
+      signalR.on(SignalRManager.events.nameChange, nameChange);
     };
 
     getUsers();
