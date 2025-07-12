@@ -50,7 +50,7 @@ Shrimpcast is a highly customizable, flexible, battle-tested, fast, and secure s
 - [Update](#update)
 - [License](#license)
 
-_Last revision: **1.3.0** (not fully complete)_
+_Last revision: **1.3.1** (not fully complete)_
 
 ## Features
 
@@ -82,6 +82,9 @@ To install Shrimpcast, follow these steps:
 
    Make sure to replace `[YOUR_DOMAIN_NAME]` with your domain name.
    >Note: as of v1.2.1, you can pass the flag --restreamer to install [restreamer](https://github.com/datarhei/restreamer) instead of [srs-stack/5.12.21](https://github.com/ossrs/oryx/releases/tag/v5.12.21)
+   
+   Your instance will automatically reboot after the installation completes.
+
 
 3. (Optional) If you're using Cloudflare as a reverse proxy, run:
 
