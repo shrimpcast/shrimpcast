@@ -200,6 +200,8 @@ namespace shrimpcast.Entities.DB
 
         public required bool ShowConnectedUsers { get; set; }
 
+        public required bool ForceLatestVersion { get; set; }
+
         public object Clone() => MemberwiseClone();
     }
 
@@ -213,6 +215,7 @@ namespace shrimpcast.Entities.DB
                     values = new object[]
                     {
                         new { name = nameof(config.EnablePWA).ToLower(), label = "Enable PWA", value = config.EnablePWA },
+                        new { name = nameof(config.ForceLatestVersion).ToLower(), label = "Force latest version", value = config.ForceLatestVersion },
                         new { name = nameof(config.HideStreamTitle).ToLower(), label = "Hide stream title", value = config.HideStreamTitle },
                         new { name = nameof(config.ShowConnectedUsers).ToLower(), label = "Publicly display connected users", value = config.ShowConnectedUsers },
                         new { name = nameof(config.MaxConnectionsPerIP).ToLower(), label = "Max connections per IP", value = config.MaxConnectionsPerIP },

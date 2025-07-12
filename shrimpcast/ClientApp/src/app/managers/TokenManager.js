@@ -3,7 +3,9 @@ import LocalStorageManager from "./LocalStorageManager";
 
 class TokenManager {
   static async EnsureTokenExists(abortSignal, location) {
-    let url = "/api/session/GetNewOrExisting?accessToken=" + LocalStorageManager.getToken();
+    let url = `/api/session/GetNewOrExisting?accessToken=${LocalStorageManager.getToken()}&version=${
+      process.env.REACT_APP_VERSION
+    }`;
     const params = new URLSearchParams(location.search);
     const turnstileToken = params.get("TT");
     if (turnstileToken) {

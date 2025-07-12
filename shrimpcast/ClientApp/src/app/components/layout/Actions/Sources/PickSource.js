@@ -60,7 +60,7 @@ const DEFAULT_THUMBNAIL = "/images/video_thumbnail.png",
     width: "100%",
     zIndex: 2,
   },
-  TextSx = (hoveredIndex, index, mbXs) => ({
+  TextSx = (hoveredIndex, index) => ({
     fontSize: { xs: "20px", sm: "24px", md: "32px", lg: "48px" },
     color: "white",
     fontWeight: 700,
