@@ -34,6 +34,11 @@ const SitePlayer = (props) => {
           type: "application/x-mpegURL",
         },
       ],
+      html5: {
+        vhs: {
+          withCredentials: true,
+        },
+      },
     },
     isFLV = url.endsWith(".flv"),
     forceM3U8 = isFLV && !window.MediaSource,
