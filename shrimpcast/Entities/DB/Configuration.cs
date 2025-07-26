@@ -202,6 +202,8 @@ namespace shrimpcast.Entities.DB
 
         public required bool ForceLatestVersion { get; set; }
 
+        public required bool ShowViewerCountPerStream { get; set; }
+
         public object Clone() => MemberwiseClone();
     }
 
@@ -249,6 +251,7 @@ namespace shrimpcast.Entities.DB
                     values = new object[]
                     {
                         new { name = nameof(config.StreamEnabled).ToLower(), label = "Enable stream", value = config.StreamEnabled },
+                        new { name = nameof(config.ShowViewerCountPerStream).ToLower(), label = "Show viewer count per stream", value = config.ShowViewerCountPerStream },
                         new
                         {
                             name = nameof(config.Sources).ToLower(),

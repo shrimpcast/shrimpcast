@@ -116,7 +116,7 @@ const DEFAULT_THUMBNAIL = "/images/video_thumbnail.png",
     },
   };
 
-const PickSource = ({ sources, signalR }) => {
+const PickSource = ({ sources, signalR, showViewerCountPerStream }) => {
   const [hoveredIndex, setHoveredIndex] = useState(null),
     [viewerCount, setViewerCount] = useState(null),
     viewerCountRef = useRef(viewerCount);
@@ -156,10 +156,12 @@ const PickSource = ({ sources, signalR }) => {
               position: "relative",
             }}
           >
-            <Box sx={ViewerCountSx}>
-              <PeopleAltIcon sx={{ width: "12px", height: "12px" }} />
-              {viewerCount?.find((s) => s.name === source.name)?.count}
-            </Box>
+            {showViewerCountPerStream && (
+              <Box sx={ViewerCountSx}>
+                <PeopleAltIcon sx={{ width: "12px", height: "12px" }} />
+                {viewerCount?.find((s) => s.name === source.name)?.count}
+              </Box>
+            )}
             <Box sx={ImageSx(source.thumbnail, hoveredIndex, index)}>
               <Box sx={HoverSx(hoveredIndex, index)} />
               <Box sx={TextContainerSx}>

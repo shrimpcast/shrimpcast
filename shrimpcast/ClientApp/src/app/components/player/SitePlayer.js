@@ -18,7 +18,7 @@ const WrapperSx = {
 };
 
 const SitePlayer = (props) => {
-  const { streamStatus, signalR } = props,
+  const { streamStatus, signalR, configuration } = props,
     { source, streamEnabled, mustPickStream } = streamStatus,
     { useRTCEmbed, useLegacyPlayer, startsAt } = source,
     url = source.url || "",
@@ -38,7 +38,6 @@ const SitePlayer = (props) => {
     isFLV = url.endsWith(".flv"),
     forceM3U8 = isFLV && !window.MediaSource,
     [muted, setMuted] = useState(false),
-    [queryParams, setQueryParams] = useState(undefined),
     tryPlay = () => {
       let player = video.current.getInternalPlayer();
       if (player.play !== undefined) {
@@ -64,17 +63,18 @@ const SitePlayer = (props) => {
       }
     });
 
-    if (queryParams !== source?.name) {
-      ChatActionsManager.SetQueryParams(signalR, source?.name);
-      setQueryParams(source?.name);
-    }
+    ChatActionsManager.SetQueryParams(signalR, source?.name);
     return () => signalR.off(SignalRManager.events.redirectSource);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source]);
 
   return streamEnabled ? (
     mustPickStream ? (
-      <PickSource sources={streamStatus.sources} signalR={signalR} />
+      <PickSource
+        showViewerCountPerStream={configuration.showViewerCountPerStream}
+        sources={streamStatus.sources}
+        signalR={signalR}
+      />
     ) : showCountdown ? (
       <SourceCountdown startsAt={startsAt} />
     ) : isFLV && !forceM3U8 ? (
