@@ -8,7 +8,7 @@ handle_error() {
 
 APPLICATION=""
 NGINX=""
-RESTREAMER=false
+RESTREAMER=true
 SKIP_DOTNET=false
 
 if [ "$(id -u)" -ne 0 ]; then
@@ -24,8 +24,8 @@ while [[ $# -gt 0 ]]; do
       DOMAIN="$2"
       shift 2
       ;;
-    --restreamer)
-      RESTREAMER=true
+    --srs)
+      RESTREAMER=false
       shift
       ;;
     --skipdotnet)
@@ -182,7 +182,7 @@ docker --version || handle_error "Docker installation verification failed"
 usermod -aG docker $USER || handle_error "Failed to add user to docker group"
 echo "Docker installed successfully."
 
-# If --restreamer flag is not set, install SRS Stack
+# If --srs flag is set, install SRS Stack
 if [ "$RESTREAMER" = false ]; then
   echo "Downloading and installing SRS Stack..."
   
