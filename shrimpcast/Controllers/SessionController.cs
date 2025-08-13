@@ -35,10 +35,6 @@ namespace shrimpcast.Controllers
             var isAdmin = ensureCreated.IsAdmin;
             var configuration = _configurationSingleton.Configuration;
 
-            // Log all headers to stdout
-            _logger.LogDebug("Logging headers...");
-            foreach (var header in HttpContext.Request.Headers) _logger.LogDebug("{Key}: {Value}", header.Key, header.Value);
-
             if (!isAdmin)
             {
                 var isBanned = await _banRepository.IsBanned(remoteAddress, ensureCreated.SessionToken);
