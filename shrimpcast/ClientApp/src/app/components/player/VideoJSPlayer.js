@@ -39,6 +39,14 @@ const VideoJSPlayer = (props) => {
 
   useEffect(() => {
     if (!cssLoaded) return;
+
+    const restart = (reason) => {
+      clearTimeout(window._vjstimeout);
+      console.log(`Attempting to restart playback, reason = ${reason}.`);
+      destroy();
+      setIsError(Date.now());
+    };
+
     // Make sure Video.js player is only initialized once
     if (!playerRef.current) {
       // The Video.js player needs to be _inside_ the component el for React 18 Strict Mode.
@@ -49,21 +57,12 @@ const VideoJSPlayer = (props) => {
       const player = (playerRef.current = videojs(videoElement, options, () => play(player)));
 
       // Reconnect logic
-
-      const restart = (reason) => {
-        clearTimeout(window._vjstimeout);
-        console.log(`Attempting to restart playback, reason = ${reason}.`);
-        destroy();
-        setIsError(Date.now());
-      };
-
       player.on("error", () => {
         clearTimeout(window._vjstimeout);
         window._vjstimeout = setTimeout(() => restart("error"), 3000);
       });
 
       player.on("ended", () => {
-        clearTimeout(window._vjstimeout);
         restart("ended");
       });
 
@@ -84,7 +83,9 @@ const VideoJSPlayer = (props) => {
       // Update an existing player in the `else` block here
     } else {
       const player = playerRef.current;
-      if (player.src() === options.sources[0].src) return;
+      const shouldReset = player.options_.html5.vhs.withCredentials !== options.html5.vhs.withCredentials;
+      if (shouldReset) restart("auth");
+      if (player.src() === options.sources[0].src || shouldReset) return;
       player.src(options.sources);
       play(player);
     }
