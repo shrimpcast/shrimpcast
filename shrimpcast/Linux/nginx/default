@@ -54,7 +54,7 @@ server {
     server_name _;
 
     location / {
-	    add_header Cache-Control $cache_control;
+        add_header Cache-Control $cache_control;
         add_header Pragma $pragma;
         add_header Expires $expires;
 	
