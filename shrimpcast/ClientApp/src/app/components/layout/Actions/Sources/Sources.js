@@ -100,6 +100,7 @@ const Sources = ({ fields, sources, setConfig, utcToLocal }) => {
       thumbnail: "",
       useLegacyPlayer: false,
       useRTCEmbed: false,
+      withCredentials: false,
       startAt: null,
       endAt: null,
       resetOnScheduledSwitch: false,
@@ -243,6 +244,13 @@ const Sources = ({ fields, sources, setConfig, utcToLocal }) => {
                 </TableCell>
                 <TableCell>
                   <Switch
+                    onChange={(e) => updateConfig(e.target.checked, source, "withCredentials")}
+                    checked={source.withCredentials}
+                    color="secondary"
+                  />
+                </TableCell>
+                <TableCell>
+                  <Switch
                     checked={source.resetOnScheduledSwitch}
                     onChange={(e) => updateConfig(e.target.checked, source, "resetOnScheduledSwitch")}
                     color="secondary"
@@ -335,6 +343,13 @@ const Sources = ({ fields, sources, setConfig, utcToLocal }) => {
                   <Switch
                     checked={newSourceData.useRTCEmbed}
                     onChange={(e) => setNewSourceData({ ...newSourceData, useRTCEmbed: e.target.checked })}
+                    color="secondary"
+                  />
+                </TableCell>
+                <TableCell>
+                  <Switch
+                    checked={newSourceData.withCredentials}
+                    onChange={(e) => setNewSourceData({ ...newSourceData, withCredentials: e.target.checked })}
                     color="secondary"
                   />
                 </TableCell>

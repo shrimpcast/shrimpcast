@@ -265,6 +265,7 @@ namespace shrimpcast.Entities.DB
                                 new { name = nameof(Source.Thumbnail).ToLower(), label = "Thumbnail" },
                                 new { name = nameof(Source.UseLegacyPlayer).ToLower(), label = "Native player" },
                                 new { name = nameof(Source.UseRTCEmbed).ToLower(), label = "Embed" },
+                                new { name = nameof(Source.WithCredentials).ToLower(), label = "With credentials" },
                                 new { name = nameof(Source.ResetOnScheduledSwitch).ToLower(), label = "Reset on start" },
                                 new { name = nameof(Source.StartsAt).ToLower(), label = "Schedule start" },
                                 new { name = nameof(Source.EndsAt).ToLower(), label = "Schedule end" },

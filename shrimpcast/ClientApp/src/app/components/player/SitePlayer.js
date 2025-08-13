@@ -20,7 +20,7 @@ const WrapperSx = {
 const SitePlayer = (props) => {
   const { streamStatus, signalR, configuration } = props,
     { source, streamEnabled, mustPickStream } = streamStatus,
-    { useRTCEmbed, useLegacyPlayer, startsAt } = source,
+    { useRTCEmbed, useLegacyPlayer, startsAt, withCredentials } = source,
     url = source.url || "",
     video = useRef(),
     videoJsOptions = {
@@ -34,6 +34,11 @@ const SitePlayer = (props) => {
           type: "application/x-mpegURL",
         },
       ],
+      html5: {
+        vhs: {
+          withCredentials,
+        },
+      },
     },
     isFLV = url.endsWith(".flv"),
     forceM3U8 = isFLV && !window.MediaSource,

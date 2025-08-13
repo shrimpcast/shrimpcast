@@ -28,5 +28,7 @@ namespace shrimpcast.Entities.DB
         public DateTime? EndsAt {  get; set; }
 
         public required bool ResetOnScheduledSwitch { get; set; }
+
+        public required bool WithCredentials { get; set; }
     }
 }

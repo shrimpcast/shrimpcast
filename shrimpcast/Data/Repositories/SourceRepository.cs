@@ -45,6 +45,7 @@ namespace shrimpcast.Data.Repositories
                     entity.StartsAt = newSource.StartsAt;
                     entity.EndsAt = newSource.EndsAt;
                     entity.ResetOnScheduledSwitch = newSource.ResetOnScheduledSwitch;
+                    entity.WithCredentials = newSource.WithCredentials;
                 }
             }
 
