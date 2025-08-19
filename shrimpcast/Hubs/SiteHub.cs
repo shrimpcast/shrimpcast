@@ -941,9 +941,11 @@ namespace shrimpcast.Hubs
                 return $"Error: {Constants.VPN_DISABLED_MESSAGE}";
             }
 
+            var linkMatches = URLRegex().Matches(Post.ToLower()).Count;
+            if (linkMatches == 0) return null;
+            
             int requiredSessionTimeForLinks = Configuration.RequiredTimeToPostLinksMinutes;
-            var linkMatches = URLRegex().Matches(Post).Count;
-            if (minutesDifference < requiredSessionTimeForLinks && linkMatches > 0)
+            if (minutesDifference < requiredSessionTimeForLinks)
             {
                 var diff = Math.Ceiling(requiredSessionTimeForLinks - minutesDifference);
                 return $"You account is too new to post links. You need to wait {diff} more {(diff == 1 ? "minute" : "minutes")}.";

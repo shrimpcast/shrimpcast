@@ -179,7 +179,7 @@ const UserMessage = React.memo((props) => {
           {reactStringReplace(content, regex, (match, i) =>
             getEmote(match.toLowerCase()) ? (
               <img key={i} alt={match.toLowerCase()} className="emote" src={getEmote(match.toLowerCase()).url} />
-            ) : match.match(urlRegex) ? (
+            ) : match.toLowerCase().match(urlRegex) ? (
               <DefaultLink key={i} href={match} target="_blank">
                 {match}
               </DefaultLink>
