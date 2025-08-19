@@ -204,6 +204,8 @@ namespace shrimpcast.Entities.DB
 
         public required bool ShowViewerCountPerStream { get; set; }
 
+        public required int RequiredTimeToPostLinksMinutes { get; set; }
+
         public object Clone() => MemberwiseClone();
     }
 
@@ -238,7 +240,8 @@ namespace shrimpcast.Entities.DB
                         new { name = nameof(config.EnableVerifiedMode).ToLower(), label = "Allow verified users only", value = config.EnableVerifiedMode },
                         new { name = nameof(config.MaxMessagesToShow).ToLower(), label = "Max visible messages", value = config.MaxMessagesToShow },
                         new { name = nameof(config.OffsetDateTimeInMinutes).ToLower(), label = "Message age limit (mins)", value = config.OffsetDateTimeInMinutes },
-                        new { name = nameof(config.RequiredTokenTimeInMinutes).ToLower(), label = "Required time for new users (mins)", value = config.RequiredTokenTimeInMinutes },
+                        new { name = nameof(config.RequiredTokenTimeInMinutes).ToLower(), label = "Required time for new users (min)", value = config.RequiredTokenTimeInMinutes },
+                        new { name = nameof(config.RequiredTimeToPostLinksMinutes).ToLower(), label = "Required time to post links (min)", value = config.RequiredTimeToPostLinksMinutes },
                         new { name = nameof(config.MessageDelayTime).ToLower(), label = "Cooldown between messages", value = config.MessageDelayTime },
                         new { name = nameof(config.MuteLenghtInMinutes).ToLower(), label = "Mute time in minutes", value = config.MuteLenghtInMinutes },
                         new { name = nameof(config.MaxLengthTruncation).ToLower(), label = "Message length before truncation", value = config.MaxLengthTruncation },

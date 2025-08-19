@@ -134,7 +134,7 @@ namespace shrimpcast.Hubs
             var CurrentConnection = GetCurrentConnection();
             var Session = CurrentConnection.Session;
             var RemoteAddress = CurrentConnection.RemoteAdress;
-            var notAllowedMessage = await IsChatActionAllowed();
+            var notAllowedMessage = await IsChatActionAllowed(newName);
             if (notAllowedMessage != null)
             {
                 await DispatchSystemMessage(notAllowedMessage);
@@ -181,7 +181,7 @@ namespace shrimpcast.Hubs
             var CurrentConnection = GetCurrentConnection();
             var RemoteAddress = CurrentConnection.RemoteAdress;
 
-            var notAllowedMessage = await IsChatActionAllowed();
+            var notAllowedMessage = await IsChatActionAllowed(message);
             if (notAllowedMessage != null)
             {
                 await DispatchSystemMessage(notAllowedMessage);
@@ -259,7 +259,7 @@ namespace shrimpcast.Hubs
 
         public async Task<string?> ChangeColour([FromBody] int NameColourId)
         {
-            var notAllowedMessage = await IsChatActionAllowed();
+            var notAllowedMessage = await IsChatActionAllowed(string.Empty);
             if (notAllowedMessage != null)
             {
                 await DispatchSystemMessage(notAllowedMessage);
@@ -886,7 +886,7 @@ namespace shrimpcast.Hubs
             else await Clients.Clients(admins).SendAsync(eventType, value);
         }
 
-        private async Task<string?> IsChatActionAllowed()
+        private async Task<string?> IsChatActionAllowed(string Post)
         {
             await AbortIfBanned();
             var connection = GetCurrentConnection();
@@ -941,6 +941,19 @@ namespace shrimpcast.Hubs
                 return $"Error: {Constants.VPN_DISABLED_MESSAGE}";
             }
 
+            int requiredSessionTimeForLinks = Configuration.RequiredTimeToPostLinksMinutes;
+            var linkMatches = URLRegex().Matches(Post).Count;
+            if (minutesDifference < requiredSessionTimeForLinks && linkMatches > 0)
+            {
+                var diff = Math.Ceiling(requiredSessionTimeForLinks - minutesDifference);
+                return $"You account is too new to post links. You need to wait {diff} more {(diff == 1 ? "minute" : "minutes")}.";
+            }
+
+            if (requiredSessionTimeForLinks == -1)
+            {
+                return $"Posting links by unverified users is temporarily disabled.";
+            }
+
             return null;
         }
 
@@ -957,7 +970,7 @@ namespace shrimpcast.Hubs
             var Session = Connection.Session;
             if (Session.IsAdmin) return null;
 
-            var notAllowedMessage = await IsChatActionAllowed();
+            var notAllowedMessage = await IsChatActionAllowed(string.Empty);
             if (notAllowedMessage != null) return notAllowedMessage;
 
             var MinCount = Configuration.MinSentToParticipate;
@@ -1260,6 +1273,9 @@ namespace shrimpcast.Hubs
 
         [GeneratedRegex(@"\s+(.+)$")]
         private static partial Regex OBSRegex();
+
+        [GeneratedRegex("https?://\\S+")]
+        private static partial Regex URLRegex();
         #endregion
     }
 }
