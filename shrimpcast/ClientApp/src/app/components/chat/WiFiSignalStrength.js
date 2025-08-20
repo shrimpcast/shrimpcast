@@ -29,17 +29,6 @@ const RTTSx = {
     bottom: "1.5px",
     color,
   }),
-  SlowNetworkSx = {
-    pl: 1,
-    pr: 1,
-    backgroundColor: "error.main",
-    lineHeight: "1.2",
-    color: "primary.900",
-    height: "13.5px",
-    fontWeight: "bold",
-    borderTopRightRadius: "2px",
-    borderBottomRightRadius: "2px",
-  },
   WiFiColours = { high: "success.main", medium: "secondary.200", low: "error.main" },
   WiFIIcons = {
     [WiFiColours.high]: SignalCellularAltIcon,
@@ -50,7 +39,7 @@ const RTTSx = {
 const WiFiSignalStrength = (props) => {
   const { signalR } = props,
     [rtt, setRtt] = useState(0),
-    rttName = rtt < 250 ? WiFiColours.high : rtt > 250 && rtt < 500 ? WiFiColours.medium : WiFiColours.low,
+    rttName = rtt <= 250 ? WiFiColours.high : rtt > 250 && rtt < 500 ? WiFiColours.medium : WiFiColours.low,
     RttComponent = WiFIIcons[rttName];
 
   useEffect(() => {
@@ -76,11 +65,6 @@ const WiFiSignalStrength = (props) => {
       <Typography className="noselect" variant="caption" sx={SignalTextSx(rttName)}>
         {rtt}ms
       </Typography>
-      {rttName === WiFiColours.low && (
-        <Typography sx={SlowNetworkSx} variant="overline">
-          Slow network
-        </Typography>
-      )}
     </Box>
   ) : null;
 };
