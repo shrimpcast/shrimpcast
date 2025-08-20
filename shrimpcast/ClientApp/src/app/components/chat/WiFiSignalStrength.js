@@ -29,7 +29,7 @@ const RTTSx = {
     bottom: "1.5px",
     color,
   }),
-  WiFiColours = { high: "success.main", medium: "secondary.200", low: "error.main" },
+  WiFiColours = { high: "success.main", medium: "warning.main", low: "error.main" },
   WiFIIcons = {
     [WiFiColours.high]: SignalCellularAltIcon,
     [WiFiColours.medium]: SignalCellularAlt2BarIcon,
@@ -39,7 +39,7 @@ const RTTSx = {
 const WiFiSignalStrength = (props) => {
   const { signalR } = props,
     [rtt, setRtt] = useState(0),
-    rttName = rtt <= 250 ? WiFiColours.high : rtt > 250 && rtt < 500 ? WiFiColours.medium : WiFiColours.low,
+    rttName = rtt <= 250 ? WiFiColours.high : rtt > 250 && rtt <= 500 ? WiFiColours.medium : WiFiColours.low,
     RttComponent = WiFIIcons[rttName];
 
   useEffect(() => {
