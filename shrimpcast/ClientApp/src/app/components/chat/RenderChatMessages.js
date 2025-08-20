@@ -1,5 +1,5 @@
 import { Box, Button, CircularProgress } from "@mui/material";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import SystemMessage from "./MessageTypes/SystemMessage";
 import MessageManager from "../../managers/MessageManager";
 import UserMessage from "./MessageTypes/UserMessage";
@@ -34,16 +34,37 @@ const ChatMessagesSx = (activePoll, activeBingo, bingoButtonExpanded, showGolden
     justifyContent: "center",
     overflow: "hidden",
     bottom: "0",
+  },
+  // Use lookahead assertion to ensure we're matching the full name
+  NameRegex = (name) => `@${name}(?=[\\s.]|$)`,
+  SourcesRegex = (sources) => (sources ? `|(?:^|\\s)(?:${sources})(?=\\s|$)` : ""),
+  URLRegex = "https?://\\S+",
+  ChatRegex = (name, emotes, sources) => {
+    const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const emotesRegex = emotes?.length ? "|" + emotes.map((emote) => emote.name).join("|") : "";
+    const sourcesRegex = sources?.length ? sources.map((source) => `/${source.name}`).join("|") : "";
+
+    return new RegExp(`(${NameRegex(escapedName)}|${URLRegex}${emotesRegex}${SourcesRegex(sourcesRegex)})`, "giu");
   };
 
 const RenderChatMessages = (props) => {
   const [messages, setMessages] = useState([]),
     [pendingMessages, setPendingMessages] = useState(0),
     [loading, setLoading] = useState(true),
-    { signalR, configuration, bingoButtonExpanded, isAdmin, isGolden, goldenPassExpanded, enabledSources, emotes } =
-      props,
-    sources = enabledSources.map((source) => `/${source.name}`).join("|"),
-    emotesRegex = emotes.map((emote) => emote.name).join("|"),
+    {
+      signalR,
+      configuration,
+      bingoButtonExpanded,
+      isAdmin,
+      isGolden,
+      goldenPassExpanded,
+      enabledSources,
+      emotes,
+      chatName,
+    } = props,
+    chatRegex = useMemo(() => {
+      return ChatRegex(chatName, emotes, enabledSources);
+    }, [emotes, enabledSources, chatName]),
     scrollReference = useRef(),
     scrollToBottom = () => {
       scrollReference.current.scrollIntoView();
@@ -190,9 +211,9 @@ const RenderChatMessages = (props) => {
               enableHalloweenTheme={configuration.enableHalloweenTheme}
               userSessionId={props.sessionId}
               maxLengthTruncation={configuration.maxLengthTruncation}
-              sources={sources}
               enabledSources={enabledSources}
-              emotesRegex={emotesRegex}
+              urlRegex={URLRegex}
+              chatRegex={chatRegex}
               {...message}
             />
           ))

@@ -21,7 +21,7 @@ class TokenManager {
         return { data: { message: `Could not load the site: ${ex.message}. Refresh to try again.` } };
       }
     });
-    this.SaveData(response?.data?.sessionToken, response?.data?.name);
+    this.SaveData(response?.data?.sessionToken);
     return response?.data;
   }
 
@@ -49,9 +49,8 @@ class TokenManager {
     return response || [];
   }
 
-  static async SaveData(token, name) {
+  static async SaveData(token) {
     token && LocalStorageManager.saveToken(token);
-    name && LocalStorageManager.saveName(name);
   }
 }
 

@@ -1,7 +1,6 @@
 class LocalStorageManager {
   static localStorage = {
     token: "access_token",
-    name: "name",
     ignoredUsers: "ignored_users",
     showNotificationsPrompt: "notifications_prompt_hidden",
     showGitHubPrompt: "github_prompt_hidden",
@@ -31,14 +30,6 @@ class LocalStorageManager {
 
   static getToken() {
     return this.getStorage(this.localStorage.token);
-  }
-
-  static saveName(name) {
-    this.setStorage(this.localStorage.name, name);
-  }
-
-  static getName() {
-    return this.getStorage(this.localStorage.name);
   }
 
   static setIgnoredUsers(users) {

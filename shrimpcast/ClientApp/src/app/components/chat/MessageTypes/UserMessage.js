@@ -1,7 +1,6 @@
 import { Box, IconButton, Typography, Link as DefaultLink, Tooltip } from "@mui/material";
 import React, { useState } from "react";
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
-import LocalStorageManager from "../../../managers/LocalStorageManager";
 import reactStringReplace from "react-string-replace";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ChatActionsManager from "../../../managers/ChatActionsManager";
@@ -97,17 +96,8 @@ const UserMessage = React.memo((props) => {
     [externalOpenUserDialog, setExternalOpenUserDialog] = useState(false),
     openExternalUserDialog = () => setExternalOpenUserDialog(true),
     closeExternalUserDialog = () => setExternalOpenUserDialog(false),
-    { isAdmin, isMod, isGolden, maxLengthTruncation, userColorDisplay, sources, emotesRegex, emotes, enabledSources } =
+    { isAdmin, isMod, isGolden, maxLengthTruncation, userColorDisplay, emotes, enabledSources, urlRegex, chatRegex } =
       props,
-    escapedName = LocalStorageManager.getName().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
-    // Use lookahead assertion to ensure we're matching the full name
-    nameRegex = `@${escapedName}(?=[\\s.]|$)`,
-    sourcesRegex = `(?:^|\\s)(?:${sources})(?=\\s|$)`,
-    urlRegex = "https?://\\S+",
-    regex = new RegExp(
-      `(${nameRegex}|${urlRegex}${emotesRegex ? "|" + emotesRegex : ""}${sources ? "|" + sourcesRegex : ""})`,
-      "giu"
-    ),
     removeMessage = async () => {
       const response = await ChatActionsManager.RemoveMessage(props.signalR, props.messageId);
       if (response) closeConfirmPrompt();
@@ -176,7 +166,7 @@ const UserMessage = React.memo((props) => {
         </Box>
         {": "}
         <Typography component="span" sx={TextSx(null, false, content.startsWith(">"))}>
-          {reactStringReplace(content, regex, (match, i) =>
+          {reactStringReplace(content, chatRegex, (match, i) =>
             getEmote(match.toLowerCase()) ? (
               <img key={i} alt={match.toLowerCase()} className="emote" src={getEmote(match.toLowerCase()).url} />
             ) : match.toLowerCase().match(urlRegex) ? (

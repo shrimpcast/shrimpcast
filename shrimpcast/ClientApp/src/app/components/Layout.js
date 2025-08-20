@@ -65,8 +65,9 @@ const MainGridSx = {
 
 const Layout = (props) => {
   const theme = useTheme(),
+    { configuration, name } = props,
     [useFullChatMode, setFullChatMode] = useState(false),
-    { configuration } = props,
+    [chatName, setChatName] = useState(name),
     ResolveSources = () => {
       const { sources } = configuration,
         location = useLocation(),
@@ -102,7 +103,13 @@ const Layout = (props) => {
       <ShowPing {...props} />
       <Grid container sx={MainGridSx}>
         <Grid xs={12}>
-          <SiteTop {...props} useFullChatMode={useFullChatMode} setFullChatMode={setFullChatMode} />
+          <SiteTop
+            {...props}
+            useFullChatMode={useFullChatMode}
+            setFullChatMode={setFullChatMode}
+            chatName={chatName}
+            setChatName={setChatName}
+          />
         </Grid>
         {!useFullChatMode && (
           <Grid xs={12} md={8} lg={9} xl={10} sx={PlayerBoxSx(theme)} className={"scrollbar-custom"}>
@@ -121,7 +128,7 @@ const Layout = (props) => {
           xl={useFullChatMode ? 12 : 2}
           sx={[ChatBoxSx(theme, useFullChatMode), configuration.enableHalloweenTheme && HalloweenAnimSx]}
         >
-          <Chat {...props} enabledSources={streamStatus.sources} />
+          <Chat {...props} enabledSources={streamStatus.sources} chatName={chatName} />
         </Grid>
       </Grid>
     </>

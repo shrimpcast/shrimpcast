@@ -1,10 +1,9 @@
 import { Box, Button, CircularProgress, IconButton, TextField, Tooltip } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
-import React, { useState } from "react";
+import { useState } from "react";
 import DoneIcon from "@mui/icons-material/Done";
 import CloseIcon from "@mui/icons-material/Close";
 import TokenManager from "../../managers/TokenManager";
-import LocalStorageManager from "../../managers/LocalStorageManager";
 import Grid from "@mui/material/Unstable_Grid2";
 import Actions from "./Actions/Actions";
 import ColourPicker from "../others/ColourPicker";
@@ -36,14 +35,24 @@ const SiteTopSx = {
   };
 
 const SiteTop = (props) => {
-  const { isAdmin, isMod, isGolden, signalR, userDisplayColor, colours, useFullChatMode, setFullChatMode } = props,
-    [registeredName, setRegisteredName] = useState(props.name),
-    [newName, setNewName] = useState(registeredName),
+  const {
+      isAdmin,
+      isMod,
+      isGolden,
+      signalR,
+      userDisplayColor,
+      colours,
+      useFullChatMode,
+      setFullChatMode,
+      chatName,
+      setChatName,
+    } = props,
+    [newName, setNewName] = useState(chatName),
     [editMode, setEditMode] = useState(false),
     [loading, setLoading] = useState(false),
     submitEditMode = async () => {
       let trimmedName = newName.trim();
-      if (!trimmedName || trimmedName === registeredName) {
+      if (!trimmedName || trimmedName === chatName) {
         return;
       }
       setLoading(true);
@@ -54,13 +63,12 @@ const SiteTop = (props) => {
         return;
       }
 
-      LocalStorageManager.saveName(changedName);
-      setRegisteredName(changedName);
+      setChatName(changedName);
       setNewName(changedName);
       setEditMode(false);
     },
     closeEditMode = () => {
-      setNewName(registeredName);
+      setNewName(chatName);
       setEditMode(false);
     },
     changeInput = (e) => setNewName(e.target.value),
@@ -100,7 +108,7 @@ const SiteTop = (props) => {
               size="small"
               sx={ButtonSx(isAdmin || (isMod && !isGolden))}
             >
-              <Box sx={ButtonTextSx}>{registeredName}</Box>
+              <Box sx={ButtonTextSx}>{chatName}</Box>
             </Button>
             {((!isAdmin && !isMod) || (isMod && isGolden)) && (
               <ColourPicker
@@ -127,7 +135,7 @@ const SiteTop = (props) => {
                 }}
                 onInput={changeInput}
                 onKeyDown={handleKeys}
-                defaultValue={registeredName}
+                defaultValue={chatName}
                 disabled={loading}
                 fullWidth
               />
