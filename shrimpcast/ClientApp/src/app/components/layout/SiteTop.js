@@ -1,6 +1,6 @@
 import { Box, Button, CircularProgress, IconButton, TextField, Tooltip } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import DoneIcon from "@mui/icons-material/Done";
 import CloseIcon from "@mui/icons-material/Close";
 import TokenManager from "../../managers/TokenManager";
@@ -8,8 +8,8 @@ import Grid from "@mui/material/Unstable_Grid2";
 import Actions from "./Actions/Actions";
 import ColourPicker from "../others/ColourPicker";
 import ChatActionsManager from "../../managers/ChatActionsManager";
-import { OpenInNew } from "@mui/icons-material";
-import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
+import CommentsDisabledIcon from "@mui/icons-material/CommentsDisabled";
+import CommentIcon from "@mui/icons-material/Comment";
 
 const SiteTopSx = {
     width: "100%",
@@ -21,10 +21,10 @@ const SiteTopSx = {
   StatusSx = {
     marginLeft: "auto",
   },
-  ButtonSx = (isAdmin) => ({
+  ButtonSx = (isAdmin, poppedOutChat) => ({
     height: "35px",
     borderRadius: "0px",
-    width: `calc(100% - ${isAdmin ? "34px" : "68px"})`,
+    width: `calc(100% - ${isAdmin ? "34px" : "68px"}${poppedOutChat ? " + 34px" : ""})`,
     textTransform: "none",
   }),
   ButtonTextSx = {
@@ -46,10 +46,12 @@ const SiteTop = (props) => {
       setFullChatMode,
       chatName,
       setChatName,
+      poppedOutChat,
     } = props,
     [newName, setNewName] = useState(chatName),
     [editMode, setEditMode] = useState(false),
     [loading, setLoading] = useState(false),
+    containerRef = useRef(null),
     submitEditMode = async () => {
       let trimmedName = newName.trim();
       if (!trimmedName || trimmedName === chatName) {
@@ -76,7 +78,23 @@ const SiteTop = (props) => {
       if (e.key === "Enter") await submitEditMode();
       else if (e.key === "Escape") closeEditMode();
     },
-    toggleFullChatMode = () => setFullChatMode((chatMode) => !chatMode);
+    toggleFullChatMode = () => {
+      if (!useFullChatMode) {
+        const rect = containerRef.current.getBoundingClientRect();
+        const width = Math.floor(rect.width);
+        const height = window.screen.height;
+        const left = window.screen.width - width;
+        window._window = window.open(
+          "/chat",
+          "Chat",
+          `width=${width},height=${height},left=${left},resizable=yes,scrollbars=yes`
+        );
+      } else {
+        window._window?.close();
+        window._window = null;
+      }
+      setFullChatMode((chatMode) => !chatMode);
+    };
 
   return (
     <Box sx={SiteTopSx}>
@@ -88,25 +106,28 @@ const SiteTop = (props) => {
         lg={useFullChatMode ? 12 : 3}
         xl={useFullChatMode ? 12 : 2}
         marginLeft={StatusSx}
+        ref={containerRef}
       >
         {!editMode ? (
           <>
-            <Tooltip title={`Pop ${useFullChatMode ? "in" : "out"} chat`}>
-              <IconButton
-                type="button"
-                size="small"
-                sx={{ backgroundColor: "primary.700", borderRadius: "0px", color: "primary.500" }}
-                onClick={toggleFullChatMode}
-              >
-                {useFullChatMode ? <CloseFullscreenIcon /> : <OpenInNew />}
-              </IconButton>
-            </Tooltip>
+            {!poppedOutChat && (
+              <Tooltip title={`Pop-${useFullChatMode ? "in" : "out"} chat`}>
+                <IconButton
+                  type="button"
+                  size="small"
+                  sx={{ backgroundColor: "primary.700", borderRadius: "0px", color: "primary.200" }}
+                  onClick={toggleFullChatMode}
+                >
+                  {useFullChatMode ? <CommentIcon /> : <CommentsDisabledIcon />}
+                </IconButton>
+              </Tooltip>
+            )}
             <Button
               onClick={() => setEditMode(true)}
               variant="contained"
               endIcon={<EditIcon />}
               size="small"
-              sx={ButtonSx(isAdmin || (isMod && !isGolden))}
+              sx={ButtonSx(isAdmin || (isMod && !isGolden), poppedOutChat)}
             >
               <Box sx={ButtonTextSx}>{chatName}</Box>
             </Button>

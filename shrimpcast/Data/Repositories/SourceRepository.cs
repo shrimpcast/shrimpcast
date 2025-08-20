@@ -30,7 +30,10 @@ namespace shrimpcast.Data.Repositories
             {
                 // Add operation
                 var existingSource = existingSources.FirstOrDefault(es => es.Name == newSource.Name);
-                if (existingSource == null) await _context.AddAsync(newSource);
+                if (existingSource == null) 
+                {
+                    if (newSource.Name.ToLower() != "chat") await _context.AddAsync(newSource);
+                } 
                 // Edit operation
                 else if (JsonConvert.SerializeObject(newSource) != JsonConvert.SerializeObject(existingSource))
                 {

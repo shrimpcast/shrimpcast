@@ -11,7 +11,7 @@ const ColoursWrapperSx = {
     paddingLeft: "7.5px",
     paddingTop: "12.5px",
     top: "35px",
-    zIndex: 3,
+    zIndex: 7,
   },
   ColoursSx = {
     marginTop: "5px",

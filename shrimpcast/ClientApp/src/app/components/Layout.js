@@ -17,18 +17,19 @@ const MainGridSx = {
     direction: "row",
     alignItems: "stretch",
   },
-  PlayerBoxSx = (theme) => ({
+  PlayerBoxSx = (theme, useFullChatMode) => ({
     overflowY: "auto",
     height: "calc(100% - 35px)",
     display: "flex",
     flexDirection: "column",
     [theme.breakpoints.down("md")]: {
-      height: "calc(40% - 35px)",
+      height: `calc(${useFullChatMode ? 100 : 40}% - 35px)`,
     },
   }),
-  ChatBoxSx = (theme, useFullChatMode) => ({
+  ChatBoxSx = (theme, useFullChatMode, poppedOutChat) => ({
     height: "calc(100% - 35px)",
     backgroundColor: "primary.900",
+    display: useFullChatMode && !poppedOutChat ? "none" : "block",
     [theme.breakpoints.down("md")]: {
       height: useFullChatMode ? "calc(100% - 35px)" : "60%",
     },
@@ -66,12 +67,13 @@ const MainGridSx = {
 const Layout = (props) => {
   const theme = useTheme(),
     { configuration, name } = props,
-    [useFullChatMode, setFullChatMode] = useState(false),
     [chatName, setChatName] = useState(name),
+    location = useLocation(),
+    sourceLocation = location.pathname?.replace("/", ""),
+    poppedOutChat = sourceLocation === "chat",
+    [useFullChatMode, setFullChatMode] = useState(poppedOutChat),
     ResolveSources = () => {
       const { sources } = configuration,
-        location = useLocation(),
-        sourceLocation = location.pathname?.replace("/", ""),
         enabledSources = sources.filter((source) => source.isEnabled),
         locationMatchesSource = enabledSources.find(
           (source) => source.name.toLowerCase() === sourceLocation.toLowerCase()
@@ -106,13 +108,22 @@ const Layout = (props) => {
           <SiteTop
             {...props}
             useFullChatMode={useFullChatMode}
+            poppedOutChat={poppedOutChat}
             setFullChatMode={setFullChatMode}
             chatName={chatName}
             setChatName={setChatName}
           />
         </Grid>
-        {!useFullChatMode && (
-          <Grid xs={12} md={8} lg={9} xl={10} sx={PlayerBoxSx(theme)} className={"scrollbar-custom"}>
+
+        {!poppedOutChat && (
+          <Grid
+            xs={12}
+            md={useFullChatMode ? 12 : 8}
+            lg={useFullChatMode ? 12 : 9}
+            xl={useFullChatMode ? 12 : 10}
+            sx={PlayerBoxSx(theme, useFullChatMode)}
+            className={"scrollbar-custom"}
+          >
             <Box sx={PlayerContainerSx}>
               <SitePlayer streamStatus={streamStatus} {...props} />
             </Box>
@@ -121,12 +132,13 @@ const Layout = (props) => {
             </Box>
           </Grid>
         )}
+
         <Grid
           xs={12}
           md={useFullChatMode ? 12 : 4}
           lg={useFullChatMode ? 12 : 3}
           xl={useFullChatMode ? 12 : 2}
-          sx={[ChatBoxSx(theme, useFullChatMode), configuration.enableHalloweenTheme && HalloweenAnimSx]}
+          sx={[ChatBoxSx(theme, useFullChatMode, poppedOutChat), configuration.enableHalloweenTheme && HalloweenAnimSx]}
         >
           <Chat {...props} enabledSources={streamStatus.sources} chatName={chatName} />
         </Grid>
