@@ -50,7 +50,7 @@ Shrimpcast is a highly customizable, flexible, battle-tested, fast, and secure s
 - [Update](#update)
 - [License](#license)
 
-_Last revision: **1.3.1** (not fully complete)_
+_Last revision: **1.3.4** (not fully complete)_
 
 ## Features
 
@@ -221,10 +221,10 @@ Once you're authenticated as an admin, you will have the following options:
   - [Bingo options](#bingo-options)
 
 #### Site
-![image](https://github.com/user-attachments/assets/5a86144a-bc0b-462d-9aa8-7e31ccbc6c01)
+<img width="1119" height="783" alt="iamge" src="https://github.com/user-attachments/assets/0532774e-53a0-4fb3-95af-fd955664fe3e" />
 
 - **Enable PWA**: Toggles [Progressive Web App (PWA)](https://en.wikipedia.org/wiki/Progressive_web_app) support on or off.
-- **Hide stream title**: Hides the stream title that would otherwise show below the player.
+- **Force latest version**: Forces all clients to be on the latest frontend version.
 - **Publicly display connected users**: Shows or hides the list of connected users for non-admin users.
 - **Max connections per IP**: The maximum number of simultaneous connections by a single IP address.
 - **Minimum auto-mod time**: The minimum delay time expressed in milliseconds for the auto-mod.
@@ -232,31 +232,34 @@ Once you're authenticated as an admin, you will have the following options:
 - **Open site at**: Time at which the site will be opened for users. While the site is closed, users will see a countdown:
   ![image](https://github.com/shrimpcast/shrimpcast/assets/167498236/4da09809-76ca-40dd-ba3f-d655480987f4)
 - **Stream title**: The title of both the stream and site.
-- **Stream description**: Description to show below the stream title.
+- **Stream description**: Site/stream description. Use \n for line breaks.
 
 #### Chat
-![image](https://github.com/user-attachments/assets/e3135195-1419-464b-adb4-efebecb97d1a)
+<img width="1119" height="797" alt="image" src="https://github.com/user-attachments/assets/25a9b748-45e1-442a-89d4-77a20698f9ba" />
 
 - **Enable chat:** Determines whether the chat feature is enabled or disabled for users.
 - **Allow verified users only:** Specifies whether chat is restricted to verified users only.
 - **Max visible messages:** Sets the maximum number of messages visible in the chat interface.
 - **Message age limit (mins):** Specifies the age threshold of messages to display in the chat.
-- **Required time for new users (mins):** Sets the minimum time (in minutes) that new users must wait before being allowed to send messages.
+- **Required time for new users (min):** Sets the minimum time (in minutes) that new users must wait before being allowed to send messages.
+- **Required time to post links (min):** Sets the minimum time (in minutes) that new users must wait before being allowed to send links.
 - **Cooldown between messages:** Specifies the time interval users must wait between sending consecutive messages, in seconds.
 - **Mute time in minutes:** Determines the duration for which a user is muted after violating chat rules.
 - **Message length before truncation:** Defines the message length threshold at which it gets collapsed.
 - **Default name for new users:** Sets the default username assigned to new users.
 
 #### Stream
-![image](https://github.com/user-attachments/assets/1db74380-4b58-41b2-90f9-c444fc4248c4)
+<img width="1528" height="733" alt="image" src="https://github.com/user-attachments/assets/302bf87c-b114-4633-b7bd-ee9a9f41d46c" />
 
 - **Enable stream:** Shows or hides the player.
+- **Enable stream:** Shows viewer count per stream.
 - **Name:** Source name, also used for routing.
 - **Title**: Optional source title displayed on the stream selection page. If left empty, the source name will be used instead.
 - **URL:** URL source for the stream feed.
 - **Thumbnail:** Determines the thumbnail used on the multistream preview for each source.
 - **Legacy player**: Uses the browser’s native player for streaming. Also compatible with platforms like YouTube, Twitch, Streamable, and others.
 - **Embed:** Dictates whether to treat URLs as embedded content.
+- **With credentials:** Determines whether the player sends authentication cookies (HLS only). Use only if necessary.
 - **Reset on Start**: If enabled, restarts Docker when the scheduled start time is triggered. Useful for restarting queued movies.
 - **Schedule Start**: Schedules a background job to automatically enable the source. If already enabled, a countdown timer will be displayed.
 - **Schedule End**: Schedules a background job to automatically disable the source.
