@@ -20,8 +20,6 @@ namespace shrimpcast.Entities.DB
 
         public required int MaxMessagesToShow { get; set; }
 
-        public required bool HideStreamTitle { get; set; }
-
         public required bool StreamEnabled { get; set; }
 
         public List<Source> Sources { get; set; } = [];
@@ -220,7 +218,6 @@ namespace shrimpcast.Entities.DB
                     {
                         new { name = nameof(config.EnablePWA).ToLower(), label = "Enable PWA", value = config.EnablePWA },
                         new { name = nameof(config.ForceLatestVersion).ToLower(), label = "Force latest version", value = config.ForceLatestVersion },
-                        new { name = nameof(config.HideStreamTitle).ToLower(), label = "Hide stream title", value = config.HideStreamTitle },
                         new { name = nameof(config.ShowConnectedUsers).ToLower(), label = "Publicly display connected users", value = config.ShowConnectedUsers },
                         new { name = nameof(config.MaxConnectionsPerIP).ToLower(), label = "Max connections per IP", value = config.MaxConnectionsPerIP },
                         new { name = nameof(config.MaxConnectedUsers).ToLower(), label = "Max connected users (0 = ∞)", value = config.MaxConnectedUsers },

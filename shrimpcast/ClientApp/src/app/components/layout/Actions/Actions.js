@@ -11,6 +11,7 @@ import Mutes from "./Mutes";
 import Moderators from "./Moderators";
 import IgnoredUsers from "./IgnoredUsers";
 import BingoOptions from "./BingoOptions";
+import SiteInfo from "./SiteInfo";
 
 const Actions = (props) => {
   const theme = useTheme();
@@ -25,10 +26,11 @@ const Actions = (props) => {
         <Notifications {...props} />,
         <EmotesAdmin {...props} />,
         <BingoOptions {...props} />,
-        <AccountInfo {...props} />,
         <IgnoredUsers {...props} />,
+        <SiteInfo {...props} />,
+        <AccountInfo {...props} />,
       ]
-    : [<AccountInfo {...props} />, <IgnoredUsers {...props} />];
+    : [<SiteInfo {...props} />, <AccountInfo {...props} />, <IgnoredUsers {...props} />];
 
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);

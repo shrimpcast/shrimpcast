@@ -3,13 +3,13 @@ import { useState } from "react";
 import Grid from "@mui/material/Unstable_Grid2";
 import { useTheme } from "@emotion/react";
 import SitePlayer from "./player/SitePlayer";
-import SiteDetails from "./layout/SiteDetails";
 import SiteTop from "./layout/SiteTop";
 import Chat from "./chat/Chat";
 import ShowFireworks from "./others/ShowFireworks";
 import ShowSnow from "./others/ShowSnow";
 import ShowPing from "./others/ShowPing";
 import { useLocation } from "react-router-dom";
+import Prompts from "./layout/Prompts";
 
 const MainGridSx = {
     overflow: "hidden",
@@ -128,7 +128,7 @@ const Layout = (props) => {
               <SitePlayer streamStatus={streamStatus} {...props} />
             </Box>
             <Box sx={SiteDetailsSx}>
-              <SiteDetails {...props} streamStatus={streamStatus} />
+              <Prompts {...props} streamStatus={streamStatus} />
             </Box>
           </Grid>
         )}
