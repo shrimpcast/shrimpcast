@@ -242,7 +242,7 @@ Once you're authenticated as an admin, you will have the following options:
 - **Max visible messages:** Sets the maximum number of messages visible in the chat interface.
 - **Message age limit (mins):** Specifies the age threshold of messages to display in the chat.
 - **Required time for new users (min):** Sets the minimum time (in minutes) that new users must wait before being allowed to send messages.
-- **Required time to post links (min):** Sets the minimum time (in minutes) that new users must wait before being allowed to send links.
+- **Required time to post links (min):** Sets the minimum time (in minutes) that new users must wait before being allowed to send links. Use -1 for unlimited. 
 - **Cooldown between messages:** Specifies the time interval users must wait between sending consecutive messages, in seconds.
 - **Mute time in minutes:** Determines the duration for which a user is muted after violating chat rules.
 - **Message length before truncation:** Defines the message length threshold at which it gets collapsed.
