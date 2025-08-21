@@ -8,9 +8,6 @@ const TitleSx = {
     fontWeight: 600,
     letterSpacing: 0.5,
     lineHeight: 1.2,
-    "&::first-letter": {
-      textTransform: "uppercase",
-    },
   },
   DescriptionSx = {
     fontFamily: "'Roboto', sans-serif",
@@ -28,7 +25,7 @@ const SiteInfo = (props) => {
 
   return (
     <>
-      <Tooltip title="About this site">
+      <Tooltip title={`About ${streamTitle.trim() ? streamTitle.toLowerCase() : "this site"}`}>
         <IconButton
           sx={{ backgroundColor: "primary.700", borderRadius: "0px" }}
           onClick={handleOpen}
