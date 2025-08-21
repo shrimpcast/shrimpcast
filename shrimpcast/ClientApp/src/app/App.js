@@ -19,6 +19,7 @@ import FallbackError from "./components/layout/FallbackError";
 import makeTheme from "./theme/makeTheme";
 import { useLocation } from "react-router-dom";
 import * as serviceWorkerRegistration from "../serviceWorkerRegistration";
+import ChatActionsManager from "./managers/ChatActionsManager";
 
 const App = () => {
   const [loading, setLoading] = useState(true),
@@ -97,6 +98,7 @@ const App = () => {
     );
 
     updateConnectionStatus();
+    ChatActionsManager.EnsureUpdatedConfig(connection);
   };
 
   useEffect(() => {
