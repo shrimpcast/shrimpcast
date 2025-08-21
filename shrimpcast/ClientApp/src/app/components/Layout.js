@@ -135,9 +135,9 @@ const Layout = (props) => {
 
         <Grid
           xs={12}
-          md={useFullChatMode ? 12 : 4}
-          lg={useFullChatMode ? 12 : 3}
-          xl={useFullChatMode ? 12 : 2}
+          md={poppedOutChat ? 12 : 4}
+          lg={poppedOutChat ? 12 : 3}
+          xl={poppedOutChat ? 12 : 2}
           sx={[ChatBoxSx(theme, useFullChatMode, poppedOutChat), configuration.enableHalloweenTheme && HalloweenAnimSx]}
         >
           <Chat {...props} enabledSources={streamStatus.sources} chatName={chatName} />

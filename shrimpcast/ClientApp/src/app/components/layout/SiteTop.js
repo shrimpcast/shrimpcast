@@ -102,9 +102,9 @@ const SiteTop = (props) => {
       <Grid
         container
         xs={12}
-        md={useFullChatMode ? 12 : 4}
-        lg={useFullChatMode ? 12 : 3}
-        xl={useFullChatMode ? 12 : 2}
+        md={useFullChatMode || poppedOutChat ? 12 : 4}
+        lg={useFullChatMode || poppedOutChat ? 12 : 3}
+        xl={useFullChatMode || poppedOutChat ? 12 : 2}
         marginLeft={StatusSx}
         ref={containerRef}
       >
