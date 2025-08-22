@@ -1,4 +1,3 @@
-import React from "react";
 import Layout from "./components/Layout";
 import CssBaseline from "@mui/material/CssBaseline";
 import "@fontsource/roboto/300.css";
@@ -19,7 +18,6 @@ import FallbackError from "./components/layout/FallbackError";
 import makeTheme from "./theme/makeTheme";
 import { useLocation } from "react-router-dom";
 import * as serviceWorkerRegistration from "../serviceWorkerRegistration";
-import ChatActionsManager from "./managers/ChatActionsManager";
 
 const App = () => {
   const [loading, setLoading] = useState(true),
@@ -98,7 +96,6 @@ const App = () => {
     );
 
     updateConnectionStatus();
-    ChatActionsManager.EnsureUpdatedConfig(connection);
   };
 
   useEffect(() => {
@@ -134,6 +131,17 @@ const App = () => {
 
       const newConnection = await SignalRManager.connect(),
         errorAtLoad = newConnection._connectionState !== "Connected";
+
+      // Fetch latest data to prevent loading an outdated config when it changes during socket connection
+      if (!errorAtLoad) {
+        setTimeout(async () => {
+          const fetchLatest = await TokenManager.EnsureTokenExists(null, {});
+          setConnectionDataState((state) => ({
+            ...state,
+            ...fetchLatest,
+          }));
+        }, 0);
+      }
 
       setLoading(false);
       addSocketEvents(newConnection);

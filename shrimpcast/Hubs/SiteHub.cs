@@ -641,9 +641,6 @@ namespace shrimpcast.Hubs
             return updated;
         }
 
-        public async Task GetLatestConfigSelfInvoked() =>
-            await Clients.Caller.SendAsync("ConfigUpdated", _configurationSigleton.Configuration);
-
         private void ScheduleBackgroundJobs()
         {
             static string dateToCron(DateTime scheduledTime) => $"{scheduledTime.Minute} {scheduledTime.Hour} {scheduledTime.Day} {scheduledTime.Month} *";

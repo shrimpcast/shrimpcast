@@ -91,9 +91,6 @@ class ChatActionsManager {
   static async GetSourceViewerCount(signalR) {
     await signalR.invoke("GetSourceViewerCount").catch((ex) => console.log(ex));
   }
-  static EnsureUpdatedConfig(signalR) {
-    signalR.invoke("GetLatestConfigSelfInvoked").catch((ex) => console.log(ex));
-  }
 }
 
 export default ChatActionsManager;

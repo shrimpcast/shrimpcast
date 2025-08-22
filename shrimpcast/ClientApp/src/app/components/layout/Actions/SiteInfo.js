@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Box, Dialog, DialogContent, IconButton, Typography, Tooltip } from "@mui/material";
+import { Box, Dialog, DialogContent, IconButton, Typography, Tooltip, Divider } from "@mui/material";
 import InfoIcon from "@mui/icons-material/Info";
 
 const TitleSx = {
@@ -15,6 +15,7 @@ const TitleSx = {
     letterSpacing: 0.25,
     lineHeight: 1.6,
     whiteSpace: "pre-line",
+    mt: "5px",
   };
 
 const SiteInfo = (props) => {
@@ -35,7 +36,7 @@ const SiteInfo = (props) => {
           <InfoIcon sx={{ color: "primary.300" }} />
         </IconButton>
       </Tooltip>
-      <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+      <Dialog open={open} onClose={handleClose} maxWidth="lg">
         <DialogContent>
           <Box sx={{ wordBreak: "break-word" }}>
             <Typography
@@ -53,6 +54,7 @@ const SiteInfo = (props) => {
             >
               {streamTitle}
             </Typography>
+            <Divider />
             <Typography className="neon-text" color="secondary.main" sx={DescriptionSx}>
               {streamDescription.replace(/\\n/g, "\n")}
             </Typography>
