@@ -31,22 +31,22 @@ const ColoursWrapperSx = {
     mb: "7.5px",
     border: selected ? "1px solid #f44336" : "none",
   }),
-  IconButtonSx = (userDisplayColor, width, useBorderRadius) => ({
+  IconButtonSx = (userColorDisplay, width, useBorderRadius) => ({
     borderRadius: useBorderRadius ? "5px" : "1px",
-    backgroundColor: userDisplayColor,
+    backgroundColor: userColorDisplay,
     width: width ? width : "auto",
   });
 
 const ColourPicker = (props) => {
   const { colours, executeCallback, text, width, useBorderRadius } = props,
-    [userDisplayColor, setUserDisplayColor] = useState(props.userDisplayColor),
+    [userColorDisplay, setUserColorDisplay] = useState(props.userColorDisplay),
     [showColours, setShowColours] = useState(false),
     toggleState = () => setShowColours(!showColours),
     handleClose = () => setShowColours(false),
     changeColour = async (nameColourId) => {
       const colourChanged = await executeCallback(nameColourId);
       if (!colourChanged) return;
-      setUserDisplayColor(colourChanged);
+      setUserColorDisplay(colourChanged);
       handleClose();
     };
 
@@ -57,7 +57,7 @@ const ColourPicker = (props) => {
           onClick={toggleState}
           type="button"
           size="small"
-          sx={IconButtonSx(userDisplayColor, width, useBorderRadius)}
+          sx={IconButtonSx(userColorDisplay, width, useBorderRadius)}
         >
           <ColorLensIcon />
           {text && (
@@ -77,7 +77,7 @@ const ColourPicker = (props) => {
                   key={colour.nameColourId}
                   type="button"
                   size="small"
-                  sx={ColourSx(colour, userDisplayColor === colour.colourHex)}
+                  sx={ColourSx(colour, userColorDisplay === colour.colourHex)}
                 ></IconButton>
               ))}
             </Box>

@@ -71,7 +71,7 @@ namespace shrimpcast.Data.Repositories
             {
                 CreatedAt = DateTime.UtcNow,
                 SessionToken = SecureToken.GenerateTokenThreadSafe(),
-                UserDisplayColor = await _nameColourRepository.GetRandom(),
+                UserColorDisplay = await _nameColourRepository.GetRandom(),
             };
 
             await _context.AddAsync(Session);
@@ -142,8 +142,8 @@ namespace shrimpcast.Data.Repositories
         {
             var colour = await _nameColourRepository.GetById(nameColourId);
             var session = await GetExistingByIdAsync(sessionId, true);
-            session.UserDisplayColor = colour.ColourHex;
-            return await _context.SaveChangesAsync() > 0 ? session.UserDisplayColor : throw new Exception("Could not update record");
+            session.UserColorDisplay = colour.ColourHex;
+            return await _context.SaveChangesAsync() > 0 ? session.UserColorDisplay : throw new Exception("Could not update record");
         }
 
         public async Task<List<object>> ListActiveMutes()

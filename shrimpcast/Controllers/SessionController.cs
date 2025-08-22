@@ -128,7 +128,7 @@ namespace shrimpcast.Controllers
                 ensureCreated.SessionId,
                 ensureCreated.SessionNames.Last().Name,
                 ensureCreated.SessionToken,
-                ensureCreated.UserDisplayColor,
+                ensureCreated.UserColorDisplay,
             };
         }
 

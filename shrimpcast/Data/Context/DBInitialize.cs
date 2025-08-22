@@ -18,7 +18,7 @@ namespace shrimpcast.Data
 
         public static void SetInitialData(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.InsertData("Session", [nameof(Session.SessionToken), nameof(Session.CreatedAt), nameof(Session.IsAdmin), "IsModerator", nameof(Session.UserDisplayColor)], new object[,]
+            migrationBuilder.InsertData("Session", [nameof(Session.SessionToken), nameof(Session.CreatedAt), nameof(Session.IsAdmin), "IsModerator", "UserDisplayColor"], new object[,]
             {
                 { INITIAL_ADMIN_TOKEN, DateTime.UtcNow, true, false, string.Empty},
             });
@@ -95,7 +95,7 @@ namespace shrimpcast.Data
             });
 
             var parsedEmotes = JsonConvert.DeserializeObject <Emote[]>(File.ReadAllText("setup/emotes.json"));
-            var emotes = new object[parsedEmotes.Length, 3];
+            var emotes = new object[parsedEmotes!.Length, 3];
             for (int i = 0; i < parsedEmotes.Length; i++)
             {
                 emotes[i, 0] = Path.GetFileNameWithoutExtension(parsedEmotes[i].Name);

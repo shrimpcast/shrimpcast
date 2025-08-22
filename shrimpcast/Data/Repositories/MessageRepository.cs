@@ -31,7 +31,7 @@ namespace shrimpcast.Data.Repositories
                              CreatedAt = message.CreatedAt,
                              MessageType = message.MessageType,
                              MessageId = message.MessageId,
-                             UserColorDisplay = session.UserDisplayColor,
+                             UserColorDisplay = session.UserColorDisplay,
                              IsAdmin = session.IsAdmin,
                              IsMod = session.IsMod,
                              IsGolden = session.IsGolden,

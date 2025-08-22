@@ -184,7 +184,7 @@ const ConfigUserDialog = (props) => {
                   ) : (
                     <Box sx={{ mb: "10px" }} key={configItem.name}>
                       <ColourPicker
-                        userDisplayColor={
+                        userColorDisplay={
                           themeColors.find((tc) => tc.name === config.unorderedConfig[configItem.name])?.colourHex
                         }
                         colours={themeColors}

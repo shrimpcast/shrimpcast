@@ -204,7 +204,7 @@ namespace shrimpcast.Hubs
             addedMessage.IsMod = session.IsMod;
             addedMessage.IsGolden = session.IsGolden;
             addedMessage.RemoteAddress = string.Empty;
-            addedMessage.UserColorDisplay = session.UserDisplayColor;
+            addedMessage.UserColorDisplay = session.UserColorDisplay;
             await NotifyNewMessage(addedMessage);
 
             var shouldBan = await _autoModFilterRepository.Contains(addedMessage.Content);
@@ -269,7 +269,7 @@ namespace shrimpcast.Hubs
             var result = await _sessionRepository.UpdateColour(SessionId, NameColourId);
             foreach (var connection in ActiveConnections.Where(ac => ac.Value.Session.SessionId == SessionId))
             {
-                connection.Value.Session.UserDisplayColor = result;
+                connection.Value.Session.UserColorDisplay = result;
             }
 
             await NotifyNewMessage(new Message

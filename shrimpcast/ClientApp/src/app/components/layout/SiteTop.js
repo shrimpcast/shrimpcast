@@ -32,6 +32,7 @@ const SiteTopSx = {
     textOverflow: "ellipsis",
     overflow: "hidden",
     marginTop: "2.5px",
+    whiteSpace: "pre",
   };
 
 const SiteTop = (props) => {
@@ -40,7 +41,7 @@ const SiteTop = (props) => {
       isMod,
       isGolden,
       signalR,
-      userDisplayColor,
+      userColorDisplay,
       colours,
       useFullChatMode,
       setFullChatMode,
@@ -133,7 +134,7 @@ const SiteTop = (props) => {
             </Button>
             {((!isAdmin && !isMod) || (isMod && isGolden)) && (
               <ColourPicker
-                userDisplayColor={userDisplayColor}
+                userColorDisplay={userColorDisplay}
                 colours={colours}
                 executeCallback={async (nameColourId) =>
                   await ChatActionsManager.ChangeColour(props.signalR, nameColourId)

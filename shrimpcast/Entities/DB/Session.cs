@@ -23,7 +23,7 @@ namespace shrimpcast.Entities.DB
 
         public bool PassedTurnstile { get; set; }
 
-        public required string UserDisplayColor { get; set; }
+        public required string UserColorDisplay { get; set; }
 
         public List<SessionName> SessionNames { get; set; } = [];
 
