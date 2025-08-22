@@ -252,7 +252,7 @@ Once you're authenticated as an admin, you will have the following options:
 <img width="1528" height="733" alt="image" src="https://github.com/user-attachments/assets/302bf87c-b114-4633-b7bd-ee9a9f41d46c" />
 
 - **Enable stream:** Shows or hides the player.
-- **Enable stream:** Shows viewer count per stream.
+- **Show viewer count per stream:** Shows viewer count per stream.
 - **Name:** Source name, also used for routing.
 - **Title**: Optional source title displayed on the stream selection page. If left empty, the source name will be used instead.
 - **URL:** URL source for the stream feed.
