@@ -10,7 +10,7 @@
 
 ## Introduction
 
-Shrimpcast is a highly customizable, flexible, battle-tested, fast, and secure self-hosted streaming platform.
+Shrimpcast is a highly customizable, flexible, battle-tested, fast, and secure self-hosted streaming platform, built for resilience at scale to support thousands of users.
 
 ## Table of Contents
 
