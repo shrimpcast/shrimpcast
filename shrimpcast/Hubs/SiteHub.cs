@@ -75,10 +75,14 @@ namespace shrimpcast.Hubs
             var accessToken = (Context.GetHttpContext()?.Request.Query["accessToken"].ToString()) ?? throw new Exception("AccessToken can't be null.");
             var Session = await _sessionRepository.GetExistingAsync(accessToken, RemoteAddress);
             var isClosed = !(Session?.IsAdmin).GetValueOrDefault() && Configuration.OpenAt > DateTime.UtcNow;
+            
             var reachedMaxUsers = Configuration.MaxConnectedUsers != 0 && ActiveConnections.Count >= Configuration.MaxConnectedUsers
                                   && !(Session?.IsAdmin).GetValueOrDefault() && !(Session?.IsMod).GetValueOrDefault() && !(Session?.IsGolden).GetValueOrDefault();
-            var reachedMaxConnectionsPerAddress = ActiveConnections.Where(ac => ac.Value.RemoteAdress == RemoteAddress || ac.Value.Session.SessionToken == accessToken).Count()
+
+            var reachedMaxConnectionsPerAddress = !(Session?.IsAdmin).GetValueOrDefault() &&
+                ActiveConnections.Where(ac => ac.Value.RemoteAdress == RemoteAddress || ac.Value.Session.SessionToken == accessToken).Count()
                 >= Configuration.MaxConnectionsPerIP;
+
             var mustPassTurnstail = await NeedsPassTurnstail(Session);
 
             if (Session == null || isClosed || reachedMaxUsers || reachedMaxConnectionsPerAddress || mustPassTurnstail)
@@ -157,7 +161,7 @@ namespace shrimpcast.Hubs
             string Content = $"{currentName} changed his name to {newName}.",
                    MessageType = "NameChange";
 
-            var addedMessage = await _messageRepository.Add(Session.SessionId, RemoteAddress, Content, MessageType);
+            var addedMessage = await _messageRepository.Add(!Session.IsAdmin && !Session.IsGolden, Session.SessionId, RemoteAddress, Content, MessageType);
             addedMessage.SentBy = newName;
             addedMessage.RemoteAddress = string.Empty;
             addedMessage.UserColorDisplay = string.Empty;
@@ -198,7 +202,7 @@ namespace shrimpcast.Hubs
             if (await DispatchCommand(message, CurrentConnection)) return 1;
 
             var session = CurrentConnection.Session;
-            var addedMessage = await _messageRepository.Add(CurrentConnection.Session.SessionId, RemoteAddress, message, "UserMessage");
+            var addedMessage = await _messageRepository.Add(!session.IsAdmin && !session.IsGolden, session.SessionId, RemoteAddress, message, "UserMessage");
             addedMessage.SentBy = session.SessionNames.Last().Name;
             addedMessage.IsAdmin = session.IsAdmin;
             addedMessage.IsMod = session.IsMod;
@@ -920,13 +924,10 @@ namespace shrimpcast.Hubs
                 return $"You account is too new to post. You need to wait {diff} more {(diff == 1 ? "minute" : "minutes")}.";
             }
 
-            var lastSent = await _messageRepository.GetLastSentTime(connection.RemoteAdress);
-            var secondsDifference = DateTime.UtcNow.Subtract(lastSent.GetValueOrDefault()).TotalSeconds;
-            var requiredTime = Configuration.MessageDelayTime;
-            if (secondsDifference < requiredTime)
+            var shouldEnforceCooldown = await _messageRepository.ShouldEnforceCooldown(connection.RemoteAdress);
+            if (shouldEnforceCooldown != null)
             {
-                var diff = Math.Ceiling(requiredTime - secondsDifference);
-                return $"You need to wait {diff} more {(diff == 1 ? "second" : "seconds")}.";
+                return shouldEnforceCooldown;
             }
 
             if (connection.Session.IsVerified) return null;

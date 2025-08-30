@@ -46,8 +46,10 @@ namespace shrimpcast.Data.Repositories
                         select new Ban
                         {
                             BanId = ban.BanId,
-                            SessionId = ban.SessionId,
-                            SessionName = (from sn in _context.SessionNames where sn.SessionId == ban.SessionId orderby sn.CreatedAt select sn.Name).Last(),
+                            SessionId = ban.SessionId, 
+                            SessionName = (ban.BannedBy == -1 ? "[A] " : "[M] ") 
+                                        + (from sn in _context.SessionNames where sn.SessionId == ban.SessionId orderby sn.CreatedAt select sn.Name).Last()
+                                        + $" ({ban.CreatedAt.ToLocalTime()}Z)",
                         };
             return await query.AsNoTracking().ToListAsync();
         }

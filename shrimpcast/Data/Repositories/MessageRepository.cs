@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using shrimpcast.Data.Repositories.Interfaces;
 using shrimpcast.Entities;
 using shrimpcast.Entities.DB;
+using System.Data;
 
 namespace shrimpcast.Data.Repositories
 {
@@ -50,27 +51,58 @@ namespace shrimpcast.Data.Repositories
             return message;
         }
 
-        public async Task<DateTime?> GetLastSentTime(string RemoteAddress)
+        public async Task<string?> ShouldEnforceCooldown(string RemoteAddress)
         {
             var query = _context.Messages.Where(message => message.RemoteAddress == RemoteAddress).OrderByDescending(message => message.CreatedAt);
             var message = await query.FirstOrDefaultAsync();
-            return message?.CreatedAt;
+            var lastSent = message?.CreatedAt;
+            var secondsDifference = DateTime.UtcNow.Subtract(lastSent.GetValueOrDefault()).TotalSeconds;
+            var requiredTime = _configurationSingleton.Configuration.MessageDelayTime;
+            
+            if (secondsDifference < requiredTime)
+            {
+                var diff = Math.Ceiling(requiredTime - secondsDifference);
+                return $"You need to wait {diff} more {(diff == 1 ? "second" : "seconds")}.";
+            }
+            
+            return null;
         }
 
-        public async Task<Message> Add(int SessionId, string RemoteAddress, string Content, string MessageType)
+        public async Task<Message> Add(bool runCooldownChecks, int SessionId, string RemoteAddress, string Content, string MessageType)
         {
-            var Message = new Message
+            using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+            try
             {
-                SessionId = SessionId,
-                CreatedAt = DateTime.UtcNow,
-                Content = Content,
-                RemoteAddress = RemoteAddress,
-                MessageType = MessageType,
-            };
-            await _context.AddAsync(Message);
-            var result = await _context.SaveChangesAsync();
-            _context.Entry(Message).State = EntityState.Detached;
-            return result > 0 ? Message : throw new Exception("Could not add message.");
+                if (runCooldownChecks)
+                {
+                    var shouldEnforceCooldown = await ShouldEnforceCooldown(RemoteAddress);
+                    if (shouldEnforceCooldown != null)
+                    {
+                        throw new Exception(shouldEnforceCooldown);
+                    }
+                }
+
+                var Message = new Message
+                {
+                    SessionId = SessionId,
+                    CreatedAt = DateTime.UtcNow,
+                    Content = Content,
+                    RemoteAddress = RemoteAddress,
+                    MessageType = MessageType,
+                };
+
+                await _context.AddAsync(Message);
+                var result = await _context.SaveChangesAsync();
+                _context.Entry(Message).State = EntityState.Detached;
+                await transaction.CommitAsync();
+
+                return result > 0 ? Message : throw new Exception("Could not add message.");
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                throw new Exception(ex.Message);
+            }
         }
 
         public async Task<bool> Remove(int MessageId, int DeletedBy)
