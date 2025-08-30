@@ -49,6 +49,7 @@ namespace shrimpcast.Controllers
                     else
                     {
                         if (configuration.EnableTurnstileMode 
+                            && !configuration.TurnstileManagedMode
                             && !ensureCreated.PassedTurnstile
                             && !ensureCreated.IsVerified
                             && !ensureCreated.IsGolden
@@ -184,6 +185,11 @@ namespace shrimpcast.Controllers
 
             return Ok();
         }
-        
+
+        // Must be behind a managed challenge rule 
+        // 403 => challenge needed
+        // 200 => clereance ok
+        [HttpGet, Route("CloudflareChallengeNeeded")]
+        public IActionResult CloudflareChallengeNeeded() => Ok();
     }
 }

@@ -123,6 +123,13 @@ const App = () => {
         }
       }
 
+      if (response?.configuration?.turnstileManagedMode) {
+        const needsChallenge = await TokenManager.ManagedChallengeNeeded();
+        if (needsChallenge) {
+          response.message = needsChallenge;
+        }
+      }
+
       if (response.message) {
         setLoading(false);
         setDisconnectMessage(response.message);

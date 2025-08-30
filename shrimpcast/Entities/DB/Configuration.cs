@@ -204,6 +204,8 @@ namespace shrimpcast.Entities.DB
 
         public required int RequiredTimeToPostLinksMinutes { get; set; }
 
+        public required bool TurnstileManagedMode { get; set; }
+
         public object Clone() => MemberwiseClone();
     }
 
@@ -375,6 +377,7 @@ namespace shrimpcast.Entities.DB
                     values = new object[]
                     {
                         new { name = nameof(config.EnableTurnstileMode).ToLower(), label = "Enable turnstile for new users", value = config.EnableTurnstileMode },
+                        new { name = nameof(config.TurnstileManagedMode).ToLower(), label = "Enable managed mode", value = config.TurnstileManagedMode },
                         new { name = nameof(config.TurnstileTitle).ToLower(), label = "Turnstile title ", value = config.TurnstileTitle },
                         new { name = nameof(config.TurnstilePublicKey).ToLower(), label = "Turnstile public key", value = config.TurnstilePublicKey },
                         new { name = nameof(config.TurnstileSecretKeyNotMapped).ToLower(), label = "Turnstile private key", value = config.TurnstileSecretKey },

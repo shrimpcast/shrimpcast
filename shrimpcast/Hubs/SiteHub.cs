@@ -1262,6 +1262,7 @@ namespace shrimpcast.Hubs
         private async Task<bool> NeedsPassTurnstail(Session? session)
         {
            return Configuration.EnableTurnstileMode 
+                && !Configuration.TurnstileManagedMode
                 && session != null
                 && !session.PassedTurnstile
                 && !session.IsVerified

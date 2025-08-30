@@ -25,6 +25,13 @@ class TokenManager {
     return response?.data;
   }
 
+  static async ManagedChallengeNeeded() {
+    const response = await axios.get("/api/session/CloudflareChallengeNeeded").catch((ex) => ({
+      message: "TURNSTILE_VERIFICATION_REQUIRED",
+    }));
+    return response?.message;
+  }
+
   static async ChangeName(signalR, name) {
     const response = await signalR.invoke("ChangeName", name).catch((ex) => console.log(ex));
     return response;
