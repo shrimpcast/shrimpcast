@@ -91,7 +91,6 @@ const PollOption = React.memo((props) => {
       if (response) closeConfirmPrompt();
     },
     voteOption = async () => {
-      if (!isAdmin && !configuration.acceptNewVotes) return;
       const response = await PollManager.VoteOption(signalR, props.pollOptionId);
 
       if (response > 0) props.setSelectedOption(response);

@@ -62,7 +62,8 @@ namespace shrimpcast.Controllers
                                 if (isTokenValid) await _sessionRepository.SetTurnstilePassed(ensureCreated.SessionId);
                             }
 
-                            if (!isTokenValid && !await _messageRepository.HasEnoughCountBySessionId(ensureCreated.SessionId, 1))
+                            if (!isTokenValid 
+                                && !await _messageRepository.HasEnoughCountBySessionId(ensureCreated.SessionId, (int)configuration.TurnstileSkipThreshold))
                             {
                                 message = Constants.TURNSTILE_REQUIRED;
                             }

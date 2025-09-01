@@ -25,12 +25,6 @@ namespace shrimpcast.Entities.DB
 
         public required string MessageType { get; set; }
 
-        public bool IsDeleted { get; set; }
-
-        public DateTime? DeletedAt { get; set; }
-
-        public int DeletedBy { get; set; }
-
         [NotMapped]
         public string? UserColorDisplay { get; set; }
 

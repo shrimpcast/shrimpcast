@@ -5,24 +5,24 @@
 namespace shrimpcast.Migrations
 {
     /// <inheritdoc />
-    public partial class AddTurnstileTitle : Migration
+    public partial class AddTurnstileSkipThreshold : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
-                name: "TurnstileTitle",
+            migrationBuilder.AddColumn<long>(
+                name: "TurnstileSkipThreshold",
                 table: "Configuration",
-                type: "text",
-                nullable: true,
-                defaultValue: "Verifying your session, please wait a moment.");
+                type: "bigint",
+                nullable: false,
+                defaultValue: 10L);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "TurnstileTitle",
+                name: "TurnstileSkipThreshold",
                 table: "Configuration");
         }
     }

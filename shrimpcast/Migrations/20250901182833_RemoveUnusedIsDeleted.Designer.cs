@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using shrimpcast.Data;
@@ -11,9 +12,11 @@ using shrimpcast.Data;
 namespace shrimpcast.Migrations
 {
     [DbContext(typeof(APPContext))]
-    partial class APPContextModelSnapshot : ModelSnapshot
+    [Migration("20250901182833_RemoveUnusedIsDeleted")]
+    partial class RemoveUnusedIsDeleted
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -312,9 +315,6 @@ namespace shrimpcast.Migrations
 
                     b.Property<string>("TurnstileSecretKey")
                         .HasColumnType("text");
-
-                    b.Property<long>("TurnstileSkipThreshold")
-                        .HasColumnType("bigint");
 
                     b.Property<string>("TurnstileTitle")
                         .HasColumnType("text");

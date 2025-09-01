@@ -22,7 +22,7 @@ namespace shrimpcast.Data.Repositories
             var maxTime = _configurationSingleton.Configuration.OffsetDateTimeInMinutes;
             int MaxMessages = _configurationSingleton.Configuration.MaxMessagesToShow;
             var query = (from message in _context.Messages
-                         where !message.IsDeleted && (from bans in _context.Bans where bans.SessionId == message.SessionId select bans.SessionId).FirstOrDefault() == default
+                         where (from bans in _context.Bans where bans.SessionId == message.SessionId select bans.SessionId).FirstOrDefault() == default
                          join session in _context.Sessions on message.SessionId equals session.SessionId
                          orderby message.CreatedAt descending
                          select new Message
@@ -113,13 +113,14 @@ namespace shrimpcast.Data.Repositories
             return result > 0 ? true : throw new Exception("Could not update record.");
         }
 
-        public async Task<bool> HasEnoughCountBySessionId(int SessionId, int Count)
+        public async Task<bool> HasEnoughCountBySessionId(int SessionId, int RequiredCount)
         {
-            var query = _context.Messages.AsNoTracking()
-                                         .Where(m => m.SessionId == SessionId && !m.IsDeleted)
-                                         .Take(Count);
-            var existing = await query.ToListAsync();
-            return existing.Count == Count;
+            var ActualCount = await _context.Messages
+                                            .AsNoTracking()
+                                            .Where(m => m.SessionId == SessionId)
+                                            .Take((int)RequiredCount)
+                                            .CountAsync();
+            return ActualCount == RequiredCount;
         }
     }
 }

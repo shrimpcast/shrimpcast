@@ -1084,6 +1084,7 @@ namespace shrimpcast.Hubs
             {
                 await ForceDisconnect([Context.ConnectionId], message);
                 Context.Abort();
+                throw new Exception(string.Format("Forced disconnect: {0}", message));
             }
         }
 
@@ -1269,7 +1270,7 @@ namespace shrimpcast.Hubs
                 && !session.IsMod
                 && !session.IsAdmin
                 && !session.IsGolden
-                && !await _messageRepository.HasEnoughCountBySessionId(session.SessionId, 1);
+                && !await _messageRepository.HasEnoughCountBySessionId(session.SessionId, (int)Configuration.TurnstileSkipThreshold);
         }
 
         [GeneratedRegex(@"(\d+) (.+)$")]
