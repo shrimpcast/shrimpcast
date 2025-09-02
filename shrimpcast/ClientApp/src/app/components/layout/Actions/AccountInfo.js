@@ -48,7 +48,7 @@ const AccountInfo = (props) => {
       setShowToast(true);
     },
     toggleHidden = () => setHidden(!isHidden),
-    changeInput = (e) => setImportToken(e.target.value);
+    changeInput = (e) => setImportToken(e.target.value.trim());
 
   const submitTokenChange = async () => {
     if (!importToken || isLoading) return;
