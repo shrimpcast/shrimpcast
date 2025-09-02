@@ -39,6 +39,7 @@ const SitePlayer = (props) => {
           withCredentials,
         },
       },
+      poster: source.thumbnail,
     },
     isFLV = url.endsWith(".flv"),
     forceM3U8 = isFLV && !window.MediaSource,

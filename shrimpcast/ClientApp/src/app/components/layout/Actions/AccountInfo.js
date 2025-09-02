@@ -130,12 +130,12 @@ const AccountInfo = (props) => {
             />
           </Box>
         </DialogContent>
+        <Snackbar open={showToast} autoHideDuration={5000} onClose={closeToast}>
+          <Alert severity={toastMessage.includes("Error") ? "error" : "success"} variant="filled" p={2}>
+            <Typography variant="body2">{toastMessage}</Typography>
+          </Alert>
+        </Snackbar>
       </Dialog>
-      <Snackbar open={showToast} autoHideDuration={5000} onClose={closeToast}>
-        <Alert severity={toastMessage.includes("Error") ? "error" : "success"} variant="filled" p={2}>
-          <Typography variant="body2">{toastMessage}</Typography>
-        </Alert>
-      </Snackbar>
     </>
   );
 };

@@ -54,7 +54,13 @@ const VideoJSPlayer = (props) => {
 
       videoElement.classList.add("vjs-big-play-centered");
       videoRef.current.appendChild(videoElement);
-      const player = (playerRef.current = videojs(videoElement, options, () => play(player)));
+      const player = (playerRef.current = videojs(videoElement, options, () => {
+        const posterImg = player.el().querySelector(".vjs-poster img");
+        if (posterImg) {
+          posterImg.onerror = () => (player.el().querySelector(".vjs-poster").style.display = "none");
+        }
+        play(player);
+      }));
 
       // Reconnect logic
       player.on("error", () => {
