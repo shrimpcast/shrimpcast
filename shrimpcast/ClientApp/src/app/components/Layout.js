@@ -31,7 +31,7 @@ const MainGridSx = {
     backgroundColor: "primary.900",
     display: useFullChatMode && !poppedOutChat ? "none" : "block",
     [theme.breakpoints.down("md")]: {
-      height: useFullChatMode ? "calc(100% - 35px)" : "60%",
+      height: poppedOutChat ? "calc(100% - 35px)" : "60%",
     },
   }),
   HalloweenAnimSx = {
