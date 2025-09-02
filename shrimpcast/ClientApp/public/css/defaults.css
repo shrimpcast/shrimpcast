@@ -172,3 +172,7 @@ html {
     background-position: 8.485rem 8.485rem; /* Match background-size */
   }
 }
+
+.vjs-poster img {
+  visibility: hidden;
+}

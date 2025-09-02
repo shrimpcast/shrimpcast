@@ -57,7 +57,10 @@ const VideoJSPlayer = (props) => {
       const player = (playerRef.current = videojs(videoElement, options, () => {
         const posterImg = player.el().querySelector(".vjs-poster img");
         if (posterImg) {
-          posterImg.onerror = () => (player.el().querySelector(".vjs-poster").style.display = "none");
+          posterImg.onload = () => (posterImg.style.visibility = "visible");
+          if (posterImg.complete && posterImg.naturalWidth > 0) {
+            posterImg.style.visibility = "visible";
+          }
         }
         play(player);
       }));
