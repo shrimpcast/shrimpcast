@@ -55,12 +55,11 @@ namespace shrimpcast.Data.Repositories
             return account;
         }
 
-        public async Task<Session> GetExistingByTokenAsync(string accessToken)
+        public async Task<Session?> GetExistingByTokenAsync(string accessToken)
         {
-            var account = await _context.Sessions.AsNoTracking().FirstAsync(Session => Session.SessionToken == accessToken);
+            var account = await _context.Sessions.AsNoTracking().FirstOrDefaultAsync(Session => Session.SessionToken == accessToken);
             return account;
         }
-
 
         public async Task<Session> GetNewOrExistingAsync(string accessToken, string RemoteAddress)
         {

@@ -37,11 +37,13 @@ class TokenManager {
     return response;
   }
 
-  static async Import(signalR, accessToken, skipValidation) {
-    const response = skipValidation
-      ? true
-      : await signalR.invoke("ImportToken", accessToken).catch((ex) => console.log(ex));
-    if (response) {
+  static async Import(accessToken) {
+    const response = await axios.get(`/api/session/ImportToken?accessToken=${accessToken}`).catch((ex) => ({
+      message: `Error: ${ex.message}`,
+    }));
+
+    if (response.data === false) response.message = "Error: invalid token.";
+    else if (response.data) {
       TokenManager.SaveData(accessToken, null);
       setTimeout(() => window.location.reload(), 100);
     }

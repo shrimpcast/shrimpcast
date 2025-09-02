@@ -287,12 +287,6 @@ namespace shrimpcast.Hubs
             return result;
         }
 
-        public async Task<bool> ImportToken([FromBody] string accessToken)
-        {
-            var session = await _sessionRepository.GetExistingByTokenAsync(accessToken);
-            return session != null;
-        }
-
         public async Task<bool> RemoveMessage([FromBody] int MessageId)
         {
             await ShouldGrantAccess();

@@ -192,5 +192,12 @@ namespace shrimpcast.Controllers
         // 200 => clereance ok
         [HttpGet, Route("CloudflareChallengeNeeded")]
         public IActionResult CloudflareChallengeNeeded() => Ok();
+
+        [HttpGet, Route("ImportToken")]
+        public async Task<bool> ImportToken([FromQuery] string accessToken)
+        {
+            var session = await _sessionRepository.GetExistingByTokenAsync(accessToken);
+            return session != null;
+        }
     }
 }

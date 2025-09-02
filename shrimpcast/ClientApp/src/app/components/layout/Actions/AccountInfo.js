@@ -53,9 +53,9 @@ const AccountInfo = (props) => {
   const submitTokenChange = async () => {
     if (!importToken || isLoading) return;
     setLoading(true);
-    const response = await TokenManager.Import(props.signalR, importToken, props.skipValidation);
+    const response = await TokenManager.Import(importToken);
     setLoading(false);
-    if (!response) displayToast("Error: invalid token.");
+    if (response.message) displayToast(response.message);
   };
 
   const handleKeys = async (e) => e.key === "Enter" && (await submitTokenChange());
