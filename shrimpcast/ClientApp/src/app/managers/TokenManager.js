@@ -37,8 +37,10 @@ class TokenManager {
     return response;
   }
 
-  static async Import(signalR, accessToken) {
-    const response = await signalR.invoke("ImportToken", accessToken).catch((ex) => console.log(ex));
+  static async Import(signalR, accessToken, skipValidation) {
+    const response = skipValidation
+      ? true
+      : await signalR.invoke("ImportToken", accessToken).catch((ex) => console.log(ex));
     if (response) {
       TokenManager.SaveData(accessToken, null);
       setTimeout(() => window.location.reload(), 100);

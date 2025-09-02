@@ -53,7 +53,7 @@ const AccountInfo = (props) => {
   const submitTokenChange = async () => {
     if (!importToken || isLoading) return;
     setLoading(true);
-    const response = await TokenManager.Import(props.signalR, importToken);
+    const response = await TokenManager.Import(props.signalR, importToken, props.skipValidation);
     setLoading(false);
     if (!response) displayToast("Error: invalid token.");
   };
@@ -76,7 +76,7 @@ const AccountInfo = (props) => {
     <>
       <Tooltip title="Account info">
         <IconButton
-          sx={{ backgroundColor: "primary.700", borderRadius: "0px" }}
+          sx={{ backgroundColor: "primary.700", borderRadius: props.useRadius ? "5px" : "0px" }}
           onClick={handleOpen}
           size="small"
           color="primary"
@@ -98,7 +98,7 @@ const AccountInfo = (props) => {
           </Typography>
           <Box sx={CopySx}>
             <Typography variant="body2" sx={ToggleSx} onClick={toggleHidden}>
-              {isHidden ? `${"*".repeat(sessionToken.length)} (click to reveal)` : sessionToken}
+              {isHidden ? `${"*".repeat(sessionToken?.length)} (click to reveal)` : sessionToken}
             </Typography>
             <Button onClick={copyToken} size="small" variant="contained" color="primary">
               Copy
@@ -111,7 +111,7 @@ const AccountInfo = (props) => {
             <OutlinedInput
               fullWidth
               size="small"
-              type="text"
+              type={isHidden ? "password" : "text"}
               placeholder="Paste your token..."
               value={importToken}
               onChange={changeInput}

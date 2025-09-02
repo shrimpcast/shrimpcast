@@ -118,7 +118,7 @@ namespace shrimpcast.Data.Repositories
             var ActualCount = await _context.Messages
                                             .AsNoTracking()
                                             .Where(m => m.SessionId == SessionId)
-                                            .Take((int)RequiredCount)
+                                            .Take(RequiredCount)
                                             .CountAsync();
             return ActualCount == RequiredCount;
         }

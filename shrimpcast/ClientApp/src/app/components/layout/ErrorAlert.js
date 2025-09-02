@@ -1,6 +1,7 @@
 import { Alert, Container } from "@mui/material";
 import CountdownTimer from "../others/CountdownTimer";
 import CloudflareTurnstile from "../others/CloudflareTurnstile";
+import AccountInfo from "./Actions/AccountInfo";
 
 const Centered = {
   position: "absolute",
@@ -20,7 +21,10 @@ const ErrorAlert = (props) => {
       {turnstileMode ? (
         <CloudflareTurnstile {...props} />
       ) : (
-        <Alert severity={isCountdown ? "info" : "error"}>
+        <Alert
+          severity={isCountdown ? "info" : "error"}
+          action={<AccountInfo useRadius={true} skipValidation={true} />}
+        >
           {isCountdown ? (
             <CountdownTimer timestamp={disconnectMessage} />
           ) : disconnectMessage ? (
