@@ -85,5 +85,23 @@ server {
 
     location /memfs {
         proxy_pass https://localhost:2053;
+		proxy_pass_request_headers off;
+		proxy_pass_request_body off;
+    }
+	
+    location /ui {
+        proxy_pass https://localhost:2053;
+    }
+
+    location = /api {
+        proxy_pass https://localhost:2053;
+    }
+	
+    location /api/login {
+        proxy_pass https://localhost:2053;
+    }
+	
+    location /api/v3 {
+        proxy_pass https://localhost:2053;
     }
 }
