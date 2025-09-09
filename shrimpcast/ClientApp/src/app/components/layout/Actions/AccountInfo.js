@@ -4,7 +4,6 @@ import {
   Button,
   Dialog,
   DialogContent,
-  DialogTitle,
   IconButton,
   InputAdornment,
   OutlinedInput,
@@ -85,14 +84,10 @@ const AccountInfo = (props) => {
         </IconButton>
       </Tooltip>
       <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth>
-        <DialogTitle>
-          <Box display="flex" alignItems="center" gap={1}>
-            <Typography variant="h6" component="div">
-              User Info
-            </Typography>
-          </Box>
-        </DialogTitle>
         <DialogContent>
+          <Typography variant="h6" component="div" gutterBottom>
+            User info
+          </Typography>
           <Typography variant="body1" gutterBottom>
             Your session token (don't share it with anyone!):
           </Typography>

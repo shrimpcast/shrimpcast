@@ -1,4 +1,3 @@
-import * as React from "react";
 import ClickAwayListener from "@mui/material/ClickAwayListener";
 import { Avatar, Box, IconButton, Paper } from "@mui/material";
 
@@ -25,7 +24,7 @@ const Emotes = (props) => {
   return (
     <ClickAwayListener onClickAway={handleClose}>
       <Paper sx={EmotesWrapperSx} elevation={2}>
-        <Box sx={EmotesSx}>
+        <Box sx={EmotesSx} className="scrollbar-custom">
           {props.emotes.map((emote) => (
             <IconButton onClick={() => emoteClick(emote.name)} key={emote.name}>
               <Avatar alt={emote.alt} sx={{ borderRadius: "0px", width: "30px", height: "30px" }} src={emote.url} />

@@ -49,7 +49,8 @@ namespace shrimpcast.Data.Repositories
                             SessionId = ban.SessionId, 
                             SessionName = (ban.BannedBy == -1 ? "[A] " : "[M] ") 
                                         + (from sn in _context.SessionNames where sn.SessionId == ban.SessionId orderby sn.CreatedAt select sn.Name).Last()
-                                        + $" ({ban.CreatedAt.ToLocalTime()}Z)",
+                                        + $" ({ban.CreatedAt.ToUniversalTime()} UTC) \n"
+                                        + $" [{string.Join(", ", from sip in _context.SessionIPs where sip.SessionId == ban.SessionId select sip.RemoteAddress)}]",
                         };
             return await query.AsNoTracking().ToListAsync();
         }

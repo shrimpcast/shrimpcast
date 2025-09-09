@@ -81,7 +81,7 @@ const GenericActionList = (props) => {
           </Box>
           <Divider />
         </DialogTitle>
-        <DialogContent>
+        <DialogContent className={props.showScroll ? "scrollbar-custom" : null}>
           {!items ? (
             <Box width="40px" ml="auto" mr="auto">
               <CircularProgress color="secondary" />
@@ -95,7 +95,6 @@ const GenericActionList = (props) => {
                   <ListItem
                     divider={index !== items.length - 1}
                     key={item[props.identifier]}
-                    sx={props.useLinks ? { paddingRight: "16px" } : null}
                     secondaryAction={
                       <>
                         {item.sessionId && (
@@ -127,7 +126,11 @@ const GenericActionList = (props) => {
                     <ListItemText
                       primary={item[props.contentIdentifier]}
                       sx={[
-                        { wordBreak: "break-word" },
+                        {
+                          wordBreak: "break-word",
+                          whiteSpace: "pre-line",
+                        },
+                        props.removeItem && item.sessionId && { paddingRight: "25px" },
                         responseIsTitleObject?.greenFlag
                           ? { color: item[responseIsTitleObject.greenFlag] ? "success.main" : "warning.main" }
                           : null,

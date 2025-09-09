@@ -318,10 +318,15 @@ namespace shrimpcast.Hubs
             await DispatchSystemMessage($"[{sentBy}] has been banned by the auto-mod", true, false, GetAdminSessions());
         }
 
-        public async Task<List<Ban>> ListBans()
+        public async Task<object> ListBans()
         {
             await ShouldGrantAccess();
-            return await _banRepository.GetAllBans();
+            var bans = await _banRepository.GetAllBans();
+            return new
+            {
+                totalBans = bans.Count,
+                bans,
+            };
         }
 
         public async Task<bool> Unban([FromBody] int banId)

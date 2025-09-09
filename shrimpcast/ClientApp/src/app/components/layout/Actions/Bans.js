@@ -1,4 +1,3 @@
-import React from "react";
 import BlockIcon from "@mui/icons-material/Block";
 import AdminActionsManager from "../../../managers/AdminActionsManager";
 import ChatActionsManager from "../../../managers/ChatActionsManager";
@@ -13,6 +12,12 @@ const Bans = (props) => {
       icon={BlockIcon}
       identifier="banId"
       contentIdentifier="sessionName"
+      showScroll={true}
+      responseIsTitleObject={{
+        appendTitle: "[{0} banned user(s)]",
+        appendKey: "totalBans",
+        value: "bans",
+      }}
       {...props}
     />
   );
