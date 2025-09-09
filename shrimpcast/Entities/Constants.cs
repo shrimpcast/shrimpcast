@@ -4,7 +4,7 @@ namespace shrimpcast.Entities
 {
     public class Constants
     {
-        public const string BACKEND_VERSION = "1.3.6";
+        public const string BACKEND_VERSION = "1.3.7";
 
         public const string PING_COMMAND = "!ping";
 
@@ -41,6 +41,8 @@ namespace shrimpcast.Entities
         public const string TURNSTILE_REQUIRED = "TURNSTILE_VERIFICATION_REQUIRED";
 
         public const string FRONTEND_OUTDATED = "Outdated frontend, please reload.";
+
+        public readonly static string[] SOURCE_RESERVERD_WORDS = ["chat", "live", "memfs", "ui", "api"];
 
         public static string EMOTE_GET (string name) => $"/api/emote/get/{name}";
 

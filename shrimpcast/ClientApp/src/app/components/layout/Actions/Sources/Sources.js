@@ -79,7 +79,7 @@ const styles = {
   },
   DEFAULT_THUMBNAIL = "/images/video_thumbnail.png";
 
-const Sources = ({ fields, sources, setConfig, utcToLocal }) => {
+const Sources = ({ fields, sources, setConfig, utcToLocal, reservedWords }) => {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false),
     [sourceToDelete, setSourceToDelete] = useState(null),
     [editOpen, setEditOpen] = useState(false),
@@ -381,7 +381,11 @@ const Sources = ({ fields, sources, setConfig, utcToLocal }) => {
                     <IconButton
                       color="primary"
                       onClick={() => updateConfig(null, null, null, null, true)}
-                      disabled={!newSourceData.name.trim() || !newSourceData.url.trim()}
+                      disabled={
+                        !newSourceData.name.trim() ||
+                        !newSourceData.url.trim() ||
+                        reservedWords.includes(newSourceData.name.trim().toLowerCase())
+                      }
                     >
                       <CheckIcon />
                     </IconButton>

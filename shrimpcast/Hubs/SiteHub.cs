@@ -720,6 +720,7 @@ namespace shrimpcast.Hubs
                 UnorderedConfig = unorderedConfig,
                 OpenKey = nameof(unorderedConfig.OpenAt).ToLower(),
                 SourceKey = nameof(unorderedConfig.Sources).ToLower(),
+                SourceReservedWords = Constants.SOURCE_RESERVERD_WORDS,
                 ColorPickerKeys = new string[]
                 {
                     nameof(unorderedConfig.PalettePrimary).ToLower(),

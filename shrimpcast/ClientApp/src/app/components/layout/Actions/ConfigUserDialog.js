@@ -166,6 +166,7 @@ const ConfigUserDialog = (props) => {
                       sources={config.unorderedConfig[configItem.name]}
                       setConfig={setConfig}
                       utcToLocal={utcToLocal}
+                      reservedWords={config.sourceReservedWords}
                     />
                   ) : !config.colorPickerKeys.includes(configItem.name) ? (
                     <TextField
