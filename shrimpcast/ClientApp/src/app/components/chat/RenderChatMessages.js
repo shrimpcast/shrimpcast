@@ -61,6 +61,7 @@ const RenderChatMessages = (props) => {
       enabledSources,
       emotes,
       chatName,
+      reconnected,
     } = props,
     chatRegex = useMemo(() => {
       return ChatRegex(chatName, emotes, enabledSources);
@@ -143,7 +144,7 @@ const RenderChatMessages = (props) => {
   /** Get the initial messages */
   useEffect(() => {
     async function getMessages(abortControllerSignal) {
-      if (!loading) return;
+      if (!loading && !reconnected) return;
       let existingMessages = await MessageManager.GetExistingMessages(abortControllerSignal);
       if (abortControllerSignal.aborted) return;
       const ignoredUsers = LocalStorageManager.getIgnoredUsers().map((iu) => iu.sessionId);
@@ -160,7 +161,7 @@ const RenderChatMessages = (props) => {
     getMessages(abortController.signal);
     return () => abortController.abort();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [reconnected]);
 
   /** Add the handlers */
   useEffect(() => {

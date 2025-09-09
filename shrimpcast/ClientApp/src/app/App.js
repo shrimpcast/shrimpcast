@@ -45,6 +45,7 @@ const App = () => {
         ...updatedData,
         // Refresh this property in case the server updates in real time
         FRONTEND_NEEDS_UPDATE: process.env.REACT_APP_VERSION !== updatedData.version,
+        reconnected: Date.now(),
       }));
     };
 
