@@ -81,14 +81,14 @@ server {
 
     location /live {
         proxy_pass https://localhost:2053;
-		proxy_pass_request_headers off;
-		proxy_pass_request_body off;
+        proxy_pass_request_headers off;
+        proxy_pass_request_body off;
     }
 
     location /memfs {
         proxy_pass https://localhost:2053;
-		proxy_pass_request_headers off;
-		proxy_pass_request_body off;
+        proxy_pass_request_headers off;
+        proxy_pass_request_body off;
     }
 	
     location /ui {
