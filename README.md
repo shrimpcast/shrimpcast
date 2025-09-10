@@ -174,8 +174,7 @@ If you're using Cloudflare, for RTMP broadcast, you'll need to bypass the domain
 
 First, clone the repository.
 To debug the project, you will need:
-- Windows 10 
-- Visual Studio 2022
+- Visual Studio / VS code
 - .NET 8 SDK & runtime
 - PostgreSQL
 
