@@ -18,7 +18,7 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import AdminActionsManager from "../../../managers/AdminActionsManager";
 import TabPanel from "../TabPanel";
 import ColourPicker from "../../others/ColourPicker";
-import SourceList from "./Sources/Sources";
+import GenericAddObjectTable from "./GenericAddObjectTable";
 
 const a11yProps = (index) => {
   return {
@@ -159,14 +159,19 @@ const ConfigUserDialog = (props) => {
                       type="number"
                       sx={{ mb: "10px", display: "block" }}
                     />
-                  ) : configItem.name === config.sourceKey ? (
-                    <SourceList
+                  ) : config.tableKeys.includes(configItem.name) ? (
+                    <GenericAddObjectTable
                       key={configItem.name}
                       fields={configItem.fields}
-                      sources={config.unorderedConfig[configItem.name]}
+                      items={config.unorderedConfig[configItem.name]}
                       setConfig={setConfig}
                       utcToLocal={utcToLocal}
-                      reservedWords={config.sourceReservedWords}
+                      requiredFields={configItem.requiredFields}
+                      reservedWords={configItem.reservedWords}
+                      reservedWordField={configItem.reservedWordField}
+                      model={configItem.model}
+                      identifier={configItem.identifier}
+                      itemsKey={configItem.name}
                     />
                   ) : !config.colorPickerKeys.includes(configItem.name) ? (
                     <TextField

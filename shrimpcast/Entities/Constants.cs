@@ -44,6 +44,15 @@ namespace shrimpcast.Entities
 
         public readonly static string[] SOURCE_RESERVERD_WORDS = ["chat", "live", "memfs", "ui", "api"];
 
+        public enum AddTableItem
+        {
+            boolean = 1,
+            text = 2,
+            button = 3,
+            image = 4,
+            date = 5,
+        }
+
         public static string EMOTE_GET (string name) => $"/api/emote/get/{name}";
 
         #region OBS
