@@ -112,7 +112,7 @@ const Toggle = ({ item, field, updateConfig, itemsKey, identifier, onChange }) =
               item[field.name],
               item[identifier],
               field.name,
-              !Boolean(requiredFields.filter((rField) => field.name === rField).length),
+              !Boolean(requiredFields.find((rField) => field.name === rField)),
               identifier,
               itemsKey
             )
@@ -146,7 +146,7 @@ const Toggle = ({ item, field, updateConfig, itemsKey, identifier, onChange }) =
                 item[field.name],
                 item[identifier],
                 field.name,
-                !Boolean(requiredFields.filter((rField) => field.name === rField).length),
+                !Boolean(requiredFields.find((rField) => field.name === rField)),
                 identifier,
                 itemsKey
               )
