@@ -56,6 +56,7 @@ const ConfigUserDialog = (props) => {
         return;
       }
       response.unorderedConfig = lowercaseKeys(response.unorderedConfig);
+      response.originalModel = JSON.stringify(response.unorderedConfig);
       setConfig(response);
     },
     updateConfig = (value, target) =>
@@ -122,7 +123,7 @@ const ConfigUserDialog = (props) => {
                 sx={{ marginLeft: "auto" }}
                 variant="contained"
                 color="success"
-                disabled={isSaving}
+                disabled={isSaving || JSON.stringify(config.unorderedConfig) === config.originalModel}
               >
                 Save
               </Button>

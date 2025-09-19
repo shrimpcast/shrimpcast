@@ -23,22 +23,21 @@ namespace shrimpcast.Data.Repositories
         public async Task<bool> Save(List<Source> newSources)
         {
             var existingSources = _configurationSingleton.Configuration.Sources;
-            var model = Source.GetModel(true);
+            var model = Source.GetModel();
 
-            // Add & edit
+            // CUD
             foreach (var newSource in newSources) 
             {
-                // Add operation
+                // Create
                 var existingSource = existingSources.FirstOrDefault(es => es.Name == newSource.Name);
                 if (existingSource == null) 
                 {
                     if (!Constants.SOURCE_RESERVERD_WORDS.Contains(newSource.Name.ToLower()))
                     {
-                        newSource.SourceId = default;
                         await _context.AddAsync(newSource);
                     }
                 } 
-                // Edit operation
+                // Update
                 else if (JsonConvert.SerializeObject(newSource) != JsonConvert.SerializeObject(existingSource))
                 {
                     var entity = await _context.Sources.FirstAsync(s => s.Name == existingSource.Name);

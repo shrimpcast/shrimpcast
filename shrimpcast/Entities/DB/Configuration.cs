@@ -1,5 +1,4 @@
-﻿using Stripe;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace shrimpcast.Entities.DB
@@ -289,7 +288,7 @@ namespace shrimpcast.Entities.DB
                             reservedWordField = nameof(Source.Name).NormalizeToJavascript(),
                             reservedWords = Constants.SOURCE_RESERVERD_WORDS,
                             model = Source.GetModel(),
-                            identifier = nameof(Source.SourceId).NormalizeToJavascript()
+                            identifier = nameof(Source.Name).NormalizeToJavascript()
                         }
                     }
                 },

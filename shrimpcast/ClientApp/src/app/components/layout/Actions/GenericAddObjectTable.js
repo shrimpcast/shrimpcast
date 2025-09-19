@@ -107,8 +107,8 @@ const Toggle = ({ item, field, updateConfig, itemsKey, identifier, onChange }) =
         <Button
           onClick={() =>
             openEditContent(
-              `Set a ${field.name}`,
-              `Set your ${field.name}...`,
+              `Set a ${field.label.toLowerCase()}`,
+              `Set your ${field.label.toLowerCase()}...`,
               item[field.name],
               item[identifier],
               field.name,
@@ -141,8 +141,8 @@ const Toggle = ({ item, field, updateConfig, itemsKey, identifier, onChange }) =
           <IconButton
             onClick={() =>
               openEditContent(
-                `Set a ${field.name}`,
-                `Set your ${field.name}...`,
+                `Set a ${field.label.toLowerCase()}`,
+                `Set your ${field.label.toLowerCase()}...`,
                 item[field.name],
                 item[identifier],
                 field.name,
@@ -175,7 +175,7 @@ const Toggle = ({ item, field, updateConfig, itemsKey, identifier, onChange }) =
       <TextField
         value={newItemData[field.name]}
         onChange={(e) => setNewItemData({ ...newItemData, [field.name]: e.target.value.trim() })}
-        label={field.name}
+        label={field.label.toLowerCase()}
         variant="outlined"
         size="small"
         required={requiredFields.includes(field.name)}
@@ -229,7 +229,7 @@ const GenericAddObjectTable = ({
           itemIndex = items.findIndex((item) => item[identifier] === target?.[identifier]);
 
         if (isAdd) {
-          items = items.concat({ ...newItemData, [identifier]: Math.floor(Math.random() * 1000000) + 1 });
+          items = items.concat({ ...newItemData });
           closeAdd();
         } else if (isDelete) items.splice(itemIndex, 1);
         else items[itemIndex][field] = value;

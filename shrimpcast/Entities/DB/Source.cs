@@ -1,10 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
 namespace shrimpcast.Entities.DB
 {
     [Index(nameof(Name), IsUnique = true)]
     public class Source
     {
+        [JsonIgnore]
         public int SourceId { get; set; }
 
         public required string Name { get; set; }
@@ -21,6 +23,7 @@ namespace shrimpcast.Entities.DB
 
         public required bool UseRTCEmbed { get; set; }
 
+        [JsonIgnore]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public DateTime? StartsAt {  get; set; }
@@ -31,10 +34,10 @@ namespace shrimpcast.Entities.DB
 
         public required bool WithCredentials { get; set; }
 
-        public static Dictionary<string, object?> GetModel(bool avoidNormalization = false)
+        public static Dictionary<string, object?> GetModel()
         {
             var model = typeof(Source).GetProperties()
-                .Where(p => p.Name != nameof(CreatedAt) && (!avoidNormalization || p.Name != nameof(SourceId)))
+                .Where(p => p.Name != nameof(CreatedAt) && p.Name != nameof(SourceId))
                 .ToDictionary(
                     p => avoidNormalization ? p.Name : char.ToLowerInvariant(p.Name[0]) + p.Name[1..],
                     p => (object?)(p.PropertyType == typeof(string) ? string.Empty
