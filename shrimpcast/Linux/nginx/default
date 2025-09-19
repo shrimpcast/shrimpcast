@@ -81,29 +81,39 @@ server {
 
     location /live {
         proxy_pass https://localhost:2053;
-        proxy_pass_request_headers off;
         proxy_pass_request_body off;
+        proxy_http_version 1.0;
+        proxy_set_header Connection close;
     }
 
     location /memfs {
         proxy_pass https://localhost:2053;
-        proxy_pass_request_headers off;
         proxy_pass_request_body off;
+        proxy_http_version 1.0;
+        proxy_set_header Connection close;
     }
-	
+
     location /ui {
         proxy_pass https://localhost:2053;
+        proxy_http_version 1.0;
+        proxy_set_header Connection close;
     }
 
     location = /api {
         proxy_pass https://localhost:2053;
+        proxy_http_version 1.0;
+        proxy_set_header Connection close;
     }
-	
+
     location /api/login {
         proxy_pass https://localhost:2053;
+        proxy_http_version 1.0;
+        proxy_set_header Connection close;
     }
-	
+
     location /api/v3 {
         proxy_pass https://localhost:2053;
+        proxy_http_version 1.0;
+        proxy_set_header Connection close;
     }
 }

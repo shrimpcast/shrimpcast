@@ -61,7 +61,11 @@ builder.Services.AddHangfire(configuration => configuration
                 .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
                 .UseSimpleAssemblyNameTypeSerializer()
                 .UseRecommendedSerializerSettings());
-builder.Services.AddHangfireServer();
+builder.Services.AddHangfireServer(options =>
+{
+    options.SchedulePollingInterval = TimeSpan.FromSeconds(3);
+});
+
 GlobalConfiguration.Configuration.UseInMemoryStorage();
 var app = builder.Build();
 app.UseForwardedHeaders();
