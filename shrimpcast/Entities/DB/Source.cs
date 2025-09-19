@@ -30,5 +30,19 @@ namespace shrimpcast.Entities.DB
         public required bool ResetOnScheduledSwitch { get; set; }
 
         public required bool WithCredentials { get; set; }
+
+        public static Dictionary<string, object?> GetModel(bool avoidNormalization = false)
+        {
+            var model = typeof(Source).GetProperties()
+                .Where(p => p.Name != nameof(CreatedAt) && (!avoidNormalization || p.Name != nameof(SourceId)))
+                .ToDictionary(
+                    p => avoidNormalization ? p.Name : char.ToLowerInvariant(p.Name[0]) + p.Name[1..],
+                    p => (object?)(p.PropertyType == typeof(string) ? string.Empty
+                          : p.PropertyType == typeof(bool) ? false
+                          : p.PropertyType == typeof(int) ? 0
+                          : null)
+                );
+            return model;
+        }
     }
 }

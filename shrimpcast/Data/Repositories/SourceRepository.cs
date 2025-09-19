@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using shrimpcast.Data.Repositories.Interfaces;
@@ -24,6 +23,7 @@ namespace shrimpcast.Data.Repositories
         public async Task<bool> Save(List<Source> newSources)
         {
             var existingSources = _configurationSingleton.Configuration.Sources;
+            var model = Source.GetModel(true);
 
             // Add & edit
             foreach (var newSource in newSources) 
@@ -34,6 +34,7 @@ namespace shrimpcast.Data.Repositories
                 {
                     if (!Constants.SOURCE_RESERVERD_WORDS.Contains(newSource.Name.ToLower()))
                     {
+                        newSource.SourceId = default;
                         await _context.AddAsync(newSource);
                     }
                 } 
@@ -41,17 +42,13 @@ namespace shrimpcast.Data.Repositories
                 else if (JsonConvert.SerializeObject(newSource) != JsonConvert.SerializeObject(existingSource))
                 {
                     var entity = await _context.Sources.FirstAsync(s => s.Name == existingSource.Name);
-                    entity.IsEnabled = newSource.IsEnabled;
-                    entity.Name = newSource.Name;
-                    entity.Title = newSource.Title;
-                    entity.Url = newSource.Url;
-                    entity.Thumbnail = newSource.Thumbnail;
-                    entity.UseLegacyPlayer = newSource.UseLegacyPlayer;
-                    entity.UseRTCEmbed = newSource.UseRTCEmbed;
-                    entity.StartsAt = newSource.StartsAt;
-                    entity.EndsAt = newSource.EndsAt;
-                    entity.ResetOnScheduledSwitch = newSource.ResetOnScheduledSwitch;
-                    entity.WithCredentials = newSource.WithCredentials;
+                    var existingType = entity.GetType();
+                    var newType  = newSource.GetType();
+                    foreach (var field in model)
+                    {
+                        var newValue = newType.GetProperty(field.Key)!.GetValue(newSource);
+                        existingType.GetProperty(field.Key)!.SetValue(entity, newValue);
+                    }
                 }
             }
 

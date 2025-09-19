@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using Stripe;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace shrimpcast.Entities.DB
@@ -213,6 +214,9 @@ namespace shrimpcast.Entities.DB
 
     public static class ConfigurationExtensions
     {
+        public static string NormalizeToJavascript(this string value) =>
+            char.ToLowerInvariant(value[0]) + value[1..];
+
         public static object BuildJSONConfiguration(this Configuration config) => new object[]
             {
                 new
@@ -262,19 +266,30 @@ namespace shrimpcast.Entities.DB
                             label = "Sources",
                             fields = new[]
                             {
-                                new { name = nameof(Source.IsEnabled).ToLower(), label = "Enabled" },
-                                new { name = nameof(Source.Name).ToLower(), label = "Name" },
-                                new { name = nameof(Source.Title).ToLower(), label = "Title" },
-                                new { name = nameof(Source.Url).ToLower(), label = "URL" },
-                                new { name = nameof(Source.Thumbnail).ToLower(), label = "Thumbnail" },
-                                new { name = nameof(Source.UseLegacyPlayer).ToLower(), label = "Native player" },
-                                new { name = nameof(Source.UseRTCEmbed).ToLower(), label = "Embed" },
-                                new { name = nameof(Source.WithCredentials).ToLower(), label = "With credentials" },
-                                new { name = nameof(Source.ResetOnScheduledSwitch).ToLower(), label = "Reset on start" },
-                                new { name = nameof(Source.StartsAt).ToLower(), label = "Schedule start" },
-                                new { name = nameof(Source.EndsAt).ToLower(), label = "Schedule end" },
-                                new { name = "delete", label = string.Empty },
-                            }
+                                new { name = nameof(Source.IsEnabled).NormalizeToJavascript(), label = "Enabled", type = Constants.AddTableItem.boolean, color = "primary" },
+                                new { name = nameof(Source.Name).NormalizeToJavascript(), label = "Name", type = Constants.AddTableItem.text, color = string.Empty },
+                                new { name = nameof(Source.Title).NormalizeToJavascript(), label = "Title", type = Constants.AddTableItem.button, color = "success" },
+                                new { name = nameof(Source.Url).NormalizeToJavascript(), label = "URL", type = Constants.AddTableItem.button, color = "info"  },
+                                new { name = nameof(Source.Thumbnail).NormalizeToJavascript(), label = "Thumbnail", type = Constants.AddTableItem.image, color = string.Empty },
+                                new { name = nameof(Source.UseLegacyPlayer).NormalizeToJavascript(), label = "Native player", type = Constants.AddTableItem.boolean, color = "success" },
+                                new { name = nameof(Source.UseRTCEmbed).NormalizeToJavascript(), label = "Embed", type = Constants.AddTableItem.boolean, color = "error" },
+                                new { name = nameof(Source.WithCredentials).NormalizeToJavascript(), label = "With credentials", type = Constants.AddTableItem.boolean, color = "info" },
+                                new { name = nameof(Source.ResetOnScheduledSwitch).NormalizeToJavascript(), label = "Reset on start", type = Constants.AddTableItem.boolean, color = "warning"  },
+                                new { name = nameof(Source.StartsAt).NormalizeToJavascript(), label = "Schedule start", type = Constants.AddTableItem.date, color = string.Empty },
+                                new { name = nameof(Source.EndsAt).NormalizeToJavascript(), label = "Schedule end", type = Constants.AddTableItem.date, color = string.Empty  },
+                            },
+                            // Only supports strings at the moment
+                            // Do not pass non-string fields or it will break
+                            requiredFields = new[]
+                            {
+                                nameof(Source.Name).NormalizeToJavascript(),
+                                nameof(Source.Url).NormalizeToJavascript(),
+                            },
+                            // Field the reserved words apply to
+                            reservedWordField = nameof(Source.Name).NormalizeToJavascript(),
+                            reservedWords = Constants.SOURCE_RESERVERD_WORDS,
+                            model = Source.GetModel(),
+                            identifier = nameof(Source.SourceId).NormalizeToJavascript()
                         }
                     }
                 },
