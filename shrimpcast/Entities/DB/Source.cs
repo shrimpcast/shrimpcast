@@ -33,7 +33,7 @@ namespace shrimpcast.Entities.DB
 
         public static object GetModel()
         {
-            var dict = typeof(Source).GetProperties()
+            var model = typeof(Source).GetProperties()
                 .Where(p => p.Name != "CreatedAt")
                 .ToDictionary(
                     p => char.ToLowerInvariant(p.Name[0]) + p.Name[1..],
@@ -42,8 +42,7 @@ namespace shrimpcast.Entities.DB
                           : p.PropertyType == typeof(int) ? 0
                           : null)
                 );
-
-            return dict;
+            return model;
         }
     }
 }

@@ -278,12 +278,14 @@ namespace shrimpcast.Entities.DB
                                 new { name = nameof(Source.StartsAt).NormalizeToJavascript(), label = "Schedule start", type = Constants.AddTableItem.date, color = string.Empty },
                                 new { name = nameof(Source.EndsAt).NormalizeToJavascript(), label = "Schedule end", type = Constants.AddTableItem.date, color = string.Empty  },
                             },
+                            // Only supports strings at the moment
                             requiredFields = new[]
                             {
-                                nameof(Source.Name).ToLower(),
-                                nameof(Source.Url).ToLower(),
+                                nameof(Source.Name).NormalizeToJavascript(),
+                                nameof(Source.Url).NormalizeToJavascript(),
                             },
-                            reservedWordField = nameof(Source.Name).ToLower(),
+                            // Field the reserved words apply to
+                            reservedWordField = nameof(Source.Name).NormalizeToJavascript(),
                             reservedWords = Constants.SOURCE_RESERVERD_WORDS,
                             model = Source.GetModel(),
                             identifier = nameof(Source.SourceId).NormalizeToJavascript()
