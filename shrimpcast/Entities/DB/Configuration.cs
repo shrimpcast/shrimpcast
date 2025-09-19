@@ -279,6 +279,7 @@ namespace shrimpcast.Entities.DB
                                 new { name = nameof(Source.EndsAt).NormalizeToJavascript(), label = "Schedule end", type = Constants.AddTableItem.date, color = string.Empty  },
                             },
                             // Only supports strings at the moment
+                            // Do not pass non-string fields or it will break
                             requiredFields = new[]
                             {
                                 nameof(Source.Name).NormalizeToJavascript(),
