@@ -34,6 +34,7 @@ namespace shrimpcast.Data.Repositories
                 {
                     if (!Constants.SOURCE_RESERVERD_WORDS.Contains(newSource.Name.ToLower()))
                     {
+                        newSource.SourceId = default;
                         await _context.AddAsync(newSource);
                     }
                 } 
