@@ -112,7 +112,7 @@ const Toggle = ({ item, field, updateConfig, itemsKey, identifier, onChange }) =
               item[field.name],
               item[identifier],
               field.name,
-              !Boolean(requiredFields.find((rField) => field.name === rField)),
+              !requiredFields.includes(field.name),
               identifier,
               itemsKey
             )
@@ -146,7 +146,7 @@ const Toggle = ({ item, field, updateConfig, itemsKey, identifier, onChange }) =
                 item[field.name],
                 item[identifier],
                 field.name,
-                !Boolean(requiredFields.find((rField) => field.name === rField)),
+                !requiredFields.includes(field.name),
                 identifier,
                 itemsKey
               )
@@ -178,8 +178,8 @@ const Toggle = ({ item, field, updateConfig, itemsKey, identifier, onChange }) =
         label={field.name}
         variant="outlined"
         size="small"
-        required={Boolean(requiredFields.find((rField) => field.name === rField))}
-        autoFocus={requiredFields.findIndex((rField) => field.name === rField) === 0}
+        required={requiredFields.includes(field.name)}
+        autoFocus={requiredFields.indexOf(field.name) === 0}
       />
     );
   };
@@ -354,8 +354,9 @@ const GenericAddObjectTable = ({
                       color="primary"
                       onClick={() => updateConfig(null, null, null, itemsKey, identifier, null, true)}
                       disabled={
-                        Boolean(requiredFields.filter((field) => !newItemData[field].trim()).length) ||
-                        reservedWords.includes(newItemData[reservedWordField].trim().toLowerCase())
+                        requiredFields.some((field) => !newItemData[field]) ||
+                        reservedWords.includes(newItemData[reservedWordField]) ||
+                        items.some((item) => newItemData[reservedWordField] === item[reservedWordField])
                       }
                     >
                       <CheckIcon />
