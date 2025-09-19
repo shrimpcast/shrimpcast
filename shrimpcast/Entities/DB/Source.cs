@@ -34,7 +34,7 @@ namespace shrimpcast.Entities.DB
 
         public required bool WithCredentials { get; set; }
 
-        public static Dictionary<string, object?> GetModel()
+        public static Dictionary<string, object?> GetModel(bool avoidNormalization = false)
         {
             var model = typeof(Source).GetProperties()
                 .Where(p => p.Name != nameof(CreatedAt) && p.Name != nameof(SourceId))

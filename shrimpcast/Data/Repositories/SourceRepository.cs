@@ -23,7 +23,7 @@ namespace shrimpcast.Data.Repositories
         public async Task<bool> Save(List<Source> newSources)
         {
             var existingSources = _configurationSingleton.Configuration.Sources;
-            var model = Source.GetModel();
+            var model = Source.GetModel(true);
 
             // CUD
             foreach (var newSource in newSources) 
