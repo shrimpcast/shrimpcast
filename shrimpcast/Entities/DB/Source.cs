@@ -34,6 +34,8 @@ namespace shrimpcast.Entities.DB
 
         public required bool WithCredentials { get; set; }
 
+        public int? SortPriority { get; set; }
+
         public static Dictionary<string, object?> GetModel(bool avoidNormalization = false)
         {
             var model = typeof(Source).GetProperties()

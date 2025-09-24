@@ -51,6 +51,7 @@ namespace shrimpcast.Entities
             button = 3,
             image = 4,
             date = 5,
+            numeric = 6,
         }
 
         public static string EMOTE_GET (string name) => $"/api/emote/get/{name}";

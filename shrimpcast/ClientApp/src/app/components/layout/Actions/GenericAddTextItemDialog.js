@@ -19,9 +19,10 @@ const GenericAddTextItemDialog = (props) => {
       editMode,
       customCallback,
       allowEmptyEdit,
+      isNumeric,
     } = props,
     [loading, setLoading] = useState(false),
-    [item, setItem] = useState(defaultValue || ""),
+    [item, setItem] = useState(defaultValue),
     closeDialog = () => {
       setItem("");
       setAddDialogOpened(false);
@@ -48,10 +49,15 @@ const GenericAddTextItemDialog = (props) => {
           autoFocus
           margin="dense"
           label={gad_description}
-          value={item}
-          onChange={(e) => setItem(e.target.value)}
+          value={item ?? ""}
+          onChange={(e) => {
+            const { value } = e.target,
+              isEmpty = value === "";
+            setItem(isEmpty ? null : isNumeric ? +value : value);
+          }}
           fullWidth
           size="small"
+          type={isNumeric ? "number" : "text"}
         />
       </DialogContent>
       <DialogActions>

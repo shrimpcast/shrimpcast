@@ -18,7 +18,10 @@ namespace shrimpcast.Data.Repositories
         }
 
         public async Task<List<Source>> GetAll() =>
-            await _context.Sources.AsNoTracking().OrderBy(s => s.CreatedAt).ToListAsync();
+            await _context.Sources.AsNoTracking()
+            .OrderBy(s => s.SortPriority)
+            .ThenBy(s => s.CreatedAt)
+            .ToListAsync();
 
         public async Task<bool> Save(List<Source> newSources)
         {
