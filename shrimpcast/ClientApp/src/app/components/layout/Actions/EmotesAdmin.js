@@ -17,6 +17,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import InsertEmoticonIcon from "@mui/icons-material/InsertEmoticon";
 import EmoteManager from "../../../managers/EmoteManager";
 import AddEmoteDialog from "./Emotes/AddEmoteDialog";
+import ConfirmDialog from "../../others/ConfirmDialog";
 
 const EmotesAdmin = (props) => {
   const [open, setOpen] = useState(false),
@@ -27,10 +28,18 @@ const EmotesAdmin = (props) => {
       const isRemoved = await EmoteManager.Remove(props.signalR, emoteId);
       if (!isRemoved) return;
       setEmotes((emotes) => emotes.filter((emote) => emote.emoteId !== emoteId));
+      closeConfirmPrompt();
     },
     [addEmoteOpened, setAddEmoteOpened] = useState(false),
     openAddEmotes = () => setAddEmoteOpened(true),
-    closeAddEmotes = () => setAddEmoteOpened(false);
+    closeAddEmotes = () => setAddEmoteOpened(false),
+    [showPromptDialog, setShowPromptDialog] = useState({
+      open: false,
+      name: null,
+      id: null,
+    }),
+    openConfirmPrompt = (name, id) => setShowPromptDialog({ open: true, name, id }),
+    closeConfirmPrompt = () => setShowPromptDialog({ open: false, name: null, id: null });
 
   return (
     <>
@@ -72,7 +81,7 @@ const EmotesAdmin = (props) => {
                   key={emote.emoteId}
                   secondaryAction={
                     <IconButton
-                      onClick={() => removeEmote(emote.emoteId)}
+                      onClick={() => openConfirmPrompt(emote.name, emote.emoteId)}
                       edge="end"
                       aria-label="delete"
                       sx={{
@@ -92,6 +101,13 @@ const EmotesAdmin = (props) => {
             </List>
           </DialogContent>
         </Dialog>
+      )}
+      {showPromptDialog.open && (
+        <ConfirmDialog
+          title={`Are you sure you want to remove ${showPromptDialog.name}?`}
+          confirm={() => removeEmote(showPromptDialog.id)}
+          cancel={closeConfirmPrompt}
+        />
       )}
     </>
   );

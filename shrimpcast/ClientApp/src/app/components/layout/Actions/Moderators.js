@@ -13,6 +13,7 @@ const Moderators = (props) => {
       icon={SecurityIcon}
       identifier="sessionId"
       contentIdentifier="sessionName"
+      actionName="unmod"
       {...props}
     />
   );

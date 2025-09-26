@@ -13,6 +13,7 @@ const Mutes = (props) => {
       icon={VolumeOffIcon}
       identifier="sessionId"
       contentIdentifier="sessionName"
+      actionName="unmute"
       {...props}
     />
   );
