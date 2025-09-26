@@ -13,6 +13,7 @@ const Bans = (props) => {
       identifier="banId"
       contentIdentifier="sessionName"
       showScroll={true}
+      skipConfirmDelete={true}
       responseIsTitleObject={{
         appendTitle: "[{0} banned user(s)]",
         appendKey: "totalBans",

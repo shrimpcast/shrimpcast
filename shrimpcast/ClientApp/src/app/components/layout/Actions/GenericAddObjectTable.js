@@ -85,6 +85,7 @@ const types = {
   button: 3,
   image: 4,
   date: 5,
+  numeric: 6,
 };
 
 const dateToISO = (value) => (value ? new Date(value).toISOString() : null);
@@ -114,7 +115,8 @@ const Toggle = ({ item, field, updateConfig, itemsKey, identifier, onChange }) =
               field.name,
               !requiredFields.includes(field.name),
               identifier,
-              itemsKey
+              itemsKey,
+              field.type
             )
           }
           variant="outlined"
@@ -148,7 +150,8 @@ const Toggle = ({ item, field, updateConfig, itemsKey, identifier, onChange }) =
                 field.name,
                 !requiredFields.includes(field.name),
                 identifier,
-                itemsKey
+                itemsKey,
+                field.type
               )
             }
             sx={styles.editThumbnailButton}
@@ -171,13 +174,22 @@ const Toggle = ({ item, field, updateConfig, itemsKey, identifier, onChange }) =
     );
   },
   TextAdd = ({ newItemData, field, setNewItemData, requiredFields }) => {
+    const isNumeric = field.type === types.numeric;
     return (
       <TextField
-        value={newItemData[field.name]}
-        onChange={(e) => setNewItemData({ ...newItemData, [field.name]: e.target.value.trim() })}
+        value={newItemData[field.name] ?? ""}
+        onChange={(e) => {
+          const { value } = e.target,
+            isEmpty = value === "";
+          setNewItemData({
+            ...newItemData,
+            [field.name]: isEmpty ? null : isNumeric ? +e.target.value : e.target.value.trim(),
+          });
+        }}
         label={field.label.toLowerCase()}
         variant="outlined"
         size="small"
+        type={isNumeric ? "number" : "text"}
         required={requiredFields.includes(field.name)}
         autoFocus={requiredFields.indexOf(field.name) === 0}
       />
@@ -208,6 +220,7 @@ const GenericAddObjectTable = ({
       allowEmptyEdit: false,
       itemsKey: null,
       identifier: null,
+      type: null,
     }),
     [isAddingItem, setIsAddingItem] = useState(false),
     [newItemData, setNewItemData] = useState(model),
@@ -215,9 +228,9 @@ const GenericAddObjectTable = ({
       setItemToDelete(item);
       setDeleteConfirmOpen(true);
     },
-    openEditContent = (title, description, value, itemId, field, allowEmptyEdit, identifier, itemsKey) => {
+    openEditContent = (title, description, value, itemId, field, allowEmptyEdit, identifier, itemsKey, type) => {
       setEditOpen(true);
-      setEditContent({ title, description, value, itemId, field, allowEmptyEdit, identifier, itemsKey });
+      setEditContent({ title, description, value, itemId, field, allowEmptyEdit, identifier, itemsKey, type });
     },
     closeAdd = () => {
       setIsAddingItem(false);
@@ -280,7 +293,7 @@ const GenericAddObjectTable = ({
                       />
                     ) : field.type === types.text ? (
                       <Text item={item} field={field} />
-                    ) : field.type === types.button ? (
+                    ) : field.type === types.button || field.type === types.numeric ? (
                       <ButtonTooltip
                         item={item}
                         field={field}
@@ -330,7 +343,10 @@ const GenericAddObjectTable = ({
                         field={field}
                         onChange={(e) => setNewItemData({ ...newItemData, [field.name]: e.target.checked })}
                       />
-                    ) : field.type === types.text || field.type === types.button || field.type === types.image ? (
+                    ) : field.type === types.text ||
+                      field.type === types.button ||
+                      field.type === types.image ||
+                      field.type === types.numeric ? (
                       <TextAdd
                         newItemData={newItemData}
                         field={field}
@@ -380,7 +396,7 @@ const GenericAddObjectTable = ({
           startIcon={<AddIcon />}
           onClick={() => setIsAddingItem(true)}
         >
-          Add item
+          Add {itemsKey.substring(0, itemsKey.length - 1)}
         </Button>
       )}
 
@@ -400,6 +416,7 @@ const GenericAddObjectTable = ({
           setAddDialogOpened={setEditOpen}
           editMode={true}
           allowEmptyEdit={editContent.allowEmptyEdit}
+          isNumeric={editContent.type === types.numeric}
           customCallback={(value) =>
             updateConfig(
               value,

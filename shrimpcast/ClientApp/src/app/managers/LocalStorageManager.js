@@ -4,6 +4,7 @@ class LocalStorageManager {
     ignoredUsers: "ignored_users",
     showNotificationsPrompt: "notifications_prompt_hidden",
     showGitHubPrompt: "github_prompt_hidden",
+    recentlyUsedEmotes: "recently_used_emotes",
   };
 
   static setStorage(key, value) {
@@ -42,7 +43,7 @@ class LocalStorageManager {
     try {
       users = JSON.parse(this.getStorage(this.localStorage.ignoredUsers));
     } catch (e) {}
-    return users || [];
+    return Array.isArray(users) ? users : [];
   }
 
   static hideNotificationsPrompt() {
@@ -59,6 +60,19 @@ class LocalStorageManager {
 
   static shouldShowGitHubPrompt() {
     return !Boolean(this.getStorage(this.localStorage.showGitHubPrompt));
+  }
+
+  static setRecentlyUsedEmotes(emotes) {
+    this.setStorage(this.localStorage.recentlyUsedEmotes, JSON.stringify(emotes));
+    return true;
+  }
+
+  static getRecentlyUsedEmotes() {
+    let emotes;
+    try {
+      emotes = JSON.parse(this.getStorage(this.localStorage.recentlyUsedEmotes));
+    } catch (e) {}
+    return Array.isArray(emotes) ? emotes : [];
   }
 }
 

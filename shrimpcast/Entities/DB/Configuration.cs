@@ -276,6 +276,7 @@ namespace shrimpcast.Entities.DB
                                 new { name = nameof(Source.ResetOnScheduledSwitch).NormalizeToJavascript(), label = "Reset on start", type = Constants.AddTableItem.boolean, color = "warning"  },
                                 new { name = nameof(Source.StartsAt).NormalizeToJavascript(), label = "Schedule start", type = Constants.AddTableItem.date, color = string.Empty },
                                 new { name = nameof(Source.EndsAt).NormalizeToJavascript(), label = "Schedule end", type = Constants.AddTableItem.date, color = string.Empty  },
+                                new { name = nameof(Source.SortPriority).NormalizeToJavascript(), label = "Sort priority", type = Constants.AddTableItem.numeric, color = "primary"  },
                             },
                             // Only supports strings at the moment
                             // Do not pass non-string fields or it will break

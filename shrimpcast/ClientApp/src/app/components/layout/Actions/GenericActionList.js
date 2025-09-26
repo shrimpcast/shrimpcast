@@ -17,6 +17,7 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import ManageUserDialog from "../../chat/ManageUserDialog";
 import GenericAddTextItemDialog from "./GenericAddTextItemDialog";
+import ConfirmDialog from "../../others/ConfirmDialog";
 
 const GenericActionList = (props) => {
   const [open, setOpen] = useState(props.skipButton || false),
@@ -29,7 +30,7 @@ const GenericActionList = (props) => {
       props.closeCallback && props.closeCallback();
     },
     setOpened = () => setOpen(true),
-    { signalR, responseIsTitleObject } = props,
+    { signalR, responseIsTitleObject, skipConfirmDelete } = props,
     [titleAppend, setTitleAppend] = useState(""),
     getItems = async () => {
       const items = await props.getItems(signalR);
@@ -42,8 +43,16 @@ const GenericActionList = (props) => {
       const isRemoved = props.removeItem(signalR, itemId);
       if (!isRemoved) return;
       setItems((items) => items.filter((item) => item[props.identifier] !== itemId));
+      !skipConfirmDelete && closeConfirmPrompt();
     },
-    Icon = props.icon;
+    Icon = props.icon,
+    [showPromptDialog, setShowPromptDialog] = useState({
+      open: false,
+      id: null,
+      content: null,
+    }),
+    openConfirmPrompt = (id, content) => setShowPromptDialog({ open: true, id, content }),
+    closeConfirmPrompt = () => setShowPromptDialog({ open: false, id: null, content: null });
 
   useEffect(() => {
     if (open) getItems();
@@ -108,7 +117,11 @@ const GenericActionList = (props) => {
                         )}
                         {props.removeItem && (
                           <IconButton
-                            onClick={() => removeItem(item[props.identifier])}
+                            onClick={() =>
+                              !skipConfirmDelete
+                                ? openConfirmPrompt(item[props.identifier], item[props.contentIdentifier])
+                                : removeItem(item[props.identifier])
+                            }
                             edge="end"
                             aria-label="delete"
                             sx={{
@@ -145,6 +158,13 @@ const GenericActionList = (props) => {
       </Dialog>
       {addDialogOpened && (
         <GenericAddTextItemDialog setItems={setItems} setAddDialogOpened={setAddDialogOpened} {...props} />
+      )}
+      {showPromptDialog.open && (
+        <ConfirmDialog
+          title={`Are you sure you want to ${props.actionName || "remove"} ${showPromptDialog.content}?`}
+          confirm={() => removeItem(showPromptDialog.id)}
+          cancel={closeConfirmPrompt}
+        />
       )}
     </>
   );

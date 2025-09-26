@@ -4,7 +4,7 @@ namespace shrimpcast.Entities
 {
     public class Constants
     {
-        public const string BACKEND_VERSION = "1.3.8";
+        public const string BACKEND_VERSION = "1.3.9";
 
         public const string PING_COMMAND = "!ping";
 
@@ -51,6 +51,7 @@ namespace shrimpcast.Entities
             button = 3,
             image = 4,
             date = 5,
+            numeric = 6,
         }
 
         public static string EMOTE_GET (string name) => $"/api/emote/get/{name}";
