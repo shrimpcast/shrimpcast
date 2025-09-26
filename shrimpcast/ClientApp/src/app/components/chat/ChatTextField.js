@@ -33,6 +33,8 @@ const SendInputSx = {
     height: "13.5px",
     borderRadius: "1px",
     borderTopRightRadius: "5px",
+    zIndex: 5,
+    cursor: "pointer",
   }),
   CheckBoxSx = {
     color: "white",
@@ -174,11 +176,11 @@ const ChatTextField = (props) => {
         inputRef={textFieldReference}
       />
       {connectionStatus === "Connected" && <WiFiSignalStrength {...props} />}
-      <Box sx={ScrollSx(props.autoScroll)}>
+      <Box onClick={toggleAutoScroll} sx={ScrollSx(props.autoScroll)}>
         <Typography className="noselect" variant="overline" sx={LabelSx(props.autoScroll)}>
           Autoscroll
         </Typography>
-        <Checkbox onChange={toggleAutoScroll} defaultChecked sx={CheckBoxSx} />
+        <Checkbox checked={props.autoScroll} sx={CheckBoxSx} />
       </Box>
       {emotes && <Emotes setEmotes={setEmotes} emotes={props.emotes} setMessage={setMessage} />}
     </Box>
