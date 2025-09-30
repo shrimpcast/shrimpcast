@@ -18,6 +18,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import ManageUserDialog from "../../chat/ManageUserDialog";
 import GenericAddTextItemDialog from "./GenericAddTextItemDialog";
 import ConfirmDialog from "../../others/ConfirmDialog";
+import GenericAddObjectTable from "./GenericAddObjectTable";
 
 const GenericActionList = (props) => {
   const [open, setOpen] = useState(props.skipButton || false),
@@ -95,6 +96,8 @@ const GenericActionList = (props) => {
             <Box width="40px" ml="auto" mr="auto">
               <CircularProgress color="secondary" />
             </Box>
+          ) : props.tableModel ? (
+            <GenericAddObjectTable {...props.tableModel} items={items} setItems={setItems} signalR={signalR} />
           ) : (
             <List sx={{ width: "100%", bgcolor: "background.paper", borderRadius: 1 }}>
               {!items.length ? (

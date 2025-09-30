@@ -199,6 +199,7 @@ const Toggle = ({ item, field, updateConfig, itemsKey, identifier, onChange }) =
 const GenericAddObjectTable = ({
   fields,
   items,
+  setItems,
   setConfig,
   utcToLocal,
   requiredFields,
@@ -207,6 +208,8 @@ const GenericAddObjectTable = ({
   model,
   identifier,
   itemsKey,
+  customActions,
+  signalR,
 }) => {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false),
     [itemToDelete, setItemToDelete] = useState(null),
@@ -237,24 +240,43 @@ const GenericAddObjectTable = ({
       setNewItemData(model);
     },
     updateConfig = (value, target, field, itemsKey, identifier, isDelete, isAdd) =>
-      setConfig((state) => {
-        let items = state.unorderedConfig[itemsKey],
-          itemIndex = items.findIndex((item) => item[identifier] === target?.[identifier]);
+      customActions
+        ? (async () => {
+            let values = items,
+              itemIndex = values.findIndex((item) => item[identifier] === target?.[identifier]);
 
-        if (isAdd) {
-          items = items.concat({ ...newItemData });
-          closeAdd();
-        } else if (isDelete) items.splice(itemIndex, 1);
-        else items[itemIndex][field] = value;
+            if (isAdd) {
+              const addedObject = await customActions.add(signalR, newItemData[identifier]);
+              if (!addedObject) return;
+              values = values.concat({ ...addedObject });
+              closeAdd();
+            } else if (isDelete) {
+              const success = await customActions.remove(signalR, values[itemIndex]);
+              if (!success) return;
+              values.splice(itemIndex, 1);
+            } else values[itemIndex][field] = value;
 
-        return {
-          ...state,
-          unorderedConfig: {
-            ...state.unorderedConfig,
-            [itemsKey]: items,
-          },
-        };
-      }),
+            setItems([...values]);
+            return;
+          })()
+        : setConfig((state) => {
+            let values = state.unorderedConfig[itemsKey],
+              itemIndex = values.findIndex((item) => item[identifier] === target?.[identifier]);
+
+            if (isAdd) {
+              values = values.concat({ ...newItemData });
+              closeAdd();
+            } else if (isDelete) values.splice(itemIndex, 1);
+            else values[itemIndex][field] = value;
+
+            return {
+              ...state,
+              unorderedConfig: {
+                ...state.unorderedConfig,
+                [itemsKey]: values,
+              },
+            };
+          }),
     removeItem = (itemToDelete) => {
       updateConfig(null, itemToDelete, null, itemsKey, identifier, true);
       setDeleteConfirmOpen(false);
@@ -323,7 +345,7 @@ const GenericAddObjectTable = ({
                     )}
                   </TableCell>
                 ))}
-                <TableCell>
+                <TableCell sx={{ textAlign: "right" }}>
                   <Tooltip title="Delete">
                     <IconButton color="error" onClick={() => openDeleteConfirmation(item)}>
                       <DeleteIcon />
@@ -364,7 +386,7 @@ const GenericAddObjectTable = ({
                   </TableCell>
                 ))}
 
-                <TableCell>
+                <TableCell sx={{ textAlign: "right" }}>
                   <Box>
                     <IconButton
                       color="primary"
@@ -402,7 +424,7 @@ const GenericAddObjectTable = ({
 
       {deleteConfirmOpen && (
         <ConfirmDialog
-          title={`Are you sure you want to remove ${itemToDelete.name}?`}
+          title={`Are you sure you want to remove ${itemToDelete[identifier]}?`}
           confirm={() => removeItem(itemToDelete)}
           cancel={() => setDeleteConfirmOpen(false)}
         />

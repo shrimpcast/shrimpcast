@@ -7,8 +7,10 @@ class AutoModFiltersManager {
     const response = await signalR.invoke("AddAutoModFilterWithText", content).catch((ex) => console.log(ex));
     return response;
   }
-  static async Remove(signalR, autoModFilterId) {
-    const response = await signalR.invoke("RemoveAutoModFilter", autoModFilterId).catch((ex) => console.log(ex));
+  static async Remove(signalR, autoModFilter) {
+    const response = await signalR
+      .invoke("RemoveAutoModFilter", autoModFilter.autoModFilterId)
+      .catch((ex) => console.log(ex));
     return response;
   }
   static async GetAll(signalR) {
