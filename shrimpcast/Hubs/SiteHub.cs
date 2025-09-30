@@ -11,6 +11,7 @@ using shrimpcast.Entities.DTO;
 using shrimpcast.Helpers;
 using shrimpcast.Hubs.Dictionaries;
 using System.Collections.Concurrent;
+using System.Text;
 using System.Text.RegularExpressions;
 using Message = shrimpcast.Entities.DB.Message;
 
@@ -138,6 +139,8 @@ namespace shrimpcast.Hubs
             var CurrentConnection = GetCurrentConnection();
             var Session = CurrentConnection.Session;
             var RemoteAddress = CurrentConnection.RemoteAdress;
+
+            newName = NormalizeString(newName);
             var notAllowedMessage = await IsChatActionAllowed(newName);
             if (notAllowedMessage != null)
             {
@@ -146,10 +149,11 @@ namespace shrimpcast.Hubs
             }
 
             var currentName = await _sessionRepository.GetCurrentName(Session.SessionId);
-            if (newName.Trim() == currentName || string.IsNullOrEmpty(newName.Trim()))
+            var isEmpty = string.IsNullOrEmpty(newName.Trim());
+            if (newName.Trim() == currentName || isEmpty)
             {
-                await DispatchSystemMessage("You are already using that name.");
-                return currentName;
+                await DispatchSystemMessage(isEmpty ? "Your name can not be empty." : "You are already using that name.");
+                return null;
             }
 
             var addedName = await _sessionRepository.ChangeName(Session.SessionId, newName);
@@ -185,6 +189,7 @@ namespace shrimpcast.Hubs
             var CurrentConnection = GetCurrentConnection();
             var RemoteAddress = CurrentConnection.RemoteAdress;
 
+            message = NormalizeString(message);
             var notAllowedMessage = await IsChatActionAllowed(message);
             if (notAllowedMessage != null)
             {
@@ -417,11 +422,11 @@ namespace shrimpcast.Hubs
         {
             await ShouldGrantAccess();
             var Message = await _messageRepository.GetById(MessageId);
-            await _autoModFilterRepository.Add(Message.Content);
+            await _autoModFilterRepository.Add(Message.Content, false, false);
             return await PerformBan(SessionId, true, true, GetCurrentConnection().Session.SessionId);
         }
 
-        public async Task<AutoModFilter?> AddAutoModFilterWithText([FromBody] string Content)
+        public async Task<AutoModFilter?> AddAutoModFilterWithText([FromBody] string Content, [FromBody] bool IgnoreCase, [FromBody] bool IgnoreDiacritic)
         {
             await ShouldGrantAccess();
             Content = Content.Trim();
@@ -430,13 +435,19 @@ namespace shrimpcast.Hubs
                 await DispatchSystemMessage("Content length must be at least 5.");
                 return null;
             }
-            return await _autoModFilterRepository.Add(Content);
+            return await _autoModFilterRepository.Add(Content, IgnoreCase, IgnoreDiacritic);
         }
 
         public async Task<bool> RemoveAutoModFilter([FromBody] int AutoModFilterId)
         {
             await ShouldGrantAccess();
             return await _autoModFilterRepository.Remove(AutoModFilterId);
+        }
+
+        public async Task<bool> EditAutoModFilter([FromBody] AutoModFilter filter)
+        {
+            await ShouldGrantAccess();
+            return await _autoModFilterRepository.Edit(filter);
         }
 
         public async Task<List<AutoModFilter>> GetAllAutoModFilters()
@@ -470,7 +481,14 @@ namespace shrimpcast.Hubs
                 return 0;
             }
 
-            var pollOption = await _pollRepository.AddOption(Session.SessionId, option.Trim());
+            option = NormalizeString(option);
+            if (string.IsNullOrEmpty(option))
+            {
+                await DispatchSystemMessage("Suggestion can not be empty.");
+                return 0;
+            }
+
+            var pollOption = await _pollRepository.AddOption(Session.SessionId, option);
             await Clients.All.SendAsync("OptionAdded", pollOption);
             int result = 0;
             if (!Connection.Session.IsAdmin)
@@ -1275,6 +1293,11 @@ namespace shrimpcast.Hubs
                 && !await _messageRepository.HasEnoughCountBySessionId(session.SessionId, (int)Configuration.TurnstileSkipThreshold);
         }
 
+        private string NormalizeString(string input) =>
+            Configuration.StripNonASCIIChars 
+            ? ASCIIRegex().Replace(input.Trim().Normalize(NormalizationForm.FormKD).Normalize(NormalizationForm.FormC), "")
+            : input.Trim();
+
         [GeneratedRegex(@"(\d+) (.+)$")]
         private static partial Regex PingRegex();
 
@@ -1283,6 +1306,9 @@ namespace shrimpcast.Hubs
 
         [GeneratedRegex("https?://\\S+")]
         private static partial Regex URLRegex();
+
+        [GeneratedRegex(@"[^\x20-\x7F\u00C0-\u00FF\u0100-\u017F]+")]
+        private static partial Regex ASCIIRegex();
         #endregion
     }
 }

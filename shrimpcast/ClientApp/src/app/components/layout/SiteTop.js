@@ -48,6 +48,7 @@ const SiteTop = (props) => {
       chatName,
       setChatName,
       poppedOutChat,
+      configuration,
     } = props,
     [newName, setNewName] = useState(chatName),
     [editMode, setEditMode] = useState(false),
@@ -59,10 +60,10 @@ const SiteTop = (props) => {
         return;
       }
       setLoading(true);
-      let changedName = await TokenManager.ChangeName(signalR, trimmedName);
+      const changedName = await TokenManager.ChangeName(signalR, trimmedName);
       setLoading(false);
 
-      if (changedName !== trimmedName) {
+      if (!changedName) {
         return;
       }
 
@@ -74,7 +75,8 @@ const SiteTop = (props) => {
       setNewName(chatName);
       setEditMode(false);
     },
-    changeInput = (e) => setNewName(e.target.value),
+    changeInput = (e) =>
+      setNewName(ChatActionsManager.normalizeString(configuration.stripNonASCIIChars, e.target.value)),
     handleKeys = async (e) => {
       if (e.key === "Enter") await submitEditMode();
       else if (e.key === "Escape") closeEditMode();
@@ -157,7 +159,7 @@ const SiteTop = (props) => {
                 }}
                 onInput={changeInput}
                 onKeyDown={handleKeys}
-                defaultValue={chatName}
+                value={newName}
                 disabled={loading}
                 fullWidth
               />
