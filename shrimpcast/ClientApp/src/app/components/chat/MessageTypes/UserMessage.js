@@ -106,7 +106,7 @@ const UserMessage = React.memo((props) => {
     openMinimized = () => setMinimized(false),
     content =
       props.content.length > maxLengthTruncation && isMiniminized
-        ? props.content.substring(0, maxLengthTruncation)
+        ? props.content.substring(0, maxLengthTruncation) + "..."
         : props.content,
     getEmote = (emoteName) => emotes.find((emote) => emote.name === emoteName),
     getSource = (sourceName) => enabledSources.find((eS) => `/${eS.name.toLowerCase()}` === sourceName),
