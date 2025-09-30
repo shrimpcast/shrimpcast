@@ -24,6 +24,14 @@ class ChatActionsManager {
     ...this.admin_actions,
   };
 
+  static normalizeString = (shouldStrip, input) =>
+    shouldStrip
+      ? input
+          .normalize("NFKD")
+          .normalize("NFC")
+          .replace(/[^\x20-\x7F\u00C0-\u00FF\u0100-\u017F]+/g, "")
+      : input;
+
   static async RemoveMessage(signalR, messageId) {
     const response = await signalR.invoke("RemoveMessage", messageId).catch((ex) => console.log(ex));
     return response;

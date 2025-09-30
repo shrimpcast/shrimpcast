@@ -4,6 +4,7 @@ import AddIcon from "@mui/icons-material/Add";
 import PollManager from "../../managers/PollManager";
 import RenderPollOptions from "./RenderPollOptions";
 import ConfirmDialog from "../others/ConfirmDialog";
+import ChatActionsManager from "../../managers/ChatActionsManager";
 
 const PollSx = {
     marginLeft: 1,
@@ -40,7 +41,8 @@ const Poll = (props) => {
       if (response > 0) setSelectedOption(response);
       if (response !== undefined) setNewPollOption("");
     },
-    changeInput = (e) => setNewPollOption(e.target.value),
+    changeInput = (e) =>
+      setNewPollOption(ChatActionsManager.normalizeString(config.stripNonASCIIChars, e.target.value)),
     handleKeys = async (e) => e.key === "Enter" && (await submitOption()),
     removeAllOptions = async () => {
       const response = await PollManager.RemoveOption(props.signalR, 0);

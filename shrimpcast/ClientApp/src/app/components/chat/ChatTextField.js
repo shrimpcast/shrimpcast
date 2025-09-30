@@ -6,6 +6,7 @@ import InsertEmoticonIcon from "@mui/icons-material/InsertEmoticon";
 import Emotes from "./Emotes/Emotes";
 import AutoComplete from "./AutoComplete";
 import WiFiSignalStrength from "./WiFiSignalStrength";
+import ChatActionsManager from "../../managers/ChatActionsManager";
 
 const SendInputSx = {
     width: "100%",
@@ -68,7 +69,7 @@ const ChatTextField = (props) => {
     changeInput = (e) => {
       const target = e.target,
         ne = e.nativeEvent;
-      setMessage(target.value);
+      setMessage(ChatActionsManager.normalizeString(configuration.stripNonASCIIChars, target.value));
       if (ne?.data === "@") {
         setAutoCompleteIndex(0);
         setShowAutocomplete(true);
