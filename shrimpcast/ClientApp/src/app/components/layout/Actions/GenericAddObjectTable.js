@@ -246,15 +246,19 @@ const GenericAddObjectTable = ({
               itemIndex = values.findIndex((item) => item[identifier] === target?.[identifier]);
 
             if (isAdd) {
-              const addedObject = await customActions.add(signalR, newItemData[identifier]);
+              const addedObject = await customActions.add(signalR, newItemData);
               if (!addedObject) return;
               values = values.concat({ ...addedObject });
               closeAdd();
             } else if (isDelete) {
-              const success = await customActions.remove(signalR, values[itemIndex]);
-              if (!success) return;
+              const removed = await customActions.remove(signalR, values[itemIndex]);
+              if (!removed) return;
               values.splice(itemIndex, 1);
-            } else values[itemIndex][field] = value;
+            } else {
+              values[itemIndex][field] = value;
+              const edited = await customActions.edit(signalR, values[itemIndex]);
+              if (!edited) return;
+            }
 
             setItems([...values]);
             return;
