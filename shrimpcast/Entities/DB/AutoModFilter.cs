@@ -8,6 +8,9 @@ namespace shrimpcast.Entities.DB
         public int AutoModFilterId { get; set; }
 
         public required string Content { get; set; }
+
+        public required bool IgnoreCase { get; set; }
+
+        public required bool IgnoreDiacritic { get; set; }
     }
 }
-

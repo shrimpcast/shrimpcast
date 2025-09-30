@@ -422,11 +422,11 @@ namespace shrimpcast.Hubs
         {
             await ShouldGrantAccess();
             var Message = await _messageRepository.GetById(MessageId);
-            await _autoModFilterRepository.Add(Message.Content);
+            await _autoModFilterRepository.Add(Message.Content, false, false);
             return await PerformBan(SessionId, true, true, GetCurrentConnection().Session.SessionId);
         }
 
-        public async Task<AutoModFilter?> AddAutoModFilterWithText([FromBody] string Content)
+        public async Task<AutoModFilter?> AddAutoModFilterWithText([FromBody] string Content, [FromBody] bool IgnoreCase, [FromBody] bool IgnoreDiacritic)
         {
             await ShouldGrantAccess();
             Content = Content.Trim();
@@ -435,13 +435,19 @@ namespace shrimpcast.Hubs
                 await DispatchSystemMessage("Content length must be at least 5.");
                 return null;
             }
-            return await _autoModFilterRepository.Add(Content);
+            return await _autoModFilterRepository.Add(Content, IgnoreCase, IgnoreDiacritic);
         }
 
         public async Task<bool> RemoveAutoModFilter([FromBody] int AutoModFilterId)
         {
             await ShouldGrantAccess();
             return await _autoModFilterRepository.Remove(AutoModFilterId);
+        }
+
+        public async Task<bool> EditAutoModFilter([FromBody] AutoModFilter filter)
+        {
+            await ShouldGrantAccess();
+            return await _autoModFilterRepository.Edit(filter);
         }
 
         public async Task<List<AutoModFilter>> GetAllAutoModFilters()
