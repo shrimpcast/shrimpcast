@@ -192,7 +192,7 @@ namespace shrimpcast.Controllers
         // 200 => clereance ok
         [HttpGet, Route("CloudflareChallengeNeeded")]
         [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true, Duration = 0)]
-        public IActionResult CloudflareChallengeNeeded() => Ok();
+        public bool CloudflareChallengeNeeded() => _configurationSingleton.Configuration.TurnstileManagedMode;
 
         [HttpGet, Route("ImportToken")]
         public async Task<bool> ImportToken([FromQuery] string accessToken)
