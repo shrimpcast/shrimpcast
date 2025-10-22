@@ -166,7 +166,7 @@ By running multiple parallel upload tests, you simulate real-world conditions wh
 
 ## Media Server
 
-You can access its panel by visiting {your_domain}:2053.
+You can access its panel by visiting {your_domain}/ui.
 
 If you're using Cloudflare, for RTMP broadcast, you'll need to bypass the domain proxy (but don't worry, it's already configured to allow 1935!) and stream directly to the VPS IP (e.g., rtmp://{your_vps_ip}/{livestream}).
 
