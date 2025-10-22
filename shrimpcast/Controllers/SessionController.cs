@@ -191,6 +191,7 @@ namespace shrimpcast.Controllers
         // 403 => challenge needed
         // 200 => clereance ok
         [HttpGet, Route("CloudflareChallengeNeeded")]
+        [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true, Duration = 0)]
         public IActionResult CloudflareChallengeNeeded() => Ok();
 
         [HttpGet, Route("ImportToken")]

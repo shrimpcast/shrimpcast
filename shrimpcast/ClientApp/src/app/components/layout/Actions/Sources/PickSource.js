@@ -116,7 +116,10 @@ const DEFAULT_THUMBNAIL = "/images/video_thumbnail.png",
     },
   };
 
-const PickSource = ({ sources, signalR, showViewerCountPerStream }) => {
+const ResolveThumbnail = (thumbnail, url, noCache) =>
+  thumbnail || (url.includes("/memfs/") ? url.substr(0, url.lastIndexOf(".")) + `.jpg?nocache=${noCache}` : null);
+
+const PickSource = ({ sources, signalR, showViewerCountPerStream, noCache }) => {
   const [hoveredIndex, setHoveredIndex] = useState(null),
     [viewerCount, setViewerCount] = useState(null),
     viewerCountRef = useRef(viewerCount);
@@ -162,7 +165,7 @@ const PickSource = ({ sources, signalR, showViewerCountPerStream }) => {
                 {viewerCount?.find((s) => s.name === source.name)?.count}
               </Box>
             )}
-            <Box sx={ImageSx(source.thumbnail, hoveredIndex, index)}>
+            <Box sx={ImageSx(ResolveThumbnail(source.thumbnail, source.url, noCache), hoveredIndex, index)}>
               <Box sx={HoverSx(hoveredIndex, index)} />
               <Box sx={TextContainerSx}>
                 <Typography sx={TextSx(hoveredIndex, index)}>
