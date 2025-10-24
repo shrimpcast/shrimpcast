@@ -15,7 +15,7 @@ const VideoJSPlayer = (props) => {
   const videoRef = useRef(null),
     playerRef = useRef(null),
     [cssLoaded, setCssLoaded] = useState(false),
-    { options } = props,
+    { options, theme } = props,
     play = (player) => {
       player.muted(false);
       setTimeout(() => {
@@ -53,6 +53,7 @@ const VideoJSPlayer = (props) => {
       const videoElement = document.createElement("video-js");
 
       videoElement.classList.add("vjs-big-play-centered");
+      videoElement.classList.add("skin_slate");
       videoRef.current.appendChild(videoElement);
       const player = (playerRef.current = videojs(videoElement, options, () => {
         const posterImg = player.el().querySelector(".vjs-poster img");
@@ -62,6 +63,8 @@ const VideoJSPlayer = (props) => {
             posterImg.style.visibility = "visible";
           }
         }
+
+        player.el().style.color = theme.palette.secondary[500];
         play(player);
       }));
 
@@ -98,6 +101,7 @@ const VideoJSPlayer = (props) => {
       player.src(options.sources);
       play(player);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [options, videoRef, cssLoaded, isError]);
 
   // Dispose the Video.js player when the functional component unmounts
@@ -108,6 +112,7 @@ const VideoJSPlayer = (props) => {
   useEffect(() => {
     const importCSS = async () => {
       await import("video.js/dist/video-js.css");
+      await import("./css/videojs-skin.css");
       setCssLoaded(true);
     };
 

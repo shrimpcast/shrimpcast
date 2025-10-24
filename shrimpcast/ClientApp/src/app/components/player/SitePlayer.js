@@ -1,4 +1,4 @@
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, useTheme } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import ReactPlayer from "react-player";
 import PickSource from "../layout/Actions/Sources/PickSource";
@@ -23,6 +23,7 @@ const SitePlayer = (props) => {
     { useRTCEmbed, useLegacyPlayer, startsAt, withCredentials, thumbnail } = source,
     url = source.url || "",
     video = useRef(),
+    theme = useTheme(),
     videoJsOptions = {
       autoplay: true,
       controls: true,
@@ -97,7 +98,7 @@ const SitePlayer = (props) => {
         allowFullScreen
       ></iframe>
     ) : !useLegacyPlayer ? (
-      <VideoJSPlayer options={videoJsOptions} />
+      <VideoJSPlayer options={videoJsOptions} theme={theme} />
     ) : (
       <ReactPlayer
         width={"100%"}
