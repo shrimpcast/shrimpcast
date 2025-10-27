@@ -6,12 +6,12 @@ using shrimpcast.Entities.DB;
 
 namespace shrimpcast.Data.Repositories
 {
-    public class SourceRepostiory : ISourceRepository
+    public class SourceRepository : ISourceRepository
     {
         private readonly APPContext _context;
         private readonly ConfigurationSingleton _configurationSingleton;
 
-        public SourceRepostiory(APPContext context, ConfigurationSingleton configurationSingleton)
+        public SourceRepository(APPContext context, ConfigurationSingleton configurationSingleton)
         {
             _context = context;
             _configurationSingleton = configurationSingleton;

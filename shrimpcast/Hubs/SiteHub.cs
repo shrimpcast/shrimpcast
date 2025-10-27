@@ -34,13 +34,14 @@ namespace shrimpcast.Hubs
         private readonly IBTCServerRepository _btcServerRepository;
         private readonly IStripeRepository _stripeRepository;
         private readonly ISourceRepository _sourceRepository;
+        private readonly IMediaServerStreamRepository _mediaServerStreamRepository;
         private readonly IHubContext<SiteHub> _hubContext;
         private readonly ConfigurationSingleton _configurationSigleton;
         private readonly Connections<SiteHub> _activeConnections;
         private readonly Pings<SiteHub> _pings;
         private readonly BingoSuggestions<SiteHub> _bingoSuggestions;
 
-        public SiteHub(IConfigurationRepository configurationRepository, ISessionRepository sessionRepository, IMessageRepository messageRepository, IBanRepository banRepository, IPollRepository pollRepository, ITorExitNodeRepository torExitNodeRepository, IHubContext<SiteHub> hubContext, ConfigurationSingleton configurationSingleton, Connections<SiteHub> activeConnections, Pings<SiteHub> pings, IOBSCommandsRepository obsCommandsRepository, IAutoModFilterRepository autoModFilterRepository, INotificationRepository notificationRepository, IEmoteRepository emoteRepository, IBingoRepository bingoRepository, IVpnAddressRepository vpnAddressRepository, BingoSuggestions<SiteHub> bingoSuggestions, IBTCServerRepository btcServerRepository, ISourceRepository sourceRepository, IStripeRepository stripeRepository)
+        public SiteHub(IConfigurationRepository configurationRepository, ISessionRepository sessionRepository, IMessageRepository messageRepository, IBanRepository banRepository, IPollRepository pollRepository, ITorExitNodeRepository torExitNodeRepository, IHubContext<SiteHub> hubContext, ConfigurationSingleton configurationSingleton, Connections<SiteHub> activeConnections, Pings<SiteHub> pings, IOBSCommandsRepository obsCommandsRepository, IAutoModFilterRepository autoModFilterRepository, INotificationRepository notificationRepository, IEmoteRepository emoteRepository, IBingoRepository bingoRepository, IVpnAddressRepository vpnAddressRepository, BingoSuggestions<SiteHub> bingoSuggestions, IBTCServerRepository btcServerRepository, ISourceRepository sourceRepository, IStripeRepository stripeRepository, IMediaServerStreamRepository mediaServerStreamRepository)
         {
             _configurationRepository = configurationRepository;
             _sessionRepository = sessionRepository;
@@ -62,6 +63,7 @@ namespace shrimpcast.Hubs
             _btcServerRepository = btcServerRepository;
             _sourceRepository = sourceRepository;
             _stripeRepository = stripeRepository;
+            _mediaServerStreamRepository = mediaServerStreamRepository;
         }
 
         private Configuration Configuration => _configurationSigleton.Configuration;
@@ -842,6 +844,48 @@ namespace shrimpcast.Hubs
             // if (Configuration.EnableStripe) invoices.Add(_stripeRepository.GetInvoices(sessionId));
             var result = await Task.WhenAll(invoices);
             return result.SelectMany(task => task ?? []).ToList();
+        }
+        #endregion
+
+        #region Media server
+        public async Task<object> GetSystemStats()
+        {
+            await ShouldGrantAccess();
+            var systemStats = new SystemStats();
+            var cpuUsage = systemStats.GetCpuUsage();
+            var memoryUsage = systemStats.GetMemoryUsagePercentage();
+            var networkUsage = systemStats.GetNetworkUsage();
+
+            return new
+            {
+                cpu = new { numeric = cpuUsage, _string = $"{cpuUsage:F2}%" },
+                memory = new { numeric = memoryUsage, _string = $"{memoryUsage:F2}%" },
+                network = new { numeric = networkUsage, _string = $"{networkUsage:F2}mbps" },
+            };
+        }
+
+        public async Task<MediaServerStream?> AddMediaServerStream([FromBody] MediaServerStream MediaServerStream)
+        {
+            await ShouldGrantAccess();
+            return await _mediaServerStreamRepository.Add(MediaServerStream);
+        }
+
+        public async Task<bool> RemoveMediaServerStream([FromBody] int MediaServerStreamId)
+        {
+            await ShouldGrantAccess();
+            return await _mediaServerStreamRepository.Remove(MediaServerStreamId);
+        }
+
+        public async Task<bool> EditMediaServerStream([FromBody] MediaServerStream MediaServerStream)
+        {
+            await ShouldGrantAccess();
+            return await _mediaServerStreamRepository.Edit(MediaServerStream);
+        }
+
+        public async Task<List<MediaServerStream>> GetAllMediaServerStreams()
+        {
+            await ShouldGrantAccess();
+            return await _mediaServerStreamRepository.GetAll();
         }
         #endregion
 
