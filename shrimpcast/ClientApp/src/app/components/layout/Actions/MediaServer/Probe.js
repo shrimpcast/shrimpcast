@@ -290,11 +290,13 @@ const Probe = ({ onSuccess, value }) => {
                             if (!probeAudioSource && streams.audioStreams?.length) return;
                             setStreams((streams) => ({
                               ...streams,
-                              audioStreams: audioStreams.audioStreams,
-                              audioStreamsMapped: audioStreams.audioStreamsMapped,
+                              ...audioStreams,
                             }));
+                            if (!audioStreams.audioStreams.length) {
+                              setTimeout(() => updateConfig("audioCustomSource", ""), 2500);
+                            }
+                            return false;
                           });
-                          return false;
                         }}
                       />
                     )}
@@ -303,7 +305,11 @@ const Probe = ({ onSuccess, value }) => {
               </Stack>
               <Button
                 onClick={() => {
-                  onSuccess(config);
+                  onSuccess({
+                    ...config,
+                    customHeaders: streams.customHeaders,
+                    customAudioHeaders: streams.customAudioHeaders,
+                  });
                   handleClose();
                 }}
                 variant="contained"

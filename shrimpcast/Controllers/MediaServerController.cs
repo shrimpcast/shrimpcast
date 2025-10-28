@@ -36,15 +36,7 @@ namespace shrimpcast.Controllers
         {
             var session = await _sessionRepository.GetExistingByTokenAsync(probeDTO.SessionToken);
             if (session == null || !session.IsAdmin) throw new Exception("Permission denied.");
-            try
-            {
-                var probe = await ProcessHelper.StartProcess("ffprobe", $"-v quiet -print_format json -show_format -show_streams {probeDTO.URL}", null!, true);
-                return JsonNode.Parse(probe);
-            }
-            catch (Exception)
-            {
-                return "Error: probe failed for URL.";
-            }
+            return await FFMPEGHelper.FFProbe(probeDTO.CustomHeaders, probeDTO.URL);
         }
     }
 }

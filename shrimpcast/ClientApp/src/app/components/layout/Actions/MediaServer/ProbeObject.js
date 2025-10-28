@@ -50,14 +50,20 @@ const ProbeObject = ({ setStreams, url, title, type }) => {
           label: `STREAM [${stream.index}]`,
           index: stream.index,
         }));
+        streams.customHeaders = `${customHeaders.map((h) => `${h.header}:${h.value}`).join("\r\n")}\r\n`;
       }
 
       if (type === "all" || type === "audio") {
         streams.audioStreams = response.streams.filter((s) => s.codec_type === "audio");
+        if (!streams.audioStreams.length && type === "audio") {
+          displayToast("Error: Input source has no audio streams.");
+        }
+
         streams.audioStreamsMapped = streams.audioStreams.map((stream) => ({
           label: `STREAM [${stream.index}]`,
           index: stream.index,
         }));
+        streams.customAudioHeaders = `${customHeaders.map((h) => `${h.header}:${h.value}`).join("\r\n")}\r\n`;
       }
 
       setStreams(streams);

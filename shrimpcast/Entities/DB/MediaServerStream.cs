@@ -22,6 +22,8 @@
 
         public string? CustomHeaders { get; set; }
 
+        public string? CustomAudioHeaders { get; set; }
+
         public required int VideoStreamIndex { get; set; }
 
         public required string VideoEncodingPreset { get; set; }
