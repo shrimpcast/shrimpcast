@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using shrimpcast.Data.Repositories.Interfaces;
+using shrimpcast.Entities.DTO;
 using shrimpcast.Helpers;
 using System.Text.Json.Nodes;
 
@@ -30,14 +31,14 @@ namespace shrimpcast.Controllers
             };
         }
 
-        [HttpGet, Route("Probe")]
-        public async Task<object?> Probe(string sessionToken, string url)
+        [HttpPost, Route("Probe")]
+        public async Task<object?> Probe([FromForm] ProbeDTO probeDTO)
         {
-            var session = await _sessionRepository.GetExistingByTokenAsync(sessionToken);
+            var session = await _sessionRepository.GetExistingByTokenAsync(probeDTO.SessionToken);
             if (session == null || !session.IsAdmin) throw new Exception("Permission denied.");
             try
             {
-                var probe = await ProcessHelper.StartProcess("ffprobe", $"-v quiet -print_format json -show_format -show_streams {url}", null!, true);
+                var probe = await ProcessHelper.StartProcess("ffprobe", $"-v quiet -print_format json -show_format -show_streams {probeDTO.URL}", null!, true);
                 return JsonNode.Parse(probe);
             }
             catch (Exception)

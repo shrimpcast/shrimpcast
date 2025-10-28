@@ -116,7 +116,8 @@ const Toggle = ({ item, field, updateConfig, itemsKey, identifier, onChange }) =
               !requiredFields.includes(field.name),
               identifier,
               itemsKey,
-              field.type
+              field.type,
+              field
             )
           }
           variant="outlined"
@@ -151,7 +152,8 @@ const Toggle = ({ item, field, updateConfig, itemsKey, identifier, onChange }) =
                 !requiredFields.includes(field.name),
                 identifier,
                 itemsKey,
-                field.type
+                field.type,
+                field
               )
             }
             sx={styles.editThumbnailButton}
@@ -195,7 +197,7 @@ const Toggle = ({ item, field, updateConfig, itemsKey, identifier, onChange }) =
           required={requiredFields.includes(field.name)}
           autoFocus={requiredFields.indexOf(field.name) === 0}
         />
-        {field.probe && newItemData[field.name] && (
+        {field.probe && field.enableProbeCondition(newItemData[field.name]) && (
           <field.probe
             value={newItemData[field.name]}
             onSuccess={() =>
@@ -238,6 +240,7 @@ const GenericAddObjectTable = ({
       itemsKey: null,
       identifier: null,
       type: null,
+      wholeField: null,
     }),
     [isAddingItem, setIsAddingItem] = useState(false),
     [newItemData, setNewItemData] = useState(model),
@@ -245,9 +248,31 @@ const GenericAddObjectTable = ({
       setItemToDelete(item);
       setDeleteConfirmOpen(true);
     },
-    openEditContent = (title, description, value, itemId, field, allowEmptyEdit, identifier, itemsKey, type) => {
+    openEditContent = (
+      title,
+      description,
+      value,
+      itemId,
+      field,
+      allowEmptyEdit,
+      identifier,
+      itemsKey,
+      type,
+      wholeField
+    ) => {
       setEditOpen(true);
-      setEditContent({ title, description, value, itemId, field, allowEmptyEdit, identifier, itemsKey, type });
+      setEditContent({
+        title,
+        description,
+        value,
+        itemId,
+        field,
+        allowEmptyEdit,
+        identifier,
+        itemsKey,
+        type,
+        wholeField,
+      });
     },
     closeAdd = () => {
       setIsAddingItem(false);
@@ -466,6 +491,7 @@ const GenericAddObjectTable = ({
               editContent.identifier
             )
           }
+          probe={editContent.wholeField.probe && editContent.wholeField}
         />
       )}
     </Box>

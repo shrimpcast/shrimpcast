@@ -28,9 +28,21 @@ class MediaServerManager {
     const response = await signalR.invoke("EditMediaServerStream", mediaServerStream).catch((ex) => console.log(ex));
     return response;
   }
-  static async Probe(url) {
+  static async Probe(url, headers) {
+    let formData = new FormData();
+    formData.append("URL", url);
+    headers.forEach((h, i) => {
+      formData.append(`CustomHeaders[${i}].Header`, h.header);
+      formData.append(`CustomHeaders[${i}].Value`, h.value);
+    });
+    formData.append("SessionToken", LocalStorageManager.getToken());
     const response = await axios
-      .get(`/api/mediaserver/Probe?sessionToken=${LocalStorageManager.getToken()}&url=${url}`)
+      .post(`/api/mediaserver/Probe`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        timeout: 10000,
+      })
       .catch((ex) => console.log(ex));
     return response?.data;
   }

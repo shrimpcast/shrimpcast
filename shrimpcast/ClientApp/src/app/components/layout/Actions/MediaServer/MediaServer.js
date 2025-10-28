@@ -25,6 +25,11 @@ const MediaServer = (props) => {
         type: 3,
         color: "success",
         probe: Probe,
+        enableProbeCondition: (url) => {
+          try {
+            return new URL(url);
+          } catch (e) {}
+        },
         probeSuccess: {
           key: "probeSuccess",
           value: true,
@@ -34,7 +39,7 @@ const MediaServer = (props) => {
     requiredFields: ["name", "ingressUri", "probeSuccess"],
     reservedWords: [],
     reservedWordField: "name",
-    model: { isEnabled: true, name: "", ingressUri: "" },
+    model: { isEnabled: false, name: "", ingressUri: "" },
     identifier: "name",
     itemsKey: "media server streams",
     customActions: {
