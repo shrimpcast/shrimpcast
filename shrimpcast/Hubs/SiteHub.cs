@@ -848,22 +848,6 @@ namespace shrimpcast.Hubs
         #endregion
 
         #region Media server
-        public async Task<object> GetSystemStats()
-        {
-            await ShouldGrantAccess();
-            var systemStats = new SystemStats();
-            var cpuUsage = systemStats.GetCpuUsage();
-            var memoryUsage = systemStats.GetMemoryUsagePercentage();
-            var networkUsage = systemStats.GetNetworkUsage();
-
-            return new
-            {
-                cpu = new { numeric = cpuUsage, _string = $"{cpuUsage:F2}%" },
-                memory = new { numeric = memoryUsage, _string = $"{memoryUsage:F2}%" },
-                network = new { numeric = networkUsage, _string = $"{networkUsage:F2}mbps" },
-            };
-        }
-
         public async Task<MediaServerStream?> AddMediaServerStream([FromBody] MediaServerStream MediaServerStream)
         {
             await ShouldGrantAccess();

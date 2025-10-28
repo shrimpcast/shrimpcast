@@ -176,23 +176,37 @@ const Toggle = ({ item, field, updateConfig, itemsKey, identifier, onChange }) =
   TextAdd = ({ newItemData, field, setNewItemData, requiredFields }) => {
     const isNumeric = field.type === types.numeric;
     return (
-      <TextField
-        value={newItemData[field.name] ?? ""}
-        onChange={(e) => {
-          const { value } = e.target,
-            isEmpty = value === "";
-          setNewItemData({
-            ...newItemData,
-            [field.name]: isEmpty ? null : isNumeric ? +e.target.value : e.target.value.trim(),
-          });
-        }}
-        label={field.label.toLowerCase()}
-        variant="outlined"
-        size="small"
-        type={isNumeric ? "number" : "text"}
-        required={requiredFields.includes(field.name)}
-        autoFocus={requiredFields.indexOf(field.name) === 0}
-      />
+      <Box display="table-footer-group">
+        <TextField
+          value={newItemData[field.name] ?? ""}
+          onChange={(e) => {
+            const { value } = e.target,
+              isEmpty = value === "";
+            setNewItemData({
+              ...newItemData,
+              [field.name]: isEmpty ? null : isNumeric ? +e.target.value : e.target.value.trim(),
+              ...(field.probe ? { [field.probeSuccess.key]: false } : {}),
+            });
+          }}
+          label={field.label.toLowerCase()}
+          variant="outlined"
+          size="small"
+          type={isNumeric ? "number" : "text"}
+          required={requiredFields.includes(field.name)}
+          autoFocus={requiredFields.indexOf(field.name) === 0}
+        />
+        {field.probe && newItemData[field.name] && (
+          <field.probe
+            value={newItemData[field.name]}
+            onSuccess={() =>
+              setNewItemData({
+                ...newItemData,
+                [field.probeSuccess.key]: field.probeSuccess.value,
+              })
+            }
+          />
+        )}
+      </Box>
     );
   };
 

@@ -3,21 +3,27 @@ import { Box, Typography, LinearProgress, Stack } from "@mui/material";
 import MediaServerManager from "../../../../managers/MediaServerManager";
 
 const SystemStats = ({ signalR }) => {
-  const [stats, setStats] = useState({
-    cpu: { numeric: 0, _string: "-" },
-    memory: { numeric: 0, _string: "-" },
-    network: { numeric: 0, _string: "-" },
-  });
+  const defaultModel = {
+      cpu: { numeric: 0, _string: "loading..." },
+      memory: { numeric: 0, _string: "loading..." },
+      network: { numeric: 0, _string: "loading..." },
+    },
+    [stats, setStats] = useState(defaultModel);
 
   useEffect(() => {
-    const fetchStats = async () => {
-      const response = await MediaServerManager.GetSystemStats(signalR);
-      setStats(response);
+    const fetchStats = async (abortControllerSignal) => {
+      const response = await MediaServerManager.GetSystemStats(abortControllerSignal);
+      if (abortControllerSignal?.aborted) return;
+      setStats(response || defaultModel);
+      window.fetchStatsTimeout = setTimeout(fetchStats, 2500);
     };
 
-    fetchStats();
-    const interval = setInterval(fetchStats, 5000);
-    return () => clearInterval(interval);
+    const abortController = new AbortController();
+    fetchStats(abortController.signal);
+    return () => {
+      abortController.abort();
+      clearTimeout(window.fetchStatsTimeout);
+    };
   }, []);
 
   return (

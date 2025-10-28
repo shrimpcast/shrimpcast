@@ -4,7 +4,7 @@ namespace shrimpcast.Helpers
 {
     public class ProcessHelper
     {
-        private static async Task<string> StartProcess(string FileName, string Arguments, string SuccessMessage)
+        public static async Task<string> StartProcess(string FileName, string Arguments, string SuccessMessage, bool ReturnOutput)
         {
             var psi = new ProcessStartInfo
             {
@@ -18,17 +18,17 @@ namespace shrimpcast.Helpers
 
             using var process = new Process { StartInfo = psi };
             process.Start();
+            
+            var outputTask = process.StandardOutput.ReadToEndAsync();
+            var errorTask = process.StandardError.ReadToEndAsync();
+            
             await process.WaitForExitAsync();
 
-            if (process.ExitCode == 0) return SuccessMessage;
-            else
-            {
-                var error = await process.StandardError.ReadToEndAsync();
-                return $"Error output: {error}";
-            }
+            if (process.ExitCode == 0) return ReturnOutput ? await outputTask : SuccessMessage;
+            else return $"Error output: {await errorTask}";
         }
 
         public static async Task<string> DockerRestart() =>
-            await StartProcess("sudo", "systemctl restart docker", "Docker restarted successfully");
+            await StartProcess("sudo", "systemctl restart docker", "Docker restarted successfully", false);
     }
 }

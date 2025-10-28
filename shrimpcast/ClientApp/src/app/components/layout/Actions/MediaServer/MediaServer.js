@@ -2,6 +2,7 @@ import TheatersIcon from "@mui/icons-material/Theaters";
 import GenericActionList from "../GenericActionList";
 import SystemStats from "./SystemStats";
 import MediaServerManager from "../../../../managers/MediaServerManager";
+import Probe from "./Probe";
 
 const MediaServer = (props) => {
   const tableModel = {
@@ -23,9 +24,14 @@ const MediaServer = (props) => {
         label: "Ingress URL",
         type: 3,
         color: "success",
+        probe: Probe,
+        probeSuccess: {
+          key: "probeSuccess",
+          value: true,
+        },
       },
     ],
-    requiredFields: ["name", "ingressUri"],
+    requiredFields: ["name", "ingressUri", "probeSuccess"],
     reservedWords: [],
     reservedWordField: "name",
     model: { isEnabled: true, name: "", ingressUri: "" },
