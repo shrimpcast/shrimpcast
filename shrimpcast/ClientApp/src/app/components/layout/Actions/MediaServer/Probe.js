@@ -171,7 +171,7 @@ const Probe = ({ onSuccess, value }) => {
               >
                 <Typography variant="h6" fontWeight="bold">
                   Stream configuration - audio
-                  {streams.audioStreamsMapped?.length && (
+                  {streams.audioStreamsMapped?.length ? (
                     <Button
                       onClick={() => {
                         const isProbing = probeAudioSource || Boolean(config.audioCustomSource);
@@ -208,7 +208,7 @@ const Probe = ({ onSuccess, value }) => {
                         </Typography>
                       </Box>
                     </Button>
-                  )}
+                  ) : null}
                 </Typography>
                 <Divider sx={{ mb: 1 }} />
                 {!probeAudioSource && streams.audioStreamsMapped?.length ? (
@@ -287,7 +287,7 @@ const Probe = ({ onSuccess, value }) => {
                         url={config.audioCustomSource}
                         setStreams={(audioStreams) => {
                           setProbeAudioSource((probeAudioSource) => {
-                            if (!probeAudioSource) return;
+                            if (!probeAudioSource && streams.audioStreams?.length) return;
                             setStreams((streams) => ({
                               ...streams,
                               audioStreams: audioStreams.audioStreams,

@@ -20,7 +20,7 @@
 
         public required bool LowLatency { get; set; }
 
-        public List<MediaServerStreamHeader>? CustomHeaders { get; set; }
+        public string? CustomHeaders { get; set; }
 
         public required int VideoStreamIndex { get; set; }
 
@@ -32,9 +32,9 @@
 
         public string? VideoTranscodingPreset { get; set; }
 
-        public required int AudioStreamIndex { get; set; }
+        public int? AudioStreamIndex { get; set; }
 
-        public required string AudioEncodingPreset { get; set; }
+        public string? AudioEncodingPreset { get; set; }
 
         public int AudioAACBitrate { get; set; }
 

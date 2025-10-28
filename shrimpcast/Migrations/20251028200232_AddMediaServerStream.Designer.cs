@@ -12,7 +12,7 @@ using shrimpcast.Data;
 namespace shrimpcast.Migrations
 {
     [DbContext(typeof(APPContext))]
-    [Migration("20251028165840_AddMediaServerStream")]
+    [Migration("20251028200232_AddMediaServerStream")]
     partial class AddMediaServerStream
     {
         /// <inheritdoc />
@@ -392,10 +392,9 @@ namespace shrimpcast.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("AudioEncodingPreset")
-                        .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("AudioStreamIndex")
+                    b.Property<int?>("AudioStreamIndex")
                         .HasColumnType("integer");
 
                     b.Property<bool>("AudioTranscodingLoudnessNormalization")
@@ -403,6 +402,9 @@ namespace shrimpcast.Migrations
 
                     b.Property<int>("AudioTranscodingVolume")
                         .HasColumnType("integer");
+
+                    b.Property<string>("CustomHeaders")
+                        .HasColumnType("text");
 
                     b.Property<int>("HlsVersion")
                         .HasColumnType("integer");
@@ -449,32 +451,6 @@ namespace shrimpcast.Migrations
                     b.HasKey("MediaServerStreamId");
 
                     b.ToTable("MediaServerStreams", (string)null);
-                });
-
-            modelBuilder.Entity("shrimpcast.Entities.DB.MediaServerStreamHeader", b =>
-                {
-                    b.Property<int>("MediaServerStreamHeaderId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("MediaServerStreamHeaderId"));
-
-                    b.Property<string>("Header")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("MediaServerStreamId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Value")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("MediaServerStreamHeaderId");
-
-                    b.HasIndex("MediaServerStreamId");
-
-                    b.ToTable("MediaServerStreamHeader", (string)null);
                 });
 
             modelBuilder.Entity("shrimpcast.Entities.DB.Message", b =>
@@ -854,15 +830,6 @@ namespace shrimpcast.Migrations
                     b.Navigation("Session");
                 });
 
-            modelBuilder.Entity("shrimpcast.Entities.DB.MediaServerStreamHeader", b =>
-                {
-                    b.HasOne("shrimpcast.Entities.DB.MediaServerStream", null)
-                        .WithMany("CustomHeaders")
-                        .HasForeignKey("MediaServerStreamId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("shrimpcast.Entities.DB.Message", b =>
                 {
                     b.HasOne("shrimpcast.Entities.DB.Session", "Session")
@@ -951,11 +918,6 @@ namespace shrimpcast.Migrations
             modelBuilder.Entity("shrimpcast.Entities.DB.Configuration", b =>
                 {
                     b.Navigation("Sources");
-                });
-
-            modelBuilder.Entity("shrimpcast.Entities.DB.MediaServerStream", b =>
-                {
-                    b.Navigation("CustomHeaders");
                 });
 
             modelBuilder.Entity("shrimpcast.Entities.DB.Poll", b =>

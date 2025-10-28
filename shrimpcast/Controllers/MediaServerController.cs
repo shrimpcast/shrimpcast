@@ -43,7 +43,7 @@ namespace shrimpcast.Controllers
             }
             catch (Exception)
             {
-                return "Error: invalid input.";
+                return "Error: probe failed for URL.";
             }
         }
     }

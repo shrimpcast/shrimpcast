@@ -8,6 +8,6 @@ namespace shrimpcast.Entities.DTO
 
         public required string URL { get; set; }
 
-        public List<MediaServerStreamHeader>? CustomHeaders { get; set; }
+        public string? CustomHeaders { get; set; }
     }
 }

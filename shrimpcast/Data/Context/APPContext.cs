@@ -23,7 +23,6 @@ namespace shrimpcast.Data
         public DbSet<VpnAddress> VpnAddresses { get; set; }
         public DbSet<Source> Sources { get; set; }
         public DbSet<MediaServerStream> MediaServerStreams { get; set; }
-        public DbSet<MediaServerStreamHeader> MediaServerStreamHeaders { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -53,7 +52,6 @@ namespace shrimpcast.Data
             modelBuild.Entity<VpnAddress>().ToTable("VpnAddress");
             modelBuild.Entity<Source>().ToTable("Source");
             modelBuild.Entity<MediaServerStream>().ToTable("MediaServerStreams");
-            modelBuild.Entity<MediaServerStreamHeader>().ToTable("MediaServerStreamHeader");
         }
     }
 }

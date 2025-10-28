@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Box, Typography, LinearProgress, Stack } from "@mui/material";
+import { Box, Typography, LinearProgress, Stack, Divider } from "@mui/material";
 import MediaServerManager from "../../../../managers/MediaServerManager";
 
 const SystemStats = ({ signalR }) => {
@@ -15,21 +15,19 @@ const SystemStats = ({ signalR }) => {
       const response = await MediaServerManager.GetSystemStats(abortControllerSignal);
       if (abortControllerSignal?.aborted) return;
       setStats(response || defaultModel);
-      window.fetchStatsTimeout = setTimeout(fetchStats, 2500);
+      setTimeout(() => fetchStats(abortControllerSignal), 2500);
     };
 
     const abortController = new AbortController();
     fetchStats(abortController.signal);
-    return () => {
-      abortController.abort();
-      clearTimeout(window.fetchStatsTimeout);
-    };
+    return () => abortController.abort();
   }, []);
 
   return (
-    <Box mt={1} p={1.5} borderRadius={2} bgcolor="background.paper" boxShadow={1}>
+    <Box mt={1} p={1.5} borderRadius={2} bgcolor="background.paper" boxShadow={1} width="100%">
       <Typography variant="subtitle1" fontWeight={600} gutterBottom>
         System stats
+        <Divider />
       </Typography>
 
       <Stack spacing={1.2}>

@@ -33,10 +33,7 @@ class MediaServerManager {
   static async Probe(url, headers) {
     let formData = new FormData();
     formData.append("URL", url);
-    headers.forEach((h, i) => {
-      formData.append(`CustomHeaders[${i}].Header`, h.header);
-      formData.append(`CustomHeaders[${i}].Value`, h.value);
-    });
+    formData.append("CustomHeaders", JSON.stringify(headers));
     formData.append("SessionToken", LocalStorageManager.getToken());
     const response = await axios
       .post(`/api/mediaserver/Probe`, formData, {

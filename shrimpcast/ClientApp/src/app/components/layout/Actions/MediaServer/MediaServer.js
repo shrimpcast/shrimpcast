@@ -1,8 +1,8 @@
 import TheatersIcon from "@mui/icons-material/Theaters";
 import GenericActionList from "../GenericActionList";
-import SystemStats from "./SystemStats";
 import MediaServerManager from "../../../../managers/MediaServerManager";
 import Probe from "./Probe";
+import Stats from "./Stats";
 
 const MediaServer = (props) => {
   const tableModel = {
@@ -93,7 +93,7 @@ const MediaServer = (props) => {
       getItems={MediaServerManager.GetAll}
       icon={TheatersIcon}
       tableModel={tableModel}
-      CustomHeaderComponent={<SystemStats {...props} />}
+      CustomHeaderComponent={<Stats {...props} />}
       customWidth="xl"
       {...props}
     />
