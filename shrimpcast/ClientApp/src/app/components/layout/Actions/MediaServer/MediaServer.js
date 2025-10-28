@@ -17,13 +17,12 @@ const MediaServer = (props) => {
         name: "name",
         label: "Name",
         type: 2,
-        color: "success",
       },
       {
         name: "ingressUri",
         label: "Ingress URL",
         type: 3,
-        color: "success",
+        color: "info",
         probe: Probe,
         enableProbeCondition: (url) => {
           try {
@@ -35,11 +34,50 @@ const MediaServer = (props) => {
           value: true,
         },
       },
+      {
+        name: "hlsVersion",
+        label: "HLS version",
+        type: 6,
+        color: "error",
+      },
+      {
+        name: "segmentLength",
+        label: "HLS segment length",
+        type: 6,
+        color: "warning",
+      },
+      {
+        name: "listSize",
+        label: "HLS list size",
+        type: 6,
+        color: "warning",
+      },
+      {
+        name: "snapshotInterval",
+        label: "Snapshot interval",
+        type: 6,
+        color: "info",
+      },
+      {
+        name: "lowLatency",
+        label: "Low latency",
+        type: 1,
+        color: "success",
+      },
     ],
     requiredFields: ["name", "ingressUri", "probeSuccess"],
     reservedWords: [],
     reservedWordField: "name",
-    model: { isEnabled: false, name: "", ingressUri: "" },
+    model: {
+      isEnabled: false,
+      name: "",
+      ingressUri: "",
+      hlsVersion: 3,
+      segmentLength: 2,
+      listSize: 6,
+      snapshotInterval: 60,
+      lowLatency: true,
+    },
     identifier: "name",
     itemsKey: "media server streams",
     customActions: {
@@ -51,12 +89,12 @@ const MediaServer = (props) => {
 
   return (
     <GenericActionList
-      title="Media server settings"
+      title="Media server streams"
       getItems={MediaServerManager.GetAll}
       icon={TheatersIcon}
       tableModel={tableModel}
       CustomHeaderComponent={<SystemStats {...props} />}
-      customWidth="lg"
+      customWidth="xl"
       {...props}
     />
   );

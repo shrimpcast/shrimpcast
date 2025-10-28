@@ -1,4 +1,6 @@
-﻿namespace shrimpcast.Entities.DTO
+﻿using shrimpcast.Entities.DB;
+
+namespace shrimpcast.Entities.DTO
 {
     public class ProbeDTO
     {
@@ -6,6 +8,6 @@
 
         public required string URL { get; set; }
 
-        public List<HeaderDTO>? CustomHeaders { get; set; }
+        public List<MediaServerStreamHeader>? CustomHeaders { get; set; }
     }
 }

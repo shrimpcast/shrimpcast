@@ -24,14 +24,17 @@ const GenericAddTextItemDialog = (props) => {
     } = props,
     [loading, setLoading] = useState(false),
     [passedProbe, setPassedProbe] = useState(false),
+    [probeReturnData, setProbeReturnData] = useState({}),
     [item, setItem] = useState(defaultValue),
     closeDialog = () => {
       setItem("");
       setAddDialogOpened(false);
+      setPassedProbe(false);
+      setProbeReturnData({});
     },
     submit = async () => {
       if (customCallback) {
-        customCallback(item);
+        customCallback(item, probeReturnData);
         closeDialog();
         return;
       }
@@ -63,7 +66,13 @@ const GenericAddTextItemDialog = (props) => {
           type={isNumeric ? "number" : "text"}
         />
         {probe && probe.enableProbeCondition(item) && (
-          <probe.probe value={item} onSuccess={() => setPassedProbe(true)} />
+          <probe.probe
+            value={item}
+            onSuccess={(data) => {
+              setProbeReturnData(data);
+              setPassedProbe(true);
+            }}
+          />
         )}
       </DialogContent>
       <DialogActions>

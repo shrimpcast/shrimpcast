@@ -24,8 +24,10 @@ class MediaServerManager {
     const response = await signalR.invoke("GetAllMediaServerStreams").catch((ex) => console.log(ex));
     return response;
   }
-  static async Edit(signalR, mediaServerStream) {
-    const response = await signalR.invoke("EditMediaServerStream", mediaServerStream).catch((ex) => console.log(ex));
+  static async Edit(signalR, mediaServerStream, extraEditObjects) {
+    const response = await signalR
+      .invoke("EditMediaServerStream", { ...mediaServerStream, ...extraEditObjects })
+      .catch((ex) => console.log(ex));
     return response;
   }
   static async Probe(url, headers) {
@@ -41,7 +43,7 @@ class MediaServerManager {
         headers: {
           "Content-Type": "multipart/form-data",
         },
-        timeout: 10000,
+        timeout: 25000,
       })
       .catch((ex) => console.log(ex));
     return response?.data;

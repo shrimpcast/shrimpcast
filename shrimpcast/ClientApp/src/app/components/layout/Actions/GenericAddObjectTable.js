@@ -200,10 +200,11 @@ const Toggle = ({ item, field, updateConfig, itemsKey, identifier, onChange }) =
         {field.probe && field.enableProbeCondition(newItemData[field.name]) && (
           <field.probe
             value={newItemData[field.name]}
-            onSuccess={() =>
+            onSuccess={(data) =>
               setNewItemData({
                 ...newItemData,
                 [field.probeSuccess.key]: field.probeSuccess.value,
+                ...data,
               })
             }
           />
@@ -278,7 +279,7 @@ const GenericAddObjectTable = ({
       setIsAddingItem(false);
       setNewItemData(model);
     },
-    updateConfig = (value, target, field, itemsKey, identifier, isDelete, isAdd) =>
+    updateConfig = (value, target, field, itemsKey, identifier, isDelete, isAdd, extraEditObjects) =>
       customActions
         ? (async () => {
             let values = items,
@@ -294,9 +295,13 @@ const GenericAddObjectTable = ({
               if (!removed) return;
               values.splice(itemIndex, 1);
             } else {
+              const originalValue = values[itemIndex][field];
               values[itemIndex][field] = value;
-              const edited = await customActions.edit(signalR, values[itemIndex]);
-              if (!edited) return;
+              const edited = await customActions.edit(signalR, values[itemIndex], extraEditObjects);
+              if (!edited) {
+                values[itemIndex][field] = originalValue;
+                return;
+              }
             }
 
             setItems([...values]);
@@ -482,13 +487,16 @@ const GenericAddObjectTable = ({
           editMode={true}
           allowEmptyEdit={editContent.allowEmptyEdit}
           isNumeric={editContent.type === types.numeric}
-          customCallback={(value) =>
+          customCallback={(value, probeReturnData) =>
             updateConfig(
               value,
               { [editContent.identifier]: editContent.itemId },
               editContent.field,
               editContent.itemsKey,
-              editContent.identifier
+              editContent.identifier,
+              false,
+              false,
+              probeReturnData
             )
           }
           probe={editContent.wholeField.probe && editContent.wholeField}
