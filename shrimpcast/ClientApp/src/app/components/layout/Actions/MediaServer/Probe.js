@@ -315,7 +315,7 @@ const Probe = ({ onSuccess, value }) => {
                 variant="contained"
                 color="success"
                 sx={{ ...ProbeButtonSx, mt: 1 }}
-                disabled={Boolean(config.audioCustomSource && !config.audioStreamIndex)}
+                disabled={Boolean(config.audioCustomSource && config.audioStreamIndex === null)}
               >
                 <Box sx={ProbeButtonTextSx}>
                   <Typography variant="overline">SAVE</Typography>
