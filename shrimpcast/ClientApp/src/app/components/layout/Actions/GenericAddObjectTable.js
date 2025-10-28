@@ -14,6 +14,8 @@ import {
   IconButton,
   Tooltip,
   TextField,
+  Alert,
+  Snackbar,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -245,6 +247,13 @@ const GenericAddObjectTable = ({
     }),
     [isAddingItem, setIsAddingItem] = useState(false),
     [newItemData, setNewItemData] = useState(model),
+    [showToast, setShowToast] = useState(false),
+    [toastMessage, setToastMessage] = useState(""),
+    displayToast = (message) => {
+      setToastMessage(message);
+      setShowToast(true);
+    },
+    closeToast = () => setShowToast(false),
     openDeleteConfirmation = (item) => {
       setItemToDelete(item);
       setDeleteConfirmOpen(true);
@@ -287,21 +296,28 @@ const GenericAddObjectTable = ({
 
             if (isAdd) {
               const addedObject = await customActions.add(signalR, newItemData);
-              if (!addedObject) return;
+              if (!addedObject) {
+                displayToast("Error: could not save changes.");
+                return;
+              }
+
               values = values.concat({ ...addedObject });
               closeAdd();
             } else if (isDelete) {
               const removed = await customActions.remove(signalR, values[itemIndex]);
-              if (!removed) return;
+              if (!removed) {
+                displayToast("Error: could not save changes.");
+                return;
+              }
               values.splice(itemIndex, 1);
             } else {
-              const originalValue = values[itemIndex][field];
               values[itemIndex][field] = value;
               const edited = await customActions.edit(signalR, values[itemIndex], extraEditObjects);
               if (!edited) {
-                values[itemIndex][field] = originalValue;
+                displayToast("Error: could not save changes.");
                 return;
               }
+              displayToast("Changes saved successfully.");
             }
 
             setItems([...values]);
@@ -502,6 +518,20 @@ const GenericAddObjectTable = ({
           probe={editContent.wholeField.probe && editContent.wholeField}
         />
       )}
+
+      <Snackbar open={showToast} autoHideDuration={2500} onClose={closeToast}>
+        <Alert
+          severity={toastMessage.includes("Error") ? "error" : "success"}
+          variant="filled"
+          sx={{
+            width: "100%",
+            boxShadow: 3,
+            borderRadius: 2,
+          }}
+        >
+          <Typography variant="body2">{toastMessage}</Typography>
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

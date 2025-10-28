@@ -65,7 +65,15 @@ const MediaServer = (props) => {
         color: "success",
       },
     ],
-    requiredFields: ["name", "ingressUri", "probeSuccess"],
+    requiredFields: [
+      "name",
+      "ingressUri",
+      "probeSuccess",
+      "hlsVersion",
+      "segmentLength",
+      "listSize",
+      "snapshotInterval",
+    ],
     reservedWords: [],
     reservedWordField: "name",
     model: {
@@ -94,7 +102,7 @@ const MediaServer = (props) => {
       icon={TheatersIcon}
       tableModel={tableModel}
       CustomHeaderComponent={<Stats {...props} />}
-      customWidth="xl"
+      customWidth="lg"
       {...props}
     />
   );
