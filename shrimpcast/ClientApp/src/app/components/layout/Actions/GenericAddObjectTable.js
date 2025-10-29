@@ -126,7 +126,7 @@ const Toggle = ({ item, field, updateConfig, itemsKey, identifier, onChange }) =
           color={field.color}
           size="small"
         >
-          Show
+          Edit
         </Button>
       </Tooltip>
     );
