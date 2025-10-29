@@ -47,7 +47,7 @@ const ProbeObject = ({ setStreams, url, title, type }) => {
       if (type === "all" || type === "video") {
         streams.videoStreams = response.streams.filter((s) => s.codec_type === "video");
         streams.videoStreamsMapped = streams.videoStreams.map((stream) => ({
-          label: `STREAM [${stream.index}]`,
+          label: `STREAM ${stream.index} - ${stream.width}x${stream.height}`,
           index: stream.index,
         }));
         streams.customHeaders = `${customHeaders.map((h) => `${h.header}:${h.value}`).join("\r\n")}\r\n`;

@@ -40,6 +40,7 @@ builder.Services.AddSignalR(hubOptions =>
 builder.Services.AddSingleton(typeof(Connections<>));
 builder.Services.AddSingleton(typeof(Pings<>));
 builder.Services.AddSingleton(typeof(BingoSuggestions<>));
+builder.Services.AddSingleton(typeof(Processes<>));
 builder.Services.AddSingleton(typeof(ConfigurationSingleton));
 builder.Services.AddScoped<IConfigurationRepository, ConfigurationRepository>();
 builder.Services.AddScoped<ISessionRepository, SessionRepository>();
@@ -58,6 +59,7 @@ builder.Services.AddScoped<IBTCServerRepository, BTCServerRepository>();
 builder.Services.AddScoped<IStripeRepository, StripeRepository>();
 builder.Services.AddScoped<ISourceRepository, SourceRepository>();
 builder.Services.AddScoped<IMediaServerStreamRepository, MediaServerStreamRepository>();
+builder.Services.AddScoped<IProcessRepository, ProcessRepository>();
 builder.Services.AddHangfire(configuration => configuration
                 .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
                 .UseSimpleAssemblyNameTypeSerializer()
@@ -86,6 +88,8 @@ using (var scope = app.Services.CreateScope())
     DBInitialize.Initialize(context);
     var configuration = services.GetRequiredService<ConfigurationSingleton>();
     await configuration.Initialize();
+    var processInitializer = services.GetRequiredService<IProcessRepository>();
+    await processInitializer.InitStreamProcesses();
 }
 
 app.UseHttpsRedirection();
@@ -95,7 +99,6 @@ app.UseStaticFiles(new StaticFileOptions
 });
 
 app.UseRouting();
-
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller}/{action=Index}/{id?}");

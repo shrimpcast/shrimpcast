@@ -35,13 +35,15 @@ namespace shrimpcast.Hubs
         private readonly IStripeRepository _stripeRepository;
         private readonly ISourceRepository _sourceRepository;
         private readonly IMediaServerStreamRepository _mediaServerStreamRepository;
+        private readonly IProcessRepository _processRepository;
         private readonly IHubContext<SiteHub> _hubContext;
         private readonly ConfigurationSingleton _configurationSigleton;
         private readonly Connections<SiteHub> _activeConnections;
         private readonly Pings<SiteHub> _pings;
         private readonly BingoSuggestions<SiteHub> _bingoSuggestions;
+        private readonly Processes<SiteHub> _processes;
 
-        public SiteHub(IConfigurationRepository configurationRepository, ISessionRepository sessionRepository, IMessageRepository messageRepository, IBanRepository banRepository, IPollRepository pollRepository, ITorExitNodeRepository torExitNodeRepository, IHubContext<SiteHub> hubContext, ConfigurationSingleton configurationSingleton, Connections<SiteHub> activeConnections, Pings<SiteHub> pings, IOBSCommandsRepository obsCommandsRepository, IAutoModFilterRepository autoModFilterRepository, INotificationRepository notificationRepository, IEmoteRepository emoteRepository, IBingoRepository bingoRepository, IVpnAddressRepository vpnAddressRepository, BingoSuggestions<SiteHub> bingoSuggestions, IBTCServerRepository btcServerRepository, ISourceRepository sourceRepository, IStripeRepository stripeRepository, IMediaServerStreamRepository mediaServerStreamRepository)
+        public SiteHub(IConfigurationRepository configurationRepository, ISessionRepository sessionRepository, IMessageRepository messageRepository, IBanRepository banRepository, IPollRepository pollRepository, ITorExitNodeRepository torExitNodeRepository, IHubContext<SiteHub> hubContext, ConfigurationSingleton configurationSingleton, Connections<SiteHub> activeConnections, Pings<SiteHub> pings, IOBSCommandsRepository obsCommandsRepository, IAutoModFilterRepository autoModFilterRepository, INotificationRepository notificationRepository, IEmoteRepository emoteRepository, IBingoRepository bingoRepository, IVpnAddressRepository vpnAddressRepository, BingoSuggestions<SiteHub> bingoSuggestions, IBTCServerRepository btcServerRepository, ISourceRepository sourceRepository, IStripeRepository stripeRepository, IMediaServerStreamRepository mediaServerStreamRepository, Processes<SiteHub> proccesses, IProcessRepository processRepository)
         {
             _configurationRepository = configurationRepository;
             _sessionRepository = sessionRepository;
@@ -64,6 +66,8 @@ namespace shrimpcast.Hubs
             _sourceRepository = sourceRepository;
             _stripeRepository = stripeRepository;
             _mediaServerStreamRepository = mediaServerStreamRepository;
+            _processes = proccesses;
+            _processRepository = processRepository;
         }
 
         private Configuration Configuration => _configurationSigleton.Configuration;
@@ -706,10 +710,10 @@ namespace shrimpcast.Hubs
                 if (status && resetOnScheduledSwitch)
                 {
                     await DispatchSystemMessage($"[SYSTEM] Restarting media server. Playback will automatically resume shortly.", true, true);
-                    string cmdResult;
+                    string cmdResult = null;
                     try
                     {
-                        cmdResult = await ProcessHelper.DockerRestart();
+                        //cmdResult = await ProcessHelper.DockerRestart();
                     } catch (Exception ex) { cmdResult = ex.Message; }
                     await DispatchSystemMessage(cmdResult, true, false, GetAdminSessions());
                 }
@@ -857,13 +861,25 @@ namespace shrimpcast.Hubs
         public async Task<bool> RemoveMediaServerStream([FromBody] int MediaServerStreamId)
         {
             await ShouldGrantAccess();
-            return await _mediaServerStreamRepository.Remove(MediaServerStreamId);
+            var removed = await _mediaServerStreamRepository.Remove(MediaServerStreamId);
+            await _processRepository.StopStreamProcess(removed);
+            return true;
         }
 
         public async Task<bool> EditMediaServerStream([FromBody] MediaServerStream MediaServerStream)
         {
             await ShouldGrantAccess();
-            return await _mediaServerStreamRepository.Edit(MediaServerStream);
+            var edited = await _mediaServerStreamRepository.Edit(MediaServerStream);
+            if (!MediaServerStream.IsEnabled)
+            {
+                await _processRepository.StopStreamProcess(MediaServerStream.Name);
+            }
+            else
+            {
+                await _processRepository.StopStreamProcess(MediaServerStream.Name);
+                _processRepository.InitStreamProcess(MediaServerStream);
+            }
+            return edited;
         }
 
         public async Task<List<MediaServerStream>> GetAllMediaServerStreams()
@@ -1269,8 +1285,8 @@ namespace shrimpcast.Hubs
             try
             {
                 await DispatchSystemMessage($"[SYSTEM] Restarting media server. Playback will automatically resume shortly.", true, true);
-                var result = await ProcessHelper.DockerRestart();
-                await DispatchSystemMessage(result);
+                //var result = await ProcessHelper.DockerRestart();
+                await DispatchSystemMessage("");
             }
             catch (Exception ex)
             {

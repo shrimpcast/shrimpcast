@@ -6,6 +6,24 @@ class MediaServerManager {
     const response = await axios
       .get(`/api/mediaserver/GetSystemStats?sessionToken=${LocalStorageManager.getToken()}`, {
         signal: abortControllerSignal,
+        timeout: 10000,
+      })
+      .catch((ex) => console.log(ex));
+    return response?.data;
+  }
+  static async GetStreamStats(abortControllerSignal) {
+    const response = await axios
+      .get(`/api/mediaserver/GetStreamStats?sessionToken=${LocalStorageManager.getToken()}`, {
+        signal: abortControllerSignal,
+        timeout: 10000,
+      })
+      .catch((ex) => console.log(ex));
+    return response?.data;
+  }
+  static async GetStreamLogs(stream) {
+    const response = await axios
+      .get(`/api/mediaserver/GetStreamLogs?sessionToken=${LocalStorageManager.getToken()}&name=${stream}`, {
+        timeout: 10000,
       })
       .catch((ex) => console.log(ex));
     return response?.data;

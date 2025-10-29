@@ -6,7 +6,9 @@ namespace shrimpcast.Data.Repositories.Interfaces
     {
         Task<MediaServerStream?> Add(MediaServerStream mediaServerStream);
         Task<List<MediaServerStream>> GetAll();
-        Task<bool> Remove(int MediaServerStreamId);
+        Task<List<MediaServerStream>> GetEnabled();
+        Task<MediaServerStream?> GetByName(string Name);
+        Task<string> Remove(int MediaServerStreamId);
         Task<bool> Edit(MediaServerStream mediaServerStream);
     }
 }

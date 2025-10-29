@@ -1,15 +1,275 @@
 import React, { useEffect, useState } from "react";
-import { Box, Typography, LinearProgress, Stack, Divider } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Stack,
+  Divider,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  Card,
+  CardContent,
+  useTheme,
+  Fade,
+  Chip,
+  IconButton,
+  Snackbar,
+  Alert,
+  CircularProgress,
+} from "@mui/material";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import MediaServerManager from "../../../../managers/MediaServerManager";
+import VideoJSPlayer from "../../../player/VideoJSPlayer";
 
-const StreamStats = ({ signalR }) => {
+const BoxSx = {
+    maxHeight: "175px",
+    overflowY: "scroll",
+    width: "100%",
+    boxShadow: 3,
+    bgcolor: "background.paper",
+    mt: 1,
+    p: 1.5,
+    mr: 1,
+    borderRadius: 3,
+  },
+  CardSx = (theme) => ({
+    borderRadius: 2,
+    borderColor: "divider",
+    transition: "0.25s ease",
+    "&:hover": {
+      boxShadow: 4,
+      transform: "translateY(-2px)",
+      borderColor: theme.palette.primary.main,
+    },
+  }),
+  CardContentSx = { pb: "0px !important", pt: 0, pl: 2, pr: 2 },
+  StreamTitleSx = {
+    textTransform: "uppercase",
+    position: "relative",
+    top: "2px",
+    fontSize: 18,
+    fontWeight: 700,
+    color: "text.primary",
+  },
+  JsonPreviewSX = {
+    p: 2,
+    borderRadius: 2,
+    bgcolor: "grey.900",
+    color: "grey.100",
+    fontSize: 13,
+    whiteSpace: "pre-wrap",
+    wordBreak: "break-word",
+    overflow: "auto",
+    maxHeight: "70vh",
+  },
+  DialogTitleSx = (theme) => ({
+    fontWeight: 700,
+    borderBottom: "1px solid",
+    borderColor: "divider",
+    backgroundColor: theme.palette.background.default,
+  }),
+  StackCardSx = {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    spacing: 1,
+  };
+
+const StreamStats = () => {
+  const [stats, setStats] = useState(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [dialogType, setDialogType] = useState(null);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [logsLoading, setLogsLoading] = useState(null);
+  const theme = useTheme();
+
+  useEffect(() => {
+    const fetchStats = async (signal) => {
+      const response = await MediaServerManager.GetStreamStats(signal);
+      if (signal.aborted) return;
+      setStats(response || null);
+      setTimeout(() => fetchStats(signal), 1000);
+    };
+    const controller = new AbortController();
+    fetchStats(controller.signal);
+    return () => controller.abort();
+  }, []);
+
+  const handleOpenDialog = (stat, type) => {
+    setSelectedItem(stat);
+    setDialogType(type);
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setSelectedItem(null);
+    setDialogType(null);
+  };
+
+  const handleCopyStreamUrl = () => {
+    navigator.clipboard.writeText(window.location.origin + selectedItem.streamUrl);
+    setSnackbarOpen(true);
+  };
+
+  const handleSnackbarClose = () => setSnackbarOpen(false);
+
+  const getLogs = async (stream) => {
+    setLogsLoading(stream);
+    const logs = await MediaServerManager.GetStreamLogs(stream);
+    setLogsLoading(null);
+    handleOpenDialog({ rawJsonSettings: logs }, "json");
+  };
+
   return (
-    <Box mt={1} mr={1} p={1.5} borderRadius={2} bgcolor="background.paper" boxShadow={1} width="100%">
-      <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-        Stream stats
-        <Divider />
-      </Typography>
-    </Box>
+    <Fade in timeout={400}>
+      <Box sx={BoxSx} className="scrollbar-custom">
+        <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+          Process stats
+          <Divider />
+        </Typography>
+
+        {stats === null ? (
+          <Box width="40px" ml="auto" mr="auto" mt={2}>
+            <CircularProgress color="secondary" />
+          </Box>
+        ) : stats.length === 0 ? (
+          <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ py: 2 }}>
+            No active streams
+          </Typography>
+        ) : (
+          <Stack spacing={2}>
+            {stats.map((stat, idx) => (
+              <Card key={idx} variant="outlined" sx={CardSx(theme)}>
+                <CardContent sx={CardContentSx}>
+                  <Stack sx={StackCardSx}>
+                    <Stack direction="row" spacing={1.5} alignItems="center">
+                      <Typography variant="overline" sx={StreamTitleSx}>
+                        {stat.name}
+                      </Typography>
+
+                      {stat.processStatus.runningStatus === "Running" && (
+                        <Typography
+                          sx={{ fontWeight: 600, position: "relative", top: "2px" }}
+                          variant="caption"
+                          color="text.secondary"
+                        >
+                          {stat.processStatus.runningTime}
+                        </Typography>
+                      )}
+
+                      <Chip
+                        label={stat.processStatus.runningStatus}
+                        color={
+                          stat.processStatus.runningStatus === "Running"
+                            ? "success"
+                            : stat.processStatus.runningStatus === "stopped"
+                            ? "error"
+                            : "warning"
+                        }
+                        size="small"
+                        variant="overline"
+                        sx={{
+                          fontWeight: 600,
+                          textTransform: "uppercase",
+                        }}
+                      />
+                    </Stack>
+
+                    <Stack direction="row" spacing={1.2}>
+                      {stat.processStatus.runningStatus === "Running" && (
+                        <Button
+                          size="small"
+                          variant="contained"
+                          disableElevation
+                          onClick={() => handleOpenDialog(stat, "preview")}
+                        >
+                          Preview
+                        </Button>
+                      )}
+                      <Button
+                        disabled={logsLoading === stat.name}
+                        size="small"
+                        variant="outlined"
+                        onClick={() => getLogs(stat.name)}
+                      >
+                        LOGS {logsLoading === stat.name && <CircularProgress sx={{ ml: "4px" }} size={12} />}
+                      </Button>
+                      <Button size="small" variant="outlined" onClick={() => handleOpenDialog(stat, "json")}>
+                        JSON
+                      </Button>
+                    </Stack>
+                  </Stack>
+                </CardContent>
+              </Card>
+            ))}
+          </Stack>
+        )}
+        {selectedItem && (
+          <Dialog
+            open={openDialog}
+            onClose={handleCloseDialog}
+            fullWidth
+            maxWidth="md"
+            PaperProps={{
+              sx: {
+                borderRadius: 3,
+                overflow: "hidden",
+              },
+            }}
+          >
+            <DialogTitle sx={DialogTitleSx(theme)}>
+              {dialogType === "json" ? "Debug information" : "Stream preview"}
+              {dialogType === "preview" && (
+                <IconButton onClick={handleCopyStreamUrl} size="small" sx={{ ml: 1 }} title="Copy stream URL">
+                  <ContentCopyIcon fontSize="small" />
+                </IconButton>
+              )}
+            </DialogTitle>
+            <DialogContent
+              sx={{
+                px: 2,
+                py: 2,
+                backgroundColor: dialogType === "json" ? theme.palette.grey[900] : theme.palette.background.paper,
+              }}
+              dividers
+            >
+              {dialogType === "json" ? (
+                <Box component="pre" sx={JsonPreviewSX} className="scrollbar-custom">
+                  {JSON.stringify(selectedItem.rawJsonSettings, null, 2)}
+                </Box>
+              ) : (
+                <Box sx={{ height: 600, borderRadius: 2, overflow: "hidden" }}>
+                  <VideoJSPlayer
+                    options={{
+                      autoplay: true,
+                      controls: true,
+                      fill: true,
+                      playsinline: true,
+                      html5: { vhs: { withCredentials: false } },
+                      sources: [
+                        {
+                          src: window.location.origin + selectedItem?.streamUrl,
+                          type: "application/x-mpegURL",
+                        },
+                      ],
+                    }}
+                    theme={theme}
+                  />
+                  <Snackbar open={snackbarOpen} autoHideDuration={2000} onClose={handleSnackbarClose}>
+                    <Alert severity="success" sx={{ width: "100%" }}>
+                      URL copied to clipboard
+                    </Alert>
+                  </Snackbar>
+                </Box>
+              )}
+            </DialogContent>
+          </Dialog>
+        )}
+      </Box>
+    </Fade>
   );
 };
 

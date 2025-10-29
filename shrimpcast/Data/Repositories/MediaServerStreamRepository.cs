@@ -15,11 +15,14 @@ namespace shrimpcast.Data.Repositories.Interfaces
             return result > 0 ? mediaServerStream : throw new Exception("Could not add media server stream.");
         }
 
-        public async Task<List<MediaServerStream>> GetAll()
-        {
-            var query = _context.MediaServerStreams.AsNoTracking();
-            return await query.ToListAsync();
-        }
+        public async Task<List<MediaServerStream>> GetAll() =>
+            await _context.MediaServerStreams.AsNoTracking().ToListAsync();
+
+        public async Task<List<MediaServerStream>> GetEnabled() =>
+            await _context.MediaServerStreams.AsNoTracking().Where(m => m.IsEnabled).ToListAsync();
+
+        public async Task<MediaServerStream?> GetByName(string Name) =>
+            await _context.MediaServerStreams.AsNoTracking().FirstOrDefaultAsync(m => m.Name == Name);
 
         public async Task<bool> Edit(MediaServerStream _mediaServerStream)
         {
@@ -28,11 +31,11 @@ namespace shrimpcast.Data.Repositories.Interfaces
             return await _context.SaveChangesAsync() > 0;
         }
 
-        public async Task<bool> Remove(int MediaServerStreamId)
+        public async Task<string> Remove(int MediaServerStreamId)
         {
-            var mediaServerStream = await _context.MediaServerStreams.Where(m => m.MediaServerStreamId == MediaServerStreamId).FirstAsync();
+            var mediaServerStream = await _context.MediaServerStreams.FirstAsync(m => m.MediaServerStreamId == MediaServerStreamId);
             _context.MediaServerStreams.Remove(mediaServerStream);
-            return await _context.SaveChangesAsync() > 0;
+            return await _context.SaveChangesAsync() > 0 ? mediaServerStream.Name : throw new Exception("Could not remove item.");
         }
     }
 }

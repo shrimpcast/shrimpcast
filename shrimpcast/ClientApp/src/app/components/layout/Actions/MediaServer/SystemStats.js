@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Box, Typography, LinearProgress, Stack, Divider } from "@mui/material";
 import MediaServerManager from "../../../../managers/MediaServerManager";
 
-const SystemStats = ({ signalR }) => {
+const SystemStats = () => {
   const defaultModel = {
       cpu: { numeric: 0, _string: "loading..." },
       memory: { numeric: 0, _string: "loading..." },
@@ -21,6 +21,7 @@ const SystemStats = ({ signalR }) => {
     const abortController = new AbortController();
     fetchStats(abortController.signal);
     return () => abortController.abort();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
