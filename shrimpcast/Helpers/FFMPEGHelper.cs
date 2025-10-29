@@ -22,12 +22,11 @@ namespace shrimpcast.Helpers
         public static StreamInfo BuildStreamCommand(MediaServerStream stream)
         {
             var baseProcess = "ffmpeg";
-            var command = "-re";
+            var command = "-loglevel trace -re -y -fflags +genpts";
 
             if (!string.IsNullOrEmpty(stream.CustomHeaders)) command += $" -headers \"{stream.CustomHeaders}\"";
 
             command+= $" -i \"{stream.IngressUri}\"";
-            
 
             if (stream.VideoEncodingPreset == "PASSTHROUGH") command += " -c copy";
             if (stream.LowLatency) command += " -flags +low_delay";

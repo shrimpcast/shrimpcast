@@ -24,7 +24,7 @@ import VideoJSPlayer from "../../../player/VideoJSPlayer";
 
 const BoxSx = {
     maxHeight: "175px",
-    overflowY: "scroll",
+    overflowY: "auto",
     width: "100%",
     boxShadow: 3,
     bgcolor: "background.paper",
@@ -42,6 +42,7 @@ const BoxSx = {
       transform: "translateY(-2px)",
       borderColor: theme.palette.primary.main,
     },
+    overflowX: "auto",
   }),
   CardContentSx = { pb: "0px !important", pt: 0, pl: 2, pr: 2 },
   StreamTitleSx = {
@@ -51,6 +52,7 @@ const BoxSx = {
     fontSize: 18,
     fontWeight: 700,
     color: "text.primary",
+    mr: "5px",
   },
   JsonPreviewSX = {
     p: 2,
@@ -142,17 +144,17 @@ const StreamStats = () => {
         ) : (
           <Stack spacing={2}>
             {stats.map((stat, idx) => (
-              <Card key={idx} variant="outlined" sx={CardSx(theme)}>
+              <Card key={idx} variant="outlined" sx={CardSx(theme)} className="scrollbar-custom">
                 <CardContent sx={CardContentSx}>
                   <Stack sx={StackCardSx}>
-                    <Stack direction="row" spacing={1.5} alignItems="center">
-                      <Typography variant="overline" sx={StreamTitleSx}>
-                        {stat.name}
-                      </Typography>
+                    <Typography variant="overline" sx={StreamTitleSx}>
+                      {stat.name}
+                    </Typography>
 
+                    <Stack direction="row" spacing={1.2}>
                       {stat.processStatus.runningStatus === "Running" && (
                         <Typography
-                          sx={{ fontWeight: 600, position: "relative", top: "2px" }}
+                          sx={{ fontWeight: 600, position: "relative", top: "7.5px" }}
                           variant="caption"
                           color="text.secondary"
                         >
@@ -174,11 +176,10 @@ const StreamStats = () => {
                         sx={{
                           fontWeight: 600,
                           textTransform: "uppercase",
+                          position: "relative",
+                          top: "3.5px",
                         }}
                       />
-                    </Stack>
-
-                    <Stack direction="row" spacing={1.2}>
                       {stat.processStatus.runningStatus === "Running" && (
                         <Button
                           size="small"
@@ -238,7 +239,7 @@ const StreamStats = () => {
             >
               {dialogType === "json" ? (
                 <Box component="pre" sx={JsonPreviewSX} className="scrollbar-custom">
-                  {JSON.stringify(selectedItem.rawJsonSettings, null, 2)}
+                  {JSON.stringify(selectedItem.rawJsonSettings, null, 2).replace(/\\"/g, '"')}
                 </Box>
               ) : (
                 <Box sx={{ height: 600, borderRadius: 2, overflow: "hidden" }}>

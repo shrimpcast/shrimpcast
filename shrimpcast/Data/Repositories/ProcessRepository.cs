@@ -5,7 +5,6 @@ using shrimpcast.Helpers;
 using shrimpcast.Hubs;
 using shrimpcast.Hubs.Dictionaries;
 using System.Diagnostics;
-using System.IO;
 
 namespace shrimpcast.Data.Repositories.Interfaces
 {

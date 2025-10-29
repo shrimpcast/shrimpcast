@@ -97,7 +97,7 @@ const MediaServer = (props) => {
 
   return (
     <GenericActionList
-      title="Media server streams"
+      title="Media server panel"
       getItems={MediaServerManager.GetAll}
       icon={TheatersIcon}
       tableModel={tableModel}
