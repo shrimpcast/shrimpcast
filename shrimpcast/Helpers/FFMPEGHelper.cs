@@ -21,14 +21,31 @@ namespace shrimpcast.Helpers
 
         public static StreamInfo BuildStreamCommand(MediaServerStream stream)
         {
+            var audioIndexSource = string.IsNullOrEmpty(stream.AudioCustomSource) ? 0 : 1;
             var baseProcess = "ffmpeg";
-            var command = "-loglevel trace -re -y -fflags +genpts";
+            var command = "-loglevel trace -y -fflags +genpts";
 
             if (!string.IsNullOrEmpty(stream.CustomHeaders)) command += $" -headers \"{stream.CustomHeaders}\"";
 
-            command+= $" -i \"{stream.IngressUri}\"";
+            command+= $" -re -i \"{stream.IngressUri}\"";
 
-            if (stream.VideoEncodingPreset == "PASSTHROUGH") command += " -c copy";
+            if (audioIndexSource == 1)
+            {
+                if (!string.IsNullOrEmpty(stream.CustomAudioHeaders)) command += $" -headers \"{stream.CustomAudioHeaders}\"";
+                command += $" -fflags +genpts -re -i \"{stream.AudioCustomSource}\"";
+            }
+
+
+            command += $" -map 0:{stream.VideoStreamIndex}";
+            if (stream.VideoEncodingPreset == "PASSTHROUGH") command += " -codec:v copy";
+
+            if (stream.AudioStreamIndex != null)
+            {
+                command += $" -map {audioIndexSource}:{stream.AudioStreamIndex}";
+                if (stream.AudioEncodingPreset == "PASSTHROUGH") command += $" -codec:a copy";
+            }
+            else command += " -an";
+
             if (stream.LowLatency) command += " -flags +low_delay";
 
             var dirInfo = Directory.CreateDirectory(GetStreamDir(stream.Name));

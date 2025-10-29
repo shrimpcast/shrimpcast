@@ -869,16 +869,17 @@ namespace shrimpcast.Hubs
         public async Task<bool> EditMediaServerStream([FromBody] MediaServerStream MediaServerStream)
         {
             await ShouldGrantAccess();
+            var streamName = MediaServerStream.Name;
+            var statusBeforeEdit = (await _mediaServerStreamRepository.GetByName(streamName))!.IsEnabled;
             var edited = await _mediaServerStreamRepository.Edit(MediaServerStream);
-            if (!MediaServerStream.IsEnabled)
+
+            await _processRepository.StopStreamProcess(MediaServerStream.Name);
+            if (MediaServerStream.IsEnabled && statusBeforeEdit == false)
             {
-                await _processRepository.StopStreamProcess(MediaServerStream.Name);
-            }
-            else
-            {
-                await _processRepository.StopStreamProcess(MediaServerStream.Name);
+                await Task.Delay(1000);
                 _processRepository.InitStreamProcess(MediaServerStream);
             }
+
             return edited;
         }
 

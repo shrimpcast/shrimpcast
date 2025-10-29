@@ -23,7 +23,7 @@ import MediaServerManager from "../../../../managers/MediaServerManager";
 import VideoJSPlayer from "../../../player/VideoJSPlayer";
 
 const BoxSx = {
-    maxHeight: "175px",
+    maxHeight: "200px",
     overflowY: "auto",
     width: "100%",
     boxShadow: 3,
