@@ -176,11 +176,16 @@ namespace shrimpcast.Data.Repositories.Interfaces
                         if (streamInfo.ProcessorUsage != null)
                         {
                             var currentCpu = streamInfo.Process.TotalProcessorTime;
-                            var cpuDeltaMs = (currentCpu - streamInfo.ProcessorUsage).Value.TotalMilliseconds;
-                            var usage = cpuDeltaMs / (3000 * Environment.ProcessorCount) * 100;
-                            streamInfo.ProcessorUsageComputed = $"{usage:F2}%";
+                            var curTime = DateTime.UtcNow;
+
+                            double cpuUsedMs = (currentCpu - streamInfo.ProcessorUsage.Value.CpuTime).TotalMilliseconds;
+                            double totalMsPassed = (curTime - streamInfo.ProcessorUsage.Value.Time).TotalMilliseconds;
+
+                            double cpuUsageTotal = cpuUsedMs / (Environment.ProcessorCount * totalMsPassed) * 100;
+
+                            streamInfo.ProcessorUsageComputed = $"{cpuUsageTotal:F2}%";
                         }
-                        streamInfo.ProcessorUsage = streamInfo.Process.TotalProcessorTime;
+                        streamInfo.ProcessorUsage = (streamInfo.Process.TotalProcessorTime, DateTime.UtcNow);
                     }
                     catch (Exception)
                     {
@@ -263,7 +268,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
         private StreamInfo BuildStreamCommand(MediaServerStream stream)
         {
             var audioIndexSource = string.IsNullOrEmpty(stream.AudioCustomSource) ? 0 : 1;
-            var command = "-loglevel info -y -fflags +genpts";
+            var command = "-loglevel info -y -fflags +genpts -thread_queue_size 512";
 
             if (stream.CustomHeaders != "\r\n") command += $" -headers \"{stream.CustomHeaders}\"";
 
@@ -272,7 +277,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             if (audioIndexSource == 1)
             {
                 if (stream.CustomAudioHeaders != "\r\n") command += $" -headers \"{stream.CustomAudioHeaders}\"";
-                command += $" -fflags +genpts -re -i \"{stream.AudioCustomSource}\"";
+                command += $" -fflags +genpts -thread_queue_size 512 -re -i \"{stream.AudioCustomSource}\"";
             }
 
             command += $" -map 0:{stream.VideoStreamIndex}";
@@ -299,7 +304,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             if (stream.LowLatency) command += " -flags +low_delay";
 
             var dirInfo = Directory.CreateDirectory(GetStreamDirectory(stream.Name));
-            command += $" -f hls -hls_time {stream.SegmentLength} -hls_list_size {stream.ListSize} -hls_flags delete_segments+append_list+program_date_time -hls_segment_filename \"{Path.Combine(dirInfo.FullName, "live_%03d.ts")}\" {Path.Combine(dirInfo.FullName, "index.m3u8")}";
+            command += $" -f hls -hls_time {stream.SegmentLength} -hls_list_size {stream.ListSize} -hls_flags delete_segments+append_list+program_date_time -hls_delete_threshold 4 -hls_segment_filename \"{Path.Combine(dirInfo.FullName, "live_%03d.ts")}\" {Path.Combine(dirInfo.FullName, "index.m3u8")}";
 
             return new StreamInfo
             {

@@ -15,8 +15,8 @@ namespace shrimpcast.Entities
         public DateTime? LastScreenshot { get; set; }
         public required DateTime StartTime { get; set; }
         public int Bitrate { get; set; }
-        public TimeSpan? ProcessorUsage { get; set; }
-        public string ProcessorUsageComputed { get; set; }
+        public (TimeSpan CpuTime, DateTime Time)? ProcessorUsage { get; set; }
+        public string? ProcessorUsageComputed { get; set; }
     }
 }
 
