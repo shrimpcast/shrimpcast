@@ -183,7 +183,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
 
                             double cpuUsageTotal = cpuUsedMs / (Environment.ProcessorCount * totalMsPassed) * 100;
 
-                            streamInfo.ProcessorUsageComputed = $"{cpuUsageTotal:F2}%";
+                            streamInfo.ProcessorUsageComputed = $"CPU: {cpuUsageTotal:F2}%";
                         }
                         streamInfo.ProcessorUsage = (streamInfo.Process.TotalProcessorTime, DateTime.UtcNow);
                     }

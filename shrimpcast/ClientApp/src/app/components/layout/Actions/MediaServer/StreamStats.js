@@ -180,7 +180,7 @@ const StreamStats = () => {
                             </Typography>
                           )}
                           <Typography sx={ProcessInfoSx} variant="caption">
-                            CPU: {stat.processStatus.cpuUsage}
+                            {stat.processStatus.cpuUsage}
                           </Typography>
                         </>
                       )}
