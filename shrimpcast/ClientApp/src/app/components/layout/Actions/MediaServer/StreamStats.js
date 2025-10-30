@@ -152,7 +152,7 @@ const StreamStats = () => {
                     </Typography>
 
                     <Stack direction="row" spacing={1.2}>
-                      {stat.processStatus.runningStatus === "Running" && (
+                      {stat.processStatus.runningStatus === "Connected" && (
                         <Typography
                           sx={{ fontWeight: 600, position: "relative", top: "7.5px" }}
                           variant="caption"
@@ -165,7 +165,7 @@ const StreamStats = () => {
                       <Chip
                         label={stat.processStatus.runningStatus}
                         color={
-                          stat.processStatus.runningStatus === "Running"
+                          stat.processStatus.runningStatus === "Connected"
                             ? "success"
                             : stat.processStatus.runningStatus === "stopped"
                             ? "error"
@@ -180,7 +180,7 @@ const StreamStats = () => {
                           top: "3.5px",
                         }}
                       />
-                      {stat.processStatus.runningStatus === "Running" && (
+                      {stat.processStatus.runningStatus === "Connected" && (
                         <Button
                           size="small"
                           variant="contained"
