@@ -9,6 +9,7 @@ namespace shrimpcast.Entities
         public required Process Process { get; set; }
         public required MediaServerStream Stream { get; set; }
         public required string StreamPath { get; set; }
+        public required string FullStreamPath { get; set; }
         public required string LaunchCommand { get; set; }
         public ConcurrentQueue<(DateTime AddedAt, string Content)> Logs { get; set; } = [];
         public DateTime? LastScreenshot { get; set; }

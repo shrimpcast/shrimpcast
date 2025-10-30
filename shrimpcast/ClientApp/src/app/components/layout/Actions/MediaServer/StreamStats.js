@@ -178,8 +178,8 @@ const StreamStats = () => {
                         color={
                           stat.processStatus.runningStatus === "Connected"
                             ? "success"
-                            : stat.processStatus.runningStatus === "Stopped"
-                            ? "error"
+                            : stat.processStatus.runningStatus === "Connecting"
+                            ? "info"
                             : "warning"
                         }
                         size="small"

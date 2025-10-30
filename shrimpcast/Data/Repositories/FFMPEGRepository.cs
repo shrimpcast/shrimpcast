@@ -285,6 +285,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             {
                 LaunchCommand = $"{FFMPEGProcess} {command}",
                 StreamPath = GetStreamPath(stream.Name.ToLower()),
+                FullStreamPath = $"{dirInfo.FullName}\\index.m3u8",
                 Stream = stream,
                 Process = MakeProcess(FFMPEGProcess, command, true)
             };
