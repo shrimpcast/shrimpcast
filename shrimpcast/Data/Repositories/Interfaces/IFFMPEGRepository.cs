@@ -1,4 +1,5 @@
 using shrimpcast.Entities.DB;
+using System.Diagnostics;
 using System.Text.Json.Nodes;
 
 namespace shrimpcast.Data.Repositories.Interfaces
@@ -14,5 +15,6 @@ namespace shrimpcast.Data.Repositories.Interfaces
         bool IsDevelopment();
         Task CheckForStaleProcesses();
         Task ThumbnailGeneration();
+        bool HasExited(Process process);
     }
 }

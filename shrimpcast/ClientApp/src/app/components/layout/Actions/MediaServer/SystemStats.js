@@ -15,7 +15,7 @@ const SystemStats = () => {
       const response = await MediaServerManager.GetSystemStats(abortControllerSignal);
       if (abortControllerSignal?.aborted) return;
       setStats(response || defaultModel);
-      setTimeout(() => fetchStats(abortControllerSignal), 2500);
+      setTimeout(() => fetchStats(abortControllerSignal), 500);
     };
 
     const abortController = new AbortController();
@@ -53,7 +53,7 @@ const SystemStats = () => {
 
         <Box>
           <Typography variant="body2" color="text.secondary">
-            Network usage: {stats.network._string}
+            Network upload: {stats.network._string}
           </Typography>
         </Box>
       </Stack>

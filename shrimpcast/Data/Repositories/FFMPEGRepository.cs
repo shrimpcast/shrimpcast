@@ -52,7 +52,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
         public async Task<bool> StopStreamProcess(string stream, string reason)
         {
             _processes.All.TryGetValue(stream, out var processInfo);
-            if (processInfo == null || processInfo.Process.HasExited) return false;
+            if (processInfo == null || HasExited(processInfo.Process)) return false;
             MediaServerLog($"Stop called on process {stream}. Reason = {reason}");
             try
             {
@@ -149,7 +149,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             foreach (var process in _processes.All.Values)
             {
                 var (AddedAt, Content) = process.Logs.LastOrDefault();
-                if (process.Process.HasExited || Content == null) continue;
+                if (HasExited(process.Process) || Content == null) continue;
                 if ((UtcNow - AddedAt).TotalSeconds > MaxStaleTimeInSeconds)
                 {
                     await StopStreamProcess(process.Stream.Name, "stale");
@@ -202,16 +202,16 @@ namespace shrimpcast.Data.Repositories.Interfaces
         public bool IsDevelopment () =>
             Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
 
-        private string GetStreamPath(string stream) =>
+        private string GetWebStreamPath(string stream) =>
             IsDevelopment() ? $"/api/mediaserver/{StreamsPath}/{stream}/index.m3u8"
                             : $"/{StreamsPath}/{stream}/index.m3u8";
 
         private string GetBaseDirectory() =>
             IsDevelopment() ? Path.Combine(Directory.GetCurrentDirectory(), StreamsPath)
-                            : $"wwwroot\\{StreamsPath}";
+                            : Path.Combine("wwwroot", StreamsPath);
 
         public string GetStreamDirectory(string Name) =>
-            $"{GetBaseDirectory()}\\{Name.ToLower()}";
+            Path.Combine(GetBaseDirectory(), Name.ToLower());
 
         private void CleanStreamDirectory(string Name = "", bool CleanRoot = false)
         {
@@ -235,9 +235,9 @@ namespace shrimpcast.Data.Repositories.Interfaces
         public string? BuildScreenshotCommand(string streamName)
         {
             var streamDir = GetStreamDirectory(streamName);
-            var playlist = $"{streamDir}\\index.m3u8";
+            var playlist = Path.Combine(streamDir, "index.m3u8");
             if (!File.Exists(playlist)) return null;
-            var command = $" -y -i \"{playlist}\" -frames:v 1 -q:v 2 \"{streamDir}\\index.jpg\"";
+            var command = $" -y -i \"{playlist}\" -frames:v 1 -q:v 2 \"{Path.Combine(streamDir, "index.jpg")}\"";
             return command;
         }
 
@@ -280,15 +280,16 @@ namespace shrimpcast.Data.Repositories.Interfaces
             if (stream.LowLatency) command += " -flags +low_delay";
 
             var dirInfo = Directory.CreateDirectory(GetStreamDirectory(stream.Name));
-            command += $" -f hls -hls_time {stream.SegmentLength} -hls_list_size {stream.ListSize} -hls_flags delete_segments+append_list+program_date_time -hls_segment_filename \"{dirInfo.FullName}\\live_%03d.ts\" {dirInfo.FullName}\\index.m3u8";
+            command += $" -f hls -hls_time {stream.SegmentLength} -hls_list_size {stream.ListSize} -hls_flags delete_segments+append_list+program_date_time -hls_segment_filename \"{Path.Combine(dirInfo.FullName, "live_%03d.ts")}\" {Path.Combine(dirInfo.FullName, "index.m3u8")}";
 
             return new StreamInfo
             {
                 LaunchCommand = $"{FFMPEGProcess} {command}",
-                StreamPath = GetStreamPath(stream.Name.ToLower()),
-                FullStreamPath = $"{dirInfo.FullName}\\index.m3u8",
+                StreamPath = GetWebStreamPath(stream.Name.ToLower()),
+                FullStreamPath = Path.Combine(dirInfo.FullName, "index.m3u8"),
                 Stream = stream,
-                Process = MakeProcess(FFMPEGProcess, command, true)
+                Process = MakeProcess(FFMPEGProcess, command, true),
+                StartTime = DateTime.UtcNow,
             };
         }
 
@@ -310,5 +311,18 @@ namespace shrimpcast.Data.Repositories.Interfaces
                 return 0;
             }
         } 
+
+        public bool HasExited (Process process)
+        {
+            try
+            {
+                return process.HasExited;
+            }
+            // Linux
+            catch (Exception)
+            {
+                return true;
+            }
+        }
     }
 }

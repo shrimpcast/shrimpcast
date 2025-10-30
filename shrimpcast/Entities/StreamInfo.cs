@@ -13,6 +13,7 @@ namespace shrimpcast.Entities
         public required string LaunchCommand { get; set; }
         public ConcurrentQueue<(DateTime AddedAt, string Content)> Logs { get; set; } = [];
         public DateTime? LastScreenshot { get; set; }
+        public required DateTime StartTime { get; set; }
         public int Bitrate { get; set; }
     }
 }
