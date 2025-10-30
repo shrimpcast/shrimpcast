@@ -49,7 +49,8 @@ namespace shrimpcast.Controllers
                 processStatus = new
                 {
                     runningStatus = p.Value.Process.HasExited ? "Starting" : System.IO.File.Exists(p.Value.FullStreamPath) ? "Connected" : "Connecting",
-                    runningTime = TimeSpan.FromSeconds((int)(DateTime.UtcNow - p.Value.Process.StartTime.ToUniversalTime()).TotalSeconds)
+                    runningTime = TimeSpan.FromSeconds((int)(DateTime.UtcNow - p.Value.Process.StartTime.ToUniversalTime()).TotalSeconds),
+                    bitrate = p.Value.Bitrate,
                 }
             });
         }

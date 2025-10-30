@@ -76,6 +76,12 @@ const BoxSx = {
     justifyContent: "space-between",
     alignItems: "center",
     spacing: 1,
+  },
+  ProcessInfoSx = {
+    fontWeight: 600,
+    position: "relative",
+    top: "7.5px",
+    color: "text.secondary",
   };
 
 const StreamStats = () => {
@@ -164,13 +170,16 @@ const StreamStats = () => {
 
                     <Stack direction="row" spacing={1.2}>
                       {stat.processStatus.runningStatus === "Connected" && (
-                        <Typography
-                          sx={{ fontWeight: 600, position: "relative", top: "7.5px" }}
-                          variant="caption"
-                          color="text.secondary"
-                        >
-                          {stat.processStatus.runningTime}
-                        </Typography>
+                        <>
+                          <Typography sx={ProcessInfoSx} variant="caption">
+                            {stat.processStatus.runningTime}
+                          </Typography>
+                          {stat.processStatus.bitrate && (
+                            <Typography sx={ProcessInfoSx} variant="caption">
+                              {stat.processStatus.bitrate}kbps
+                            </Typography>
+                          )}
+                        </>
                       )}
 
                       <Chip

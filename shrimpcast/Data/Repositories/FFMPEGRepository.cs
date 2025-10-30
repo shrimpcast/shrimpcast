@@ -72,6 +72,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             if (streamInfo == null || e.Data == null) return;
             if (streamInfo.Logs.Count >= 200) streamInfo.Logs.TryDequeue(out _);
             streamInfo.Logs.Enqueue((DateTime.UtcNow, e.Data));
+            streamInfo.Bitrate = GetStreamBitrate(stream, streamInfo.Stream.SegmentLength);
         }
 
         private void MediaServerLog(string logContent)
@@ -290,5 +291,24 @@ namespace shrimpcast.Data.Repositories.Interfaces
                 Process = MakeProcess(FFMPEGProcess, command, true)
             };
         }
+
+        public int GetStreamBitrate(string StreamName, int segmentDuration)
+        {
+            try
+            {
+                var dir = GetStreamDirectory(StreamName);
+                var tsFiles = Directory.GetFiles(dir, "*.ts", SearchOption.TopDirectoryOnly);
+                if (tsFiles.Length == 0) return 0;
+                long totalBytes = tsFiles.Sum(f => new FileInfo(f).Length);
+                double totalSeconds = tsFiles.Length * segmentDuration;
+                double bitrateBps = (totalBytes * 8) / totalSeconds;
+                double bitrateKbps = bitrateBps / 1000;
+                return (int)bitrateKbps;
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
+        } 
     }
 }
