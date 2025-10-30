@@ -8,7 +8,6 @@ using shrimpcast.Data.Repositories.Interfaces;
 using shrimpcast.Entities;
 using shrimpcast.Entities.DB;
 using shrimpcast.Entities.DTO;
-using shrimpcast.Helpers;
 using shrimpcast.Hubs.Dictionaries;
 using System.Collections.Concurrent;
 using System.Text;

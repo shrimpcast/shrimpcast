@@ -168,7 +168,7 @@ const StreamStats = () => {
                       {stat.name}
                     </Typography>
 
-                    <Stack direction="row" spacing={1.2}>
+                    <Stack minWidth="600px" justifyContent="end" direction="row" spacing={1.2}>
                       {stat.processStatus.runningStatus === "Connected" && (
                         <>
                           <Typography sx={ProcessInfoSx} variant="caption">
@@ -265,7 +265,7 @@ const StreamStats = () => {
                   {JSON.stringify(selectedItem.rawJsonSettings, null, 2)?.replace(/\\"/g, '"')}
                 </Box>
               ) : (
-                <Box sx={{ height: 600, borderRadius: 2, overflow: "hidden" }}>
+                <Box sx={{ height: "600px", borderRadius: 2 }}>
                   <VideoJSPlayer
                     options={{
                       autoplay: true,

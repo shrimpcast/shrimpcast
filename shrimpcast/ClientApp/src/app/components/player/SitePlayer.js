@@ -2,7 +2,6 @@ import { Box, Typography, useTheme } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import ReactPlayer from "react-player";
 import PickSource from "../layout/Actions/Sources/PickSource";
-import XGPlayer from "./XGPlayer";
 import VideoJSPlayer from "./VideoJSPlayer";
 import SignalRManager from "../../managers/SignalRManager";
 import { useNavigate } from "react-router-dom";
@@ -44,8 +43,6 @@ const SitePlayer = (props) => {
         ? url.substr(0, url.lastIndexOf(".")) + `.jpg?nocache=${Date.now()}`
         : thumbnail,
     },
-    isFLV = url.endsWith(".flv"),
-    forceM3U8 = isFLV && !window.MediaSource,
     [muted, setMuted] = useState(false),
     tryPlay = () => {
       let player = video.current.getInternalPlayer();
@@ -57,11 +54,6 @@ const SitePlayer = (props) => {
     },
     navigate = useNavigate(),
     showCountdown = startsAt && new Date(startsAt).getTime() - Date.now() > 0;
-
-  if (isFLV && forceM3U8) {
-    videoJsOptions.sources[0].src = url.substr(0, url.lastIndexOf(".")) + ".m3u8";
-    console.log("Forcing M3U8 because FLV is not supported.");
-  }
 
   useEffect(() => {
     signalR.on(SignalRManager.events.redirectSource, (data) => {
@@ -87,8 +79,6 @@ const SitePlayer = (props) => {
       />
     ) : showCountdown ? (
       <SourceCountdown startsAt={startsAt} />
-    ) : isFLV && !forceM3U8 ? (
-      <XGPlayer url={url} />
     ) : useRTCEmbed ? (
       <iframe
         src={`${url}`}
