@@ -13,5 +13,6 @@ namespace shrimpcast.Data.Repositories.Interfaces
         string GetStreamDirectory(string Name);
         bool IsDevelopment();
         Task CheckForStaleProcesses();
+        Task ThumbnailGeneration();
     }
 }

@@ -29,11 +29,10 @@ namespace shrimpcast.Data.Repositories.Interfaces
         {
             try
             {
-                CleanStreamDirectory(stream.Name);
                 var streamInfo = BuildStreamCommand(stream);
 
-                streamInfo.Process.OutputDataReceived += async (_, e) => await LogFfmpeg(stream.Name, e);
-                streamInfo.Process.ErrorDataReceived += async (_, e) => await LogFfmpeg(stream.Name, e);
+                streamInfo.Process.OutputDataReceived += (_, e) => LogFfmpeg(stream.Name, e);
+                streamInfo.Process.ErrorDataReceived +=  (_, e) => LogFfmpeg(stream.Name, e);
                 streamInfo.Process.Exited += (sender, e) => BackgroundJob.Enqueue(() => ShouldRestartStream(stream.Name));
 
                 streamInfo.Process.Start();
@@ -43,8 +42,9 @@ namespace shrimpcast.Data.Repositories.Interfaces
                 _processes.All.AddOrUpdate(stream.Name, streamInfo, (k, oldValue) => streamInfo);
                 MediaServerLog($"Started process {stream.Name}. Started by {StartedBy}");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                MediaServerLog($"Could not start process {stream.Name}. {ex.Message}");
                 BackgroundJob.Enqueue(() => ShouldRestartStream(stream.Name));
             }
         }
@@ -54,29 +54,24 @@ namespace shrimpcast.Data.Repositories.Interfaces
             _processes.All.TryGetValue(stream, out var processInfo);
             if (processInfo == null || processInfo.Process.HasExited) return false;
             MediaServerLog($"Stop called on process {stream}. Reason = {reason}");
-            processInfo.Process.Kill(true);
-            await processInfo.Process.WaitForExitAsync();
+            try
+            {
+                processInfo.Process.Kill(true);
+                await processInfo.Process.WaitForExitAsync();
+            }
+            catch (Exception ex)
+            {
+                MediaServerLog($"ERROR: Could not stop {stream}. {ex.Message}");
+            }
             return true;
         }
 
-        public async Task LogFfmpeg(string stream, DataReceivedEventArgs e)
+        public void LogFfmpeg(string stream, DataReceivedEventArgs e)
         {
             _processes.All.TryGetValue(stream, out var streamInfo);
             if (streamInfo == null || e.Data == null) return;
             if (streamInfo.Logs.Count >= 200) streamInfo.Logs.TryDequeue(out _);
-
-            var now = DateTime.UtcNow;
             streamInfo.Logs.Enqueue((DateTime.UtcNow, e.Data));
-
-            var lastScreenshotTime = streamInfo.LastScreenshot;
-            if (lastScreenshotTime == null || (now - lastScreenshotTime).Value.TotalSeconds >= streamInfo.Stream.SnapshotInterval)
-            {
-                string? screenshotCommand = BuildScreenshotCommand(stream);
-                if (screenshotCommand == null) return;
-                streamInfo.LastScreenshot = DateTime.UtcNow;
-                MediaServerLog($"Capturing snapshot for {stream}");
-                await LaunchProcess(FFMPEGProcess, screenshotCommand);
-            }
         }
 
         private void MediaServerLog(string logContent)
@@ -160,8 +155,41 @@ namespace shrimpcast.Data.Repositories.Interfaces
                     AllProcessesOk = false;
                 }
             }
+
             if (AllProcessesOk) MediaServerLog("Checked for stale processes. All procesess are running correctly.");
             BackgroundJob.Schedule(() => CheckForStaleProcesses(), TimeSpan.FromSeconds(MaxStaleTimeInSeconds));
+        }
+
+        public async Task ThumbnailGeneration()
+        {
+            var now = DateTime.UtcNow;
+
+            foreach (var streamInfo in _processes.All.Values)
+            {
+                var stream = streamInfo.Stream;
+                var lastScreenshotTime = streamInfo.LastScreenshot;
+
+                if (lastScreenshotTime != null && (now - lastScreenshotTime).Value.TotalSeconds < stream.SnapshotInterval) continue;
+
+                string? screenshotCommand = BuildScreenshotCommand(stream.Name);
+                if (screenshotCommand == null) continue;
+
+                try
+                {
+                    var captured = await LaunchProcess(FFMPEGProcess, screenshotCommand, "Success", false);
+                    if (captured == "Success")
+                    {
+                        streamInfo.LastScreenshot = now;
+                        MediaServerLog($"Captured snapshot for {stream.Name}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MediaServerLog($"Could not capture snapshot for {stream.Name}. {ex.Message}");
+                }
+            }
+
+            BackgroundJob.Schedule(() => ThumbnailGeneration(), TimeSpan.FromSeconds(3));
         }
 
         private void KillAllProcesses()
@@ -229,11 +257,22 @@ namespace shrimpcast.Data.Repositories.Interfaces
 
             command += $" -map 0:{stream.VideoStreamIndex}";
             if (stream.VideoEncodingPreset == "PASSTHROUGH") command += " -codec:v copy";
+            else
+            {
+                var bitrate = stream.VideoTranscodingBitrate;
+                command += $" -codec:v libx264 -preset:v {stream.VideoTranscodingPreset} -b:v {bitrate}k -maxrate:v {bitrate}k -bufsize:v {bitrate}k -r {stream.VideoTranscodingFramerate} -sc_threshold 0 -pix_fmt yuv420p -g 120 -keyint_min 120 -fps_mode auto -tune:v zerolatency";
+            } 
 
             if (stream.AudioStreamIndex != null)
             {
                 command += $" -map {audioIndexSource}:{stream.AudioStreamIndex}";
                 if (stream.AudioEncodingPreset == "PASSTHROUGH") command += $" -codec:a copy";
+                else
+                {
+                    var loudNorm = stream.AudioTranscodingLoudnessNormalization ? ",loudnorm" : string.Empty;
+                    var volume = stream.AudioTranscodingVolume != -1 ? $",volume=volume={stream.AudioTranscodingVolume}dB" : string.Empty;
+                    command += $" -filter:a aresample=osr=44100:ochl=stereo{volume}{loudNorm} -codec:a aac -b:a {stream.AudioAACBitrate}k -shortest -bsf:a aac_adtstoasc";
+                }
             }
             else command += " -an";
 

@@ -311,12 +311,16 @@ const GenericAddObjectTable = ({
               }
               values.splice(itemIndex, 1);
             } else {
+              const originalValue = values[itemIndex][field];
               values[itemIndex][field] = value;
               const edited = await customActions.edit(signalR, values[itemIndex], extraEditObjects);
               if (!edited) {
+                values[itemIndex][field] = originalValue;
                 displayToast("Error: could not save changes.");
                 return;
               }
+
+              values[itemIndex] = { ...values[itemIndex], ...extraEditObjects };
               displayToast("Changes saved successfully.");
             }
 

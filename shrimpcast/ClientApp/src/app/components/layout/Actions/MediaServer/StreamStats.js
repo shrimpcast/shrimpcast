@@ -130,7 +130,7 @@ const StreamStats = () => {
       <Box sx={BoxSx} className="scrollbar-custom">
         <Box mb={1}>
           <Typography display="flex" width="100%" variant="subtitle1" fontWeight={600} gutterBottom>
-            Process stats
+            Active stream processes
             <Button
               sx={{ marginLeft: "auto" }}
               disabled={logsLoading}
