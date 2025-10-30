@@ -179,6 +179,9 @@ const StreamStats = () => {
                               {stat.processStatus.bitrate}kbps
                             </Typography>
                           )}
+                          <Typography sx={ProcessInfoSx} variant="caption">
+                            CPU: {stat.processStatus.cpuUsage}
+                          </Typography>
                         </>
                       )}
 

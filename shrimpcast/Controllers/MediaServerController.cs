@@ -53,6 +53,7 @@ namespace shrimpcast.Controllers
                                    : System.IO.File.Exists(p.Value.FullStreamPath) ? "Connected" : "Connecting",
                     runningTime = TimeSpan.FromSeconds((int)(DateTime.UtcNow - p.Value.StartTime).TotalSeconds),
                     bitrate = p.Value.Bitrate,
+                    cpuUsage = p.Value.ProcessorUsageComputed,
                 }
             });
         }

@@ -168,8 +168,27 @@ namespace shrimpcast.Data.Repositories.Interfaces
             foreach (var streamInfo in _processes.All.Values)
             {
                 var stream = streamInfo.Stream;
-                var lastScreenshotTime = streamInfo.LastScreenshot;
+                
+                if (!HasExited(streamInfo.Process))
+                {
+                    try
+                    {
+                        if (streamInfo.ProcessorUsage != null)
+                        {
+                            var currentCpu = streamInfo.Process.TotalProcessorTime;
+                            var cpuDeltaMs = (currentCpu - streamInfo.ProcessorUsage).Value.TotalMilliseconds;
+                            var usage = cpuDeltaMs / (3000 * Environment.ProcessorCount) * 100;
+                            streamInfo.ProcessorUsageComputed = $"{usage:F2}%";
+                        }
+                        streamInfo.ProcessorUsage = streamInfo.Process.TotalProcessorTime;
+                    }
+                    catch (Exception)
+                    {
+                        MediaServerLog($"Error logging CPU time for {stream.Name}");
+                    }
+                }
 
+                var lastScreenshotTime = streamInfo.LastScreenshot;
                 if (lastScreenshotTime != null && (now - lastScreenshotTime).Value.TotalSeconds < stream.SnapshotInterval) continue;
 
                 string? screenshotCommand = BuildScreenshotCommand(stream.Name);

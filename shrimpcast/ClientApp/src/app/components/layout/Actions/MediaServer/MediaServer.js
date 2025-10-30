@@ -1,4 +1,4 @@
-import TheatersIcon from "@mui/icons-material/Theaters";
+import MovieIcon from "@mui/icons-material/Movie";
 import GenericActionList from "../GenericActionList";
 import MediaServerManager from "../../../../managers/MediaServerManager";
 import Probe from "./Probe";
@@ -85,7 +85,7 @@ const MediaServer = (props) => {
     <GenericActionList
       title="Media server panel"
       getItems={MediaServerManager.GetAll}
-      icon={TheatersIcon}
+      icon={MovieIcon}
       tableModel={tableModel}
       CustomHeaderComponent={<Stats {...props} />}
       customWidth="lg"

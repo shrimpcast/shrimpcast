@@ -15,7 +15,7 @@ const SystemStats = () => {
       const response = await MediaServerManager.GetSystemStats(abortControllerSignal);
       if (abortControllerSignal?.aborted) return;
       setStats(response || defaultModel);
-      setTimeout(() => fetchStats(abortControllerSignal), 500);
+      setTimeout(() => fetchStats(abortControllerSignal), 750);
     };
 
     const abortController = new AbortController();
@@ -27,7 +27,7 @@ const SystemStats = () => {
   return (
     <Box mt={1} p={1.5} borderRadius={2} bgcolor="background.paper" boxShadow={1} width="100%">
       <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-        System stats
+        Resource usage
         <Divider />
       </Typography>
 
