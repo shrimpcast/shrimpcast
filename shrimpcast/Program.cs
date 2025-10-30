@@ -41,6 +41,7 @@ builder.Services.AddSingleton(typeof(Connections<>));
 builder.Services.AddSingleton(typeof(Pings<>));
 builder.Services.AddSingleton(typeof(BingoSuggestions<>));
 builder.Services.AddSingleton(typeof(Processes<>));
+builder.Services.AddSingleton(typeof(MediaServerLogs<>));
 builder.Services.AddSingleton(typeof(ConfigurationSingleton));
 builder.Services.AddScoped<IConfigurationRepository, ConfigurationRepository>();
 builder.Services.AddScoped<ISessionRepository, SessionRepository>();
@@ -59,7 +60,7 @@ builder.Services.AddScoped<IBTCServerRepository, BTCServerRepository>();
 builder.Services.AddScoped<IStripeRepository, StripeRepository>();
 builder.Services.AddScoped<ISourceRepository, SourceRepository>();
 builder.Services.AddScoped<IMediaServerStreamRepository, MediaServerStreamRepository>();
-builder.Services.AddScoped<IProcessRepository, ProcessRepository>();
+builder.Services.AddScoped<IFFMPEGRepository, FFMPEGRepository>();
 builder.Services.AddHangfire(configuration => configuration
                 .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
                 .UseSimpleAssemblyNameTypeSerializer()
@@ -88,8 +89,9 @@ using (var scope = app.Services.CreateScope())
     DBInitialize.Initialize(context);
     var configuration = services.GetRequiredService<ConfigurationSingleton>();
     await configuration.Initialize();
-    var processInitializer = services.GetRequiredService<IProcessRepository>();
+    var processInitializer = services.GetRequiredService<IFFMPEGRepository>();
     await processInitializer.InitStreamProcesses();
+    BackgroundJob.Enqueue(() => processInitializer.CheckForStaleProcesses());
 }
 
 app.UseHttpsRedirection();

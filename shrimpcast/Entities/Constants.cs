@@ -20,8 +20,6 @@ namespace shrimpcast.Entities
 
         public const string RESET_VPN_RECORDS = $"!resetallsavedvpnrecords";
 
-        public const string DOCKER_RESTART = $"!dockerrestart";
-
         public const string REDIRECT_SOURCE = $"!redirectsource";
 
         public const string FILTERS = "filters.json";

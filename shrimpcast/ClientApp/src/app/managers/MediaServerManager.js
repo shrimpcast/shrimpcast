@@ -21,6 +21,7 @@ class MediaServerManager {
     return response?.data;
   }
   static async GetStreamLogs(stream) {
+    stream = stream === "_server_" ? "" : stream;
     const response = await axios
       .get(`/api/mediaserver/GetStreamLogs?sessionToken=${LocalStorageManager.getToken()}&name=${stream}`, {
         timeout: 10000,

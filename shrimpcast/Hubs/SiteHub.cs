@@ -35,7 +35,7 @@ namespace shrimpcast.Hubs
         private readonly IStripeRepository _stripeRepository;
         private readonly ISourceRepository _sourceRepository;
         private readonly IMediaServerStreamRepository _mediaServerStreamRepository;
-        private readonly IProcessRepository _processRepository;
+        private readonly IFFMPEGRepository _ffmpegRepository;
         private readonly IHubContext<SiteHub> _hubContext;
         private readonly ConfigurationSingleton _configurationSigleton;
         private readonly Connections<SiteHub> _activeConnections;
@@ -43,7 +43,7 @@ namespace shrimpcast.Hubs
         private readonly BingoSuggestions<SiteHub> _bingoSuggestions;
         private readonly Processes<SiteHub> _processes;
 
-        public SiteHub(IConfigurationRepository configurationRepository, ISessionRepository sessionRepository, IMessageRepository messageRepository, IBanRepository banRepository, IPollRepository pollRepository, ITorExitNodeRepository torExitNodeRepository, IHubContext<SiteHub> hubContext, ConfigurationSingleton configurationSingleton, Connections<SiteHub> activeConnections, Pings<SiteHub> pings, IOBSCommandsRepository obsCommandsRepository, IAutoModFilterRepository autoModFilterRepository, INotificationRepository notificationRepository, IEmoteRepository emoteRepository, IBingoRepository bingoRepository, IVpnAddressRepository vpnAddressRepository, BingoSuggestions<SiteHub> bingoSuggestions, IBTCServerRepository btcServerRepository, ISourceRepository sourceRepository, IStripeRepository stripeRepository, IMediaServerStreamRepository mediaServerStreamRepository, Processes<SiteHub> proccesses, IProcessRepository processRepository)
+        public SiteHub(IConfigurationRepository configurationRepository, ISessionRepository sessionRepository, IMessageRepository messageRepository, IBanRepository banRepository, IPollRepository pollRepository, ITorExitNodeRepository torExitNodeRepository, IHubContext<SiteHub> hubContext, ConfigurationSingleton configurationSingleton, Connections<SiteHub> activeConnections, Pings<SiteHub> pings, IOBSCommandsRepository obsCommandsRepository, IAutoModFilterRepository autoModFilterRepository, INotificationRepository notificationRepository, IEmoteRepository emoteRepository, IBingoRepository bingoRepository, IVpnAddressRepository vpnAddressRepository, BingoSuggestions<SiteHub> bingoSuggestions, IBTCServerRepository btcServerRepository, ISourceRepository sourceRepository, IStripeRepository stripeRepository, IMediaServerStreamRepository mediaServerStreamRepository, Processes<SiteHub> proccesses, IFFMPEGRepository ffmpegRepository)
         {
             _configurationRepository = configurationRepository;
             _sessionRepository = sessionRepository;
@@ -67,7 +67,7 @@ namespace shrimpcast.Hubs
             _stripeRepository = stripeRepository;
             _mediaServerStreamRepository = mediaServerStreamRepository;
             _processes = proccesses;
-            _processRepository = processRepository;
+            _ffmpegRepository = ffmpegRepository;
         }
 
         private Configuration Configuration => _configurationSigleton.Configuration;
@@ -710,12 +710,7 @@ namespace shrimpcast.Hubs
                 if (status && resetOnScheduledSwitch)
                 {
                     await DispatchSystemMessage($"[SYSTEM] Restarting media server. Playback will automatically resume shortly.", true, true);
-                    string cmdResult = null;
-                    try
-                    {
-                        //cmdResult = await ProcessHelper.DockerRestart();
-                    } catch (Exception ex) { cmdResult = ex.Message; }
-                    await DispatchSystemMessage(cmdResult, true, false, GetAdminSessions());
+                    await _ffmpegRepository.InitStreamProcesses();
                 }
                 await _hubContext.Clients.All.SendAsync("ConfigUpdated", _configurationSigleton.Configuration);
             }
@@ -855,14 +850,17 @@ namespace shrimpcast.Hubs
         public async Task<MediaServerStream?> AddMediaServerStream([FromBody] MediaServerStream MediaServerStream)
         {
             await ShouldGrantAccess();
-            return await _mediaServerStreamRepository.Add(MediaServerStream);
+            var added = await _mediaServerStreamRepository.Add(MediaServerStream);
+            if (added == null) return null;
+            if (added.IsEnabled) _ffmpegRepository.InitStreamProcess(added, "user");
+            return added;
         }
 
         public async Task<bool> RemoveMediaServerStream([FromBody] int MediaServerStreamId)
         {
             await ShouldGrantAccess();
             var removed = await _mediaServerStreamRepository.Remove(MediaServerStreamId);
-            await _processRepository.StopStreamProcess(removed);
+            await _ffmpegRepository.StopStreamProcess(removed, "removed");
             return true;
         }
 
@@ -873,12 +871,8 @@ namespace shrimpcast.Hubs
             var statusBeforeEdit = (await _mediaServerStreamRepository.GetByName(streamName))!.IsEnabled;
             var edited = await _mediaServerStreamRepository.Edit(MediaServerStream);
 
-            await _processRepository.StopStreamProcess(MediaServerStream.Name);
-            if (MediaServerStream.IsEnabled && statusBeforeEdit == false)
-            {
-                await Task.Delay(1000);
-                _processRepository.InitStreamProcess(MediaServerStream);
-            }
+            await _ffmpegRepository.StopStreamProcess(MediaServerStream.Name, "edited");
+            if (MediaServerStream.IsEnabled && statusBeforeEdit == false) _ffmpegRepository.InitStreamProcess(MediaServerStream, "user");
 
             return edited;
         }
@@ -1175,9 +1169,6 @@ namespace shrimpcast.Hubs
                     case string _message when _message.StartsWith(Constants.RESET_VPN_RECORDS):
                         await ResetVPNRecords();
                         return true;
-                    case string _message when _message.StartsWith(Constants.DOCKER_RESTART):
-                        await DockerRestart();
-                        return true;
                     case string _message when _message.StartsWith(Constants.REDIRECT_SOURCE):
                         await RedirectFromSource(message);
                         return true;
@@ -1272,22 +1263,6 @@ namespace shrimpcast.Hubs
             {
                 var result = await _vpnAddressRepository.ResetRecords();
                 await DispatchSystemMessage($"Removed {result} records");
-            }
-            catch (Exception ex)
-            {
-                await DispatchSystemMessage(ex.Message);
-            }
-        }
-
-
-        private async Task DockerRestart()
-        {
-            await DispatchSystemMessage($"Executing {Constants.DOCKER_RESTART} command...");
-            try
-            {
-                await DispatchSystemMessage($"[SYSTEM] Restarting media server. Playback will automatically resume shortly.", true, true);
-                //var result = await ProcessHelper.DockerRestart();
-                await DispatchSystemMessage("");
             }
             catch (Exception ex)
             {

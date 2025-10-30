@@ -4,17 +4,16 @@ using shrimpcast.Entities.DTO;
 using shrimpcast.Helpers;
 using shrimpcast.Hubs;
 using shrimpcast.Hubs.Dictionaries;
-using System.Text.Json.Nodes;
 
 namespace shrimpcast.Controllers
 {
     [ApiController, Route("api/[controller]")]
-    public class MediaServerController(IProcessRepository processRepository, ISessionRepository sessionRepository, Processes<SiteHub> processes) : ControllerBase
+    public class MediaServerController(IFFMPEGRepository ffmpegRepository, ISessionRepository sessionRepository, Processes<SiteHub> processes, MediaServerLogs<SiteHub> mediaServerLogs) : ControllerBase
     {
-        private readonly IProcessRepository _processRepository = processRepository;
+        private readonly IFFMPEGRepository _ffmpegRepository = ffmpegRepository;
         private readonly ISessionRepository _sessionRepository = sessionRepository;
         private readonly Processes<SiteHub> _processes = processes;
-
+        private readonly MediaServerLogs<SiteHub> _mediaServerLogs = mediaServerLogs;
 
         [HttpGet, Route("GetSystemStats")]
         public async Task<object> GetSystemStats(string sessionToken)
@@ -56,13 +55,14 @@ namespace shrimpcast.Controllers
         }
 
         [HttpGet, Route("GetStreamLogs")]
-        public async Task<IEnumerable<string>> GetStreamLogs(string sessionToken, string Name)
+        public async Task<IEnumerable<string>> GetStreamLogs(string sessionToken, string? Name)
         {
             var session = await _sessionRepository.GetExistingByTokenAsync(sessionToken);
             if (session == null || !session.IsAdmin) throw new Exception("Permission denied.");
+            if (Name == null) return _mediaServerLogs.Logs.Select(l => $"{l.AddedAt}Z: {l.Content}");
             _processes.All.TryGetValue(Name, out var streamInfo);
             if (streamInfo == null) return [];
-            return streamInfo.Logs.Select(l => $"[{l.AddedAt}]: {l.Content}");
+            return streamInfo.Logs.Select(l => $"{l.AddedAt}Z: {l.Content}");
         }
 
         [HttpPost, Route("Probe")]
@@ -70,28 +70,19 @@ namespace shrimpcast.Controllers
         {
             var session = await _sessionRepository.GetExistingByTokenAsync(probeDTO.SessionToken);
             if (session == null || !session.IsAdmin) throw new Exception("Permission denied.");
-            (string process, string command) = FFMPEGHelper.BuildProbeCommand(probeDTO.CustomHeaders, probeDTO.URL);
-            try
-            {
-                var probe = await _processRepository.ExecSingleInstanceProcess(process, command, ReturnOutput: true);
-                return JsonNode.Parse(probe);
-            }
-            catch (Exception)
-            {
-                return $"Error: Probe failed ({process} {command})";
-            }
+            return await _ffmpegRepository.Probe(probeDTO.CustomHeaders, probeDTO.URL);
         }
 
-
         // Development only 
-        [HttpGet, Route("Stream/{Name}/{File}")]
+        // Serves directly from wwwroot in production
+        [HttpGet, Route("Streams/{Name}/{File}")]
         [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true, Duration = 0)]
-        public IActionResult Stream(string Name, string File)
+        public IActionResult Streams(string Name, string File)
         {
-            if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Development") throw new Exception();
-            var dir = FFMPEGHelper.GetStreamDir(Name);
+            if (!_ffmpegRepository.IsDevelopment()) throw new Exception();
+            var directory = _ffmpegRepository.GetStreamDirectory(Name);
             var contentType = File.EndsWith("m3u8") ? "application/vnd.apple.mpegurl" : "video/mp2t";
-            return PhysicalFile($"{dir}/{File.ToLower()}", contentType , true);
+            return PhysicalFile($"{directory}/{File.ToLower()}", contentType , true);
         }
     }
 }

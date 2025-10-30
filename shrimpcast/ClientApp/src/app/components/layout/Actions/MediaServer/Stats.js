@@ -25,7 +25,6 @@ const ContainerSx = (theme) => ({
 
 const Stats = () => {
   const theme = useTheme();
-
   return (
     <Box display="block">
       <Box sx={ContainerSx(theme)}>

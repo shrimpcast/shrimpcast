@@ -35,12 +35,6 @@ const MediaServer = (props) => {
         },
       },
       {
-        name: "hlsVersion",
-        label: "HLS version",
-        type: 6,
-        color: "error",
-      },
-      {
         name: "segmentLength",
         label: "HLS segment length",
         type: 6,
@@ -54,7 +48,7 @@ const MediaServer = (props) => {
       },
       {
         name: "snapshotInterval",
-        label: "Snapshot interval",
+        label: "Thumbnail interval",
         type: 6,
         color: "info",
       },
@@ -65,15 +59,7 @@ const MediaServer = (props) => {
         color: "success",
       },
     ],
-    requiredFields: [
-      "name",
-      "ingressUri",
-      "probeSuccess",
-      "hlsVersion",
-      "segmentLength",
-      "listSize",
-      "snapshotInterval",
-    ],
+    requiredFields: ["name", "ingressUri", "probeSuccess", "segmentLength", "listSize", "snapshotInterval"],
     reservedWords: [],
     reservedWordField: "name",
     model: {

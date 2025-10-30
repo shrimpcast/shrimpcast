@@ -10,6 +10,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
         public async Task<MediaServerStream?> Add(MediaServerStream mediaServerStream)
         {
             if (_context.MediaServerStreams.AsNoTracking().FirstOrDefault(m => m.Name == mediaServerStream.Name) != null) return null;
+            Validate(mediaServerStream);
             await _context.AddAsync(mediaServerStream);
             var result = await _context.SaveChangesAsync();
             return result > 0 ? mediaServerStream : throw new Exception("Could not add media server stream.");
@@ -27,6 +28,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
         public async Task<bool> Edit(MediaServerStream _mediaServerStream)
         {
             var mediaServerStream = await _context.MediaServerStreams.FirstAsync(m => m.MediaServerStreamId == _mediaServerStream.MediaServerStreamId);
+            Validate(_mediaServerStream);
             _context.Entry(mediaServerStream).CurrentValues.SetValues(_mediaServerStream);
             return await _context.SaveChangesAsync() > 0;
         }
@@ -37,6 +39,13 @@ namespace shrimpcast.Data.Repositories.Interfaces
             _context.MediaServerStreams.Remove(mediaServerStream);
             return await _context.SaveChangesAsync() > 0 ? mediaServerStream.Name : throw new Exception("Could not remove item.");
         }
+
+        private void Validate(MediaServerStream stream)
+        {
+            if (stream.SnapshotInterval < 15 || stream.SegmentLength < 2 || stream.ListSize < 6)
+            {
+                throw new InvalidDataException();
+            } 
+        }
     }
 }
-

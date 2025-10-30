@@ -117,7 +117,7 @@ const DEFAULT_THUMBNAIL = "/images/video_thumbnail.png",
   };
 
 const ResolveThumbnail = (thumbnail, url, noCache) =>
-  thumbnail || (url.includes("/memfs/") ? url.substr(0, url.lastIndexOf(".")) + `.jpg?nocache=${noCache}` : null);
+  thumbnail || (url.includes("/streams/") ? url.substr(0, url.lastIndexOf(".")) + `.jpg?nocache=${noCache}` : null);
 
 const PickSource = ({ sources, signalR, showViewerCountPerStream, noCache }) => {
   const [hoveredIndex, setHoveredIndex] = useState(null),

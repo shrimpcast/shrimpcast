@@ -10,8 +10,6 @@
 
         public required string IngressUri { get; set; }
 
-        public required int HlsVersion { get; set; }   
-
         public required int SegmentLength { get; set; }
 
         public required int ListSize { get; set; }

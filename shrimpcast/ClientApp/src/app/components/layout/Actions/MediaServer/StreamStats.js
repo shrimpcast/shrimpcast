@@ -128,10 +128,21 @@ const StreamStats = () => {
   return (
     <Fade in timeout={400}>
       <Box sx={BoxSx} className="scrollbar-custom">
-        <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-          Process stats
+        <Box mb={1}>
+          <Typography display="flex" width="100%" variant="subtitle1" fontWeight={600} gutterBottom>
+            Process stats
+            <Button
+              sx={{ marginLeft: "auto" }}
+              disabled={logsLoading}
+              size="small"
+              variant="outlined"
+              onClick={() => getLogs("_server_")}
+            >
+              MEDIA SERVER LOGS {logsLoading && <CircularProgress sx={{ ml: "4px" }} size={12} />}
+            </Button>
+          </Typography>
           <Divider />
-        </Typography>
+        </Box>
 
         {stats === null ? (
           <Box width="40px" ml="auto" mr="auto" mt={2}>
@@ -167,7 +178,7 @@ const StreamStats = () => {
                         color={
                           stat.processStatus.runningStatus === "Connected"
                             ? "success"
-                            : stat.processStatus.runningStatus === "stopped"
+                            : stat.processStatus.runningStatus === "Stopped"
                             ? "error"
                             : "warning"
                         }
@@ -239,7 +250,7 @@ const StreamStats = () => {
             >
               {dialogType === "json" ? (
                 <Box component="pre" sx={JsonPreviewSX} className="scrollbar-custom">
-                  {JSON.stringify(selectedItem.rawJsonSettings, null, 2).replace(/\\"/g, '"')}
+                  {JSON.stringify(selectedItem.rawJsonSettings, null, 2)?.replace(/\\"/g, '"')}
                 </Box>
               ) : (
                 <Box sx={{ height: 600, borderRadius: 2, overflow: "hidden" }}>

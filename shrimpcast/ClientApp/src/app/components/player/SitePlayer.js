@@ -40,7 +40,9 @@ const SitePlayer = (props) => {
           withCredentials,
         },
       },
-      poster: url.includes("/memfs/") ? url.substr(0, url.lastIndexOf(".")) + `.jpg?nocache=${Date.now()}` : thumbnail,
+      poster: url.includes("/streams/")
+        ? url.substr(0, url.lastIndexOf(".")) + `.jpg?nocache=${Date.now()}`
+        : thumbnail,
     },
     isFLV = url.endsWith(".flv"),
     forceM3U8 = isFLV && !window.MediaSource,
