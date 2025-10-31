@@ -29,7 +29,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
         {
             try
             {
-                CleanStreamDirectory(Name);
+                CleanStreamDirectory(stream.Name);
                 var streamInfo = BuildStreamCommand(stream);
 
                 streamInfo.Process.OutputDataReceived += (_, e) => LogFfmpeg(stream.Name, e?.Data);
