@@ -60,6 +60,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             {
                 processInfo.Process.Kill(true);
                 await processInfo.Process.WaitForExitAsync();
+                CleanStreamDirectory(stream);
                 MediaServerLog($"Stopped process {stream}");
             }
             catch (Exception ex)
