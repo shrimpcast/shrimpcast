@@ -174,11 +174,11 @@ const StreamStats = () => {
                           <Typography sx={ProcessInfoSx} variant="caption">
                             {stat.processStatus.runningTime}
                           </Typography>
-                          {stat.processStatus.bitrate && (
+                          {stat.processStatus.bitrate ? (
                             <Typography sx={ProcessInfoSx} variant="caption">
                               {stat.processStatus.bitrate}kbps
                             </Typography>
-                          )}
+                          ) : null}
                           <Typography sx={ProcessInfoSx} variant="caption">
                             {stat.processStatus.cpuUsage}
                           </Typography>
@@ -188,7 +188,9 @@ const StreamStats = () => {
                       <Chip
                         label={stat.processStatus.runningStatus}
                         color={
-                          stat.processStatus.runningStatus === "Connected"
+                          stat.processStatus.runningStatus === "Stopping"
+                            ? "error"
+                            : stat.processStatus.runningStatus === "Connected"
                             ? "success"
                             : stat.processStatus.runningStatus === "Connecting"
                             ? "info"

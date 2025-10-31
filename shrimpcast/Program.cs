@@ -91,8 +91,7 @@ using (var scope = app.Services.CreateScope())
     await configuration.Initialize();
     var processInitializer = services.GetRequiredService<IFFMPEGRepository>();
     await processInitializer.InitStreamProcesses();
-    BackgroundJob.Enqueue(() => processInitializer.CheckForStaleProcesses());
-    BackgroundJob.Enqueue(() => processInitializer.ThumbnailGeneration());
+    BackgroundJob.Enqueue(() => processInitializer.DoBackgroundTasks());
 }
 
 app.UseHttpsRedirection();

@@ -31,9 +31,9 @@ namespace shrimpcast.Data.Repositories.Interfaces
             {
                 var streamInfo = BuildStreamCommand(stream);
 
-                streamInfo.Process.OutputDataReceived += (_, e) => LogFfmpeg(stream.Name, e);
-                streamInfo.Process.ErrorDataReceived +=  (_, e) => LogFfmpeg(stream.Name, e);
-                streamInfo.Process.Exited += (sender, e) => BackgroundJob.Enqueue(() => ShouldRestartStream(stream.Name));
+                streamInfo.Process.OutputDataReceived += (_, e) => LogFfmpeg(stream.Name, e?.Data);
+                streamInfo.Process.ErrorDataReceived +=  (_, e) => LogFfmpeg(stream.Name, e?.Data);
+                streamInfo.Process.Exited += (sender, e) => MediaServerLog($"Process {stream.Name} exited");
 
                 streamInfo.Process.Start();
                 streamInfo.Process.BeginOutputReadLine();
@@ -54,10 +54,12 @@ namespace shrimpcast.Data.Repositories.Interfaces
             _processes.All.TryGetValue(stream, out var processInfo);
             if (processInfo == null || HasExited(processInfo.Process)) return false;
             MediaServerLog($"Stop called on process {stream}. Reason = {reason}");
+            if (reason != "stale") processInfo.Stream.IsEnabled = false;
             try
             {
                 processInfo.Process.Kill(true);
                 await processInfo.Process.WaitForExitAsync();
+                MediaServerLog($"Stopped process {stream}");
             }
             catch (Exception ex)
             {
@@ -66,13 +68,12 @@ namespace shrimpcast.Data.Repositories.Interfaces
             return true;
         }
 
-        public void LogFfmpeg(string stream, DataReceivedEventArgs e)
+        public void LogFfmpeg(string stream, string? log)
         {
             _processes.All.TryGetValue(stream, out var streamInfo);
-            if (streamInfo == null || e.Data == null) return;
+            if (streamInfo == null || log == null) return;
             if (streamInfo.Logs.Count >= 200) streamInfo.Logs.TryDequeue(out _);
-            streamInfo.Logs.Enqueue((DateTime.UtcNow, e.Data));
-            streamInfo.Bitrate = GetStreamBitrate(stream, streamInfo.Stream.SegmentLength);
+            streamInfo.Logs.Enqueue((DateTime.UtcNow, log));
         }
 
         private void MediaServerLog(string logContent)
@@ -126,11 +127,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
 
         public async Task ShouldRestartStream(string Name)
         {
-            var restartWaitMs = 1000;
-            await Task.Delay(restartWaitMs);
-            MediaServerLog($"Process {Name} exited.");
             CleanStreamDirectory(Name);
-
             var updatedStream = await _mediaServerStreamRepository.GetByName(Name);
             if (updatedStream != null && updatedStream.IsEnabled)
             {
@@ -140,59 +137,55 @@ namespace shrimpcast.Data.Repositories.Interfaces
             else _processes.All.TryRemove(Name, out _);
         }
 
-        public async Task CheckForStaleProcesses()
-        {
-            var MaxStaleTimeInSeconds = 15;
-            var UtcNow = DateTime.UtcNow;
-            var AllProcessesOk = true;
-
-            foreach (var process in _processes.All.Values)
-            {
-                var (AddedAt, Content) = process.Logs.LastOrDefault();
-                if (HasExited(process.Process) || Content == null) continue;
-                if ((UtcNow - AddedAt).TotalSeconds > MaxStaleTimeInSeconds)
-                {
-                    await StopStreamProcess(process.Stream.Name, "stale");
-                    AllProcessesOk = false;
-                }
-            }
-
-            if (AllProcessesOk) MediaServerLog("Checked for stale processes. All procesess are running correctly.");
-            BackgroundJob.Schedule(() => CheckForStaleProcesses(), TimeSpan.FromSeconds(MaxStaleTimeInSeconds));
-        }
-
-        public async Task ThumbnailGeneration()
+        public async Task DoBackgroundTasks()
         {
             var now = DateTime.UtcNow;
+            var MaxStaleTimeInSeconds = 12;
 
             foreach (var streamInfo in _processes.All.Values)
             {
                 var stream = streamInfo.Stream;
-                
-                if (!HasExited(streamInfo.Process))
+
+                // ------ check if process is stale ------ //
+                var (AddedAt, Content) = streamInfo.Logs.LastOrDefault();
+                if (Content != null && ((now - AddedAt).TotalSeconds > MaxStaleTimeInSeconds))
                 {
-                    try
-                    {
-                        if (streamInfo.ProcessorUsage != null)
-                        {
-                            var currentCpu = streamInfo.Process.TotalProcessorTime;
-                            var curTime = DateTime.UtcNow;
-
-                            double cpuUsedMs = (currentCpu - streamInfo.ProcessorUsage.Value.CpuTime).TotalMilliseconds;
-                            double totalMsPassed = (curTime - streamInfo.ProcessorUsage.Value.Time).TotalMilliseconds;
-
-                            double cpuUsageTotal = cpuUsedMs / (Environment.ProcessorCount * totalMsPassed) * 100;
-
-                            streamInfo.ProcessorUsageComputed = $"CPU: {cpuUsageTotal:F2}%";
-                        }
-                        streamInfo.ProcessorUsage = (streamInfo.Process.TotalProcessorTime, DateTime.UtcNow);
-                    }
-                    catch (Exception)
-                    {
-                        MediaServerLog($"Error logging CPU time for {stream.Name}");
-                    }
+                    await StopStreamProcess(stream.Name, "stale");
                 }
 
+                // ------ check if process has exited and should be restarted ------ //
+                if (HasExited(streamInfo.Process))
+                {
+                    BackgroundJob.Enqueue(() => ShouldRestartStream(stream.Name));
+                    continue;
+                }
+
+                // ------ calculate process CPU usage ------ //
+                try
+                {
+                    if (streamInfo.ProcessorUsage != null)
+                    {
+                        var currentCpu = streamInfo.Process.TotalProcessorTime;
+                        var curTime = DateTime.UtcNow;
+
+                        double cpuUsedMs = (currentCpu - streamInfo.ProcessorUsage.Value.CpuTime).TotalMilliseconds;
+                        double totalMsPassed = (curTime - streamInfo.ProcessorUsage.Value.Time).TotalMilliseconds;
+
+                        double cpuUsageTotal = cpuUsedMs / (Environment.ProcessorCount * totalMsPassed) * 100;
+
+                        streamInfo.ProcessorUsageComputed = $"CPU: {cpuUsageTotal:F2}%";
+                    }
+                    streamInfo.ProcessorUsage = (streamInfo.Process.TotalProcessorTime, DateTime.UtcNow);
+                }
+                catch (Exception)
+                {
+                    MediaServerLog($"Error logging CPU time for {stream.Name}");
+                }
+
+                // ------ calculate stream bitrate ------ //
+                streamInfo.Bitrate = GetStreamBitrate(stream.Name, streamInfo.Stream.SegmentLength);
+
+                // ------ generate thumbnail ------ //
                 var lastScreenshotTime = streamInfo.LastScreenshot;
                 if (lastScreenshotTime != null && (now - lastScreenshotTime).Value.TotalSeconds < stream.SnapshotInterval) continue;
 
@@ -214,7 +207,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
                 }
             }
 
-            BackgroundJob.Schedule(() => ThumbnailGeneration(), TimeSpan.FromSeconds(3));
+            BackgroundJob.Schedule(() => DoBackgroundTasks(), TimeSpan.FromSeconds(3));
         }
 
         private void KillAllProcesses()
@@ -304,7 +297,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             if (stream.LowLatency) command += " -flags +low_delay";
 
             var dirInfo = Directory.CreateDirectory(GetStreamDirectory(stream.Name));
-            command += $" -f hls -hls_time {stream.SegmentLength} -hls_list_size {stream.ListSize} -hls_flags delete_segments+append_list+program_date_time -hls_delete_threshold 4 -hls_segment_filename \"{Path.Combine(dirInfo.FullName, "live_%03d.ts")}\" {Path.Combine(dirInfo.FullName, "index.m3u8")}";
+            command += $" -f hls -hls_time {stream.SegmentLength} -hls_list_size {stream.ListSize} -hls_flags delete_segments+append_list+program_date_time+temp_file -hls_delete_threshold 4 -hls_segment_filename \"{Path.Combine(dirInfo.FullName, "live_%03d.ts")}\" {Path.Combine(dirInfo.FullName, "index.m3u8")}";
 
             return new StreamInfo
             {

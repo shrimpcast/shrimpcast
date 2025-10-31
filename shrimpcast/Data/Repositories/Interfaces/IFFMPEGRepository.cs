@@ -13,8 +13,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
         Task<JsonNode?> Probe(string? Headers, string URL);
         string GetStreamDirectory(string Name);
         bool IsDevelopment();
-        Task CheckForStaleProcesses();
-        Task ThumbnailGeneration();
+        Task DoBackgroundTasks();
         bool HasExited(Process process);
     }
 }

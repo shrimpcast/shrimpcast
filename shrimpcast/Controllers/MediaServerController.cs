@@ -48,9 +48,10 @@ namespace shrimpcast.Controllers
                 streamUrl = p.Value.StreamPath,
                 processStatus = new
                 {
-                    runningStatus = _ffmpegRepository.HasExited(p.Value.Process) 
-                                   ? "Starting" 
-                                   : System.IO.File.Exists(p.Value.FullStreamPath) ? "Connected" : "Connecting",
+                    runningStatus = !p.Value.Stream.IsEnabled ? "Stopping"
+                                     :  _ffmpegRepository.HasExited(p.Value.Process) 
+                                        ? "Starting" 
+                                        : System.IO.File.Exists(p.Value.FullStreamPath) ? "Connected" : "Connecting",
                     runningTime = TimeSpan.FromSeconds((int)(DateTime.UtcNow - p.Value.StartTime).TotalSeconds),
                     bitrate = p.Value.Bitrate,
                     cpuUsage = p.Value.ProcessorUsageComputed,
