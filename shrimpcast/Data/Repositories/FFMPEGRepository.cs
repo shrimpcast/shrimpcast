@@ -29,6 +29,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
         {
             try
             {
+                CleanStreamDirectory(Name);
                 var streamInfo = BuildStreamCommand(stream);
 
                 streamInfo.Process.OutputDataReceived += (_, e) => LogFfmpeg(stream.Name, e?.Data);
@@ -127,7 +128,6 @@ namespace shrimpcast.Data.Repositories.Interfaces
 
         public async Task ShouldRestartStream(string Name)
         {
-            CleanStreamDirectory(Name);
             var updatedStream = await _mediaServerStreamRepository.GetByName(Name);
             if (updatedStream != null && updatedStream.IsEnabled)
             {
