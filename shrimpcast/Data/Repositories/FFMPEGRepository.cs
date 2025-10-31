@@ -211,9 +211,12 @@ namespace shrimpcast.Data.Repositories.Interfaces
             BackgroundJob.Schedule(() => DoBackgroundTasks(), TimeSpan.FromSeconds(3));
         }
 
+        public Process[] GetActiveFFMPEGProcesses() => 
+            Process.GetProcessesByName(FFMPEGProcess);
+
         private void KillAllProcesses()
         {
-            foreach (var process in Process.GetProcessesByName(FFMPEGProcess)) process.Kill(true);
+            foreach (var process in GetActiveFFMPEGProcesses()) process.Kill(true);
             CleanStreamDirectory(CleanRoot: true);
         }
 

@@ -15,5 +15,6 @@ namespace shrimpcast.Data.Repositories.Interfaces
         bool IsDevelopment();
         Task DoBackgroundTasks();
         bool HasExited(Process process);
+        Process[] GetActiveFFMPEGProcesses();
     }
 }

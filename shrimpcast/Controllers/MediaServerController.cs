@@ -64,7 +64,12 @@ namespace shrimpcast.Controllers
         {
             var session = await _sessionRepository.GetExistingByTokenAsync(sessionToken);
             if (session == null || !session.IsAdmin) throw new Exception("Permission denied.");
-            if (Name == null) return _mediaServerLogs.Logs.Select(l => $"{l.AddedAt}Z: {l.Content}");
+            if (Name == null) 
+            {
+                var activeFfmpegProcessCount = $"Active FFMPEG processes: {_ffmpegRepository.GetActiveFFMPEGProcesses().Length}";
+                var mediaLogs = _mediaServerLogs.Logs.Select(l => $"{l.AddedAt}Z: {l.Content}");
+                return mediaLogs.Prepend(activeFfmpegProcessCount);
+            } 
             _processes.All.TryGetValue(Name, out var streamInfo);
             if (streamInfo == null) return [];
             return streamInfo.Logs.Select(l => $"{l.AddedAt}Z: {l.Content}");
