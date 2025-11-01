@@ -34,7 +34,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
 
                 streamInfo.Process.OutputDataReceived += (_, e) => LogFfmpeg(stream.Name, e?.Data);
                 streamInfo.Process.ErrorDataReceived +=  (_, e) => LogFfmpeg(stream.Name, e?.Data);
-                streamInfo.Process.Exited += (sender, e) => MediaServerLog($"Process {stream.Name} exited");
+                streamInfo.Process.Exited += (sender, e) => LogProcessCrash(stream.Name);
 
                 streamInfo.Process.Start();
                 streamInfo.Process.BeginOutputReadLine();
@@ -76,6 +76,14 @@ namespace shrimpcast.Data.Repositories.Interfaces
             if (streamInfo == null || log == null) return;
             if (streamInfo.Logs.Count >= 200) streamInfo.Logs.TryDequeue(out _);
             streamInfo.Logs.Enqueue((DateTime.UtcNow, log));
+        }
+        
+        private void LogProcessCrash(string streamName)
+        {
+            _processes.All.TryGetValue(streamName, out var streamInfo);
+            var reason = string.Empty;
+            if (streamInfo != null) reason = $" last 5 logs = [{string.Join(",", streamInfo.Logs.TakeLast(5))}]";
+            MediaServerLog($"Process {streamName} exited. {reason}");
         }
 
         private void MediaServerLog(string logContent)
@@ -214,7 +222,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
         public Process[] GetActiveFFMPEGProcesses() => 
             Process.GetProcessesByName(FFMPEGProcess);
 
-        private void KillAllProcesses()
+        public void KillAllProcesses()
         {
             foreach (var process in GetActiveFFMPEGProcesses()) process.Kill(true);
             CleanStreamDirectory(CleanRoot: true);

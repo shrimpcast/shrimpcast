@@ -709,7 +709,7 @@ namespace shrimpcast.Hubs
                 if (status && resetOnScheduledSwitch)
                 {
                     await DispatchSystemMessage($"[SYSTEM] Restarting media server. Playback will automatically resume shortly.", true, true);
-                    await _ffmpegRepository.InitStreamProcesses();
+                    _ffmpegRepository.KillAllProcesses();
                 }
                 await _hubContext.Clients.All.SendAsync("ConfigUpdated", _configurationSigleton.Configuration);
             }
