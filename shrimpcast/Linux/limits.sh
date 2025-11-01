@@ -1,3 +1,9 @@
+echo "net.core.somaxconn=32768" | sudo tee -a /etc/sysctl.conf
+sudo sysctl -p
+
+echo "net.ipv4.tcp_max_syn_backlog=16384" | sudo tee -a /etc/sysctl.conf
+sudo sysctl -p
+
 # Set desired file descriptor limit
 NOFILE_LIMIT=524288
 echo "Setting global file descriptor limits to $NOFILE_LIMIT..."

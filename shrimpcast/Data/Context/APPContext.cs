@@ -22,6 +22,7 @@ namespace shrimpcast.Data
         public DbSet<BingoOption> BingoOptions { get; set; }
         public DbSet<VpnAddress> VpnAddresses { get; set; }
         public DbSet<Source> Sources { get; set; }
+        public DbSet<MediaServerStream> MediaServerStreams { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -50,6 +51,7 @@ namespace shrimpcast.Data
             modelBuild.Entity<BingoOption>().ToTable("BingoOption");
             modelBuild.Entity<VpnAddress>().ToTable("VpnAddress");
             modelBuild.Entity<Source>().ToTable("Source");
+            modelBuild.Entity<MediaServerStream>().ToTable("MediaServerStreams");
         }
     }
 }

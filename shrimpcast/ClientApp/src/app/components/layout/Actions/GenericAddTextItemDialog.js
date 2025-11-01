@@ -20,16 +20,21 @@ const GenericAddTextItemDialog = (props) => {
       customCallback,
       allowEmptyEdit,
       isNumeric,
+      probe,
     } = props,
     [loading, setLoading] = useState(false),
+    [passedProbe, setPassedProbe] = useState(false),
+    [probeReturnData, setProbeReturnData] = useState({}),
     [item, setItem] = useState(defaultValue),
     closeDialog = () => {
       setItem("");
       setAddDialogOpened(false);
+      setPassedProbe(false);
+      setProbeReturnData({});
     },
     submit = async () => {
       if (customCallback) {
-        customCallback(item);
+        customCallback(item, probeReturnData);
         closeDialog();
         return;
       }
@@ -54,18 +59,28 @@ const GenericAddTextItemDialog = (props) => {
             const { value } = e.target,
               isEmpty = value === "";
             setItem(isEmpty ? null : isNumeric ? +value : value);
+            probe && setPassedProbe(false);
           }}
           fullWidth
           size="small"
           type={isNumeric ? "number" : "text"}
         />
+        {probe && probe.enableProbeCondition(item) && (
+          <probe.probe
+            value={item}
+            onSuccess={(data) => {
+              setProbeReturnData(data);
+              setPassedProbe(true);
+            }}
+          />
+        )}
       </DialogContent>
       <DialogActions>
         <Button onClick={closeDialog}>Cancel</Button>
         {loading ? (
           <CircularProgress size={24} />
         ) : (
-          <Button onClick={submit} disabled={!item && !allowEmptyEdit}>
+          <Button onClick={submit} disabled={(probe && !passedProbe) || (!item && !allowEmptyEdit)}>
             {editMode ? "Edit" : "Add"}
           </Button>
         )}

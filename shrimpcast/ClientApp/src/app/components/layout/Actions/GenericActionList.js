@@ -31,7 +31,7 @@ const GenericActionList = (props) => {
       props.closeCallback && props.closeCallback();
     },
     setOpened = () => setOpen(true),
-    { signalR, responseIsTitleObject, skipConfirmDelete } = props,
+    { signalR, responseIsTitleObject, skipConfirmDelete, CustomHeaderComponent } = props,
     [titleAppend, setTitleAppend] = useState(""),
     getItems = async () => {
       const items = await props.getItems(signalR);
@@ -74,7 +74,12 @@ const GenericActionList = (props) => {
           </IconButton>
         </Tooltip>
       )}
-      <Dialog open={open} onClose={setClosed} maxWidth={"sm"} fullWidth={!props.skipFullWidth}>
+      <Dialog
+        open={open}
+        onClose={setClosed}
+        maxWidth={props.customWidth ? props.customWidth : "sm"}
+        fullWidth={!props.skipFullWidth}
+      >
         <DialogTitle sx={{ fontSize: "24px", paddingBottom: "7.5px" }}>
           <Box display="flex" width="100%" marginBottom={"10px"}>
             <Typography variant="h5" fontWeight="bold">
@@ -90,6 +95,7 @@ const GenericActionList = (props) => {
             )}
           </Box>
           <Divider />
+          {CustomHeaderComponent && CustomHeaderComponent}
         </DialogTitle>
         <DialogContent className={props.showScroll ? "scrollbar-custom" : null}>
           {!items ? (

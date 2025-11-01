@@ -12,6 +12,7 @@ import Moderators from "./Moderators";
 import IgnoredUsers from "./IgnoredUsers";
 import BingoOptions from "./BingoOptions";
 import SiteInfo from "./SiteInfo";
+import MediaServer from "./MediaServer/MediaServer";
 
 const Actions = (props) => {
   const theme = useTheme();
@@ -19,6 +20,7 @@ const Actions = (props) => {
   const actions = props.isAdmin
     ? [
         <ConfigUserDialog {...props} />,
+        <MediaServer {...props} />,
         <Bans {...props} />,
         <Mutes {...props} />,
         <AutoModFilters {...props} />,

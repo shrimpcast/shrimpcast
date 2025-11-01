@@ -1,0 +1,64 @@
+import React, { useEffect, useState } from "react";
+import { Box, Typography, LinearProgress, Stack, Divider } from "@mui/material";
+import MediaServerManager from "../../../../managers/MediaServerManager";
+
+const SystemStats = () => {
+  const defaultModel = {
+      cpu: { numeric: 0, _string: "loading..." },
+      memory: { numeric: 0, _string: "loading..." },
+      network: { numeric: 0, _string: "loading..." },
+    },
+    [stats, setStats] = useState(defaultModel);
+
+  useEffect(() => {
+    const fetchStats = async (abortControllerSignal) => {
+      const response = await MediaServerManager.GetSystemStats(abortControllerSignal);
+      if (abortControllerSignal?.aborted) return;
+      setStats(response || defaultModel);
+      setTimeout(() => fetchStats(abortControllerSignal), 750);
+    };
+
+    const abortController = new AbortController();
+    fetchStats(abortController.signal);
+    return () => abortController.abort();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <Box mt={1} p={1.5} borderRadius={2} bgcolor="background.paper" boxShadow={1} width="100%">
+      <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+        Resource usage
+        <Divider />
+      </Typography>
+
+      <Stack spacing={1.2}>
+        <Box>
+          <Typography variant="body2" color="text.secondary">
+            CPU: {stats.cpu._string}
+          </Typography>
+          <LinearProgress variant="determinate" value={stats.cpu.numeric} sx={{ height: 6, borderRadius: 3 }} />
+        </Box>
+
+        <Box>
+          <Typography variant="body2" color="text.secondary">
+            Memory: {stats.memory._string}
+          </Typography>
+          <LinearProgress
+            variant="determinate"
+            color="secondary"
+            value={stats.memory.numeric}
+            sx={{ height: 6, borderRadius: 3 }}
+          />
+        </Box>
+
+        <Box>
+          <Typography variant="body2" color="text.secondary">
+            Network upload: {stats.network._string}
+          </Typography>
+        </Box>
+      </Stack>
+    </Box>
+  );
+};
+
+export default SystemStats;
