@@ -61,6 +61,7 @@ builder.Services.AddScoped<IStripeRepository, StripeRepository>();
 builder.Services.AddScoped<ISourceRepository, SourceRepository>();
 builder.Services.AddScoped<IMediaServerStreamRepository, MediaServerStreamRepository>();
 builder.Services.AddScoped<IFFMPEGRepository, FFMPEGRepository>();
+builder.Services.AddScoped<IRTMPEndpointRepository, RTMPEndpointRepository>();
 builder.Services.AddHangfire(configuration => configuration
                 .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
                 .UseSimpleAssemblyNameTypeSerializer()

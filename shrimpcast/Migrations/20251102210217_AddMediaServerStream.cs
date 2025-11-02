@@ -20,12 +20,12 @@ namespace shrimpcast.Migrations
                     IsEnabled = table.Column<bool>(type: "boolean", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
                     IngressUri = table.Column<string>(type: "text", nullable: false),
-                    HlsVersion = table.Column<int>(type: "integer", nullable: false),
                     SegmentLength = table.Column<int>(type: "integer", nullable: false),
                     ListSize = table.Column<int>(type: "integer", nullable: false),
                     SnapshotInterval = table.Column<int>(type: "integer", nullable: false),
                     LowLatency = table.Column<bool>(type: "boolean", nullable: false),
                     CustomHeaders = table.Column<string>(type: "text", nullable: true),
+                    CustomAudioHeaders = table.Column<string>(type: "text", nullable: true),
                     VideoStreamIndex = table.Column<int>(type: "integer", nullable: false),
                     VideoEncodingPreset = table.Column<string>(type: "text", nullable: false),
                     VideoTranscodingBitrate = table.Column<int>(type: "integer", nullable: false),
@@ -42,6 +42,20 @@ namespace shrimpcast.Migrations
                 {
                     table.PrimaryKey("PK_MediaServerStreams", x => x.MediaServerStreamId);
                 });
+
+            migrationBuilder.CreateTable(
+                name: "RTMPEndpoints",
+                columns: table => new
+                {
+                    RTMPEndpointId = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    PublishKey = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RTMPEndpoints", x => x.RTMPEndpointId);
+                });
         }
 
         /// <inheritdoc />
@@ -49,6 +63,9 @@ namespace shrimpcast.Migrations
         {
             migrationBuilder.DropTable(
                 name: "MediaServerStreams");
+
+            migrationBuilder.DropTable(
+                name: "RTMPEndpoints");
         }
     }
 }

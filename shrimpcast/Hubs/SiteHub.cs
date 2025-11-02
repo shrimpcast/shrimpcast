@@ -35,6 +35,7 @@ namespace shrimpcast.Hubs
         private readonly ISourceRepository _sourceRepository;
         private readonly IMediaServerStreamRepository _mediaServerStreamRepository;
         private readonly IFFMPEGRepository _ffmpegRepository;
+        private readonly IRTMPEndpointRepository _rtmpEndpointRepository;
         private readonly IHubContext<SiteHub> _hubContext;
         private readonly ConfigurationSingleton _configurationSigleton;
         private readonly Connections<SiteHub> _activeConnections;
@@ -42,7 +43,7 @@ namespace shrimpcast.Hubs
         private readonly BingoSuggestions<SiteHub> _bingoSuggestions;
         private readonly Processes<SiteHub> _processes;
 
-        public SiteHub(IConfigurationRepository configurationRepository, ISessionRepository sessionRepository, IMessageRepository messageRepository, IBanRepository banRepository, IPollRepository pollRepository, ITorExitNodeRepository torExitNodeRepository, IHubContext<SiteHub> hubContext, ConfigurationSingleton configurationSingleton, Connections<SiteHub> activeConnections, Pings<SiteHub> pings, IOBSCommandsRepository obsCommandsRepository, IAutoModFilterRepository autoModFilterRepository, INotificationRepository notificationRepository, IEmoteRepository emoteRepository, IBingoRepository bingoRepository, IVpnAddressRepository vpnAddressRepository, BingoSuggestions<SiteHub> bingoSuggestions, IBTCServerRepository btcServerRepository, ISourceRepository sourceRepository, IStripeRepository stripeRepository, IMediaServerStreamRepository mediaServerStreamRepository, Processes<SiteHub> proccesses, IFFMPEGRepository ffmpegRepository)
+        public SiteHub(IConfigurationRepository configurationRepository, ISessionRepository sessionRepository, IMessageRepository messageRepository, IBanRepository banRepository, IPollRepository pollRepository, ITorExitNodeRepository torExitNodeRepository, IHubContext<SiteHub> hubContext, ConfigurationSingleton configurationSingleton, Connections<SiteHub> activeConnections, Pings<SiteHub> pings, IOBSCommandsRepository obsCommandsRepository, IAutoModFilterRepository autoModFilterRepository, INotificationRepository notificationRepository, IEmoteRepository emoteRepository, IBingoRepository bingoRepository, IVpnAddressRepository vpnAddressRepository, BingoSuggestions<SiteHub> bingoSuggestions, IBTCServerRepository btcServerRepository, ISourceRepository sourceRepository, IStripeRepository stripeRepository, IMediaServerStreamRepository mediaServerStreamRepository, Processes<SiteHub> proccesses, IFFMPEGRepository ffmpegRepository, IRTMPEndpointRepository rtmpEndpointRepository)
         {
             _configurationRepository = configurationRepository;
             _sessionRepository = sessionRepository;
@@ -67,6 +68,7 @@ namespace shrimpcast.Hubs
             _mediaServerStreamRepository = mediaServerStreamRepository;
             _processes = proccesses;
             _ffmpegRepository = ffmpegRepository;
+            _rtmpEndpointRepository = rtmpEndpointRepository;
         }
 
         private Configuration Configuration => _configurationSigleton.Configuration;
@@ -880,6 +882,30 @@ namespace shrimpcast.Hubs
         {
             await ShouldGrantAccess();
             return await _mediaServerStreamRepository.GetAll();
+        }
+
+        public async Task<RTMPEndpoint?> AddRTMPEndpoint([FromBody] RTMPEndpoint rtmpEndpoint)
+        {
+            await ShouldGrantAccess();
+            return await _rtmpEndpointRepository.Add(rtmpEndpoint);
+        }
+
+        public async Task<bool> RemoveRTMPEndpoint([FromBody] int RTMPEndpointId)
+        {
+            await ShouldGrantAccess();
+            return await _rtmpEndpointRepository.Remove(RTMPEndpointId);
+        }
+
+        public async Task<bool> EditRTMPEndpoint([FromBody] RTMPEndpoint RTMPEndpoint)
+        {
+            await ShouldGrantAccess();
+            return await _rtmpEndpointRepository.Edit(RTMPEndpoint);
+        }
+
+        public async Task<List<RTMPEndpoint>> GetAllRTMPEndpoints()
+        {
+            await ShouldGrantAccess();
+            return await _rtmpEndpointRepository.GetAll();
         }
         #endregion
 

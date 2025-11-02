@@ -1,6 +1,7 @@
 import { Box, Divider, Typography, useTheme } from "@mui/material";
 import SystemStats from "./SystemStats";
 import StreamStats from "./StreamStats";
+import RTMPEndpoints from "./RTMPEndpoints";
 
 const ContainerSx = (theme) => ({
     display: "flex",
@@ -23,7 +24,7 @@ const ContainerSx = (theme) => ({
     },
   });
 
-const Stats = () => {
+const Panel = (props) => {
   const theme = useTheme();
   return (
     <Box display="block">
@@ -35,12 +36,13 @@ const Stats = () => {
           <SystemStats />
         </Box>
       </Box>
+      <RTMPEndpoints {...props} />
       <Typography variant="overline" mt={1} mb={1}>
-        CONFIGURE STREAMS
+        CONFIGURE OUTPUTS
         <Divider />
       </Typography>
     </Box>
   );
 };
 
-export default Stats;
+export default Panel;

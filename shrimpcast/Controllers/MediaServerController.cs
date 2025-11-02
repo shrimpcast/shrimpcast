@@ -8,9 +8,10 @@ using shrimpcast.Hubs.Dictionaries;
 namespace shrimpcast.Controllers
 {
     [ApiController, Route("api/[controller]")]
-    public class MediaServerController(IFFMPEGRepository ffmpegRepository, ISessionRepository sessionRepository, Processes<SiteHub> processes, MediaServerLogs<SiteHub> mediaServerLogs) : ControllerBase
+    public class MediaServerController(IFFMPEGRepository ffmpegRepository, IRTMPEndpointRepository rtmpEndpointRepository, ISessionRepository sessionRepository, Processes<SiteHub> processes, MediaServerLogs<SiteHub> mediaServerLogs) : ControllerBase
     {
         private readonly IFFMPEGRepository _ffmpegRepository = ffmpegRepository;
+        private readonly IRTMPEndpointRepository _rtmpEndpointRepository = rtmpEndpointRepository;
         private readonly ISessionRepository _sessionRepository = sessionRepository;
         private readonly Processes<SiteHub> _processes = processes;
         private readonly MediaServerLogs<SiteHub> _mediaServerLogs = mediaServerLogs;
@@ -38,7 +39,8 @@ namespace shrimpcast.Controllers
         {
             var session = await _sessionRepository.GetExistingByTokenAsync(sessionToken);
             if (session == null || !session.IsAdmin) throw new Exception("Permission denied.");
-            return _processes.All.Select(p => new {
+            return _processes.All.Select(p => new
+            {
                 name = p.Key,
                 rawJsonSettings = new
                 {
@@ -49,8 +51,8 @@ namespace shrimpcast.Controllers
                 processStatus = new
                 {
                     runningStatus = !p.Value.Stream.IsEnabled ? "Stopping"
-                                     :  _ffmpegRepository.HasExited(p.Value.Process) 
-                                        ? "Starting" 
+                                     : _ffmpegRepository.HasExited(p.Value.Process)
+                                        ? "Starting"
                                         : System.IO.File.Exists(p.Value.FullStreamPath) ? "Connected" : "Connecting",
                     runningTime = TimeSpan.FromSeconds((int)(DateTime.UtcNow - p.Value.StartTime).TotalSeconds),
                     bitrate = p.Value.Bitrate,
@@ -64,12 +66,12 @@ namespace shrimpcast.Controllers
         {
             var session = await _sessionRepository.GetExistingByTokenAsync(sessionToken);
             if (session == null || !session.IsAdmin) throw new Exception("Permission denied.");
-            if (Name == null) 
+            if (Name == null)
             {
                 var activeFfmpegProcessCount = $"Active FFMPEG processes: {_ffmpegRepository.GetActiveFFMPEGProcesses().Length}";
                 var mediaLogs = _mediaServerLogs.Logs.Select(l => $"{l.AddedAt}Z: {l.Content}");
                 return mediaLogs.Prepend(activeFfmpegProcessCount);
-            } 
+            }
             _processes.All.TryGetValue(Name, out var streamInfo);
             if (streamInfo == null) return [];
             return streamInfo.Logs.Select(l => $"{l.AddedAt}Z: {l.Content}");
@@ -92,7 +94,18 @@ namespace shrimpcast.Controllers
             if (!_ffmpegRepository.IsDevelopment()) throw new Exception();
             var directory = _ffmpegRepository.GetStreamDirectory(Name);
             var contentType = File.EndsWith("m3u8") ? "application/vnd.apple.mpegurl" : "video/mp2t";
-            return PhysicalFile($"{directory}/{File.ToLower()}", contentType , true);
+            return PhysicalFile($"{directory}/{File.ToLower()}", contentType, true);
+        }
+
+        [HttpPost, Route("AuthenticatePublish")]
+        public async Task<IActionResult> AuthenticatePublish()
+        {
+            var data = await HttpContext.Request.ReadFormAsync();
+            string? streamName = data["name"];
+            string? auth = data["auth"];
+            if (streamName == null || auth == null) return UnprocessableEntity();
+            var endpoint = await _rtmpEndpointRepository.GetByName(streamName);
+            return endpoint!.PublishKey == auth ? Ok() : Unauthorized();
         }
     }
 }

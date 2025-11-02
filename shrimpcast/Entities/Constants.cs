@@ -40,7 +40,7 @@ namespace shrimpcast.Entities
 
         public const string FRONTEND_OUTDATED = "Outdated frontend, please reload.";
 
-        public readonly static string[] SOURCE_RESERVERD_WORDS = ["chat", "live", "memfs", "ui", "api"];
+        public readonly static string[] SOURCE_RESERVERD_WORDS = ["chat", "live", "api"];
 
         public enum AddTableItem
         {

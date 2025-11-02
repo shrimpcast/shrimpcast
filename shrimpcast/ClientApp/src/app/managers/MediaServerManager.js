@@ -64,6 +64,22 @@ class MediaServerManager {
       .catch((ex) => console.log(ex));
     return response?.data;
   }
+  static async AddEndpoint(signalR, endpoint) {
+    const response = await signalR.invoke("AddRTMPEndpoint", endpoint).catch((ex) => console.log(ex));
+    return response;
+  }
+  static async RemoveEndpoint(signalR, endpoint) {
+    const response = await signalR.invoke("RemoveRTMPEndpoint", endpoint.rtmpEndpointId).catch((ex) => console.log(ex));
+    return response;
+  }
+  static async GetAllEndpoints(signalR) {
+    const response = await signalR.invoke("GetAllRTMPEndpoints").catch((ex) => console.log(ex));
+    return response;
+  }
+  static async EditEndpoint(signalR, endpoint) {
+    const response = await signalR.invoke("EditRTMPEndpoint", endpoint).catch((ex) => console.log(ex));
+    return response;
+  }
 }
 
 export default MediaServerManager;

@@ -72,7 +72,7 @@ unzip -q /root/nginx.zip -d /root/nginx_tmp || handle_error "Failed to extract n
 rm /root/nginx.zip || handle_error "Failed to delete nginx.zip"
 
 # Install nginx
-apt-get update && apt-get install nginx -y || handle_error "Failed to install nginx"
+apt-get update && apt-get install nginx libnginx-mod-rtmp -y || handle_error "Failed to install nginx"
 
 # Install certificate
 sudo snap install --classic certbot

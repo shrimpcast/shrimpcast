@@ -425,34 +425,36 @@ const GenericAddObjectTable = ({
 
             {isAddingItem && (
               <TableRow>
-                {fields.map((field) => (
-                  <TableCell key={field.name}>
-                    {field.type === types.boolean ? (
-                      <Toggle
-                        item={newItemData}
-                        field={field}
-                        onChange={(e) => setNewItemData({ ...newItemData, [field.name]: e.target.checked })}
-                      />
-                    ) : field.type === types.text ||
-                      field.type === types.button ||
-                      field.type === types.image ||
-                      field.type === types.numeric ? (
-                      <TextAdd
-                        newItemData={newItemData}
-                        field={field}
-                        setNewItemData={setNewItemData}
-                        requiredFields={requiredFields}
-                      />
-                    ) : (
-                      <DateField
-                        item={newItemData}
-                        field={field}
-                        utcToLocal={utcToLocal}
-                        onChange={(e) => setNewItemData({ ...newItemData, [field.name]: dateToISO(e.target.value) })}
-                      />
-                    )}
-                  </TableCell>
-                ))}
+                {fields
+                  .filter((f) => !f.readOnly)
+                  .map((field) => (
+                    <TableCell key={field.name}>
+                      {field.type === types.boolean ? (
+                        <Toggle
+                          item={newItemData}
+                          field={field}
+                          onChange={(e) => setNewItemData({ ...newItemData, [field.name]: e.target.checked })}
+                        />
+                      ) : field.type === types.text ||
+                        field.type === types.button ||
+                        field.type === types.image ||
+                        field.type === types.numeric ? (
+                        <TextAdd
+                          newItemData={newItemData}
+                          field={field}
+                          setNewItemData={setNewItemData}
+                          requiredFields={requiredFields}
+                        />
+                      ) : (
+                        <DateField
+                          item={newItemData}
+                          field={field}
+                          utcToLocal={utcToLocal}
+                          onChange={(e) => setNewItemData({ ...newItemData, [field.name]: dateToISO(e.target.value) })}
+                        />
+                      )}
+                    </TableCell>
+                  ))}
 
                 <TableCell sx={{ textAlign: "right" }}>
                   <Box>

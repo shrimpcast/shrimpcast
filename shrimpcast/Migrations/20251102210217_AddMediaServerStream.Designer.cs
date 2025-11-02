@@ -12,8 +12,8 @@ using shrimpcast.Data;
 namespace shrimpcast.Migrations
 {
     [DbContext(typeof(APPContext))]
-    [Migration("20251028210419_AddMediaServerStreamCustomAudioHeaders")]
-    partial class AddMediaServerStreamCustomAudioHeaders
+    [Migration("20251102210217_AddMediaServerStream")]
+    partial class AddMediaServerStream
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -409,9 +409,6 @@ namespace shrimpcast.Migrations
                     b.Property<string>("CustomHeaders")
                         .HasColumnType("text");
 
-                    b.Property<int>("HlsVersion")
-                        .HasColumnType("integer");
-
                     b.Property<string>("IngressUri")
                         .IsRequired()
                         .HasColumnType("text");
@@ -617,6 +614,27 @@ namespace shrimpcast.Migrations
                     b.HasIndex("SessionId");
 
                     b.ToTable("PollVote", (string)null);
+                });
+
+            modelBuilder.Entity("shrimpcast.Entities.DB.RTMPEndpoint", b =>
+                {
+                    b.Property<int>("RTMPEndpointId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("RTMPEndpointId"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PublishKey")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("RTMPEndpointId");
+
+                    b.ToTable("RTMPEndpoints", (string)null);
                 });
 
             modelBuilder.Entity("shrimpcast.Entities.DB.Session", b =>

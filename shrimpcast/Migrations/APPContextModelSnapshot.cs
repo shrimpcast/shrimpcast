@@ -613,6 +613,27 @@ namespace shrimpcast.Migrations
                     b.ToTable("PollVote", (string)null);
                 });
 
+            modelBuilder.Entity("shrimpcast.Entities.DB.RTMPEndpoint", b =>
+                {
+                    b.Property<int>("RTMPEndpointId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("RTMPEndpointId"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PublishKey")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("RTMPEndpointId");
+
+                    b.ToTable("RTMPEndpoints", (string)null);
+                });
+
             modelBuilder.Entity("shrimpcast.Entities.DB.Session", b =>
                 {
                     b.Property<int>("SessionId")
