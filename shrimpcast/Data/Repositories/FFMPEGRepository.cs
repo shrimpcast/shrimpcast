@@ -277,12 +277,12 @@ namespace shrimpcast.Data.Repositories.Interfaces
 
             if (stream.CustomHeaders != "\r\n") command += $" -headers \"{stream.CustomHeaders}\"";
 
-            command += $" -re -i \"{stream.IngressUri}\"";
+            command += $" -re -rw_timeout 5000000 -i \"{stream.IngressUri}\"";
 
             if (audioIndexSource == 1)
             {
                 if (stream.CustomAudioHeaders != "\r\n") command += $" -headers \"{stream.CustomAudioHeaders}\"";
-                command += $" -fflags +genpts -thread_queue_size 512 -re -i \"{stream.AudioCustomSource}\"";
+                command += $" -fflags +genpts -thread_queue_size 512 -re -rw_timeout 5000000 -i \"{stream.AudioCustomSource}\"";
             }
 
             command += $" -map 0:{stream.VideoStreamIndex}";
