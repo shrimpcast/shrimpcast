@@ -1,4 +1,6 @@
 ﻿using Hardware.Info;
+using System.Net.Sockets;
+using System.Net;
 
 namespace shrimpcast.Helpers
 {
@@ -29,10 +31,24 @@ namespace shrimpcast.Helpers
         {
             _hardwareInfo.RefreshNetworkAdapterList();
             double totalUploadMbps = 0;
+
+            using var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0);
+            socket.Connect("1.1.1.1", 53);
+
+            var localEndPoint = (IPEndPoint)socket.LocalEndPoint!;
+            var localIp = localEndPoint.Address;
+
             foreach (var adapter in _hardwareInfo.NetworkAdapterList)
             {
-                totalUploadMbps += adapter.BytesSentPersec * 8.0 / 1_000_000.0;
+                foreach (var ip in adapter.IPAddressList)
+                {
+                    if (ip.Equals(localIp))
+                    {
+                        totalUploadMbps += adapter.BytesSentPersec * 8.0 / 1_000_000.0;
+                    }
+                }
             }
+
             return totalUploadMbps;
         }
     }
