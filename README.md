@@ -10,7 +10,7 @@
 
 ## Introduction
 
-Shrimpcast is a highly customizable, flexible, battle-tested, fast, and secure self-hosted streaming platform, built for resilience at scale to support thousands of users.
+Shrimpcast is a highly customizable, flexible, battle-tested, high performance, and secure self-hosted streaming platform, built for resilience at scale to support thousands of users.
 
 ## Table of Contents
 
@@ -50,7 +50,7 @@ Shrimpcast is a highly customizable, flexible, battle-tested, fast, and secure s
 - [Update](#update)
 - [License](#license)
 
-_Last revision: **1.3.4** (not fully complete)_
+_Last revision: **2.0.0** (not fully complete)_
 
 ## Features
 
@@ -164,11 +164,25 @@ When running properly, you'll see real-time throughput statistics in your first 
 
 By running multiple parallel upload tests, you simulate real-world conditions where multiple connections share your server's bandwidth, giving you a more accurate picture of your server's true upload capabilities than a single-threaded test.
 
-## Media Server
+## Media server
 
-You can access its panel by visiting {your_domain}/ui.
+<img width="1200" height="855" alt="image" src="https://github.com/user-attachments/assets/2e2b1f0e-76dd-4832-834c-b890f1e5f280" />
 
-If you're using Cloudflare, for RTMP broadcast, you'll need to bypass the domain proxy (but don't worry, it's already configured to allow 1935!) and stream directly to the VPS IP (e.g., rtmp://{your_vps_ip}/{livestream}).
+### RTMP Endpoints
+Defines RTMP ingress and egress points. For example, you can configure an RTMP endpoint to receive a stream directly from **OBS**.
+
+### Outputs
+Generates high-performance **HLS** streams. Accepts a wide range of input formats including HLS sources, RTMP/SRT egress endpoints, **VOD**, and **FLV** — essentially any video-compatible source.  
+If you intend to stream from an RTMP input, use the corresponding **RTMP egress URL**.
+
+### Probe
+Configures input settings. Supports **H.264/AAC** transcoding and custom audio sources.  
+While transcoding is CPU-intensive, it ensures your input is properly encoded for playback across all devices.  
+This is particularly useful for **VOD** inputs or sources that may contain corrupted or incompatible media.
+
+  
+  <img width="600" height="622" alt="image" src="https://github.com/user-attachments/assets/71f379f1-e0d7-4327-b44a-c761cb3fb176" />
+
 
 ## Debug
 
@@ -186,7 +200,7 @@ Make sure that your PostgreSQL instance is properly configured.
 
 Once you have Shrimpcast up and running, you will need to authenticate as an admin. To do this, use the token saved at `/root/shrimpcast/setup/GeneratedAdminToken.txt`, and follow these instructions:
 
-![image](https://github.com/shrimpcast/shrimpcast/assets/167498236/2c62fc16-0f58-4147-b90b-3daa610642a1)
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/726453af-ed07-4896-922f-d4a6c27781c5" />
 
 1. Press the top-left button.
 2. Paste the token and submit.
@@ -259,9 +273,9 @@ Once you're authenticated as an admin, you will have the following options:
 - **Legacy player**: Uses the browser’s native player for streaming. Also compatible with platforms like YouTube, Twitch, Streamable, and others.
 - **Embed:** Dictates whether to treat URLs as embedded content.
 - **With credentials:** Determines whether the player sends authentication cookies (HLS only). Use only if necessary.
-- **Reset on Start**: If enabled, restarts Docker when the scheduled start time is triggered. Useful for restarting queued movies.
-- **Schedule Start**: Schedules a background job to automatically enable the source. If already enabled, a countdown timer will be displayed.
-- **Schedule End**: Schedules a background job to automatically disable the source.
+- **Reset on start**: If enabled, restarts the media server when the scheduled start time is triggered. Useful for restarting queued movies.
+- **Schedule start**: Schedules a background job to automatically enable the source. If already enabled, a countdown timer will be displayed.
+- **Schedule end**: Schedules a background job to automatically disable the source.
 
 #### Poll
 ![image](https://github.com/user-attachments/assets/40d82667-cc50-41b8-b142-23260028102e)
@@ -411,7 +425,6 @@ Admins can securely send private messages to users using the following chat comm
 Retrieve the SessionId from the [Message and User Management](#message-and-user-management) section.
 
 #### Others
-- `!dockerrestart` — Restarts Docker.
 - `!resetallsavedvpnrecords` — Clears all saved VPN-related IP records.
 - `!tryipservice [IP?]` — Tests the IP service. If no IP is provided, it defaults to the requester’s IP.
 - `!redirectsource [FROM] [TO]` — Redirects users watching source `FROM` to source `TO`.

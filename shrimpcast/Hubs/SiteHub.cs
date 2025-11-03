@@ -8,7 +8,6 @@ using shrimpcast.Data.Repositories.Interfaces;
 using shrimpcast.Entities;
 using shrimpcast.Entities.DB;
 using shrimpcast.Entities.DTO;
-using shrimpcast.Helpers;
 using shrimpcast.Hubs.Dictionaries;
 using System.Collections.Concurrent;
 using System.Text;
@@ -34,13 +33,17 @@ namespace shrimpcast.Hubs
         private readonly IBTCServerRepository _btcServerRepository;
         private readonly IStripeRepository _stripeRepository;
         private readonly ISourceRepository _sourceRepository;
+        private readonly IMediaServerStreamRepository _mediaServerStreamRepository;
+        private readonly IFFMPEGRepository _ffmpegRepository;
+        private readonly IRTMPEndpointRepository _rtmpEndpointRepository;
         private readonly IHubContext<SiteHub> _hubContext;
         private readonly ConfigurationSingleton _configurationSigleton;
         private readonly Connections<SiteHub> _activeConnections;
         private readonly Pings<SiteHub> _pings;
         private readonly BingoSuggestions<SiteHub> _bingoSuggestions;
+        private readonly Processes<SiteHub> _processes;
 
-        public SiteHub(IConfigurationRepository configurationRepository, ISessionRepository sessionRepository, IMessageRepository messageRepository, IBanRepository banRepository, IPollRepository pollRepository, ITorExitNodeRepository torExitNodeRepository, IHubContext<SiteHub> hubContext, ConfigurationSingleton configurationSingleton, Connections<SiteHub> activeConnections, Pings<SiteHub> pings, IOBSCommandsRepository obsCommandsRepository, IAutoModFilterRepository autoModFilterRepository, INotificationRepository notificationRepository, IEmoteRepository emoteRepository, IBingoRepository bingoRepository, IVpnAddressRepository vpnAddressRepository, BingoSuggestions<SiteHub> bingoSuggestions, IBTCServerRepository btcServerRepository, ISourceRepository sourceRepository, IStripeRepository stripeRepository)
+        public SiteHub(IConfigurationRepository configurationRepository, ISessionRepository sessionRepository, IMessageRepository messageRepository, IBanRepository banRepository, IPollRepository pollRepository, ITorExitNodeRepository torExitNodeRepository, IHubContext<SiteHub> hubContext, ConfigurationSingleton configurationSingleton, Connections<SiteHub> activeConnections, Pings<SiteHub> pings, IOBSCommandsRepository obsCommandsRepository, IAutoModFilterRepository autoModFilterRepository, INotificationRepository notificationRepository, IEmoteRepository emoteRepository, IBingoRepository bingoRepository, IVpnAddressRepository vpnAddressRepository, BingoSuggestions<SiteHub> bingoSuggestions, IBTCServerRepository btcServerRepository, ISourceRepository sourceRepository, IStripeRepository stripeRepository, IMediaServerStreamRepository mediaServerStreamRepository, Processes<SiteHub> proccesses, IFFMPEGRepository ffmpegRepository, IRTMPEndpointRepository rtmpEndpointRepository)
         {
             _configurationRepository = configurationRepository;
             _sessionRepository = sessionRepository;
@@ -62,6 +65,10 @@ namespace shrimpcast.Hubs
             _btcServerRepository = btcServerRepository;
             _sourceRepository = sourceRepository;
             _stripeRepository = stripeRepository;
+            _mediaServerStreamRepository = mediaServerStreamRepository;
+            _processes = proccesses;
+            _ffmpegRepository = ffmpegRepository;
+            _rtmpEndpointRepository = rtmpEndpointRepository;
         }
 
         private Configuration Configuration => _configurationSigleton.Configuration;
@@ -704,12 +711,7 @@ namespace shrimpcast.Hubs
                 if (status && resetOnScheduledSwitch)
                 {
                     await DispatchSystemMessage($"[SYSTEM] Restarting media server. Playback will automatically resume shortly.", true, true);
-                    string cmdResult;
-                    try
-                    {
-                        cmdResult = await ProcessHelper.DockerRestart();
-                    } catch (Exception ex) { cmdResult = ex.Message; }
-                    await DispatchSystemMessage(cmdResult, true, false, GetAdminSessions());
+                    _ffmpegRepository.KillAllProcesses();
                 }
                 await _hubContext.Clients.All.SendAsync("ConfigUpdated", _configurationSigleton.Configuration);
             }
@@ -842,6 +844,68 @@ namespace shrimpcast.Hubs
             // if (Configuration.EnableStripe) invoices.Add(_stripeRepository.GetInvoices(sessionId));
             var result = await Task.WhenAll(invoices);
             return result.SelectMany(task => task ?? []).ToList();
+        }
+        #endregion
+
+        #region Media server
+        public async Task<MediaServerStream?> AddMediaServerStream([FromBody] MediaServerStream MediaServerStream)
+        {
+            await ShouldGrantAccess();
+            var added = await _mediaServerStreamRepository.Add(MediaServerStream);
+            if (added == null) return null;
+            if (added.IsEnabled) _ffmpegRepository.InitStreamProcess(added, "user");
+            return added;
+        }
+
+        public async Task<bool> RemoveMediaServerStream([FromBody] int MediaServerStreamId)
+        {
+            await ShouldGrantAccess();
+            var removed = await _mediaServerStreamRepository.Remove(MediaServerStreamId);
+            await _ffmpegRepository.StopStreamProcess(removed, "removed");
+            return true;
+        }
+
+        public async Task<bool> EditMediaServerStream([FromBody] MediaServerStream MediaServerStream)
+        {
+            await ShouldGrantAccess();
+            var streamName = MediaServerStream.Name;
+            var statusBeforeEdit = (await _mediaServerStreamRepository.GetByName(streamName))!.IsEnabled;
+            var edited = await _mediaServerStreamRepository.Edit(MediaServerStream);
+
+            await _ffmpegRepository.StopStreamProcess(MediaServerStream.Name, "edited");
+            if (MediaServerStream.IsEnabled && statusBeforeEdit == false) _ffmpegRepository.InitStreamProcess(MediaServerStream, "user");
+
+            return edited;
+        }
+
+        public async Task<List<MediaServerStream>> GetAllMediaServerStreams()
+        {
+            await ShouldGrantAccess();
+            return await _mediaServerStreamRepository.GetAll();
+        }
+
+        public async Task<RTMPEndpoint?> AddRTMPEndpoint([FromBody] RTMPEndpoint rtmpEndpoint)
+        {
+            await ShouldGrantAccess();
+            return await _rtmpEndpointRepository.Add(rtmpEndpoint);
+        }
+
+        public async Task<bool> RemoveRTMPEndpoint([FromBody] int RTMPEndpointId)
+        {
+            await ShouldGrantAccess();
+            return await _rtmpEndpointRepository.Remove(RTMPEndpointId);
+        }
+
+        public async Task<bool> EditRTMPEndpoint([FromBody] RTMPEndpoint RTMPEndpoint)
+        {
+            await ShouldGrantAccess();
+            return await _rtmpEndpointRepository.Edit(RTMPEndpoint);
+        }
+
+        public async Task<List<RTMPEndpoint>> GetAllRTMPEndpoints()
+        {
+            await ShouldGrantAccess();
+            return await _rtmpEndpointRepository.GetAll();
         }
         #endregion
 
@@ -1130,9 +1194,6 @@ namespace shrimpcast.Hubs
                     case string _message when _message.StartsWith(Constants.RESET_VPN_RECORDS):
                         await ResetVPNRecords();
                         return true;
-                    case string _message when _message.StartsWith(Constants.DOCKER_RESTART):
-                        await DockerRestart();
-                        return true;
                     case string _message when _message.StartsWith(Constants.REDIRECT_SOURCE):
                         await RedirectFromSource(message);
                         return true;
@@ -1227,22 +1288,6 @@ namespace shrimpcast.Hubs
             {
                 var result = await _vpnAddressRepository.ResetRecords();
                 await DispatchSystemMessage($"Removed {result} records");
-            }
-            catch (Exception ex)
-            {
-                await DispatchSystemMessage(ex.Message);
-            }
-        }
-
-
-        private async Task DockerRestart()
-        {
-            await DispatchSystemMessage($"Executing {Constants.DOCKER_RESTART} command...");
-            try
-            {
-                await DispatchSystemMessage($"[SYSTEM] Restarting media server. Playback will automatically resume shortly.", true, true);
-                var result = await ProcessHelper.DockerRestart();
-                await DispatchSystemMessage(result);
             }
             catch (Exception ex)
             {

@@ -4,7 +4,7 @@ namespace shrimpcast.Entities
 {
     public class Constants
     {
-        public const string BACKEND_VERSION = "1.4.1";
+        public const string BACKEND_VERSION = "2.0.0";
 
         public const string PING_COMMAND = "!ping";
 
@@ -19,8 +19,6 @@ namespace shrimpcast.Entities
         public const string TRY_IP_SERVICE_COMMAND = $"!tryipservice";
 
         public const string RESET_VPN_RECORDS = $"!resetallsavedvpnrecords";
-
-        public const string DOCKER_RESTART = $"!dockerrestart";
 
         public const string REDIRECT_SOURCE = $"!redirectsource";
 
@@ -42,7 +40,7 @@ namespace shrimpcast.Entities
 
         public const string FRONTEND_OUTDATED = "Outdated frontend, please reload.";
 
-        public readonly static string[] SOURCE_RESERVERD_WORDS = ["chat", "live", "memfs", "ui", "api"];
+        public readonly static string[] SOURCE_RESERVERD_WORDS = ["chat", "live", "api"];
 
         public enum AddTableItem
         {

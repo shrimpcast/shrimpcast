@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
@@ -15,6 +15,7 @@
     <PackageReference Include="Hangfire.AspNetCore" Version="1.8.12" />
     <PackageReference Include="Hangfire.Core" Version="1.8.12" />
     <PackageReference Include="Hangfire.InMemory" Version="0.9.0" />
+    <PackageReference Include="Hardware.Info" Version="101.1.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="8.0.0" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL.Design" Version="1.1.0" />
@@ -31,12 +32,11 @@
   </ItemGroup>
   <ItemGroup>
     <!-- Don't publish the SPA source files, but do show them in the project files list -->
-    <Compile Remove="OBS\**" />
+    <Compile Remove="streams\**" />
     <Content Remove="$(SpaRoot)**" />
-    <Content Remove="OBS\**" />
-    <EmbeddedResource Remove="OBS\**" />
+    <EmbeddedResource Remove="streams\**" />
     <None Remove="$(SpaRoot)**" />
-    <None Remove="OBS\**" />
+    <None Remove="streams\**" />
     <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
   </ItemGroup>
   <ItemGroup>
