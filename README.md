@@ -84,7 +84,7 @@ To install Shrimpcast, follow these steps:
    
    Your instance will automatically reboot after the installation completes.
 > [!IMPORTANT]
-> SSL will be automtically configured. You **NEED** to have properly configured DNS records before running the script.
+> SSL will be automatically configured. You **MUST** have properly configured DNS records before running the script.
 
 3. (Optional) If you're using Cloudflare as a reverse proxy, run:
 
