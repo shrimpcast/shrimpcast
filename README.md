@@ -98,7 +98,7 @@ To install Shrimpcast, follow these steps:
    > If you are using cloudflare, remember to set SSL to strict mode. Otherwise, cloudflare won't be able to connect to your origin.
 
 
-And that's it! Shrimpcast should now be up and running. You can now try to access your domain URL. Make sure to save the admin session that was generated during the installation, which you can find at `/root/shrimpcast/setup/GeneratedAdminToken.txt`, or at the end of step 1.
+And that's it! Shrimpcast should now be up and running. You can now try to access your domain URL. Make sure to save the admin session that was generated during the installation, which you can find at `cat /root/shrimpcast/setup/GeneratedAdminToken.txt; echo`, or at the end of step 1.
 
 ## Troubleshooting
 
