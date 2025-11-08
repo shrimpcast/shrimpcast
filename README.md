@@ -86,7 +86,7 @@ To install Shrimpcast, follow these steps:
 > [!IMPORTANT]
 > SSL will be automatically configured. You **MUST** have properly configured DNS records before running the script.
 
-3. (Optional) If you're using Cloudflare as a reverse proxy, run:
+2. (Optional) If you're using Cloudflare as a reverse proxy, run:
 
    ```bash
    wget -O cloudflare_setup.sh https://github.com/shrimpcast/shrimpcast/releases/latest/download/cloudflare_setup.sh
