@@ -105,29 +105,34 @@ const Toggle = ({ item, field, updateConfig, itemsKey, identifier, onChange }) =
     return <Typography variant="body2">{item[field.name]}</Typography>;
   },
   ButtonTooltip = ({ item, field, openEditContent, identifier, itemsKey, requiredFields }) => {
+    const isDisabled = field.requires && item[field.requires.field] !== field.requires.value;
+
     return (
-      <Tooltip title={item[field.name]}>
-        <Button
-          onClick={() =>
-            openEditContent(
-              `Set a ${field.label.toLowerCase()}`,
-              `Set your ${field.label.toLowerCase()}...`,
-              item[field.name],
-              item[identifier],
-              field.name,
-              !requiredFields.includes(field.name),
-              identifier,
-              itemsKey,
-              field.type,
-              field
-            )
-          }
-          variant="outlined"
-          color={field.color}
-          size="small"
-        >
-          Edit
-        </Button>
+      <Tooltip title={isDisabled ? field.requires.disabledTitle : item[field.name]}>
+        <Typography variant="span">
+          <Button
+            onClick={() =>
+              openEditContent(
+                `Set ${field.label.toLowerCase().endsWith("s") ? "" : "a"} ${field.label.toLowerCase()}`,
+                `Set your ${field.label.toLowerCase()}...`,
+                item[field.name],
+                item[identifier],
+                field.name,
+                !requiredFields.includes(field.name),
+                identifier,
+                itemsKey,
+                field.type,
+                field
+              )
+            }
+            variant="outlined"
+            color={field.color}
+            size="small"
+            disabled={isDisabled}
+          >
+            Edit
+          </Button>
+        </Typography>
       </Tooltip>
     );
   },
@@ -179,39 +184,44 @@ const Toggle = ({ item, field, updateConfig, itemsKey, identifier, onChange }) =
   },
   TextAdd = ({ newItemData, field, setNewItemData, requiredFields }) => {
     const isNumeric = field.type === types.numeric;
+    const isDisabled = field.requires && newItemData[field.requires.field] !== field.requires.value;
+
     return (
-      <Box display="table-footer-group">
-        <TextField
-          value={newItemData[field.name] ?? ""}
-          onChange={(e) => {
-            const { value } = e.target,
-              isEmpty = value === "";
-            setNewItemData({
-              ...newItemData,
-              [field.name]: isEmpty ? null : isNumeric ? +e.target.value : e.target.value.trim(),
-              ...(field.probe ? { [field.probeSuccess.key]: false } : {}),
-            });
-          }}
-          label={field.label.toLowerCase()}
-          variant="outlined"
-          size="small"
-          type={isNumeric ? "number" : "text"}
-          required={requiredFields.includes(field.name)}
-          autoFocus={requiredFields.indexOf(field.name) === 0}
-        />
-        {field.probe && field.enableProbeCondition(newItemData[field.name]) && (
-          <field.probe
-            value={newItemData[field.name]}
-            onSuccess={(data) =>
+      <Tooltip title={isDisabled ? field.requires.disabledTitle : ""}>
+        <Box display="table-footer-group">
+          <TextField
+            disabled={isDisabled}
+            value={newItemData[field.name] ?? ""}
+            onChange={(e) => {
+              const { value } = e.target,
+                isEmpty = value === "";
               setNewItemData({
                 ...newItemData,
-                [field.probeSuccess.key]: field.probeSuccess.value,
-                ...data,
-              })
-            }
+                [field.name]: isEmpty ? null : isNumeric ? +e.target.value : e.target.value.trim(),
+                ...(field.probe ? { [field.probeSuccess.key]: false } : {}),
+              });
+            }}
+            label={field.label.toLowerCase()}
+            variant="outlined"
+            size="small"
+            type={isNumeric ? "number" : "text"}
+            required={requiredFields.includes(field.name)}
+            autoFocus={requiredFields.indexOf(field.name) === 0}
           />
-        )}
-      </Box>
+          {field.probe && field.enableProbeCondition(newItemData[field.name]) && (
+            <field.probe
+              value={newItemData[field.name]}
+              onSuccess={(data) =>
+                setNewItemData({
+                  ...newItemData,
+                  [field.probeSuccess.key]: field.probeSuccess.value,
+                  ...data,
+                })
+              }
+            />
+          )}
+        </Box>
+      </Tooltip>
     );
   };
 

@@ -82,7 +82,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
         {
             _processes.All.TryGetValue(streamName, out var streamInfo);
             var reason = string.Empty;
-            if (streamInfo != null) reason = $" last 5 logs = [{string.Join(",", streamInfo.Logs.TakeLast(5))}]";
+            if (streamInfo != null) reason = $"Running time = {TimeSpan.FromSeconds((int)(DateTime.UtcNow - streamInfo.StartTime).TotalSeconds)}. Last 5 logs = [{string.Join(",", streamInfo.Logs.TakeLast(5))}]";
             MediaServerLog($"Process {streamName} exited. {reason}");
         }
 
@@ -274,19 +274,54 @@ namespace shrimpcast.Data.Repositories.Interfaces
         {
             var audioIndexSource = string.IsNullOrEmpty(stream.AudioCustomSource) ? 0 : 1;
             var command = "-loglevel info -y -fflags +genpts -thread_queue_size 512";
+            var shouldSeek = stream.StartAt != null && stream.StartAt.Value.ToString() != "00:00:00" ? $"-ss {stream.StartAt.Value}" : string.Empty;
 
             if (stream.CustomHeaders != "\r\n") command += $" -headers \"{stream.CustomHeaders}\"";
 
-            command += $" -re -rw_timeout 5000000 -i \"{stream.IngressUri}\"";
+            command += $" -re -rw_timeout 5000000 {shouldSeek} -i \"{stream.IngressUri}\"{(!string.IsNullOrEmpty(shouldSeek) ? " -copyts" : "")}";
 
-            if (audioIndexSource == 1)
+            var isPassthrough = stream.VideoEncodingPreset == "PASSTHROUGH";
+            var hasWatermark = !isPassthrough && !string.IsNullOrEmpty(stream.Watermark);
+            var hasSubtitles = !isPassthrough && !string.IsNullOrEmpty(stream.Subtitles);
+            
+            if (hasWatermark)
+            {
+                command += $" -i \"{stream.Watermark}\"";
+                if (audioIndexSource > 0) audioIndexSource++;
+            }
+
+            if (audioIndexSource > 0)
             {
                 if (stream.CustomAudioHeaders != "\r\n") command += $" -headers \"{stream.CustomAudioHeaders}\"";
                 command += $" -fflags +genpts -thread_queue_size 512 -re -rw_timeout 5000000 -i \"{stream.AudioCustomSource}\"";
             }
 
-            command += $" -map 0:{stream.VideoStreamIndex}";
-            if (stream.VideoEncodingPreset == "PASSTHROUGH") command += " -codec:v copy";
+            var videoMap = $"0:{stream.VideoStreamIndex}";
+
+            if (hasWatermark || hasSubtitles)
+            {
+                var subs = string.Empty;
+                if (hasSubtitles)
+                {
+                    subs = $"subtitles={$"'{stream.Subtitles!.Replace(@"\", "/").Replace(":", @"\:")}'"}";
+                }
+
+                command += $" -filter_complex ";
+                if (hasWatermark && hasSubtitles)
+                {
+                    command += $"\"[{videoMap}][1:v]overlay=W-w-10:10[vw];[vw]{subs}[v]\"";
+                }
+                else
+                {
+                    if (hasWatermark) command += $"\"[{videoMap}][1:v]overlay=W-w-10:10[v]\"";
+                    if (hasSubtitles) command += $"\"[{videoMap}]{subs}[v]\"";
+                }
+
+                command += " -map \"[v]\"";
+            }
+            else command += $" -map {videoMap}";
+
+            if (isPassthrough) command += " -codec:v copy";
             else
             {
                 var bitrate = stream.VideoTranscodingBitrate;
