@@ -20,7 +20,6 @@ const Embed = () => {
           type: "application/x-mpegURL",
         },
       ],
-
       html5: {
         vhs: {
           withCredentials: false,
