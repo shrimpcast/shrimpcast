@@ -56,7 +56,7 @@ const SiteInfo = (props) => {
             </Typography>
             <Divider />
             <Typography className="neon-text" color="secondary.main" sx={DescriptionSx}>
-              {streamDescription.replace(/\\n/g, "\n")}
+              {streamDescription?.replace(/\\n/g, "\n")}
             </Typography>
           </Box>
         </DialogContent>
