@@ -20,7 +20,15 @@ const Embed = () => {
           type: "application/x-mpegURL",
         },
       ],
-      poster: url?.includes("/streams/") ? url.substr(0, url.lastIndexOf(".")) + `.jpg?nocache=${Date.now()}` : null,
+
+      html5: {
+        vhs: {
+          withCredentials: false,
+        },
+      },
+      poster: url?.includes("/streams/")
+        ? url.substr(0, url.lastIndexOf(".")) + `.jpg?nocache=${Date.now()}`
+        : undefined,
     },
     theme = makeTheme();
 
