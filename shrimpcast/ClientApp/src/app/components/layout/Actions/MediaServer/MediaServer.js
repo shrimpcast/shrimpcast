@@ -53,6 +53,34 @@ const MediaServer = (props) => {
         color: "info",
       },
       {
+        name: "watermark",
+        label: "Watermark",
+        type: 3,
+        color: "success",
+        requires: {
+          field: "videoEncodingPreset",
+          value: "H264",
+          disabledTitle: "Enable H264 transcoding to set a watermark",
+        },
+      },
+      {
+        name: "subtitles",
+        label: "Subtitles",
+        type: 3,
+        color: "success",
+        requires: {
+          field: "videoEncodingPreset",
+          value: "H264",
+          disabledTitle: "Enable H264 transcoding to set subtitles",
+        },
+      },
+      {
+        name: "startAt",
+        label: "Start at (hh:mm:ss)",
+        type: 3,
+        color: "warning",
+      },
+      {
         name: "lowLatency",
         label: "Low latency",
         type: 1,
@@ -71,6 +99,9 @@ const MediaServer = (props) => {
       listSize: 6,
       snapshotInterval: 60,
       lowLatency: true,
+      watermark: "",
+      subtitles: "",
+      startAt: null,
     },
     identifier: "name",
     itemsKey: "media server streams",
@@ -88,7 +119,8 @@ const MediaServer = (props) => {
       icon={MovieIcon}
       tableModel={tableModel}
       CustomHeaderComponent={<Panel {...props} />}
-      customWidth="lg"
+      customWidth="xl"
+      showScroll={true}
       {...props}
     />
   );

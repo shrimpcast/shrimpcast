@@ -74,8 +74,8 @@ const Layout = (props) => {
     [useFullChatMode, setFullChatMode] = useState(poppedOutChat),
     ResolveSources = () => {
       const { sources } = configuration,
-        enabledSources = sources.filter((source) => source.isEnabled),
-        locationMatchesSource = enabledSources.find(
+        enabledSources = sources?.filter((source) => source.isEnabled),
+        locationMatchesSource = enabledSources?.find(
           (source) => source.name.toLowerCase() === sourceLocation.toLowerCase()
         ),
         isMultistreaming = enabledSources?.length > 1,

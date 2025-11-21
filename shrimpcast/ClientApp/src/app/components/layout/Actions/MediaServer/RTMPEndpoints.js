@@ -70,7 +70,7 @@ const RTMPEndpoints = (props) => {
         <Divider />
       </Typography>
       {!items ? (
-        <Box width="40px" ml="auto" mr="auto">
+        <Box width="40px" ml="auto" mr="auto" mt={1}>
           <CircularProgress color="secondary" />
         </Box>
       ) : (

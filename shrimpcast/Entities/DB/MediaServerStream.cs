@@ -43,5 +43,11 @@
         public bool AudioTranscodingLoudnessNormalization { get; set; }
 
         public string? AudioCustomSource { get; set; }
+
+        public string? Watermark { get; set; }
+
+        public string? Subtitles { get; set; }
+
+        public TimeSpan? StartAt { get; set; }
     }
 }
