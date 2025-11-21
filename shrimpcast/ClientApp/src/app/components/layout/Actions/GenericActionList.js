@@ -95,11 +95,11 @@ const GenericActionList = (props) => {
             )}
           </Box>
           <Divider />
-          {CustomHeaderComponent && CustomHeaderComponent}
         </DialogTitle>
         <DialogContent className={props.showScroll ? "scrollbar-custom" : null}>
+          {CustomHeaderComponent && CustomHeaderComponent}
           {!items ? (
-            <Box width="40px" ml="auto" mr="auto">
+            <Box width="40px" ml="auto" mr="auto" mt={1}>
               <CircularProgress color="secondary" />
             </Box>
           ) : props.tableModel ? (
