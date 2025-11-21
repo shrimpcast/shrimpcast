@@ -54,7 +54,7 @@ const MediaServer = (props) => {
       },
       {
         name: "watermark",
-        label: "Watermark",
+        label: "Watermark URL",
         type: 3,
         color: "success",
         requires: {
@@ -65,7 +65,7 @@ const MediaServer = (props) => {
       },
       {
         name: "subtitles",
-        label: "Subtitles",
+        label: "Subtitles URL",
         type: 3,
         color: "success",
         requires: {

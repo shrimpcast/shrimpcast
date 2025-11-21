@@ -33,9 +33,7 @@ namespace shrimpcast.Helpers
             foreach (var adapter in _hardwareInfo.NetworkAdapterList)
             {
                 // Skip virtual adapters to avoid duplicates on linux
-                if (adapter.Name.StartsWith("veth") || adapter.Name.StartsWith("lo"))
-                    continue;
-
+                if (adapter.Name.StartsWith("veth") || adapter.Name.StartsWith("lo")) continue;
                 totalUploadMbps += adapter.BytesSentPersec * 8.0 / 1_000_000.0;
             }
 

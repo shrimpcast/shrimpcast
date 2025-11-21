@@ -17,10 +17,13 @@ import {
   Snackbar,
   Alert,
   CircularProgress,
+  Tooltip,
 } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import CodeIcon from "@mui/icons-material/Code";
 import MediaServerManager from "../../../../managers/MediaServerManager";
 import VideoJSPlayer from "../../../player/VideoJSPlayer";
+import HtmlIcon from "@mui/icons-material/Html";
 
 const BoxSx = {
     maxHeight: "200px",
@@ -119,6 +122,17 @@ const StreamStats = () => {
 
   const handleCopyStreamUrl = () => {
     navigator.clipboard.writeText(window.location.origin + selectedItem.streamUrl);
+    setSnackbarOpen(true);
+  };
+
+  const handleCopyEmbedCode = (copyCode) => {
+    const origin = window.location.origin,
+      name = selectedItem.name,
+      url = origin + selectedItem.streamUrl,
+      embedUrl = `${origin}/embed?url=${url}&autoplay=true`,
+      embedCode = `<iframe src="${embedUrl}" title="embed-${name}" id="embed-${name}" allow="autoplay" frameBorder="no" scrolling="no" allowFullScreen></iframe>`;
+
+    navigator.clipboard.writeText(copyCode ? embedCode : embedUrl);
     setSnackbarOpen(true);
   };
 
@@ -249,9 +263,23 @@ const StreamStats = () => {
             <DialogTitle sx={DialogTitleSx(theme)}>
               {dialogType === "json" ? "Debug information" : "Stream preview"}
               {dialogType === "preview" && (
-                <IconButton onClick={handleCopyStreamUrl} size="small" sx={{ ml: 1 }} title="Copy stream URL">
-                  <ContentCopyIcon fontSize="small" />
-                </IconButton>
+                <>
+                  <Tooltip title="Copy M3U8 URL">
+                    <IconButton onClick={handleCopyStreamUrl} size="small" sx={{ ml: 1 }}>
+                      <ContentCopyIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Copy embed URL">
+                    <IconButton onClick={() => handleCopyEmbedCode(false)} size="small" sx={{ ml: 1 }}>
+                      <CodeIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Copy embed code">
+                    <IconButton onClick={() => handleCopyEmbedCode(true)} size="small" sx={{ ml: 1 }}>
+                      <HtmlIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </>
               )}
             </DialogTitle>
             <DialogContent

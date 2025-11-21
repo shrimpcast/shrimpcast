@@ -65,7 +65,7 @@ const VideoJSPlayer = (props) => {
         }
 
         player.el().style.color = theme.palette.secondary[500];
-        play(player);
+        if (options.autoplay) play(player);
       }));
 
       // Reconnect logic
