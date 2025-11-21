@@ -15,7 +15,7 @@ namespace shrimpcast.Migrations
                 table: "Configuration",
                 type: "boolean",
                 nullable: false,
-                defaultValue: true);
+                defaultValue: false);
         }
 
         /// <inheritdoc />

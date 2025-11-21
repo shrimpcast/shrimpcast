@@ -4,7 +4,7 @@ namespace shrimpcast.Entities
 {
     public class Constants
     {
-        public const string BACKEND_VERSION = "2.0.0";
+        public const string BACKEND_VERSION = "2.0.1";
 
         public const string PING_COMMAND = "!ping";
 
