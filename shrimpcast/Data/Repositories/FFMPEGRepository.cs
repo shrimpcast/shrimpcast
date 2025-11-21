@@ -303,7 +303,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
                 var subs = string.Empty;
                 if (hasSubtitles)
                 {
-                    subs = $"subtitles={$"'{stream.Subtitles!.Replace(@"\", "/").Replace(":", @"\:")}'"}";
+                    subs = $"subtitles='{stream.Subtitles!.Replace(@"\", "/").Replace(":", @"\:")}'";
                 }
 
                 command += $" -filter_complex ";
@@ -357,7 +357,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             };
         }
 
-        public int GetStreamBitrate(string StreamName, int segmentDuration)
+        private int GetStreamBitrate(string StreamName, int segmentDuration)
         {
             try
             {
@@ -366,7 +366,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
                 if (tsFiles.Length == 0) return 0;
                 long totalBytes = tsFiles.Sum(f => new FileInfo(f).Length);
                 double totalSeconds = tsFiles.Length * segmentDuration;
-                double bitrateBps = (totalBytes * 8) / totalSeconds;
+                double bitrateBps = totalBytes * 8 / totalSeconds;
                 double bitrateKbps = bitrateBps / 1000;
                 return (int)bitrateKbps;
             }
