@@ -75,20 +75,27 @@ namespace shrimpcast.Data.Repositories.Interfaces
             _processes.All.TryGetValue(stream, out var streamInfo);
             if (streamInfo == null || log == null) return;
             if (streamInfo.Logs.Count >= 200) streamInfo.Logs.TryDequeue(out _);
-            streamInfo.Logs.Enqueue((DateTime.UtcNow, log));
+            streamInfo.Logs.Enqueue((DateTime.UtcNow, log.Trim()));
         }
         
         private void LogProcessCrash(string streamName)
         {
             _processes.All.TryGetValue(streamName, out var streamInfo);
             var reason = string.Empty;
-            if (streamInfo != null) reason = $"Running time = {TimeSpan.FromSeconds((int)(DateTime.UtcNow - streamInfo.StartTime).TotalSeconds)}. Last 5 logs = [{string.Join(",", streamInfo.Logs.TakeLast(5))}]";
-            MediaServerLog($"Process {streamName} exited. {reason}");
+            MediaServerLog($"=============== BEGIN EXIT REPORT ===============");
+            MediaServerLog($"Process {streamName} exited");
+            if (streamInfo != null)
+            {
+
+                MediaServerLog($"Duration: {TimeSpan.FromSeconds((int)(DateTime.UtcNow - streamInfo.StartTime).TotalSeconds)}");
+                MediaServerLog($"Last 5 logs: [{string.Join(",", streamInfo.Logs.TakeLast(5).Select(l => (l.AddedAt, l.Content.Trim())))}]");
+            }
+            MediaServerLog($"=============== END EXIT REPORT ===============");
         }
 
         private void MediaServerLog(string logContent)
         {
-            if (_mediaServerLogs.Logs.Count >= 200) _mediaServerLogs.Logs.TryDequeue(out _);
+            if (_mediaServerLogs.Logs.Count >= 300) _mediaServerLogs.Logs.TryDequeue(out _);
             _mediaServerLogs.Logs.Enqueue((DateTime.UtcNow, logContent));
         }
 
