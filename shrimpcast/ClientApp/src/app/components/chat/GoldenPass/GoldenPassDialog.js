@@ -6,6 +6,7 @@ import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
 import TokenManager from "../../../managers/TokenManager";
 import InvoiceTable from "./InvoiceTable";
 import KeyframesManager from "../../../managers/KeyframesManager";
+import { yellow } from "@mui/material/colors";
 
 const DialogSx = {
     borderRadius: "10px",
@@ -96,7 +97,7 @@ const GoldenPassDialog = (props) => {
       <Dialog open={true} onClose={closeDialog} maxWidth={"sm"} fullWidth PaperProps={{ sx: DialogSx }}>
         <DialogTitle sx={DialogTitleSx}>
           GET YOUR {goldenPassTitle}{" "}
-          <Typography variant="span" color="secondary.400">
+          <Typography variant="span" className="neon-text" color={yellow[600]}>
             GOLDEN PASS
             <WorkspacePremiumIcon sx={{ position: "relative", top: "5px" }} />
           </Typography>
@@ -137,7 +138,7 @@ const GoldenPassDialog = (props) => {
                 variant="contained"
                 sx={BuyButtonSx}
               >
-                Buy with credit card (stripe) - USD ${configuration.goldenPassValue}
+                Buy with card (stripe) - USD ${configuration.goldenPassValue}
                 {loading && <CircularProgress color="primary" sx={{ ml: "10px" }} size={14} />}
               </Button>
             </Box>

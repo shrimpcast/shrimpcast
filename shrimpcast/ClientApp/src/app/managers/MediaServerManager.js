@@ -45,7 +45,7 @@ class MediaServerManager {
   }
   static async Edit(signalR, mediaServerStream, extraEditObjects) {
     const response = await signalR
-      .invoke("EditMediaServerStream", { ...mediaServerStream, ...extraEditObjects })
+      .invoke("EditMediaServerStream", { ...mediaServerStream, ...extraEditObjects }, null)
       .catch((ex) => console.log(ex));
     return response;
   }
@@ -78,6 +78,10 @@ class MediaServerManager {
   }
   static async EditEndpoint(signalR, endpoint) {
     const response = await signalR.invoke("EditRTMPEndpoint", endpoint).catch((ex) => console.log(ex));
+    return response;
+  }
+  static async GetScheduledJobs(signalR) {
+    const response = await signalR.invoke("GetScheduledJobs").catch((ex) => console.log(ex));
     return response;
   }
 }

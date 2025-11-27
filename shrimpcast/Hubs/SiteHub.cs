@@ -1,4 +1,5 @@
 using Hangfire;
+using Hangfire.Storage;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -37,7 +38,7 @@ namespace shrimpcast.Hubs
         private readonly IFFMPEGRepository _ffmpegRepository;
         private readonly IRTMPEndpointRepository _rtmpEndpointRepository;
         private readonly IHubContext<SiteHub> _hubContext;
-        private readonly ConfigurationSingleton _configurationSigleton;
+        private readonly ConfigurationSingleton _configurationSingleton;
         private readonly Connections<SiteHub> _activeConnections;
         private readonly Pings<SiteHub> _pings;
         private readonly BingoSuggestions<SiteHub> _bingoSuggestions;
@@ -52,7 +53,7 @@ namespace shrimpcast.Hubs
             _pollRepository = pollRepository;
             _torExitNodeRepository = torExitNodeRepository;
             _hubContext = hubContext;
-            _configurationSigleton = configurationSingleton;
+            _configurationSingleton = configurationSingleton;
             _activeConnections = activeConnections;
             _pings = pings;
             _obsCommandsRepository = obsCommandsRepository;
@@ -71,7 +72,7 @@ namespace shrimpcast.Hubs
             _rtmpEndpointRepository = rtmpEndpointRepository;
         }
 
-        private Configuration Configuration => _configurationSigleton.Configuration;
+        private Configuration Configuration => _configurationSingleton.Configuration;
         private ConcurrentDictionary<string, SignalRConnection> ActiveConnections => _activeConnections.All;
         private SignalRConnection GetCurrentConnection() => ActiveConnections.First(ac => ac.Key == Context.ConnectionId).Value;
         private IEnumerable<string> GetAdminSessions() => ActiveConnections.Where(ac => ac.Value.Session.IsAdmin).Select(ac => ac.Key);
@@ -663,7 +664,7 @@ namespace shrimpcast.Hubs
         {
             await ShouldGrantAccess();
             var (updated, updatedSources) = await _configurationRepository.SaveAsync(updatedConfiguration);
-            _configurationSigleton.Configuration = updatedConfiguration;
+            _configurationSingleton.Configuration = updatedConfiguration;
             await _hubContext.Clients.All.SendAsync("ConfigUpdated", updatedConfiguration);
             if (updatedSources) ScheduleBackgroundJobs();
             return updated;
@@ -674,7 +675,7 @@ namespace shrimpcast.Hubs
             static string dateToCron(DateTime scheduledTime) => $"{scheduledTime.Minute} {scheduledTime.Hour} {scheduledTime.Day} {scheduledTime.Month} *";
             var UtcNow = DateTime.UtcNow;
 
-            foreach (var source in _configurationSigleton.Configuration.Sources)
+            foreach (var source in _configurationSingleton.Configuration.Sources)
             {
                 if (source.StartsAt > UtcNow)
                 {
@@ -689,7 +690,7 @@ namespace shrimpcast.Hubs
                 {
                     RecurringJob.AddOrUpdate(
                         $"{source.Name}-disable", 
-                        () => ChangeSourceStatusBackground(Constants.FIREANDFORGET_TOKEN, source.Name, false, false), 
+                        () => ChangeSourceStatusBackground(Constants.FIREANDFORGET_TOKEN, source.Name, false, source.ResetOnScheduledSwitch), 
                         dateToCron(source.EndsAt.Value));
                 }
                 else RecurringJob.RemoveIfExists($"{source.Name}-disable");
@@ -707,17 +708,35 @@ namespace shrimpcast.Hubs
 
             if (sourceUpdated)
             {
-                _configurationSigleton.Configuration.Sources = await _sourceRepository.GetAll();
-                if (status && resetOnScheduledSwitch)
+                _configurationSingleton.Configuration.Sources = await _sourceRepository.GetAll();
+                if (resetOnScheduledSwitch)
                 {
-                    await DispatchSystemMessage($"[SYSTEM] Restarting media server. Playback will automatically resume shortly.", true, true);
-                    _ffmpegRepository.KillAllProcesses();
+                    var mediaServerStream = await _mediaServerStreamRepository.GetByName(sourceName.ToLower());
+                    if (mediaServerStream != null)
+                    {
+                        if (status) await DispatchSystemMessage($"[SYSTEM] Executing scheduled switch for {mediaServerStream.Name}. Playback will automatically begin shortly.", true, true);
+                        mediaServerStream.IsEnabled = status;
+                        await EditMediaServerStream(mediaServerStream, Constants.FIREANDFORGET_TOKEN);
+                    }
                 }
-                await _hubContext.Clients.All.SendAsync("ConfigUpdated", _configurationSigleton.Configuration);
+
+                await _hubContext.Clients.All.SendAsync("ConfigUpdated", _configurationSingleton.Configuration);
             }
 
             await DispatchSystemMessage($"{(sourceUpdated ? "Executed" : "Could not execute")} scheduled job for [{sourceName}, {status}]", true, false, GetAdminSessions());
             RecurringJob.RemoveIfExists($"{sourceName}-{(status ? "enable" : "disable")}");
+        }
+
+        public async Task<object> GetScheduledJobs()
+        {
+            await ShouldGrantAccess();
+            using var connection = JobStorage.Current.GetConnection();
+            var recurringJobs = connection.GetRecurringJobs();
+            return recurringJobs.Select((rj, i) => new
+            {
+                id = rj.Id,
+                content = $"{i+1}. Name: [{rj.Id}]. Executes on: [{rj.NextExecution} UTC].",
+            });
         }
 
         public async Task<object> GetOrderedConfig()
@@ -865,15 +884,18 @@ namespace shrimpcast.Hubs
             return true;
         }
 
-        public async Task<bool> EditMediaServerStream([FromBody] MediaServerStream MediaServerStream)
+        public async Task<bool> EditMediaServerStream([FromBody] MediaServerStream MediaServerStream, string? FireAndForgetToken = null)
         {
-            await ShouldGrantAccess();
+            if (FireAndForgetToken != Constants.FIREANDFORGET_TOKEN) await ShouldGrantAccess();
             var streamName = MediaServerStream.Name;
             var statusBeforeEdit = (await _mediaServerStreamRepository.GetByName(streamName))!.IsEnabled;
             var edited = await _mediaServerStreamRepository.Edit(MediaServerStream);
 
-            await _ffmpegRepository.StopStreamProcess(MediaServerStream.Name, "edited");
-            if (MediaServerStream.IsEnabled && statusBeforeEdit == false) _ffmpegRepository.InitStreamProcess(MediaServerStream, "user");
+            await _ffmpegRepository.StopStreamProcess(MediaServerStream.Name, FireAndForgetToken != null ? "scheduler" : "edited");
+            if (MediaServerStream.IsEnabled && statusBeforeEdit == false)
+            {
+                _ffmpegRepository.InitStreamProcess(MediaServerStream, FireAndForgetToken != null ? "scheduler" : "user");
+            }
 
             return edited;
         }
