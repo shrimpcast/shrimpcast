@@ -6,7 +6,7 @@
   <img src="https://github.com/shrimpcast/shrimpcast/assets/167498236/d3159e68-60dd-4e8f-a8ca-be0a99a759a1" alt="Logo">
 </p>
 
-![Project-showcase)](https://github.com/user-attachments/assets/1b58cf67-1545-4bb4-b129-029cad9a5cf6)
+<img width="2535" height="1341" alt="showcase" src="https://github.com/user-attachments/assets/8ce6f90d-6627-47c0-b930-5245fd8c106e" />
 
 ## Introduction
 
