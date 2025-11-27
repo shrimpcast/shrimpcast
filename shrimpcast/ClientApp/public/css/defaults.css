@@ -57,6 +57,12 @@ html {
   display: inline-block;
 }
 
+.admin-glow span:hover,
+.mod-glow span:hover,
+.gold-pass span:hover {
+  text-decoration: underline;
+}
+
 .admin-glow span::first-letter,
 .mod-glow span::first-letter,
 .gold-pass span::first-letter {
