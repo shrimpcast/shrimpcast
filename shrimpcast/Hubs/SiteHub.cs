@@ -689,7 +689,7 @@ namespace shrimpcast.Hubs
                 {
                     RecurringJob.AddOrUpdate(
                         $"{source.Name}-disable", 
-                        () => ChangeSourceStatusBackground(Constants.FIREANDFORGET_TOKEN, source.Name, false, false), 
+                        () => ChangeSourceStatusBackground(Constants.FIREANDFORGET_TOKEN, source.Name, false, source.ResetOnScheduledSwitch), 
                         dateToCron(source.EndsAt.Value));
                 }
                 else RecurringJob.RemoveIfExists($"{source.Name}-disable");
@@ -708,11 +708,17 @@ namespace shrimpcast.Hubs
             if (sourceUpdated)
             {
                 _configurationSigleton.Configuration.Sources = await _sourceRepository.GetAll();
-                if (status && resetOnScheduledSwitch)
+                if (resetOnScheduledSwitch)
                 {
-                    await DispatchSystemMessage($"[SYSTEM] Restarting media server. Playback will automatically resume shortly.", true, true);
-                    _ffmpegRepository.KillAllProcesses();
+                    var mediaServerStream = await _mediaServerStreamRepository.GetByName(sourceName.ToLower());
+                    if (mediaServerStream != null)
+                    {
+                        if (status) await DispatchSystemMessage($"[SYSTEM] Executing scheduled switch for {mediaServerStream.Name}. Playback will automatically begin shortly.", true, true);
+                        mediaServerStream.IsEnabled = status;
+                        await EditMediaServerStream(mediaServerStream, Constants.FIREANDFORGET_TOKEN);
+                    }
                 }
+
                 await _hubContext.Clients.All.SendAsync("ConfigUpdated", _configurationSigleton.Configuration);
             }
 
@@ -865,9 +871,9 @@ namespace shrimpcast.Hubs
             return true;
         }
 
-        public async Task<bool> EditMediaServerStream([FromBody] MediaServerStream MediaServerStream)
+        public async Task<bool> EditMediaServerStream([FromBody] MediaServerStream MediaServerStream, string? FireAndForgetToken = null)
         {
-            await ShouldGrantAccess();
+            if (FireAndForgetToken != Constants.FIREANDFORGET_TOKEN) await ShouldGrantAccess();
             var streamName = MediaServerStream.Name;
             var statusBeforeEdit = (await _mediaServerStreamRepository.GetByName(streamName))!.IsEnabled;
             var edited = await _mediaServerStreamRepository.Edit(MediaServerStream);

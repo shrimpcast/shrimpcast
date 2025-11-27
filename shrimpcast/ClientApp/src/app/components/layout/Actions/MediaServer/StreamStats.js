@@ -153,7 +153,7 @@ const StreamStats = () => {
             Active stream processes
             <Button
               sx={{ marginLeft: "auto" }}
-              disabled={logsLoading}
+              disabled={Boolean(logsLoading)}
               size="small"
               variant="outlined"
               onClick={() => getLogs("_server_")}

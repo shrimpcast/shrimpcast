@@ -45,7 +45,7 @@ class MediaServerManager {
   }
   static async Edit(signalR, mediaServerStream, extraEditObjects) {
     const response = await signalR
-      .invoke("EditMediaServerStream", { ...mediaServerStream, ...extraEditObjects })
+      .invoke("EditMediaServerStream", { ...mediaServerStream, ...extraEditObjects }, null)
       .catch((ex) => console.log(ex));
     return response;
   }

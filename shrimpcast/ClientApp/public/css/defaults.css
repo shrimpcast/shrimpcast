@@ -168,10 +168,11 @@ html {
 
 .animated-background {
   position: relative;
-  background: linear-gradient(135deg, #2a2200 0%, #1a1400 100%);
+  background: linear-gradient(135deg, #3a2f0a 0%, #2a1f00 100%);
   overflow: hidden;
-  box-shadow: inset 0 0 40px rgba(255, 215, 0, 0.3), 0 0 30px rgba(255, 215, 0, 0.4);
-  border: 1px solid rgba(255, 215, 0, 0.5);
+  box-shadow: inset 0 0 60px rgba(255, 215, 0, 0.4), inset 0 0 20px rgba(255, 235, 100, 0.3),
+    0 0 40px rgba(255, 215, 0, 0.5), 0 0 20px rgba(255, 235, 100, 0.3);
+  border: 1px solid rgba(255, 215, 0, 0.7);
 }
 
 .animated-background::before {
@@ -180,11 +181,12 @@ html {
   inset: 0;
   background: radial-gradient(
     ellipse at center,
-    rgba(255, 235, 100, 0.2) 0%,
-    rgba(255, 215, 0, 0.15) 30%,
+    rgba(255, 245, 150, 0.4) 0%,
+    rgba(255, 225, 80, 0.25) 20%,
+    rgba(255, 215, 0, 0.15) 40%,
     transparent 70%
   );
-  opacity: 0.6;
+  opacity: 0.8;
   animation: glow-pulse 1s ease-in-out infinite alternate;
   will-change: opacity;
 }
@@ -199,16 +201,21 @@ html {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    transparent 40%,
-    rgba(255, 235, 100, 0.35) 48%,
-    rgba(255, 215, 0, 0.4) 50%,
-    rgba(255, 235, 100, 0.35) 52%,
-    transparent 60%,
+    transparent 38%,
+    rgba(255, 245, 180, 0.2) 44%,
+    rgba(255, 235, 120, 0.5) 47%,
+    rgba(255, 215, 0, 0.7) 49%,
+    rgba(255, 245, 200, 0.9) 50%,
+    rgba(255, 215, 0, 0.7) 51%,
+    rgba(255, 235, 120, 0.5) 53%,
+    rgba(255, 245, 180, 0.2) 56%,
+    transparent 62%,
     transparent 100%
   );
   animation: ribbon-flow 3.5s linear infinite;
   transform: translateX(-100%);
   will-change: transform;
+  filter: blur(0.5px);
 }
 
 @keyframes glow-pulse {
