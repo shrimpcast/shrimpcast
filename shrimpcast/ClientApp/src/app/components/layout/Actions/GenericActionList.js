@@ -63,7 +63,7 @@ const GenericActionList = (props) => {
   return (
     <>
       {!props.skipButton && (
-        <Tooltip title={props.title}>
+        <Tooltip title={props.title} arrow>
           <IconButton
             onClick={setOpened}
             type="button"
@@ -125,22 +125,24 @@ const GenericActionList = (props) => {
                           />
                         )}
                         {props.removeItem && (
-                          <IconButton
-                            onClick={() =>
-                              !skipConfirmDelete
-                                ? openConfirmPrompt(item[props.identifier], item[props.contentIdentifier])
-                                : removeItem(item[props.identifier])
-                            }
-                            edge="end"
-                            aria-label="delete"
-                            sx={{
-                              "&:hover": {
-                                color: "error.main",
-                              },
-                            }}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
+                          <Tooltip arrow title="Remove">
+                            <IconButton
+                              onClick={() =>
+                                !skipConfirmDelete
+                                  ? openConfirmPrompt(item[props.identifier], item[props.contentIdentifier])
+                                  : removeItem(item[props.identifier])
+                              }
+                              edge="end"
+                              aria-label="delete"
+                              sx={{
+                                "&:hover": {
+                                  color: "error.main",
+                                },
+                              }}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </Tooltip>
                         )}
                       </>
                     }

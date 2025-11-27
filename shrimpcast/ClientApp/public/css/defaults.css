@@ -7,6 +7,7 @@ html {
 
 * {
   scrollbar-width: none;
+  scroll-behavior: smooth;
 }
 
 ::-webkit-scrollbar {
@@ -48,6 +49,18 @@ html {
   to {
     text-shadow: 0 0 20px #66ccff, 0 0 20px #99eaff;
   }
+}
+
+.admin-glow span,
+.mod-glow span,
+.gold-pass span {
+  display: inline-block;
+}
+
+.admin-glow span::first-letter,
+.mod-glow span::first-letter,
+.gold-pass span::first-letter {
+  text-transform: uppercase;
 }
 
 .neon-text {
@@ -149,30 +162,69 @@ html {
   left: -10.5px;
 }
 
-.animated-background {
-  background-image: repeating-linear-gradient(
-    -45deg,
-    transparent,
-    transparent 1rem,
-    #212121 1rem,
-    #212121 2rem,
-    #009688 2rem,
-    #009688 3rem
-  );
-  /* Set a fixed background size based on the stripe width */
-  background-size: 8.485rem 8.485rem; /* 6rem * √2 to account for 45° angle */
-  animation: barberpole 4s linear infinite;
-}
-
-@keyframes barberpole {
-  0% {
-    background-position: 0 0;
-  }
-  100% {
-    background-position: 8.485rem 8.485rem; /* Match background-size */
-  }
-}
-
 .vjs-poster img {
   visibility: hidden;
+}
+
+.animated-background {
+  position: relative;
+  background: linear-gradient(135deg, #2a2200 0%, #1a1400 100%);
+  overflow: hidden;
+  box-shadow: inset 0 0 40px rgba(255, 215, 0, 0.3), 0 0 30px rgba(255, 215, 0, 0.4);
+  border: 1px solid rgba(255, 215, 0, 0.5);
+}
+
+.animated-background::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 235, 100, 0.2) 0%,
+    rgba(255, 215, 0, 0.15) 30%,
+    transparent 70%
+  );
+  opacity: 0.6;
+  animation: glow-pulse 1s ease-in-out infinite alternate;
+  will-change: opacity;
+}
+
+.animated-background::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  right: -50%;
+  bottom: -50%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    transparent 40%,
+    rgba(255, 235, 100, 0.35) 48%,
+    rgba(255, 215, 0, 0.4) 50%,
+    rgba(255, 235, 100, 0.35) 52%,
+    transparent 60%,
+    transparent 100%
+  );
+  animation: ribbon-flow 3.5s linear infinite;
+  transform: translateX(-100%);
+  will-change: transform;
+}
+
+@keyframes glow-pulse {
+  0% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes ribbon-flow {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }

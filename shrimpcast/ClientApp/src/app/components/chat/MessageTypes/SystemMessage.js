@@ -5,7 +5,8 @@ import MessageWrapper from "./MessageWrapper";
 
 const WrapperTextBoxSx = (isAdmin) => ({
     textAlign: "center",
-    margin: "10px",
+    margin: "5px 0",
+    padding: "8px 10px",
     wordWrap: "break-word",
     position: "relative",
     "&:hover": {

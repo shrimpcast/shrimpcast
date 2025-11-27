@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Box, IconButton, Typography } from "@mui/material";
 import GoldenPassDialog from "./GoldenPassDialog";
 import CloseIcon from "@mui/icons-material/Close";
+import { yellow } from "@mui/material/colors";
 
 const GoldenPassSx = {
     width: "100%",
@@ -22,7 +23,7 @@ const GoldenPassSx = {
     color: "white",
     textShadow: "2px 2px 4px rgba(0, 0, 0, 1)",
     width: "100%",
-    bottom: "3px",
+    bottom: "4px",
     position: "relative",
   },
   CloseIconSx = {
@@ -35,7 +36,7 @@ const GoldenPassSx = {
   };
 
 const GoldenPassButton = (props) => {
-  const { isAdmin, configuration, goldenPassExpanded, setGoldenPassExpanded, isGolden } = props,
+  const { isAdmin, configuration, goldenPassExpanded, setGoldenPassExpanded } = props,
     { showGoldenPassButton } = configuration,
     [showDialog, setShowDialog] = useState(false),
     openDialog = () => setShowDialog(true),
@@ -45,12 +46,12 @@ const GoldenPassButton = (props) => {
       : configuration.streamTitle.toUpperCase(),
     closeButton = () => setGoldenPassExpanded(false);
 
-  return !isAdmin && !isGolden && showGoldenPassButton && goldenPassExpanded ? (
+  return !isAdmin && showGoldenPassButton && goldenPassExpanded ? (
     <>
       <Box sx={GoldenPassSx} onClick={openDialog} className="animated-background">
         <Typography className="noselect" variant="caption" sx={TextSx}>
           GET THE {goldenPassTitle}{" "}
-          <Typography variant="span" color="secondary.300">
+          <Typography variant="span" className="neon-text" color={yellow[600]}>
             GOLDEN PASS
           </Typography>
         </Typography>

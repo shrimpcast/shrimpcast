@@ -1,6 +1,5 @@
 import { Box, IconButton, Typography, Link as DefaultLink, Tooltip } from "@mui/material";
 import React, { useState } from "react";
-import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 import reactStringReplace from "react-string-replace";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ChatActionsManager from "../../../managers/ChatActionsManager";
@@ -13,19 +12,24 @@ import KeyframesManager from "../../../managers/KeyframesManager";
 import { Link as RouterLink } from "react-router-dom";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import ReplyIcon from "@mui/icons-material/Reply";
+import LocalPoliceIcon from "@mui/icons-material/LocalPolice";
+
 const WrapperTextBoxSx = {
-    margin: "10px",
+    margin: "5px 0",
+    padding: "8px 10px",
     wordWrap: "break-word",
-    padding: "2px",
     position: "relative",
+    backgroundColor: "rgba(0,0,0,0.3)",
+    transition: "background-color 0.15s linear",
+    borderLeft: "3px solid transparent",
     "&:hover": {
-      backgroundColor: "primary.800",
+      backgroundColor: "rgba(255,255,255,0.08)",
+      borderLeftColor: "rgba(255,255,255,0.3)",
     },
   },
   TextSx = (color, force, gt) => ({
     fontWeight: color || force ? "bold" : "none",
     color: color ? color : gt ? "#789922" : "white",
-    display: "inline",
     fontSize: "15px",
   }),
   OverlaySx = {
@@ -48,10 +52,11 @@ const WrapperTextBoxSx = {
     fontSize: "15px",
     borderRadius: "5px",
   },
-  VerifiedUserIconSx = {
+  BadgeSx = {
     fontSize: "13px",
     position: "relative",
-    top: "1.2px",
+    top: "1px",
+    mr: "1px",
   },
   OverlayButtonSx = {
     color: "white",
@@ -89,6 +94,19 @@ const WrapperTextBoxSx = {
     animation: `${KeyframesManager.getGoldenGlowKeyframes(color)} 1s infinite alternate`,
   });
 
+const verboseHMS = (input) => {
+  const diff = Math.floor((Date.now() - new Date(input).getTime()) / 1000);
+  if (diff <= 0) return "Just now";
+
+  const hours = Math.floor(diff / 3600);
+  const minutes = Math.floor((diff % 3600) / 60);
+  const seconds = diff % 60;
+
+  if (minutes < 1) return `${seconds} seconds ago`;
+  if (hours < 1) return `${minutes} minute${minutes !== 1 ? "s" : ""} ago`;
+  return `${hours} hour${hours !== 1 ? "s" : ""} ago`;
+};
+
 const UserMessage = React.memo((props) => {
   const [showPromptDialog, setShowPromptDialog] = useState(false),
     openConfirmPrompt = () => setShowPromptDialog(true),
@@ -115,7 +133,8 @@ const UserMessage = React.memo((props) => {
         detail: { content: ` @${props.sentBy} ` },
       });
       document.dispatchEvent(event);
-    };
+    },
+    [agoText, setAgoText] = useState("");
 
   return (
     <MessageWrapper useTransition={props.useTransition}>
@@ -151,17 +170,27 @@ const UserMessage = React.memo((props) => {
             sx={[TextSx(userColorDisplay, true), HoverUnderlineSx, isGolden ? GoldenPassGlow(userColorDisplay) : null]}
             className={`${
               props.enableChristmasTheme ? "santa-hat" : props.enableHalloweenTheme ? "halloween-hat" : null
-            } ${isAdmin ? "admin-glow" : isMod ? "mod-glow" : null}`}
+            } ${isAdmin ? "admin-glow" : isMod ? "mod-glow" : isGolden ? "gold-pass" : null}`}
             onClick={openExternalUserDialog}
           >
             {isAdmin ? (
-              <VerifiedUserIcon sx={VerifiedUserIconSx} />
+              <LocalPoliceIcon sx={BadgeSx} />
             ) : isMod ? (
-              <ShieldIcon sx={VerifiedUserIconSx} />
+              <ShieldIcon sx={BadgeSx} />
             ) : isGolden ? (
-              <WorkspacePremiumIcon sx={VerifiedUserIconSx} />
+              <WorkspacePremiumIcon sx={BadgeSx} />
             ) : null}
-            {props.sentBy}
+
+            <Tooltip
+              placement="bottom"
+              enterDelay={0}
+              leaveDelay={0}
+              arrow
+              title={agoText}
+              onOpen={() => setAgoText(verboseHMS(props.createdAt))}
+            >
+              <span>{props.sentBy}</span>
+            </Tooltip>
           </Typography>
         </Box>
         {": "}

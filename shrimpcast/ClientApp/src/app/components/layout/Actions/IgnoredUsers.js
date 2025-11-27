@@ -12,6 +12,7 @@ const IgnoredUsers = (props) => {
       icon={VisibilityOffIcon}
       identifier="sessionId"
       contentIdentifier="n"
+      actionName="unignore"
       {...props}
     />
   );
