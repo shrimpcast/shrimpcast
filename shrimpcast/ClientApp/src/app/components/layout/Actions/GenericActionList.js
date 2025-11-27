@@ -68,7 +68,10 @@ const GenericActionList = (props) => {
             onClick={setOpened}
             type="button"
             size="small"
-            sx={{ backgroundColor: "primary.700", borderRadius: "0px" }}
+            sx={[
+              { backgroundColor: "primary.700", borderRadius: "0px" },
+              props.customStyles && { ...props.customStyles },
+            ]}
           >
             <Icon sx={{ color: "primary.300" }} />
           </IconButton>

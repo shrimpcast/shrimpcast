@@ -24,6 +24,8 @@ import CodeIcon from "@mui/icons-material/Code";
 import MediaServerManager from "../../../../managers/MediaServerManager";
 import VideoJSPlayer from "../../../player/VideoJSPlayer";
 import HtmlIcon from "@mui/icons-material/Html";
+import GenericActionList from "../GenericActionList";
+import ScheduleIcon from "@mui/icons-material/Schedule";
 
 const BoxSx = {
     maxHeight: "200px",
@@ -87,7 +89,7 @@ const BoxSx = {
     color: "text.secondary",
   };
 
-const StreamStats = () => {
+const StreamStats = (props) => {
   const [stats, setStats] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [dialogType, setDialogType] = useState(null);
@@ -152,7 +154,7 @@ const StreamStats = () => {
           <Typography display="flex" width="100%" variant="subtitle1" fontWeight={600} gutterBottom>
             Active stream processes
             <Button
-              sx={{ marginLeft: "auto" }}
+              sx={{ marginLeft: "auto", borderTopRightRadius: "0px", borderBottomRightRadius: "0px" }}
               disabled={Boolean(logsLoading)}
               size="small"
               variant="outlined"
@@ -160,6 +162,18 @@ const StreamStats = () => {
             >
               MEDIA SERVER LOGS {logsLoading && <CircularProgress sx={{ ml: "4px" }} size={12} />}
             </Button>
+            <GenericActionList
+              title="Scheduled jobs"
+              getItems={MediaServerManager.GetScheduledJobs}
+              icon={ScheduleIcon}
+              identifier="id"
+              contentIdentifier="content"
+              customStyles={{
+                borderTopRightRadius: "5px",
+                borderBottomRightRadius: "5px",
+              }}
+              {...props}
+            />
           </Typography>
           <Divider />
         </Box>

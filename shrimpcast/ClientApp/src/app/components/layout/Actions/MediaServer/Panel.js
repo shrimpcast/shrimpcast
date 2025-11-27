@@ -30,7 +30,7 @@ const Panel = (props) => {
     <Box display="block">
       <Box sx={ContainerSx(theme)}>
         <Box sx={StatsSx(theme)}>
-          <StreamStats />
+          <StreamStats {...props} />
         </Box>
         <Box sx={SystemSx(theme)}>
           <SystemStats />

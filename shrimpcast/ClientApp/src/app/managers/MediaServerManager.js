@@ -80,6 +80,10 @@ class MediaServerManager {
     const response = await signalR.invoke("EditRTMPEndpoint", endpoint).catch((ex) => console.log(ex));
     return response;
   }
+  static async GetScheduledJobs(signalR) {
+    const response = await signalR.invoke("GetScheduledJobs").catch((ex) => console.log(ex));
+    return response;
+  }
 }
 
 export default MediaServerManager;
