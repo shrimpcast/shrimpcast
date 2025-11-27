@@ -88,8 +88,7 @@ html {
   margin-left: 2.5px;
   margin-right: 2.5px;
   border-radius: 0;
-  position: relative;
-  top: 8.5px;
+  vertical-align: bottom;
 }
 
 .full-height {

@@ -30,6 +30,7 @@ const WrapperTextBoxSx = {
   TextSx = (color, force, gt) => ({
     fontWeight: color || force ? "bold" : "none",
     color: color ? color : gt ? "#789922" : "white",
+    display: "inline",
     fontSize: "15px",
   }),
   OverlaySx = {
