@@ -23,7 +23,7 @@ const GoldenPassSx = {
     color: "white",
     textShadow: "2px 2px 4px rgba(0, 0, 0, 1)",
     width: "100%",
-    bottom: "4px",
+    bottom: "3px",
     position: "relative",
   },
   CloseIconSx = {
