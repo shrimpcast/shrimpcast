@@ -1,7 +1,7 @@
-import { Fade } from "@mui/material";
+import { Zoom } from "@mui/material";
 
 const MessageWrapper = ({ useTransition, children }) => {
-  if (useTransition) return <Fade in={true}>{children}</Fade>;
+  if (useTransition) return <Zoom in={true}>{children}</Zoom>;
   else return <>{children}</>;
 };
 
