@@ -72,6 +72,9 @@ To install Shrimpcast, follow these steps:
 > [!NOTE]
 > Recommended OS: Ubuntu x64 22.04 LTS
 
+> [!NOTE]
+> While the exact hardware requirements depend on your workload, a minimum of 2 vCPUs and 4 GB of RAM is recommended.
+
 1. On a fresh VPS, run:
 
    ```bash
