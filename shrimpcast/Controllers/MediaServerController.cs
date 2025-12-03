@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using shrimpcast.Data.Repositories.Interfaces;
 using shrimpcast.Entities.DTO;
 using shrimpcast.Helpers;
@@ -8,13 +9,14 @@ using shrimpcast.Hubs.Dictionaries;
 namespace shrimpcast.Controllers
 {
     [ApiController, Route("api/[controller]")]
-    public class MediaServerController(IFFMPEGRepository ffmpegRepository, IRTMPEndpointRepository rtmpEndpointRepository, ISessionRepository sessionRepository, Processes<SiteHub> processes, MediaServerLogs<SiteHub> mediaServerLogs) : ControllerBase
+    public class MediaServerController(IFFMPEGRepository ffmpegRepository, IRTMPEndpointRepository rtmpEndpointRepository, ISessionRepository sessionRepository, Processes<SiteHub> processes, MediaServerLogs<SiteHub> mediaServerLogs, IHubContext<SiteHub> hubContext) : ControllerBase
     {
         private readonly IFFMPEGRepository _ffmpegRepository = ffmpegRepository;
         private readonly IRTMPEndpointRepository _rtmpEndpointRepository = rtmpEndpointRepository;
         private readonly ISessionRepository _sessionRepository = sessionRepository;
         private readonly Processes<SiteHub> _processes = processes;
         private readonly MediaServerLogs<SiteHub> _mediaServerLogs = mediaServerLogs;
+        private readonly IHubContext<SiteHub> _hubContext = hubContext;
 
         [HttpGet, Route("GetSystemStats")]
         public async Task<object> GetSystemStats(string sessionToken)
@@ -103,9 +105,19 @@ namespace shrimpcast.Controllers
             var data = await HttpContext.Request.ReadFormAsync();
             string? streamName = data["name"];
             string? auth = data["auth"];
-            if (streamName == null || auth == null) return UnprocessableEntity();
+            string? call = data["call"];
+            if (streamName == null || auth == null || call == null) return UnprocessableEntity();
             var endpoint = await _rtmpEndpointRepository.GetByName(streamName);
-            return endpoint!.PublishKey == auth ? Ok() : Unauthorized();
+            if (endpoint!.PublishKey != auth) return Unauthorized();
+            var status = call == "publish" ? "CONNECTED" : "DISCONNECTED";
+            endpoint.PublishStatus = status;
+            await _rtmpEndpointRepository.Edit(endpoint);
+            await _hubContext.Clients.All.SendAsync("PublishStatusChange", new
+            {
+                endpoint.Name,
+                status,
+            });
+            return Ok();
         }
     }
 }

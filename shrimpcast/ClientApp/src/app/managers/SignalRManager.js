@@ -26,6 +26,7 @@ class SignalRManager {
     nameChange: "NameChange",
     redirectSource: "RedirectSource",
     sourceViewerCountChange: "SourceViewerCountChange",
+    publishStatusChange: "PublishStatusChange",
   };
 
   static async connect() {
