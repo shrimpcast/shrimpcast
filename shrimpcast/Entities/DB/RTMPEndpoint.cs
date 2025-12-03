@@ -10,6 +10,8 @@ namespace shrimpcast.Entities.DB
         
         public required string PublishKey { get; set; }
 
+        public required string PublishStatus { get; set; }
+
         [NotMapped]
         public string? IngressUrl { get; set; }
 

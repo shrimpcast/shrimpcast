@@ -29,6 +29,7 @@ const VideoJSPlayer = (props) => {
       }, 100);
     },
     destroy = () => {
+      clearTimeout(window._vjstimeout);
       const player = playerRef.current;
       if (player && !player.isDisposed()) {
         player.dispose();
@@ -41,7 +42,6 @@ const VideoJSPlayer = (props) => {
     if (!cssLoaded) return;
 
     const restart = (reason) => {
-      clearTimeout(window._vjstimeout);
       console.log(`Attempting to restart playback, reason = ${reason}.`);
       destroy();
       setIsError(Date.now());

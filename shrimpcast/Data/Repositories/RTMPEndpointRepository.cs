@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using shrimpcast.Entities.DB;
-using System.IO;
 
 namespace shrimpcast.Data.Repositories.Interfaces
 {

@@ -1,4 +1,5 @@
 import MediaServerManager from "../../../../managers/MediaServerManager";
+import SignalRManager from "../../../../managers/SignalRManager";
 import GenericAddObjectTable from "../GenericAddObjectTable";
 import { useEffect, useState } from "react";
 import { Box, CircularProgress, Divider, Typography } from "@mui/material";
@@ -36,6 +37,12 @@ const RTMPEndpoints = (props) => {
           type: 2,
           readOnly: true,
         },
+        {
+          name: "publishStatus",
+          label: "Status",
+          type: 2,
+          readOnly: true,
+        },
       ],
       requiredFields: ["name", "publishKey"],
       reservedWords: [],
@@ -43,6 +50,7 @@ const RTMPEndpoints = (props) => {
       model: {
         publishKey: GenerateUUID(),
         name: "",
+        publishStatus: "DISCONNECTED",
       },
       identifier: "name",
       itemsKey: "rtmp endpoints",
@@ -52,14 +60,24 @@ const RTMPEndpoints = (props) => {
         remove: MediaServerManager.RemoveEndpoint,
       },
     },
-    [items, setItems] = useState(null);
+    [items, setItems] = useState(null),
+    updatePublishStatus = (publishStatus) =>
+      setItems((items) => {
+        const { name, status } = publishStatus;
+        const streamIndex = items?.findIndex((item) => item.name === name);
+        if (!(streamIndex >= 0)) return items;
+        items[streamIndex].publishStatus = status;
+        return [...items];
+      });
 
   useEffect(() => {
     const getItems = async () => {
       const endpoints = await MediaServerManager.GetAllEndpoints(signalR);
       setItems(endpoints);
+      signalR.on(SignalRManager.events.publishStatusChange, updatePublishStatus);
     };
     getItems();
+    return () => signalR.off(SignalRManager.events.publishStatusChange);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
