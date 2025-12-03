@@ -106,17 +106,31 @@ namespace shrimpcast.Controllers
             string? streamName = data["name"];
             string? auth = data["auth"];
             string? call = data["call"];
-            if (streamName == null || auth == null || call == null) return UnprocessableEntity();
+            string? url = data["tcurl"];
+
+            if (streamName == null || auth == null || call == null || url == null) return UnprocessableEntity();
+
             var endpoint = await _rtmpEndpointRepository.GetByName(streamName);
             if (endpoint!.PublishKey != auth) return Unauthorized();
-            var status = call == "publish" ? "CONNECTED" : "DISCONNECTED";
+
+            var isConnected = call == "publish";
+            var status =  isConnected ? "CONNECTED" : "DISCONNECTED";
             endpoint.PublishStatus = status;
+
             await _rtmpEndpointRepository.Edit(endpoint);
             await _hubContext.Clients.All.SendAsync("PublishStatusChange", new
             {
                 endpoint.Name,
                 status,
             });
+
+            if (!isConnected)
+            {
+                url = $"{url.Trim()}/{streamName}";
+                var targets = _processes.All.Values.Where(p => p.Stream.IngressUri == url).ToList();
+                targets.ForEach(async target => await _ffmpegRepository.StopStreamProcess(target.Stream.Name, "publish-done"));
+            }
+
             return Ok();
         }
     }
