@@ -1,4 +1,5 @@
 ﻿using Hardware.Info;
+using shrimpcast.Entities;
 
 namespace shrimpcast.Helpers
 {
@@ -38,6 +39,20 @@ namespace shrimpcast.Helpers
             }
 
             return totalUploadMbps;
+        }
+
+        public object GetStats()
+        {
+            var cpuUsage = GetCpuUsage();
+            var memoryUsage = GetMemoryUsagePercentage();
+            var networkUsage = GetNetworkUsage();
+
+            return new
+            {
+                cpu = new { numeric = cpuUsage, _string = $"{cpuUsage:F2}%" },
+                memory = new { numeric = memoryUsage, _string = $"{memoryUsage:F2}%" },
+                network = new { numeric = networkUsage, _string = $"{networkUsage:F2}mbps" },
+            };
         }
     }
 }

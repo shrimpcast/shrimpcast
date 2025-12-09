@@ -210,6 +210,17 @@ namespace shrimpcast.Entities.DB
 
         public required bool StripNonASCIIChars { get; set; }
 
+        public required bool LbSendInstanceMetrics { get; set; }
+
+        public required string LbTargetDomain { get; set; }
+
+        [JsonIgnore]
+        public string? LbAuthToken { get; set; } = string.Empty;
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [NotMapped]
+        public string? LbAuthTokenNotMapped { get; set; }
+
         public object Clone() => MemberwiseClone();
     }
 
@@ -402,6 +413,17 @@ namespace shrimpcast.Entities.DB
                         new { name = nameof(config.TurnstileTitle).ToLower(), label = "Turnstile title ", value = config.TurnstileTitle },
                         new { name = nameof(config.TurnstilePublicKey).ToLower(), label = "Turnstile public key", value = config.TurnstilePublicKey },
                         new { name = nameof(config.TurnstileSecretKeyNotMapped).ToLower(), label = "Turnstile private key", value = config.TurnstileSecretKey },
+                    }
+                }
+                ,
+                new
+                {
+                    name = "Load balancing",
+                    values = new object[]
+                    {
+                        new { name = nameof(config.LbSendInstanceMetrics).ToLower(), label = "Send metrics", value = config.LbSendInstanceMetrics },
+                        new { name = nameof(config.LbTargetDomain).ToLower(), label = "Master instance domain", value = config.LbTargetDomain },
+                        new { name = nameof(config.LbAuthTokenNotMapped).ToLower(), label = "Auth token", value = config.LbAuthToken },
                     }
                 }
             };

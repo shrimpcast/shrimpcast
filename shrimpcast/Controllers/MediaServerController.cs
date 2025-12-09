@@ -1,6 +1,8 @@
+using Hangfire.Dashboard;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using shrimpcast.Data.Repositories.Interfaces;
+using shrimpcast.Entities;
 using shrimpcast.Entities.DTO;
 using shrimpcast.Helpers;
 using shrimpcast.Hubs;
@@ -9,14 +11,16 @@ using shrimpcast.Hubs.Dictionaries;
 namespace shrimpcast.Controllers
 {
     [ApiController, Route("api/[controller]")]
-    public class MediaServerController(IFFMPEGRepository ffmpegRepository, IRTMPEndpointRepository rtmpEndpointRepository, ISessionRepository sessionRepository, Processes<SiteHub> processes, MediaServerLogs<SiteHub> mediaServerLogs, IHubContext<SiteHub> hubContext) : ControllerBase
+    public class MediaServerController(IFFMPEGRepository ffmpegRepository, IRTMPEndpointRepository rtmpEndpointRepository, ISessionRepository sessionRepository, Processes<SiteHub> processes, MediaServerLogs<SiteHub> mediaServerLogs, LBMetrics<SiteHub> lbMetrics, IHubContext<SiteHub> hubContext, ConfigurationSingleton configurationSingleton) : ControllerBase
     {
         private readonly IFFMPEGRepository _ffmpegRepository = ffmpegRepository;
         private readonly IRTMPEndpointRepository _rtmpEndpointRepository = rtmpEndpointRepository;
         private readonly ISessionRepository _sessionRepository = sessionRepository;
         private readonly Processes<SiteHub> _processes = processes;
         private readonly MediaServerLogs<SiteHub> _mediaServerLogs = mediaServerLogs;
+        private readonly LBMetrics<SiteHub> _lbMetrics = lbMetrics;
         private readonly IHubContext<SiteHub> _hubContext = hubContext;
+        private readonly ConfigurationSingleton _configurationSingleton = configurationSingleton;
 
         [HttpGet, Route("GetSystemStats")]
         public async Task<object> GetSystemStats(string sessionToken)
@@ -24,15 +28,14 @@ namespace shrimpcast.Controllers
             var session = await _sessionRepository.GetExistingByTokenAsync(sessionToken);
             if (session == null || !session.IsAdmin) throw new Exception("Permission denied.");
 
-            var systemStats = new SystemStats();
-            var cpuUsage = systemStats.GetCpuUsage();
-            var memoryUsage = systemStats.GetMemoryUsagePercentage();
-            var networkUsage = systemStats.GetNetworkUsage();
             return new
             {
-                cpu = new { numeric = cpuUsage, _string = $"{cpuUsage:F2}%" },
-                memory = new { numeric = memoryUsage, _string = $"{memoryUsage:F2}%" },
-                network = new { numeric = networkUsage, _string = $"{networkUsage:F2}mbps" },
+                system = new SystemStats().GetStats(),
+                instances = _lbMetrics.All.Values.Select(instance => new
+                {
+                    stats = instance, 
+                    isHealthy = (DateTime.UtcNow - instance.ReportTime).TotalSeconds < 9,
+                }),
             };
         }
 
@@ -132,6 +135,25 @@ namespace shrimpcast.Controllers
             }
 
             return Ok();
+        }
+
+        [HttpPost, Route("SendInstanceMetrics")]
+        public IActionResult SendInstanceMetrics(LBMetric metric)
+        {
+            var config = _configurationSingleton.Configuration;
+            if (config.LbAuthToken != metric.AuthToken) return Unauthorized();
+
+            metric.RemoteAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+            _lbMetrics.All.AddOrUpdate($"{metric.RemoteAddress}-{metric.InstanceName}", metric, (k, oldValue) => metric);
+            return Ok();
+        }
+
+        [HttpGet, Route("RemoveInstanceMetrics")]
+        public async Task<bool> RemoveInstanceMetrics(string sessionToken, string key)
+        {
+            var session = await _sessionRepository.GetExistingByTokenAsync(sessionToken);
+            if (session == null || !session.IsAdmin) throw new Exception("Permission denied.");
+            return _lbMetrics.All.TryRemove(key, out _);
         }
     }
 }

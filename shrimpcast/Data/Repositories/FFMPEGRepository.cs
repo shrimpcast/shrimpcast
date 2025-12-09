@@ -1,18 +1,22 @@
 using Hangfire;
+using Newtonsoft.Json;
 using shrimpcast.Entities;
 using shrimpcast.Entities.DB;
+using shrimpcast.Helpers;
 using shrimpcast.Hubs;
 using shrimpcast.Hubs.Dictionaries;
 using System.Diagnostics;
+using System.Text;
 using System.Text.Json.Nodes;
 
 namespace shrimpcast.Data.Repositories.Interfaces
 {
-    public class FFMPEGRepository(IMediaServerStreamRepository mediaServerStreamRepository, Processes<SiteHub> processes, MediaServerLogs<SiteHub> mediaServerLogs) : IFFMPEGRepository
+    public class FFMPEGRepository(IMediaServerStreamRepository mediaServerStreamRepository, Processes<SiteHub> processes, MediaServerLogs<SiteHub> mediaServerLogs, ConfigurationSingleton configurationSingleton) : IFFMPEGRepository
     {
         private readonly IMediaServerStreamRepository _mediaServerStreamRepository = mediaServerStreamRepository;
         private readonly Processes<SiteHub> _processes = processes;
         private readonly MediaServerLogs<SiteHub> _mediaServerLogs = mediaServerLogs;
+        private readonly ConfigurationSingleton _configurationSingleton = configurationSingleton;
         private const string FFMPEGProcess = "ffmpeg"; 
         private const string FFProbeProcess = "ffprobe"; 
         private const string StreamsPath = "streams"; 
@@ -237,6 +241,47 @@ namespace shrimpcast.Data.Repositories.Interfaces
 
         public bool IsDevelopment () =>
             Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
+
+        public async Task SendInstanceMetrics()
+        {
+            if (_configurationSingleton.Configuration.LbSendInstanceMetrics) await ReportMetrics();
+            BackgroundJob.Schedule(() => SendInstanceMetrics(), TimeSpan.FromSeconds(3));
+        }
+
+        private async Task ReportMetrics()
+        {
+            try
+            {
+                var config = _configurationSingleton.Configuration;
+                var url = $"https://{config.LbTargetDomain}/api/mediaserver/SendInstanceMetrics";
+
+                var metrics = new LBMetric
+                {
+                    InstanceName = config.StreamTitle,
+                    AuthToken = config.LbAuthToken,
+                    Metrics = new SystemStats().GetStats(),
+                };
+
+                var handler = IsDevelopment() ? new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+                } : new HttpClientHandler();
+
+                using var client = new HttpClient(handler)
+                {
+                    Timeout = TimeSpan.FromSeconds(3)
+                };
+
+                client.DefaultRequestHeaders.Add("User-Agent", $"shrimpcast/{Constants.BACKEND_VERSION}");
+                var content = new StringContent(JsonConvert.SerializeObject(metrics), Encoding.UTF8, "application/json");
+                var response = await client.PostAsync(url, content);
+                response.EnsureSuccessStatusCode();
+            }
+            catch (Exception ex)
+            {
+                MediaServerLog($"Could not report instance metrics: {ex.Message}");
+            }
+        }
 
         private string GetWebStreamPath(string stream) =>
             IsDevelopment() ? $"/api/mediaserver/{StreamsPath}/{stream}/index.m3u8"

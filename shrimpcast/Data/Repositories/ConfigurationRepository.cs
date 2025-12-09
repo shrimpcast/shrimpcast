@@ -37,6 +37,7 @@ namespace shrimpcast.Data.Repositories
             configuration.StripeSecretKey = configuration.StripeSecretKeyNotMapped;
             configuration.StripeWebhookSecret = configuration.StripeWebhookSecretNotMapped;
             configuration.TurnstileSecretKey = configuration.TurnstileSecretKeyNotMapped;
+            configuration.LbAuthToken = configuration.LbAuthTokenNotMapped;
             if (configuration.MaxConnectionsPerIP < 1) configuration.MaxConnectionsPerIP = 1;
             _context.Entry(config).CurrentValues.SetValues(configuration);
             var updated = await _context.SaveChangesAsync();
@@ -50,6 +51,7 @@ namespace shrimpcast.Data.Repositories
             configuration.StripeSecretKeyNotMapped = null;
             configuration.StripeWebhookSecretNotMapped = null;
             configuration.TurnstileSecretKeyNotMapped = null;
+            configuration.LbAuthTokenNotMapped = null;
             var updatedSources = await _sourceRepository.Save(configuration.Sources);
             if (updatedSources) configuration.Sources = await _sourceRepository.GetAll();
             return updated > 0 || updatedSources ? (true, updatedSources) : throw new Exception("Could not update record.");
