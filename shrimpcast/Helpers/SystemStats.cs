@@ -11,10 +11,11 @@ namespace shrimpcast.Helpers
             _hardwareInfo = new HardwareInfo();
         }
 
-        public float GetCpuUsage()
+        public (float, uint) GetCpuUsage()
         {
             _hardwareInfo.RefreshCPUList();
-            return _hardwareInfo.CpuList[0].PercentProcessorTime;
+            var cpu = _hardwareInfo.CpuList[0];
+            return (cpu.PercentProcessorTime, cpu.NumberOfCores);
         }
 
         public float GetMemoryUsagePercentage()
@@ -66,14 +67,14 @@ namespace shrimpcast.Helpers
 
         public object GetStats()
         {
-            var cpuUsage = GetCpuUsage();
+            (var cpuUsage, var noCores) = GetCpuUsage();
             var memoryUsage = GetMemoryUsagePercentage();
             var networkUsage = GetNetworkUsage();
             var diskUsage = GetDiskUsage();
 
             return new
             {
-                cpu = new { numeric = cpuUsage, _string = $"{cpuUsage:F2}%" },
+                cpu = new { numeric = cpuUsage, _string = $"{cpuUsage:F2}% - {noCores} core{(noCores > 1 ? "s" : null)}" },
                 memory = new { numeric = memoryUsage, _string = $"{memoryUsage:F2}%" },
                 network = new { numeric = networkUsage, _string = $"{networkUsage:F2}mbps" },
                 disk = new { numeric = diskUsage, _string = $"{diskUsage:F2}%" },
