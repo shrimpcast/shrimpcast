@@ -189,8 +189,8 @@ const StreamStats = (props) => {
         ) : (
           <Stack spacing={2}>
             {stats.map((stat, idx) => (
-              <Zoom in={true}>
-                <Card key={idx} variant="outlined" sx={CardSx(theme)} className="scrollbar-custom">
+              <Zoom key={idx} in={true}>
+                <Card variant="outlined" sx={CardSx(theme)} className="scrollbar-custom">
                   <CardContent sx={CardContentSx}>
                     <Stack sx={StackCardSx}>
                       <Typography variant="overline" sx={StreamTitleSx}>
