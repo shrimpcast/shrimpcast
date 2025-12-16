@@ -1,5 +1,4 @@
 ﻿using Hardware.Info;
-using shrimpcast.Entities;
 
 namespace shrimpcast.Helpers
 {

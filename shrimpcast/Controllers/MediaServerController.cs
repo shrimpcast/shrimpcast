@@ -1,4 +1,3 @@
-using Hangfire.Dashboard;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using shrimpcast.Data.Repositories.Interfaces;
