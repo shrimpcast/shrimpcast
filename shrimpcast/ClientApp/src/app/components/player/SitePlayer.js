@@ -7,6 +7,7 @@ import SignalRManager from "../../managers/SignalRManager";
 import { useNavigate } from "react-router-dom";
 import SourceCountdown from "../layout/Actions/Sources/SourceCountdown";
 import ChatActionsManager from "../../managers/ChatActionsManager";
+import LoadBalancingManager from "../../managers/LoadBalancingManager";
 
 const WrapperSx = {
   width: "100%",
@@ -16,55 +17,11 @@ const WrapperSx = {
   alignItems: "center",
 };
 
-const Random = (max) => Math.floor(Math.random() * max) + 1;
-
-const WeightedPick = (instances) => {
-  let total = Math.random() * 100;
-
-  for (let i = 0; i < instances.length; i++) {
-    const weight = +instances[i];
-
-    if (total < weight) return i + 1;
-    total -= weight;
-  }
-};
-
-const RandomBetweenExcept = (instances) => {
-  const max = +instances[0];
-  const except = instances[1].split(",").map((i) => +i);
-  let pick = Random(max);
-  while (except.includes(pick)) pick = Random(max);
-  return pick;
-};
-
-const ResolveBalancing = (input) => {
-  if (!input?.startsWith("[lbs]")) return input;
-
-  const url = input.split("[/lbs]");
-  const lbs = url[0].replace("[lbs]", "");
-  let pick;
-
-  if (isNaN(lbs)) {
-    if (lbs.startsWith("w")) {
-      pick = WeightedPick(lbs.replace("w", "").split(","));
-    }
-    if (lbs.startsWith("ei")) {
-      pick = RandomBetweenExcept(lbs.replace("ei", "").split("_"));
-    }
-  } else {
-    pick = Random(lbs);
-  }
-
-  const origin = url[1].replace("{lbi}", pick);
-  console.log("Resolved origin: " + origin);
-  return origin;
-};
-
 const SitePlayer = (props) => {
   const { streamStatus, signalR, configuration } = props,
     { source, streamEnabled, mustPickStream } = streamStatus,
     { useRTCEmbed, useLegacyPlayer, startsAt, withCredentials, thumbnail } = source,
-    url = ResolveBalancing(source.url) || "",
+    [url, setUrl] = useState(""),
     video = useRef(),
     theme = useTheme(),
     videoJsOptions = {
@@ -112,6 +69,11 @@ const SitePlayer = (props) => {
     return () => signalR.off(SignalRManager.events.redirectSource);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source]);
+
+  useEffect(() => {
+    const resolved = LoadBalancingManager.ResolveBalancing(source.url);
+    if (resolved) setUrl(resolved);
+  }, [source.url]);
 
   return streamEnabled ? (
     mustPickStream ? (

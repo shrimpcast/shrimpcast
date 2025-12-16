@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import SignalRManager from "../../../../managers/SignalRManager";
 import ChatActionsManager from "../../../../managers/ChatActionsManager";
+import LoadBalancingManager from "../../../../managers/LoadBalancingManager";
 
 const DEFAULT_THUMBNAIL = "/images/video_thumbnail.png",
   ContainerSx = {
@@ -165,7 +166,17 @@ const PickSource = ({ sources, signalR, showViewerCountPerStream, noCache }) => 
                 {viewerCount?.find((s) => s.name === source.name)?.count}
               </Box>
             )}
-            <Box sx={ImageSx(ResolveThumbnail(source.thumbnail, source.url, noCache), hoveredIndex, index)}>
+            <Box
+              sx={ImageSx(
+                ResolveThumbnail(
+                  source.thumbnail,
+                  LoadBalancingManager.ResolveBalancing(source.url, `${source.name}-${noCache}`),
+                  noCache
+                ),
+                hoveredIndex,
+                index
+              )}
+            >
               <Box sx={HoverSx(hoveredIndex, index)} />
               <Box sx={TextContainerSx}>
                 <Typography sx={TextSx(hoveredIndex, index)}>
