@@ -37,6 +37,7 @@ namespace shrimpcast.Data.Repositories
                 {
                     if (!Constants.SOURCE_RESERVERD_WORDS.Contains(newSource.Name.ToLower()))
                     {
+                        ValidateSourceWeights(newSource.Url);
                         await _context.AddAsync(newSource);
                     }
                 } 
@@ -49,6 +50,7 @@ namespace shrimpcast.Data.Repositories
                     foreach (var field in model)
                     {
                         var newValue = newType.GetProperty(field.Key)!.GetValue(newSource);
+                        if (field.Key == nameof(Source.Url)) ValidateSourceWeights(newValue!.ToString());
                         existingType.GetProperty(field.Key)!.SetValue(entity, newValue);
                     }
                 }
@@ -76,6 +78,37 @@ namespace shrimpcast.Data.Repositories
 
         public async Task<bool> ExistsByName(string sourceName) =>
             await _context.Sources.AsNoTracking().AnyAsync(s => s.Name == sourceName && s.IsEnabled);
+
+        private void ValidateSourceWeights(string? input)
+        {
+            if (string.IsNullOrEmpty(input) || !input.StartsWith("[lbs]")) return;
+
+            var url = input.Split("[/lbs]");
+            var lbs = url[0].Replace("[lbs]", "");
+
+            if (lbs.StartsWith("w"))
+            {
+                lbs = lbs.Replace("w", "");
+                var weights = lbs.Split(",").Select(int.Parse);
+                var sum = weights.Sum();
+                if (sum != 100) throw new InvalidDataException();
+            }
+
+            if (lbs.StartsWith("ei"))
+            {
+                lbs = lbs.Replace("ei", "");
+                var values = lbs.Split("_");
+                var max = ushort.Parse(values[0]);
+                if (max == 1 && values[1] == "1") throw new InvalidDataException();
+                var instances = values[1].Split(",").Select(ushort.Parse).Distinct();
+                var containedValues = 0;
+                for (ushort i = 1; i <= max; i++)
+                {
+                    if (instances.Contains(i)) containedValues++;
+                }
+                if (containedValues == max) throw new InvalidDataException();
+            }
+        }
     }
 }
 
