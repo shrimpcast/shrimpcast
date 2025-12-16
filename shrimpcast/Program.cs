@@ -42,6 +42,7 @@ builder.Services.AddSingleton(typeof(Pings<>));
 builder.Services.AddSingleton(typeof(BingoSuggestions<>));
 builder.Services.AddSingleton(typeof(Processes<>));
 builder.Services.AddSingleton(typeof(MediaServerLogs<>));
+builder.Services.AddSingleton(typeof(LBMetrics<>));
 builder.Services.AddSingleton(typeof(ConfigurationSingleton));
 builder.Services.AddScoped<IConfigurationRepository, ConfigurationRepository>();
 builder.Services.AddScoped<ISessionRepository, SessionRepository>();
@@ -93,6 +94,7 @@ using (var scope = app.Services.CreateScope())
     var processInitializer = services.GetRequiredService<IFFMPEGRepository>();
     await processInitializer.InitStreamProcesses();
     BackgroundJob.Enqueue(() => processInitializer.DoBackgroundTasks());
+    BackgroundJob.Enqueue(() => processInitializer.SendInstanceMetrics());
 }
 
 app.UseHttpsRedirection();

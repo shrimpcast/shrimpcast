@@ -182,6 +182,24 @@ sudo sysctl -p
 echo "net.ipv4.tcp_max_syn_backlog=16384" | sudo tee -a /etc/sysctl.conf
 sudo sysctl -p
 
+# Install UFW if not already installed
+sudo apt install ufw
+
+# Reset UFW to default settings
+sudo ufw --force reset 
+
+# Set default policies
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+
+# Allow specific TCP traffic
+sudo ufw allow OpenSSH
+sudo ufw allow 443
+sudo ufw allow 1935
+
+# Enable UFW with the configured rules
+sudo ufw --force enable
+
 # Set file descriptor limit
 NOFILE_LIMIT=524288
 echo "Setting global file descriptor limits to $NOFILE_LIMIT..."

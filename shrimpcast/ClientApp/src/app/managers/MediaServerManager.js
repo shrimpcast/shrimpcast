@@ -84,6 +84,14 @@ class MediaServerManager {
     const response = await signalR.invoke("GetScheduledJobs").catch((ex) => console.log(ex));
     return response;
   }
+  static async RemoveInstanceMetrics(key) {
+    const response = await axios
+      .get(`/api/mediaserver/RemoveInstanceMetrics?sessionToken=${LocalStorageManager.getToken()}&key=${key}`, {
+        timeout: 3000,
+      })
+      .catch((ex) => console.log(ex));
+    return response?.data;
+  }
 }
 
 export default MediaServerManager;

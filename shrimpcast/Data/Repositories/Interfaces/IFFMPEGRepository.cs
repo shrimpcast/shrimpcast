@@ -17,5 +17,6 @@ namespace shrimpcast.Data.Repositories.Interfaces
         bool HasExited(Process process);
         Process[] GetActiveFFMPEGProcesses();
         void KillAllProcesses();
+        Task SendInstanceMetrics();
     }
 }

@@ -39,5 +39,45 @@ namespace shrimpcast.Helpers
 
             return totalUploadMbps;
         }
+
+        public double GetDiskUsage()
+        {
+            _hardwareInfo.RefreshDriveList();
+            var drive = _hardwareInfo.DriveList.First(d => d.PartitionList.Count > 0);
+            double total = 0;
+            double free = 0;
+
+            foreach (var partition in drive.PartitionList)
+            {
+                if (partition.VolumeList.Count == 0) continue;
+
+                foreach (var volume in partition.VolumeList)
+                {
+                    total += volume.Size;
+                    free += volume.FreeSpace;
+                }
+            }
+
+            double totalGB = total / (1024.0 * 1024.0 * 1024.0);
+            double freeGB = free / (1024.0 * 1024.0 * 1024.0);
+            double usedGB = totalGB - freeGB;
+            return (usedGB * 100) / totalGB;
+        }
+
+        public object GetStats()
+        {
+            var cpuUsage = GetCpuUsage();
+            var memoryUsage = GetMemoryUsagePercentage();
+            var networkUsage = GetNetworkUsage();
+            var diskUsage = GetDiskUsage();
+
+            return new
+            {
+                cpu = new { numeric = cpuUsage, _string = $"{cpuUsage:F2}%" },
+                memory = new { numeric = memoryUsage, _string = $"{memoryUsage:F2}%" },
+                network = new { numeric = networkUsage, _string = $"{networkUsage:F2}mbps" },
+                disk = new { numeric = diskUsage, _string = $"{diskUsage:F2}%" },
+            };
+        }
     }
 }

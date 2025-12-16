@@ -1,12 +1,17 @@
-import React, { useEffect, useState } from "react";
-import { Box, Typography, LinearProgress, Stack, Divider } from "@mui/material";
+import { useEffect, useState } from "react";
 import MediaServerManager from "../../../../managers/MediaServerManager";
+import ResourceUsageWidget from "./ResourceUsageWidget";
+import { Box } from "@mui/material";
 
 const SystemStats = () => {
   const defaultModel = {
-      cpu: { numeric: 0, _string: "loading..." },
-      memory: { numeric: 0, _string: "loading..." },
-      network: { numeric: 0, _string: "loading..." },
+      system: {
+        cpu: { numeric: 0, _string: "loading..." },
+        memory: { numeric: 0, _string: "loading..." },
+        network: { numeric: 0, _string: "loading..." },
+        disk: { numeric: 0, _string: "loading..." },
+      },
+      instances: [],
     },
     [stats, setStats] = useState(defaultModel);
 
@@ -26,37 +31,21 @@ const SystemStats = () => {
 
   return (
     <Box mt={1} p={1.5} borderRadius={2} bgcolor="background.paper" boxShadow={1} width="100%">
-      <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-        Resource usage
-        <Divider />
-      </Typography>
-
-      <Stack spacing={1.2}>
-        <Box>
-          <Typography variant="body2" color="text.secondary">
-            CPU: {stats.cpu._string}
-          </Typography>
-          <LinearProgress variant="determinate" value={stats.cpu.numeric} sx={{ height: 6, borderRadius: 3 }} />
-        </Box>
-
-        <Box>
-          <Typography variant="body2" color="text.secondary">
-            Memory: {stats.memory._string}
-          </Typography>
-          <LinearProgress
-            variant="determinate"
-            color="secondary"
-            value={stats.memory.numeric}
-            sx={{ height: 6, borderRadius: 3 }}
-          />
-        </Box>
-
-        <Box>
-          <Typography variant="body2" color="text.secondary">
-            Network upload: {stats.network._string}
-          </Typography>
-        </Box>
-      </Stack>
+      <ResourceUsageWidget stats={stats.system} title="Resource usage - system" />
+      {stats.instances.length ? (
+        <>
+          {stats.instances.map((instance) => (
+            <ResourceUsageWidget
+              stats={instance.stats.metrics}
+              title={`${instance.stats.remoteAddress} - ${instance.stats.instanceName}`}
+              instanceKey={`${instance.stats.remoteAddress}-${instance.stats.instanceName}`}
+              key={instance.stats.remoteAddress}
+              status={instance.isHealthy}
+              mt={true}
+            />
+          ))}
+        </>
+      ) : null}
     </Box>
   );
 };

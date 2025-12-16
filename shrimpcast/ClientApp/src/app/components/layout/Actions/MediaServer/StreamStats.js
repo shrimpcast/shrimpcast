@@ -18,6 +18,7 @@ import {
   Alert,
   CircularProgress,
   Tooltip,
+  Zoom,
 } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import CodeIcon from "@mui/icons-material/Code";
@@ -28,7 +29,6 @@ import GenericActionList from "../GenericActionList";
 import ScheduleIcon from "@mui/icons-material/Schedule";
 
 const BoxSx = {
-    maxHeight: "200px",
     overflowY: "auto",
     width: "100%",
     boxShadow: 3,
@@ -189,75 +189,77 @@ const StreamStats = (props) => {
         ) : (
           <Stack spacing={2}>
             {stats.map((stat, idx) => (
-              <Card key={idx} variant="outlined" sx={CardSx(theme)} className="scrollbar-custom">
-                <CardContent sx={CardContentSx}>
-                  <Stack sx={StackCardSx}>
-                    <Typography variant="overline" sx={StreamTitleSx}>
-                      {stat.name}
-                    </Typography>
+              <Zoom key={idx} in={true}>
+                <Card variant="outlined" sx={CardSx(theme)} className="scrollbar-custom">
+                  <CardContent sx={CardContentSx}>
+                    <Stack sx={StackCardSx}>
+                      <Typography variant="overline" sx={StreamTitleSx}>
+                        {stat.name}
+                      </Typography>
 
-                    <Stack minWidth="600px" justifyContent="end" direction="row" spacing={1.2}>
-                      {stat.processStatus.runningStatus === "Connected" && (
-                        <>
-                          <Typography sx={ProcessInfoSx} variant="caption">
-                            {stat.processStatus.runningTime}
-                          </Typography>
-                          {stat.processStatus.bitrate ? (
+                      <Stack minWidth="600px" justifyContent="end" direction="row" spacing={1.2}>
+                        {stat.processStatus.runningStatus === "Connected" && (
+                          <>
                             <Typography sx={ProcessInfoSx} variant="caption">
-                              {stat.processStatus.bitrate}kbps
+                              {stat.processStatus.runningTime}
                             </Typography>
-                          ) : null}
-                          <Typography sx={ProcessInfoSx} variant="caption">
-                            {stat.processStatus.cpuUsage}
-                          </Typography>
-                        </>
-                      )}
+                            {stat.processStatus.bitrate ? (
+                              <Typography sx={ProcessInfoSx} variant="caption">
+                                {stat.processStatus.bitrate}kbps
+                              </Typography>
+                            ) : null}
+                            <Typography sx={ProcessInfoSx} variant="caption">
+                              {stat.processStatus.cpuUsage}
+                            </Typography>
+                          </>
+                        )}
 
-                      <Chip
-                        label={stat.processStatus.runningStatus}
-                        color={
-                          stat.processStatus.runningStatus === "Stopping"
-                            ? "error"
-                            : stat.processStatus.runningStatus === "Connected"
-                            ? "success"
-                            : stat.processStatus.runningStatus === "Connecting"
-                            ? "info"
-                            : "warning"
-                        }
-                        size="small"
-                        variant="overline"
-                        sx={{
-                          fontWeight: 600,
-                          textTransform: "uppercase",
-                          position: "relative",
-                          top: "3.5px",
-                        }}
-                      />
-                      {stat.processStatus.runningStatus === "Connected" && (
-                        <Button
+                        <Chip
+                          label={stat.processStatus.runningStatus}
+                          color={
+                            stat.processStatus.runningStatus === "Stopping"
+                              ? "error"
+                              : stat.processStatus.runningStatus === "Connected"
+                              ? "success"
+                              : stat.processStatus.runningStatus === "Connecting"
+                              ? "info"
+                              : "warning"
+                          }
                           size="small"
-                          variant="contained"
-                          disableElevation
-                          onClick={() => handleOpenDialog(stat, "preview")}
+                          variant="overline"
+                          sx={{
+                            fontWeight: 600,
+                            textTransform: "uppercase",
+                            position: "relative",
+                            top: "3.5px",
+                          }}
+                        />
+                        {stat.processStatus.runningStatus === "Connected" && (
+                          <Button
+                            size="small"
+                            variant="contained"
+                            disableElevation
+                            onClick={() => handleOpenDialog(stat, "preview")}
+                          >
+                            Preview
+                          </Button>
+                        )}
+                        <Button
+                          disabled={logsLoading === stat.name}
+                          size="small"
+                          variant="outlined"
+                          onClick={() => getLogs(stat.name)}
                         >
-                          Preview
+                          LOGS {logsLoading === stat.name && <CircularProgress sx={{ ml: "4px" }} size={12} />}
                         </Button>
-                      )}
-                      <Button
-                        disabled={logsLoading === stat.name}
-                        size="small"
-                        variant="outlined"
-                        onClick={() => getLogs(stat.name)}
-                      >
-                        LOGS {logsLoading === stat.name && <CircularProgress sx={{ ml: "4px" }} size={12} />}
-                      </Button>
-                      <Button size="small" variant="outlined" onClick={() => handleOpenDialog(stat, "json")}>
-                        JSON
-                      </Button>
+                        <Button size="small" variant="outlined" onClick={() => handleOpenDialog(stat, "json")}>
+                          JSON
+                        </Button>
+                      </Stack>
                     </Stack>
-                  </Stack>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </Zoom>
             ))}
           </Stack>
         )}

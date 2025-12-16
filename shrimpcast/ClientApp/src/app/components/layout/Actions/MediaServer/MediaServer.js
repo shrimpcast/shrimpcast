@@ -76,7 +76,7 @@ const MediaServer = (props) => {
       },
       {
         name: "startAt",
-        label: "Start at (hh:mm:ss)",
+        label: "Start time (hh:mm:ss)",
         type: 3,
         color: "warning",
       },
@@ -94,7 +94,6 @@ const MediaServer = (props) => {
       isEnabled: false,
       name: "",
       ingressUri: "",
-      hlsVersion: 3,
       segmentLength: 2,
       listSize: 6,
       snapshotInterval: 60,
