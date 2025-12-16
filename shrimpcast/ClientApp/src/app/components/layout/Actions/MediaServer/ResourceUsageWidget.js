@@ -33,17 +33,34 @@ const ResourceUsageWidget = ({ stats, title, mt, status, instanceKey }) => {
             <Typography variant="body2" color="text.secondary">
               CPU: {stats.cpu._string}
             </Typography>
-            <LinearProgress variant="determinate" value={stats.cpu.numeric} sx={{ height: 6, borderRadius: 3 }} />
+            <LinearProgress
+              color={stats.cpu.numeric > 75 ? "error" : stats.cpu.numeric > 50 ? "warning" : "primary"}
+              variant="determinate"
+              value={stats.cpu.numeric}
+              sx={{ height: 6, borderRadius: 3 }}
+            />
           </Box>
 
           <Box>
             <Typography variant="body2" color="text.secondary">
-              Memory: {stats.memory._string}
+              RAM: {stats.memory._string}
             </Typography>
             <LinearProgress
               variant="determinate"
-              color="secondary"
+              color={stats.memory.numeric > 75 ? "error" : stats.memory.numeric > 50 ? "warning" : "secondary"}
               value={stats.memory.numeric}
+              sx={{ height: 6, borderRadius: 3 }}
+            />
+          </Box>
+
+          <Box>
+            <Typography variant="body2" color="text.secondary">
+              Storage: {stats.disk._string}
+            </Typography>
+            <LinearProgress
+              variant="determinate"
+              color={stats.disk.numeric > 75 ? "error" : stats.disk.numeric > 50 ? "warning" : "info"}
+              value={stats.disk.numeric}
               sx={{ height: 6, borderRadius: 3 }}
             />
           </Box>

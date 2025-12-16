@@ -9,6 +9,7 @@ const SystemStats = () => {
         cpu: { numeric: 0, _string: "loading..." },
         memory: { numeric: 0, _string: "loading..." },
         network: { numeric: 0, _string: "loading..." },
+        disk: { numeric: 0, _string: "loading..." },
       },
       instances: [],
     },
@@ -30,7 +31,7 @@ const SystemStats = () => {
 
   return (
     <Box mt={1} p={1.5} borderRadius={2} bgcolor="background.paper" boxShadow={1} width="100%">
-      <ResourceUsageWidget stats={stats.system} title="Resource usage" />
+      <ResourceUsageWidget stats={stats.system} title="Resource usage - system" />
       {stats.instances.length ? (
         <>
           {stats.instances.map((instance) => (
