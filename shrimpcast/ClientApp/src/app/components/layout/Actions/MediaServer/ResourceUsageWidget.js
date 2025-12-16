@@ -55,7 +55,7 @@ const ResourceUsageWidget = ({ stats, title, mt, status, instanceKey }) => {
 
           <Box>
             <Typography variant="body2" color="text.secondary">
-              Storage: {stats.disk._string}
+              DISK: {stats.disk._string}
             </Typography>
             <LinearProgress
               variant="determinate"

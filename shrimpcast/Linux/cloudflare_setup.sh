@@ -22,7 +22,6 @@ done
 # Allow specific TCP traffic
 sudo ufw allow OpenSSH
 sudo ufw allow 1935
-sudo ufw route allow proto tcp from any to any port 1935
 
 # Enable UFW with the configured rules
 sudo ufw --force enable

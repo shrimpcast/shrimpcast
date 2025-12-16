@@ -11,9 +11,6 @@ docker --version || handle_error "Docker installation verification failed"
 usermod -aG docker $USER || handle_error "Failed to add user to docker group"
 echo "Docker installed successfully."
 
-sudo ufw allow 11470
-sudo ufw route allow proto tcp from any to any port 11470
-
 docker run -d \
   --name=stremio-docker \
   -e NO_CORS=1 \
