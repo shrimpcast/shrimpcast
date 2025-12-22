@@ -61,6 +61,11 @@ server {
 
     server_name _;
 
+    location ~* ^/api/mediaserver/streams/(.+\.ts)$ {
+        alias /root/shrimpcast/streams/$1;
+        access_log off;
+    }
+
     location / {
         add_header Cache-Control $cache_control;
         add_header Pragma $pragma;

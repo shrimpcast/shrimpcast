@@ -102,6 +102,7 @@ using (var scope = app.Services.CreateScope())
     await processInitializer.InitStreamProcesses();
     BackgroundJob.Enqueue(() => processInitializer.DoBackgroundTasks());
     BackgroundJob.Enqueue(() => processInitializer.SendInstanceMetrics());
+    BackgroundJob.Enqueue(() => processInitializer.RemoveStaleViewers());
 }
 
 app.UseHttpsRedirection();

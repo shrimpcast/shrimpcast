@@ -61,6 +61,7 @@ namespace shrimpcast.Controllers
                     runningTime = TimeSpan.FromSeconds((int)(DateTime.UtcNow - p.Value.StartTime).TotalSeconds),
                     bitrate = p.Value.Bitrate,
                     cpuUsage = p.Value.ProcessorUsageComputed,
+                    viewers = p.Value.Viewers.Count,
                 }
             });
         }
@@ -89,16 +90,19 @@ namespace shrimpcast.Controllers
             return await _ffmpegRepository.Probe(probeDTO.CustomHeaders, probeDTO.URL);
         }
 
-        // Development only 
-        // Serves directly from wwwroot in production
         [HttpGet, Route("Streams/{Name}/{File}")]
         [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true, Duration = 0)]
         public IActionResult Streams(string Name, string File)
         {
-            if (!_ffmpegRepository.IsDevelopment()) throw new Exception();
+            var isPlaylist = File.EndsWith("m3u8");
+            if (!isPlaylist && !_ffmpegRepository.IsDevelopment()) return UnprocessableEntity();
+
+            if (!_processes.All.TryGetValue(Name, out var streamInfo)) return NotFound();
+            streamInfo.Viewers.AddOrUpdate(HttpContext.Connection.RemoteIpAddress!, DateTime.UtcNow, (k, oldValue) => DateTime.UtcNow);
+
             var directory = _ffmpegRepository.GetStreamDirectory(Name);
-            var contentType = File.EndsWith("m3u8") ? "application/vnd.apple.mpegurl" : "video/mp2t";
-            return PhysicalFile($"{directory}/{File.ToLower()}", contentType, true);
+            var contentType = isPlaylist ? "application/vnd.apple.mpegurl" : "video/mp2t";
+            return PhysicalFile(Path.Combine(directory, File.ToLower()), contentType);
         }
 
         [HttpPost, Route("AuthenticatePublish")]

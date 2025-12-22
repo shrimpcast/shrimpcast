@@ -27,6 +27,7 @@ import VideoJSPlayer from "../../../player/VideoJSPlayer";
 import HtmlIcon from "@mui/icons-material/Html";
 import GenericActionList from "../GenericActionList";
 import ScheduleIcon from "@mui/icons-material/Schedule";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 
 const BoxSx = {
     overflowY: "auto",
@@ -211,6 +212,12 @@ const StreamStats = (props) => {
                             <Typography sx={ProcessInfoSx} variant="caption">
                               {stat.processStatus.cpuUsage}
                             </Typography>
+                            <Tooltip title="Viewer count">
+                              <Typography sx={ProcessInfoSx} variant="caption">
+                                {stat.processStatus.viewers}{" "}
+                                <VisibilityIcon sx={{ fontSize: "14px", position: "relative", top: "2.5px" }} />
+                              </Typography>
+                            </Tooltip>
                           </>
                         )}
 

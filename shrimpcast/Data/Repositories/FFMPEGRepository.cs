@@ -18,9 +18,9 @@ namespace shrimpcast.Data.Repositories.Interfaces
         private readonly MediaServerLogs<SiteHub> _mediaServerLogs = mediaServerLogs;
         private readonly ConfigurationSingleton _configurationSingleton = configurationSingleton;
         private readonly RateLimits<SiteHub> _rateLimits = rateLimits;
-        private const string FFMPEGProcess = "ffmpeg"; 
-        private const string FFProbeProcess = "ffprobe"; 
-        private const string StreamsPath = "streams"; 
+        private const string FFMPEGProcess = "ffmpeg";
+        private const string FFProbeProcess = "ffprobe";
+        private const string StreamsPath = "streams";
 
         public async Task InitStreamProcesses()
         {
@@ -38,7 +38,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
                 var streamInfo = BuildStreamCommand(stream);
 
                 streamInfo.Process.OutputDataReceived += (_, e) => LogFfmpeg(stream.Name, e?.Data);
-                streamInfo.Process.ErrorDataReceived +=  (_, e) => LogFfmpeg(stream.Name, e?.Data);
+                streamInfo.Process.ErrorDataReceived += (_, e) => LogFfmpeg(stream.Name, e?.Data);
                 streamInfo.Process.Exited += (sender, e) => LogProcessCrash(stream.Name);
 
                 streamInfo.Process.Start();
@@ -82,7 +82,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             if (streamInfo.Logs.Count >= 200) streamInfo.Logs.TryDequeue(out _);
             streamInfo.Logs.Enqueue((DateTime.UtcNow, log.Trim()));
         }
-        
+
         private void LogProcessCrash(string streamName)
         {
             _processes.All.TryGetValue(streamName, out var streamInfo);
@@ -238,7 +238,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             BackgroundJob.Schedule(() => DoBackgroundTasks(), TimeSpan.FromSeconds(3));
         }
 
-        public Process[] GetActiveFFMPEGProcesses() => 
+        public Process[] GetActiveFFMPEGProcesses() =>
             Process.GetProcessesByName(FFMPEGProcess);
 
         public void KillAllProcesses()
@@ -247,14 +247,29 @@ namespace shrimpcast.Data.Repositories.Interfaces
             CleanStreamDirectory(CleanRoot: true);
         }
 
-        public bool IsDevelopment () =>
+        public bool IsDevelopment() =>
             Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
 
         public async Task SendInstanceMetrics()
         {
             _rateLimits.CleanupIfNeeded();
+            RemoveStaleViewers();
             if (_configurationSingleton.Configuration.LbSendInstanceMetrics) await ReportMetrics();
             BackgroundJob.Schedule(() => SendInstanceMetrics(), TimeSpan.FromSeconds(3));
+        }
+
+        public void RemoveStaleViewers()
+        {
+            var now = DateTime.UtcNow;
+            foreach (var process in _processes.All)
+            {
+                var toRemove = process.Value.Viewers.Where(v => (now - v.Value).TotalSeconds > 15);
+                foreach (var item in toRemove)
+                {
+                    process.Value.Viewers.TryRemove(item);
+                }
+            }
+            BackgroundJob.Schedule(() => RemoveStaleViewers(), TimeSpan.FromSeconds(15));
         }
 
         private async Task ReportMetrics()
@@ -268,7 +283,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
                 {
                     InstanceName = config.StreamTitle,
                     AuthToken = config.LbAuthToken,
-                    Metrics = new SystemStats().GetStats(),
+                    Metrics = new SystemStats().GetStats(_processes.All.Values.Sum(p => p.Viewers.Count)),
                 };
 
                 var handler = IsDevelopment() ? new HttpClientHandler
@@ -292,13 +307,10 @@ namespace shrimpcast.Data.Repositories.Interfaces
             }
         }
 
-        private string GetWebStreamPath(string stream) =>
-            IsDevelopment() ? $"/api/mediaserver/{StreamsPath}/{stream}/index.m3u8"
-                            : $"/{StreamsPath}/{stream}/index.m3u8";
+        private string GetWebStreamPath(string stream) => $"/api/mediaserver/{StreamsPath}/{stream}/index.m3u8";
 
         private string GetBaseDirectory() =>
-            IsDevelopment() ? Path.Combine(Directory.GetCurrentDirectory(), StreamsPath)
-                            : Path.Combine("wwwroot", StreamsPath);
+            Path.Combine(Directory.GetCurrentDirectory(), StreamsPath);
 
         public string GetStreamDirectory(string Name) =>
             Path.Combine(GetBaseDirectory(), Name.ToLower());
@@ -309,7 +321,8 @@ namespace shrimpcast.Data.Repositories.Interfaces
             {
                 var dir = CleanRoot ? GetBaseDirectory() : GetStreamDirectory(Name);
                 Directory.Delete(dir, true);
-            } catch (Exception) { }
+            }
+            catch (Exception) { }
         }
 
         private string BuildProbeCommand(string? Headers, string URL)
@@ -344,7 +357,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             var isPassthrough = stream.VideoEncodingPreset == "PASSTHROUGH";
             var hasWatermark = !isPassthrough && !string.IsNullOrEmpty(stream.Watermark);
             var hasSubtitles = !isPassthrough && !string.IsNullOrEmpty(stream.Subtitles);
-            
+
             if (hasWatermark)
             {
                 command += $" -i \"{stream.Watermark}\"";
@@ -387,7 +400,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             {
                 var bitrate = stream.VideoTranscodingBitrate;
                 command += $" -codec:v libx264 -preset:v {stream.VideoTranscodingPreset} -b:v {bitrate}k -maxrate:v {bitrate}k -bufsize:v {bitrate}k -r {stream.VideoTranscodingFramerate} -sc_threshold 0 -pix_fmt yuv420p -g 120 -keyint_min 120 -fps_mode auto -tune:v zerolatency";
-            } 
+            }
 
             if (stream.AudioStreamIndex != null)
             {
@@ -435,9 +448,9 @@ namespace shrimpcast.Data.Repositories.Interfaces
             {
                 return 0;
             }
-        } 
+        }
 
-        public bool HasExited (Process process)
+        public bool HasExited(Process process)
         {
             try
             {
