@@ -42,8 +42,9 @@ class LoadBalancingManager {
     }
 
     const origin = url[1].replace("{lbi}", pick);
-    console.log("Resolved origin: " + origin);
+
     if (cacheTimestampKey) window[cacheTimestampKey] = origin;
+    else console.log("Resolved origin: " + origin);
     return origin;
   }
 }
