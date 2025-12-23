@@ -65,7 +65,7 @@ namespace shrimpcast.Helpers
             return (usedGB * 100) / totalGB;
         }
 
-        public object GetStats()
+        public object GetStats(int totalViewers = -1)
         {
             (var cpuUsage, var noCores) = GetCpuUsage();
             var memoryUsage = GetMemoryUsagePercentage();
@@ -78,6 +78,7 @@ namespace shrimpcast.Helpers
                 memory = new { numeric = memoryUsage, _string = $"{memoryUsage:F2}%" },
                 network = new { numeric = networkUsage, _string = $"{networkUsage:F2}mbps" },
                 disk = new { numeric = diskUsage, _string = $"{diskUsage:F2}%" },
+                totalViewers,
             };
         }
     }

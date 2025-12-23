@@ -1,5 +1,6 @@
 using Hangfire;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using shrimpcast.Data;
 using shrimpcast.Data.Repositories;
@@ -7,6 +8,7 @@ using shrimpcast.Data.Repositories.Interfaces;
 using shrimpcast.Entities;
 using shrimpcast.Hubs;
 using shrimpcast.Hubs.Dictionaries;
+using shrimpcast.Hubs.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSystemd();
@@ -36,7 +38,9 @@ builder.Services.AddSignalR(hubOptions =>
 {
     hubOptions.EnableDetailedErrors = true;
     hubOptions.MaximumParallelInvocationsPerClient = 2;
+    hubOptions.AddFilter<RateLimiting>();
 });
+
 builder.Services.AddSingleton(typeof(Connections<>));
 builder.Services.AddSingleton(typeof(Pings<>));
 builder.Services.AddSingleton(typeof(BingoSuggestions<>));
@@ -44,6 +48,8 @@ builder.Services.AddSingleton(typeof(Processes<>));
 builder.Services.AddSingleton(typeof(MediaServerLogs<>));
 builder.Services.AddSingleton(typeof(LBMetrics<>));
 builder.Services.AddSingleton(typeof(ConfigurationSingleton));
+builder.Services.AddSingleton(typeof(RateLimits<>));
+
 builder.Services.AddScoped<IConfigurationRepository, ConfigurationRepository>();
 builder.Services.AddScoped<ISessionRepository, SessionRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
@@ -63,6 +69,7 @@ builder.Services.AddScoped<ISourceRepository, SourceRepository>();
 builder.Services.AddScoped<IMediaServerStreamRepository, MediaServerStreamRepository>();
 builder.Services.AddScoped<IFFMPEGRepository, FFMPEGRepository>();
 builder.Services.AddScoped<IRTMPEndpointRepository, RTMPEndpointRepository>();
+
 builder.Services.AddHangfire(configuration => configuration
                 .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
                 .UseSimpleAssemblyNameTypeSerializer()
@@ -95,6 +102,7 @@ using (var scope = app.Services.CreateScope())
     await processInitializer.InitStreamProcesses();
     BackgroundJob.Enqueue(() => processInitializer.DoBackgroundTasks());
     BackgroundJob.Enqueue(() => processInitializer.SendInstanceMetrics());
+    BackgroundJob.Enqueue(() => processInitializer.RemoveStaleViewers());
 }
 
 app.UseHttpsRedirection();

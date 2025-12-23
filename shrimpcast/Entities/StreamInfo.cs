@@ -1,6 +1,7 @@
 using shrimpcast.Entities.DB;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Net;
 
 namespace shrimpcast.Entities
 {
@@ -17,6 +18,7 @@ namespace shrimpcast.Entities
         public int Bitrate { get; set; }
         public (TimeSpan CpuTime, DateTime Time)? ProcessorUsage { get; set; }
         public string? ProcessorUsageComputed { get; set; }
+        public ConcurrentDictionary<IPAddress, DateTime> Viewers { get; set; } = [];
     }
 }
 

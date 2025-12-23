@@ -70,6 +70,14 @@ const ResourceUsageWidget = ({ stats, title, mt, status, instanceKey }) => {
               Network upload: {stats.network._string}
             </Typography>
           </Box>
+
+          {stats.totalViewers !== -1 ? (
+            <Box>
+              <Typography variant="body2" color="text.secondary">
+                {stats.totalViewers} unique IPs playing streams
+              </Typography>
+            </Box>
+          ) : null}
         </Stack>
       </Box>
     </Zoom>

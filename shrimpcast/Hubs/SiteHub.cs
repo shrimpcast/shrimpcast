@@ -969,6 +969,7 @@ namespace shrimpcast.Hubs
 
         private async Task TriggerSourceViewerCountChange(bool SelfInvoked)
         {
+            if (!Configuration.ShowViewerCountPerStream) return;
             var values = Configuration.Sources.Where(source => source.IsEnabled)
                                                .Select(source => new
                                                {

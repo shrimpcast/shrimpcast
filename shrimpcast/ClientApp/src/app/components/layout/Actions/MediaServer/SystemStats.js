@@ -10,6 +10,7 @@ const SystemStats = () => {
         memory: { numeric: 0, _string: "loading..." },
         network: { numeric: 0, _string: "loading..." },
         disk: { numeric: 0, _string: "loading..." },
+        totalViewers: -1,
       },
       instances: [],
     },

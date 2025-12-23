@@ -11,15 +11,16 @@ using System.Text.Json.Nodes;
 
 namespace shrimpcast.Data.Repositories.Interfaces
 {
-    public class FFMPEGRepository(IMediaServerStreamRepository mediaServerStreamRepository, Processes<SiteHub> processes, MediaServerLogs<SiteHub> mediaServerLogs, ConfigurationSingleton configurationSingleton) : IFFMPEGRepository
+    public class FFMPEGRepository(IMediaServerStreamRepository mediaServerStreamRepository, Processes<SiteHub> processes, MediaServerLogs<SiteHub> mediaServerLogs, ConfigurationSingleton configurationSingleton, RateLimits<SiteHub> rateLimits) : IFFMPEGRepository
     {
         private readonly IMediaServerStreamRepository _mediaServerStreamRepository = mediaServerStreamRepository;
         private readonly Processes<SiteHub> _processes = processes;
         private readonly MediaServerLogs<SiteHub> _mediaServerLogs = mediaServerLogs;
         private readonly ConfigurationSingleton _configurationSingleton = configurationSingleton;
-        private const string FFMPEGProcess = "ffmpeg"; 
-        private const string FFProbeProcess = "ffprobe"; 
-        private const string StreamsPath = "streams"; 
+        private readonly RateLimits<SiteHub> _rateLimits = rateLimits;
+        private const string FFMPEGProcess = "ffmpeg";
+        private const string FFProbeProcess = "ffprobe";
+        private const string StreamsPath = "streams";
 
         public async Task InitStreamProcesses()
         {
@@ -37,7 +38,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
                 var streamInfo = BuildStreamCommand(stream);
 
                 streamInfo.Process.OutputDataReceived += (_, e) => LogFfmpeg(stream.Name, e?.Data);
-                streamInfo.Process.ErrorDataReceived +=  (_, e) => LogFfmpeg(stream.Name, e?.Data);
+                streamInfo.Process.ErrorDataReceived += (_, e) => LogFfmpeg(stream.Name, e?.Data);
                 streamInfo.Process.Exited += (sender, e) => LogProcessCrash(stream.Name);
 
                 streamInfo.Process.Start();
@@ -81,7 +82,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             if (streamInfo.Logs.Count >= 200) streamInfo.Logs.TryDequeue(out _);
             streamInfo.Logs.Enqueue((DateTime.UtcNow, log.Trim()));
         }
-        
+
         private void LogProcessCrash(string streamName)
         {
             _processes.All.TryGetValue(streamName, out var streamInfo);
@@ -162,75 +163,82 @@ namespace shrimpcast.Data.Repositories.Interfaces
             var now = DateTime.UtcNow;
             var MaxStaleTimeInSeconds = 12;
 
-            foreach (var streamInfo in _processes.All.Values)
+            try
             {
-                var stream = streamInfo.Stream;
-
-                // ------ check if process is stale ------ //
-                var (AddedAt, Content) = streamInfo.Logs.LastOrDefault();
-                if (Content != null && ((now - AddedAt).TotalSeconds > MaxStaleTimeInSeconds))
+                foreach (var streamInfo in _processes.All.Values)
                 {
-                    await StopStreamProcess(stream.Name, "stale");
-                }
+                    var stream = streamInfo.Stream;
 
-                // ------ check if process has exited and should be restarted ------ //
-                if (HasExited(streamInfo.Process))
-                {
-                    BackgroundJob.Enqueue(() => ShouldRestartStream(stream.Name));
-                    continue;
-                }
-
-                // ------ calculate process CPU usage ------ //
-                try
-                {
-                    if (streamInfo.ProcessorUsage != null)
+                    // ------ check if process is stale ------ //
+                    var (AddedAt, Content) = streamInfo.Logs.LastOrDefault();
+                    if (Content != null && ((now - AddedAt).TotalSeconds > MaxStaleTimeInSeconds))
                     {
-                        var currentCpu = streamInfo.Process.TotalProcessorTime;
-                        var curTime = DateTime.UtcNow;
-
-                        double cpuUsedMs = (currentCpu - streamInfo.ProcessorUsage.Value.CpuTime).TotalMilliseconds;
-                        double totalMsPassed = (curTime - streamInfo.ProcessorUsage.Value.Time).TotalMilliseconds;
-
-                        double cpuUsageTotal = cpuUsedMs / (Environment.ProcessorCount * totalMsPassed) * 100;
-
-                        streamInfo.ProcessorUsageComputed = $"CPU: {cpuUsageTotal:F2}%";
+                        await StopStreamProcess(stream.Name, "stale");
                     }
-                    streamInfo.ProcessorUsage = (streamInfo.Process.TotalProcessorTime, DateTime.UtcNow);
-                }
-                catch (Exception)
-                {
-                    MediaServerLog($"Error logging CPU time for {stream.Name}");
-                }
 
-                // ------ calculate stream bitrate ------ //
-                streamInfo.Bitrate = GetStreamBitrate(stream.Name, streamInfo.Stream.SegmentLength);
-
-                // ------ generate thumbnail ------ //
-                var lastScreenshotTime = streamInfo.LastScreenshot;
-                if (lastScreenshotTime != null && (now - lastScreenshotTime).Value.TotalSeconds < stream.SnapshotInterval) continue;
-
-                string? screenshotCommand = BuildScreenshotCommand(stream.Name);
-                if (screenshotCommand == null) continue;
-
-                try
-                {
-                    var captured = await LaunchProcess(FFMPEGProcess, screenshotCommand, "Success", false);
-                    if (captured == "Success")
+                    // ------ check if process has exited and should be restarted ------ //
+                    if (HasExited(streamInfo.Process))
                     {
-                        streamInfo.LastScreenshot = now;
-                        MediaServerLog($"Captured snapshot for {stream.Name}");
+                        BackgroundJob.Enqueue(() => ShouldRestartStream(stream.Name));
+                        continue;
+                    }
+
+                    // ------ calculate process CPU usage ------ //
+                    try
+                    {
+                        if (streamInfo.ProcessorUsage != null)
+                        {
+                            var currentCpu = streamInfo.Process.TotalProcessorTime;
+                            var curTime = DateTime.UtcNow;
+
+                            double cpuUsedMs = (currentCpu - streamInfo.ProcessorUsage.Value.CpuTime).TotalMilliseconds;
+                            double totalMsPassed = (curTime - streamInfo.ProcessorUsage.Value.Time).TotalMilliseconds;
+
+                            double cpuUsageTotal = cpuUsedMs / (Environment.ProcessorCount * totalMsPassed) * 100;
+
+                            streamInfo.ProcessorUsageComputed = $"CPU: {cpuUsageTotal:F2}%";
+                        }
+                        streamInfo.ProcessorUsage = (streamInfo.Process.TotalProcessorTime, DateTime.UtcNow);
+                    }
+                    catch (Exception)
+                    {
+                        MediaServerLog($"Error logging CPU time for {stream.Name}");
+                    }
+
+                    // ------ calculate stream bitrate ------ //
+                    streamInfo.Bitrate = GetStreamBitrate(stream.Name, streamInfo.Stream.SegmentLength);
+
+                    // ------ generate thumbnail ------ //
+                    var lastScreenshotTime = streamInfo.LastScreenshot;
+                    if (lastScreenshotTime != null && (now - lastScreenshotTime).Value.TotalSeconds < stream.SnapshotInterval) continue;
+
+                    string? screenshotCommand = BuildScreenshotCommand(stream.Name);
+                    if (screenshotCommand == null) continue;
+
+                    try
+                    {
+                        var captured = await LaunchProcess(FFMPEGProcess, screenshotCommand, "Success", false);
+                        if (captured == "Success")
+                        {
+                            streamInfo.LastScreenshot = now;
+                            MediaServerLog($"Captured snapshot for {stream.Name}");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MediaServerLog($"Could not capture snapshot for {stream.Name}. {ex.Message}");
                     }
                 }
-                catch (Exception ex)
-                {
-                    MediaServerLog($"Could not capture snapshot for {stream.Name}. {ex.Message}");
-                }
+            }
+            catch (Exception ex)
+            {
+                MediaServerLog($"Could not execute background processes: {ex.Message}");
             }
 
             BackgroundJob.Schedule(() => DoBackgroundTasks(), TimeSpan.FromSeconds(3));
         }
 
-        public Process[] GetActiveFFMPEGProcesses() => 
+        public Process[] GetActiveFFMPEGProcesses() =>
             Process.GetProcessesByName(FFMPEGProcess);
 
         public void KillAllProcesses()
@@ -239,13 +247,29 @@ namespace shrimpcast.Data.Repositories.Interfaces
             CleanStreamDirectory(CleanRoot: true);
         }
 
-        public bool IsDevelopment () =>
+        public bool IsDevelopment() =>
             Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
 
         public async Task SendInstanceMetrics()
         {
+            _rateLimits.CleanupIfNeeded();
+            RemoveStaleViewers();
             if (_configurationSingleton.Configuration.LbSendInstanceMetrics) await ReportMetrics();
             BackgroundJob.Schedule(() => SendInstanceMetrics(), TimeSpan.FromSeconds(3));
+        }
+
+        public void RemoveStaleViewers()
+        {
+            var now = DateTime.UtcNow;
+            foreach (var process in _processes.All)
+            {
+                var toRemove = process.Value.Viewers.Where(v => (now - v.Value).TotalSeconds > 15);
+                foreach (var item in toRemove)
+                {
+                    process.Value.Viewers.TryRemove(item);
+                }
+            }
+            BackgroundJob.Schedule(() => RemoveStaleViewers(), TimeSpan.FromSeconds(15));
         }
 
         private async Task ReportMetrics()
@@ -258,8 +282,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
                 var metrics = new LBMetric
                 {
                     InstanceName = config.StreamTitle,
-                    AuthToken = config.LbAuthToken,
-                    Metrics = new SystemStats().GetStats(),
+                    Metrics = new SystemStats().GetStats(_processes.All.Values.Sum(p => p.Viewers.Count)),
                 };
 
                 var handler = IsDevelopment() ? new HttpClientHandler
@@ -273,6 +296,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
                 };
 
                 client.DefaultRequestHeaders.Add("User-Agent", $"shrimpcast/{Constants.BACKEND_VERSION}");
+                client.DefaultRequestHeaders.Add("Auth-Token", config.LbAuthToken);
                 var content = new StringContent(JsonConvert.SerializeObject(metrics), Encoding.UTF8, "application/json");
                 var response = await client.PostAsync(url, content);
                 response.EnsureSuccessStatusCode();
@@ -283,13 +307,10 @@ namespace shrimpcast.Data.Repositories.Interfaces
             }
         }
 
-        private string GetWebStreamPath(string stream) =>
-            IsDevelopment() ? $"/api/mediaserver/{StreamsPath}/{stream}/index.m3u8"
-                            : $"/{StreamsPath}/{stream}/index.m3u8";
+        private string GetWebStreamPath(string stream) => $"/api/mediaserver/{StreamsPath}/{stream}/index.m3u8";
 
         private string GetBaseDirectory() =>
-            IsDevelopment() ? Path.Combine(Directory.GetCurrentDirectory(), StreamsPath)
-                            : Path.Combine("wwwroot", StreamsPath);
+            Path.Combine(Directory.GetCurrentDirectory(), StreamsPath);
 
         public string GetStreamDirectory(string Name) =>
             Path.Combine(GetBaseDirectory(), Name.ToLower());
@@ -300,7 +321,8 @@ namespace shrimpcast.Data.Repositories.Interfaces
             {
                 var dir = CleanRoot ? GetBaseDirectory() : GetStreamDirectory(Name);
                 Directory.Delete(dir, true);
-            } catch (Exception) { }
+            }
+            catch (Exception) { }
         }
 
         private string BuildProbeCommand(string? Headers, string URL)
@@ -335,7 +357,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             var isPassthrough = stream.VideoEncodingPreset == "PASSTHROUGH";
             var hasWatermark = !isPassthrough && !string.IsNullOrEmpty(stream.Watermark);
             var hasSubtitles = !isPassthrough && !string.IsNullOrEmpty(stream.Subtitles);
-            
+
             if (hasWatermark)
             {
                 command += $" -i \"{stream.Watermark}\"";
@@ -378,7 +400,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             {
                 var bitrate = stream.VideoTranscodingBitrate;
                 command += $" -codec:v libx264 -preset:v {stream.VideoTranscodingPreset} -b:v {bitrate}k -maxrate:v {bitrate}k -bufsize:v {bitrate}k -r {stream.VideoTranscodingFramerate} -sc_threshold 0 -pix_fmt yuv420p -g 120 -keyint_min 120 -fps_mode auto -tune:v zerolatency";
-            } 
+            }
 
             if (stream.AudioStreamIndex != null)
             {
@@ -426,9 +448,9 @@ namespace shrimpcast.Data.Repositories.Interfaces
             {
                 return 0;
             }
-        } 
+        }
 
-        public bool HasExited (Process process)
+        public bool HasExited(Process process)
         {
             try
             {
