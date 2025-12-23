@@ -61,7 +61,7 @@ server {
 
     server_name _;
 
-    location ~* ^/api/mediaserver/streams/(.+\.ts)$ {
+    location ~* ^/api/mediaserver/streams/(.+\.(ts|jpg))$ {
         alias /root/shrimpcast/streams/$1;
         access_log off;
     }
