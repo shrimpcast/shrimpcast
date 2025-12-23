@@ -144,7 +144,8 @@ namespace shrimpcast.Controllers
         public IActionResult SendInstanceMetrics(LBMetric metric)
         {
             var config = _configurationSingleton.Configuration;
-            if (config.LbAuthToken != metric.AuthToken) return Unauthorized();
+            var authToken = HttpContext.Request.Headers["Auth-Token"].ToString();
+            if (config.LbAuthToken != authToken) return Unauthorized();
 
             metric.RemoteAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
             _lbMetrics.All.AddOrUpdate($"{metric.RemoteAddress}-{metric.InstanceName}", metric, (k, oldValue) => metric);

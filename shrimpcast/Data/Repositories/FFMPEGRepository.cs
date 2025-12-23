@@ -282,7 +282,6 @@ namespace shrimpcast.Data.Repositories.Interfaces
                 var metrics = new LBMetric
                 {
                     InstanceName = config.StreamTitle,
-                    AuthToken = config.LbAuthToken,
                     Metrics = new SystemStats().GetStats(_processes.All.Values.Sum(p => p.Viewers.Count)),
                 };
 
@@ -297,6 +296,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
                 };
 
                 client.DefaultRequestHeaders.Add("User-Agent", $"shrimpcast/{Constants.BACKEND_VERSION}");
+                client.DefaultRequestHeaders.Add("Auth-Token", config.LbAuthToken);
                 var content = new StringContent(JsonConvert.SerializeObject(metrics), Encoding.UTF8, "application/json");
                 var response = await client.PostAsync(url, content);
                 response.EnsureSuccessStatusCode();
