@@ -74,7 +74,7 @@ const ResourceUsageWidget = ({ stats, title, mt, status, instanceKey }) => {
           {stats.totalViewers !== -1 ? (
             <Box>
               <Typography variant="body2" color="text.secondary">
-                {stats.totalViewers} unique IPs playing streams
+                {stats.totalViewers} total viewers playing streams
               </Typography>
             </Box>
           ) : null}
