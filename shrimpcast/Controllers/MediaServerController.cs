@@ -162,8 +162,7 @@ namespace shrimpcast.Controllers
             if (config.LbAuthToken != authToken) return Unauthorized();
 
             metric.RemoteAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
-            metric.Host = "https://" + HttpContext.Request.Host.Value;
-            _lbMetrics.All.AddOrUpdate($"{metric.RemoteAddress}-{metric.InstanceName}", metric, (k, oldValue) => metric);
+            _lbMetrics.All.AddOrUpdate(metric.RemoteAddress!, metric, (k, oldValue) => metric);
             return Ok();
         }
 

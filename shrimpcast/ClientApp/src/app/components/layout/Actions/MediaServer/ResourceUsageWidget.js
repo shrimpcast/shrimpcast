@@ -1,7 +1,7 @@
 import { Box, Typography, LinearProgress, Stack, Divider, IconButton, Zoom } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import MediaServerManager from "../../../../managers/MediaServerManager";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import ReplayIcon from "@mui/icons-material/Replay";
 
 const HealthStatusSx = (status) => ({
@@ -10,7 +10,7 @@ const HealthStatusSx = (status) => ({
     borderRadius: 2,
   }),
   UpdateDiskSx = { height: "20px", position: "relative", bottom: "2px" },
-  defaultDisk = { numeric: -1, _string: "loading...", loading: false };
+  defaultDisk = { numeric: -1, _string: "-", loading: false };
 
 const ResourceUsageWidget = ({ stats, title, mt, status, instanceKey, host, token }) => {
   const [isRemoved, setIsRemoved] = useState(false),
@@ -29,10 +29,6 @@ const ResourceUsageWidget = ({ stats, title, mt, status, instanceKey, host, toke
       }
       setDiskUsage({ ...usage, loading: false });
     };
-
-  useEffect(() => {
-    getDiskUsage();
-  }, []);
 
   return isRemoved ? null : (
     <Zoom in={true}>

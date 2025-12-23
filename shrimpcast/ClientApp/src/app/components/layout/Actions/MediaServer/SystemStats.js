@@ -47,7 +47,7 @@ const SystemStats = () => {
               instanceKey={`${instance.stats.remoteAddress}-${instance.stats.instanceName}`}
               key={instance.stats.remoteAddress}
               status={instance.isHealthy}
-              host={instance.stats.host}
+              host={`https://${instance.stats.instanceName}`}
               token={stats.authToken}
               mt={true}
             />
