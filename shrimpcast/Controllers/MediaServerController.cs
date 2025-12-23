@@ -30,12 +30,26 @@ namespace shrimpcast.Controllers
             return new
             {
                 system = new SystemStats().GetStats(),
+                authToken = _configurationSingleton.Configuration.LbAuthToken,
                 instances = _lbMetrics.All.Values.Select(instance => new
                 {
                     stats = instance, 
                     isHealthy = (DateTime.UtcNow - instance.ReportTime).TotalSeconds < 9,
                 }),
             };
+        }
+
+        [HttpGet, Route("GetDiskUsage")]
+        public async Task<object> GetDiskUsage(string AuthToken)
+        {
+            if (_configurationSingleton.Configuration.LbAuthToken != AuthToken)
+            {
+                var session = await _sessionRepository.GetExistingByTokenAsync(AuthToken);
+                if (session == null || !session.IsAdmin) return Unauthorized();
+            }
+
+            var diskUsage = new SystemStats().GetDiskUsage();
+            return new { numeric = diskUsage, _string = $"{diskUsage:F2}%" };
         }
 
         [HttpGet, Route("GetStreamStats")]
@@ -148,6 +162,7 @@ namespace shrimpcast.Controllers
             if (config.LbAuthToken != authToken) return Unauthorized();
 
             metric.RemoteAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+            metric.Host = "https://" + HttpContext.Request.Host.Value;
             _lbMetrics.All.AddOrUpdate($"{metric.RemoteAddress}-{metric.InstanceName}", metric, (k, oldValue) => metric);
             return Ok();
         }
