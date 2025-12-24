@@ -8,8 +8,6 @@ namespace shrimpcast.Hubs.Dictionaries
     {
         public ConcurrentDictionary<string, RateLimit> All { get; } = new();
         public readonly int periodSeconds = 10; 
-        private DateTime _lastCleaned = DateTime.UtcNow;
-        private readonly int _cleanupIntervalMinutes = 5;
 
         public int MaxSocketReqsPer10secs(int maxConnectionsPerIp)
         {
@@ -20,9 +18,6 @@ namespace shrimpcast.Hubs.Dictionaries
         public void CleanupIfNeeded()
         {
             var now = DateTime.UtcNow;
-
-            if ((now - _lastCleaned).TotalMinutes < _cleanupIntervalMinutes) return;
-            _lastCleaned = now;
             var keysToRemove = new List<string>();
 
             foreach (var ratelimit in All)
