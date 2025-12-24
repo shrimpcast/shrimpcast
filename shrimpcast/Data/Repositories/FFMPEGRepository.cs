@@ -252,14 +252,14 @@ namespace shrimpcast.Data.Repositories.Interfaces
 
         public async Task SendInstanceMetrics()
         {
-            _rateLimits.CleanupIfNeeded();
-            RemoveStaleViewers();
             if (_configurationSingleton.Configuration.LbSendInstanceMetrics) await ReportMetrics();
             BackgroundJob.Schedule(() => SendInstanceMetrics(), TimeSpan.FromSeconds(3));
         }
 
         public void RemoveStaleViewers()
         {
+            _rateLimits.CleanupIfNeeded();
+
             var now = DateTime.UtcNow;
             foreach (var process in _processes.All)
             {
@@ -269,6 +269,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
                     process.Value.Viewers.TryRemove(item);
                 }
             }
+
             BackgroundJob.Schedule(() => RemoveStaleViewers(), TimeSpan.FromSeconds(15));
         }
 
