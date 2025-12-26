@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using shrimpcast.Data;
 using shrimpcast.Data.Repositories;
 using shrimpcast.Data.Repositories.Interfaces;
+using shrimpcast.Data.Services.Interfaces;
 using shrimpcast.Entities;
 using shrimpcast.Hubs;
 using shrimpcast.Hubs.Dictionaries;
@@ -69,6 +70,7 @@ builder.Services.AddScoped<ISourceRepository, SourceRepository>();
 builder.Services.AddScoped<IMediaServerStreamRepository, MediaServerStreamRepository>();
 builder.Services.AddScoped<IFFMPEGRepository, FFMPEGRepository>();
 builder.Services.AddScoped<IRTMPEndpointRepository, RTMPEndpointRepository>();
+builder.Services.AddScoped<IReportMetricsService, ReportMetricsService>();
 
 builder.Services.AddHangfire(configuration => configuration
                 .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
@@ -90,19 +92,21 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-// Initialize DB
+// Initialize 
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<APPContext>();
     DBInitialize.Initialize(context);
+
     var configuration = services.GetRequiredService<ConfigurationSingleton>();
     await configuration.Initialize();
-    var processInitializer = services.GetRequiredService<IFFMPEGRepository>();
-    await processInitializer.InitStreamProcesses();
-    BackgroundJob.Enqueue(() => processInitializer.DoBackgroundTasks());
-    BackgroundJob.Enqueue(() => processInitializer.SendInstanceMetrics());
-    BackgroundJob.Enqueue(() => processInitializer.RemoveStaleViewers());
+
+    var processes = services.GetRequiredService<IFFMPEGRepository>();
+    await processes.Initialize();
+
+    var metrics = services.GetRequiredService<IReportMetricsService>();
+    metrics.Initialize();
 }
 
 app.UseHttpsRedirection();

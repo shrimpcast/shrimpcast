@@ -88,6 +88,12 @@ const BoxSx = {
     position: "relative",
     top: "7.5px",
     color: "text.secondary",
+  },
+  ViewerCountIconSx = {
+    verticalAlign: "top",
+    fontSize: "13px",
+    position: "relative",
+    top: "2px",
   };
 
 const StreamStats = (props) => {
@@ -214,8 +220,7 @@ const StreamStats = (props) => {
                             </Typography>
                             <Tooltip title="Viewer count">
                               <Typography sx={ProcessInfoSx} variant="caption">
-                                {stat.processStatus.viewers}{" "}
-                                <VisibilityIcon sx={{ fontSize: "14px", position: "relative", top: "2.5px" }} />
+                                {stat.processStatus.viewers} <VisibilityIcon sx={ViewerCountIconSx} />
                               </Typography>
                             </Tooltip>
                           </>

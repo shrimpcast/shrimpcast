@@ -1,26 +1,35 @@
 using Hangfire;
-using Newtonsoft.Json;
 using shrimpcast.Entities;
 using shrimpcast.Entities.DB;
 using shrimpcast.Helpers;
 using shrimpcast.Hubs;
 using shrimpcast.Hubs.Dictionaries;
 using System.Diagnostics;
-using System.Text;
 using System.Text.Json.Nodes;
 
 namespace shrimpcast.Data.Repositories.Interfaces
 {
-    public class FFMPEGRepository(IMediaServerStreamRepository mediaServerStreamRepository, Processes<SiteHub> processes, MediaServerLogs<SiteHub> mediaServerLogs, ConfigurationSingleton configurationSingleton, RateLimits<SiteHub> rateLimits) : IFFMPEGRepository
+    public class FFMPEGRepository(IMediaServerStreamRepository mediaServerStreamRepository, Processes<SiteHub> processes, MediaServerLogs<SiteHub> mediaServerLogs, RateLimits<SiteHub> rateLimits) : IFFMPEGRepository
     {
         private readonly IMediaServerStreamRepository _mediaServerStreamRepository = mediaServerStreamRepository;
         private readonly Processes<SiteHub> _processes = processes;
         private readonly MediaServerLogs<SiteHub> _mediaServerLogs = mediaServerLogs;
-        private readonly ConfigurationSingleton _configurationSingleton = configurationSingleton;
         private readonly RateLimits<SiteHub> _rateLimits = rateLimits;
+        
         private const string FFMPEGProcess = "ffmpeg";
         private const string FFProbeProcess = "ffprobe";
         private const string StreamsPath = "streams";
+        private static bool Initialized = false;
+
+        #region General init
+        public async Task Initialize()
+        {
+            if (Initialized) throw new Exception("Initialize() can only be called once per runtime");
+            await InitStreamProcesses();
+            BackgroundJob.Enqueue(() => DoBackgroundTasks());
+            MediaServerLog("Initialized background tasks");
+            Initialized = true;
+        }
 
         public async Task InitStreamProcesses()
         {
@@ -28,6 +37,22 @@ namespace shrimpcast.Data.Repositories.Interfaces
             KillAllProcesses();
             var streams = await _mediaServerStreamRepository.GetEnabled();
             foreach (var stream in streams) InitStreamProcess(stream, "system");
+        }
+        #endregion
+
+        #region Process lifecycle
+        public async Task<JsonNode?> Probe(string? Headers, string URL)
+        {
+            var command = BuildProbeCommand(Headers, URL);
+            try
+            {
+                var probe = await ProcessLauncher.LaunchProcess(FFProbeProcess, command, ReturnOutput: true);
+                return JsonNode.Parse(probe);
+            }
+            catch (Exception)
+            {
+                return $"Error: Probe failed ({FFProbeProcess} {command})";
+            }
         }
 
         public void InitStreamProcess(MediaServerStream stream, string StartedBy)
@@ -74,8 +99,10 @@ namespace shrimpcast.Data.Repositories.Interfaces
             }
             return true;
         }
+        #endregion
 
-        public void LogFfmpeg(string stream, string? log)
+        #region Logs
+        private void LogFfmpeg(string stream, string? log)
         {
             _processes.All.TryGetValue(stream, out var streamInfo);
             if (streamInfo == null || log == null) return;
@@ -98,37 +125,14 @@ namespace shrimpcast.Data.Repositories.Interfaces
             MediaServerLog($"=============== END EXIT REPORT ===============");
         }
 
-        private void MediaServerLog(string logContent)
+        public void MediaServerLog(string logContent)
         {
             if (_mediaServerLogs.Logs.Count >= 300) _mediaServerLogs.Logs.TryDequeue(out _);
             _mediaServerLogs.Logs.Enqueue((DateTime.UtcNow, logContent));
         }
+        #endregion
 
-        public async Task<JsonNode?> Probe(string? Headers, string URL)
-        {
-            var command = BuildProbeCommand(Headers, URL);
-            try
-            {
-                var probe = await ProcessLauncher.LaunchProcess(FFProbeProcess, command, ReturnOutput: true);
-                return JsonNode.Parse(probe);
-            }
-            catch (Exception)
-            {
-                return $"Error: Probe failed ({FFProbeProcess} {command})";
-            }
-        }
-
-        public async Task ShouldRestartStream(string Name)
-        {
-            var updatedStream = await _mediaServerStreamRepository.GetByName(Name);
-            if (updatedStream != null && updatedStream.IsEnabled)
-            {
-                MediaServerLog($"Attempting to restart {Name}");
-                InitStreamProcess(updatedStream, "restart attempt.");
-            }
-            else _processes.All.TryRemove(Name, out _);
-        }
-
+        #region Background Tasks 
         public async Task DoBackgroundTasks()
         {
             var now = DateTime.UtcNow;
@@ -136,6 +140,8 @@ namespace shrimpcast.Data.Repositories.Interfaces
 
             try
             {
+                _rateLimits.CleanupIfNeeded();
+
                 foreach (var streamInfo in _processes.All.Values)
                 {
                     var stream = streamInfo.Stream;
@@ -179,6 +185,9 @@ namespace shrimpcast.Data.Repositories.Interfaces
                     // ------ calculate stream bitrate ------ //
                     streamInfo.Bitrate = GetStreamBitrate(stream.Name, streamInfo.Stream.SegmentLength);
 
+                    // ------ remove stale viewers ------ //
+                    RemoveStaleViewers(streamInfo, now);
+
                     // ------ generate thumbnail ------ //
                     var lastScreenshotTime = streamInfo.LastScreenshot;
                     if (lastScreenshotTime != null && (now - lastScreenshotTime).Value.TotalSeconds < stream.SnapshotInterval) continue;
@@ -209,6 +218,47 @@ namespace shrimpcast.Data.Repositories.Interfaces
             BackgroundJob.Schedule(() => DoBackgroundTasks(), TimeSpan.FromSeconds(3));
         }
 
+        public async Task ShouldRestartStream(string Name)
+        {
+            var updatedStream = await _mediaServerStreamRepository.GetByName(Name);
+            if (updatedStream != null && updatedStream.IsEnabled)
+            {
+                MediaServerLog($"Attempting to restart {Name}");
+                InitStreamProcess(updatedStream, "restart attempt.");
+            }
+            else _processes.All.TryRemove(Name, out _);
+        }
+
+        private int GetStreamBitrate(string StreamName, int segmentDuration)
+        {
+            try
+            {
+                var dir = GetStreamDirectory(StreamName);
+                var tsFiles = Directory.GetFiles(dir, "*.ts", SearchOption.TopDirectoryOnly);
+                if (tsFiles.Length == 0) return 0;
+                long totalBytes = tsFiles.Sum(f => new FileInfo(f).Length);
+                double totalSeconds = tsFiles.Length * segmentDuration;
+                double bitrateBps = totalBytes * 8 / totalSeconds;
+                double bitrateKbps = bitrateBps / 1000;
+                return (int)bitrateKbps;
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
+        }
+
+        private static void RemoveStaleViewers(StreamInfo process, DateTime now)
+        {
+            var toRemove = process.Viewers.Where(v => (now - v.Value).TotalSeconds > 15);
+            foreach (var item in toRemove)
+            {
+                process.Viewers.TryRemove(item);
+            }
+        }
+        #endregion
+
+        #region Process management
         public Process[] GetActiveFFMPEGProcesses() =>
             Process.GetProcessesByName(FFMPEGProcess);
 
@@ -218,69 +268,24 @@ namespace shrimpcast.Data.Repositories.Interfaces
             CleanStreamDirectory(CleanRoot: true);
         }
 
-        public async Task SendInstanceMetrics()
-        {
-            if (_configurationSingleton.Configuration.LbSendInstanceMetrics) await ReportMetrics();
-            BackgroundJob.Schedule(() => SendInstanceMetrics(), TimeSpan.FromSeconds(3));
-        }
-
-        public void RemoveStaleViewers()
-        {
-            _rateLimits.CleanupIfNeeded();
-
-            var now = DateTime.UtcNow;
-            foreach (var process in _processes.All)
-            {
-                var toRemove = process.Value.Viewers.Where(v => (now - v.Value).TotalSeconds > 15);
-                foreach (var item in toRemove)
-                {
-                    process.Value.Viewers.TryRemove(item);
-                }
-            }
-
-            BackgroundJob.Schedule(() => RemoveStaleViewers(), TimeSpan.FromSeconds(15));
-        }
-
-        private async Task ReportMetrics()
+        public bool HasExited(Process process)
         {
             try
             {
-                var config = _configurationSingleton.Configuration;
-                var url = $"https://{config.LbTargetDomain}/api/mediaserver/SendInstanceMetrics";
-                var systemStats = new SystemStats();
-                var totalViewerCount = _processes.All.Values.Sum(p => p.Viewers.Count);
-
-                var metrics = new LBMetric
-                {
-                    InstanceName = config.StreamTitle,
-                    Metrics = await systemStats.GetStats(totalViewerCount),
-                };
-
-                var handler = Constants.IsDevelopment() ? new HttpClientHandler
-                {
-                    ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
-                } : new HttpClientHandler();
-
-                using var client = new HttpClient(handler)
-                {
-                    Timeout = TimeSpan.FromSeconds(3)
-                };
-
-                client.DefaultRequestHeaders.Add("User-Agent", $"shrimpcast/{Constants.BACKEND_VERSION}");
-                client.DefaultRequestHeaders.Add("Auth-Token", config.LbAuthToken);
-                var content = new StringContent(JsonConvert.SerializeObject(metrics), Encoding.UTF8, "application/json");
-                var response = await client.PostAsync(url, content);
-                response.EnsureSuccessStatusCode();
+                return process.HasExited;
             }
-            catch (Exception ex)
+            // Linux
+            catch (Exception)
             {
-                MediaServerLog($"Could not report instance metrics: {ex.Message}");
+                return true;
             }
         }
+        #endregion
 
-        private string GetWebStreamPath(string stream) => $"/api/mediaserver/{StreamsPath}/{stream}/index.m3u8";
+        #region Directory
+        private static string GetWebStreamPath(string stream) => $"/api/mediaserver/{StreamsPath}/{stream}/index.m3u8";
 
-        private string GetBaseDirectory() =>
+        private static string GetBaseDirectory() =>
             Path.Combine(Directory.GetCurrentDirectory(), StreamsPath);
 
         public string GetStreamDirectory(string Name) =>
@@ -295,7 +300,9 @@ namespace shrimpcast.Data.Repositories.Interfaces
             }
             catch (Exception) { }
         }
+        #endregion
 
+        #region Command builders
         private string BuildProbeCommand(string? Headers, string URL)
         {
             var command = $"-v quiet -print_format json -show_format -show_streams";
@@ -401,37 +408,6 @@ namespace shrimpcast.Data.Repositories.Interfaces
                 StartTime = DateTime.UtcNow,
             };
         }
-
-        private int GetStreamBitrate(string StreamName, int segmentDuration)
-        {
-            try
-            {
-                var dir = GetStreamDirectory(StreamName);
-                var tsFiles = Directory.GetFiles(dir, "*.ts", SearchOption.TopDirectoryOnly);
-                if (tsFiles.Length == 0) return 0;
-                long totalBytes = tsFiles.Sum(f => new FileInfo(f).Length);
-                double totalSeconds = tsFiles.Length * segmentDuration;
-                double bitrateBps = totalBytes * 8 / totalSeconds;
-                double bitrateKbps = bitrateBps / 1000;
-                return (int)bitrateKbps;
-            }
-            catch (Exception)
-            {
-                return 0;
-            }
-        }
-
-        public bool HasExited(Process process)
-        {
-            try
-            {
-                return process.HasExited;
-            }
-            // Linux
-            catch (Exception)
-            {
-                return true;
-            }
-        }
+        #endregion
     }
 }

@@ -2,7 +2,6 @@ import { Box, Typography, LinearProgress, Stack, Divider, IconButton, Zoom } fro
 import CloseIcon from "@mui/icons-material/Close";
 import MediaServerManager from "../../../../managers/MediaServerManager";
 import { useState } from "react";
-import ReplayIcon from "@mui/icons-material/Replay";
 
 const HealthStatusSx = (status) => ({
   padding: 1,
@@ -35,7 +34,7 @@ const ResourceUsageWidget = ({ stats, title, mt, status, instanceKey }) => {
               CPU: {stats.cpu._string}
             </Typography>
             <LinearProgress
-              color={stats.cpu.numeric > 75 ? "error" : stats.cpu.numeric > 50 ? "warning" : "primary"}
+              color={stats.cpu.numeric > 75 ? "error" : stats.cpu.numeric > 50 ? "warning" : "success"}
               variant="determinate"
               value={stats.cpu.numeric}
               sx={{ height: 6, borderRadius: 3 }}
@@ -48,7 +47,7 @@ const ResourceUsageWidget = ({ stats, title, mt, status, instanceKey }) => {
             </Typography>
             <LinearProgress
               variant="determinate"
-              color={stats.memory.numeric > 75 ? "error" : stats.memory.numeric > 50 ? "warning" : "secondary"}
+              color={stats.memory.numeric > 75 ? "error" : stats.memory.numeric > 50 ? "warning" : "success"}
               value={stats.memory.numeric}
               sx={{ height: 6, borderRadius: 3 }}
             />
@@ -60,7 +59,7 @@ const ResourceUsageWidget = ({ stats, title, mt, status, instanceKey }) => {
             </Typography>
             <LinearProgress
               variant="determinate"
-              color={stats.disk.numeric > 75 ? "error" : stats.disk.numeric > 50 ? "warning" : "info"}
+              color={stats.disk.numeric > 75 ? "error" : stats.disk.numeric > 50 ? "warning" : "success"}
               value={stats.disk.numeric}
               sx={{ height: 6, borderRadius: 3 }}
             />
