@@ -11,14 +11,14 @@ namespace shrimpcast.Helpers
             _hardwareInfo = new HardwareInfo();
         }
 
-        public (float, uint) GetCpuUsage()
+        private (float, uint) GetCpuUsage()
         {
             _hardwareInfo.RefreshCPUList();
             var cpu = _hardwareInfo.CpuList[0];
-            return (cpu.PercentProcessorTime, cpu.NumberOfCores);
+            return (cpu.PercentProcessorTime, cpu.NumberOfLogicalProcessors);
         }
 
-        public float GetMemoryUsagePercentage()
+        private float GetMemoryUsagePercentage()
         {
             _hardwareInfo.RefreshMemoryStatus();
             var memory = _hardwareInfo.MemoryStatus;
@@ -26,7 +26,7 @@ namespace shrimpcast.Helpers
             return (float)(used * 100.0 / memory.TotalPhysical);
         }
 
-        public double GetNetworkUsage()
+        private double GetNetworkUsage()
         {
             _hardwareInfo.RefreshNetworkAdapterList();
             double totalUploadMbps = 0;
@@ -41,41 +41,26 @@ namespace shrimpcast.Helpers
             return totalUploadMbps;
         }
 
-        public double GetDiskUsage()
+        private async Task<int> GetDiskUsage()
         {
-            _hardwareInfo.RefreshDriveList();
-            var drive = _hardwareInfo.DriveList.First(d => d.PartitionList.Count > 0);
-            double total = 0;
-            double free = 0;
-
-            foreach (var partition in drive.PartitionList)
-            {
-                if (partition.VolumeList.Count == 0) continue;
-
-                foreach (var volume in partition.VolumeList)
-                {
-                    total += volume.Size;
-                    free += volume.FreeSpace;
-                }
-            }
-
-            double totalGB = total / (1024.0 * 1024.0 * 1024.0);
-            double freeGB = free / (1024.0 * 1024.0 * 1024.0);
-            double usedGB = totalGB - freeGB;
-            return (usedGB * 100) / totalGB;
+            var usage = await ProcessLauncher.LaunchProcess("df", "--output=pcent /", "", true);
+            usage = usage.Split("\n")[1].Replace("%", "");
+            return int.Parse(usage);
         }
 
-        public object GetStats(int totalViewers = -1)
+        public async Task<object> GetStats(int totalViewers = -1)
         {
             (var cpuUsage, var noCores) = GetCpuUsage();
             var memoryUsage = GetMemoryUsagePercentage();
             var networkUsage = GetNetworkUsage();
+            var diskUsage = await GetDiskUsage();
 
             return new
             {
                 cpu = new { numeric = cpuUsage, _string = $"{cpuUsage:F2}% - {noCores} core{(noCores > 1 ? "s" : null)}" },
                 memory = new { numeric = memoryUsage, _string = $"{memoryUsage:F2}%" },
                 network = new { numeric = networkUsage, _string = $"{networkUsage:F2}mbps" },
+                disk = new { numeric = diskUsage, _string = $"{diskUsage}%" },
                 totalViewers,
             };
         }

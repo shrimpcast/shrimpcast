@@ -10,6 +10,7 @@ const SystemStats = () => {
         cpu: { numeric: 0, _string: "loading..." },
         memory: { numeric: 0, _string: "loading..." },
         network: { numeric: 0, _string: "loading..." },
+        disk: { numeric: 0, _string: "loading..." },
         totalViewers: -1,
       },
       instances: [],
@@ -32,12 +33,7 @@ const SystemStats = () => {
 
   return (
     <Box mt={1} p={1.5} borderRadius={2} bgcolor="background.paper" boxShadow={1} width="100%">
-      <ResourceUsageWidget
-        stats={stats.system}
-        title="Resource usage - system"
-        host={window.location.origin}
-        token={LocalStorageManager.getToken()}
-      />
+      <ResourceUsageWidget stats={stats.system} title="Resource usage - system" />
       {stats.instances.length ? (
         <>
           {stats.instances.map((instance) => (
@@ -47,8 +43,6 @@ const SystemStats = () => {
               instanceKey={`${instance.stats.remoteAddress}-${instance.stats.instanceName}`}
               key={instance.stats.remoteAddress}
               status={instance.isHealthy}
-              host={`https://${instance.stats.instanceName}`}
-              token={stats.authToken}
               mt={true}
             />
           ))}

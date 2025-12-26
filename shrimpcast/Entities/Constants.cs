@@ -43,6 +43,9 @@ namespace shrimpcast.Entities
         public const string RATE_LIMITED = "Too many invocations";
 
         public readonly static string[] SOURCE_RESERVERD_WORDS = ["chat", "live", "api", "embed"];
+        
+        public static bool IsDevelopment() =>
+            Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
 
         public enum AddTableItem
         {

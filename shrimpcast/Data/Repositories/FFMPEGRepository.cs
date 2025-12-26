@@ -109,7 +109,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             var command = BuildProbeCommand(Headers, URL);
             try
             {
-                var probe = await LaunchProcess(FFProbeProcess, command, ReturnOutput: true);
+                var probe = await ProcessLauncher.LaunchProcess(FFProbeProcess, command, ReturnOutput: true);
                 return JsonNode.Parse(probe);
             }
             catch (Exception)
@@ -117,35 +117,6 @@ namespace shrimpcast.Data.Repositories.Interfaces
                 return $"Error: Probe failed ({FFProbeProcess} {command})";
             }
         }
-
-        public async Task<string> LaunchProcess(string FileName, string Arguments, string SuccessMessage = "", bool ReturnOutput = true)
-        {
-            using var process = MakeProcess(FileName, Arguments, false);
-            process.Start();
-
-            var outputTask = process.StandardOutput.ReadToEndAsync();
-            var errorTask = process.StandardError.ReadToEndAsync();
-
-            await process.WaitForExitAsync();
-
-            if (process.ExitCode == 0) return ReturnOutput ? await outputTask : SuccessMessage;
-            else return $"Error output: {await errorTask}";
-        }
-
-        public static Process MakeProcess(string FileName, string Arguments, bool RaisingEvents) =>
-            new()
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    FileName = FileName,
-                    Arguments = Arguments,
-                },
-                EnableRaisingEvents = RaisingEvents
-            };
 
         public async Task ShouldRestartStream(string Name)
         {
@@ -217,7 +188,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
 
                     try
                     {
-                        var captured = await LaunchProcess(FFMPEGProcess, screenshotCommand, "Success", false);
+                        var captured = await ProcessLauncher.LaunchProcess(FFMPEGProcess, screenshotCommand, "Success", false);
                         if (captured == "Success")
                         {
                             streamInfo.LastScreenshot = now;
@@ -246,9 +217,6 @@ namespace shrimpcast.Data.Repositories.Interfaces
             foreach (var process in GetActiveFFMPEGProcesses()) process.Kill(true);
             CleanStreamDirectory(CleanRoot: true);
         }
-
-        public bool IsDevelopment() =>
-            Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
 
         public async Task SendInstanceMetrics()
         {
@@ -279,14 +247,16 @@ namespace shrimpcast.Data.Repositories.Interfaces
             {
                 var config = _configurationSingleton.Configuration;
                 var url = $"https://{config.LbTargetDomain}/api/mediaserver/SendInstanceMetrics";
+                var systemStats = new SystemStats();
+                var totalViewerCount = _processes.All.Values.Sum(p => p.Viewers.Count);
 
                 var metrics = new LBMetric
                 {
                     InstanceName = config.StreamTitle,
-                    Metrics = new SystemStats().GetStats(_processes.All.Values.Sum(p => p.Viewers.Count)),
+                    Metrics = await systemStats.GetStats(totalViewerCount),
                 };
 
-                var handler = IsDevelopment() ? new HttpClientHandler
+                var handler = Constants.IsDevelopment() ? new HttpClientHandler
                 {
                     ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
                 } : new HttpClientHandler();
@@ -427,7 +397,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
                 StreamPath = GetWebStreamPath(stream.Name.ToLower()),
                 FullStreamPath = Path.Combine(dirInfo.FullName, "index.m3u8"),
                 Stream = stream,
-                Process = MakeProcess(FFMPEGProcess, command, true),
+                Process = ProcessLauncher.MakeProcess(FFMPEGProcess, command, true),
                 StartTime = DateTime.UtcNow,
             };
         }

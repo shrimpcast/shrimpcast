@@ -27,29 +27,16 @@ namespace shrimpcast.Controllers
             var session = await _sessionRepository.GetExistingByTokenAsync(sessionToken);
             if (session == null || !session.IsAdmin) throw new Exception("Permission denied.");
 
+            var statsInfo = new SystemStats();
             return new
             {
-                system = new SystemStats().GetStats(),
-                authToken = _configurationSingleton.Configuration.LbAuthToken,
+                system = await statsInfo.GetStats(),
                 instances = _lbMetrics.All.Values.Select(instance => new
                 {
                     stats = instance, 
                     isHealthy = (DateTime.UtcNow - instance.ReportTime).TotalSeconds < 9,
                 }),
             };
-        }
-
-        [HttpGet, Route("GetDiskUsage")]
-        public async Task<object> GetDiskUsage(string AuthToken)
-        {
-            if (_configurationSingleton.Configuration.LbAuthToken != AuthToken)
-            {
-                var session = await _sessionRepository.GetExistingByTokenAsync(AuthToken);
-                if (session == null || !session.IsAdmin) return Unauthorized();
-            }
-
-            var diskUsage = new SystemStats().GetDiskUsage();
-            return new { numeric = diskUsage, _string = $"{diskUsage:F2}%" };
         }
 
         [HttpGet, Route("GetStreamStats")]
@@ -109,7 +96,7 @@ namespace shrimpcast.Controllers
         public IActionResult Streams(string Name, string File)
         {
             var isPlaylist = File.EndsWith("m3u8");
-            if (!isPlaylist && !_ffmpegRepository.IsDevelopment()) return UnprocessableEntity();
+            if (!isPlaylist && !Constants.IsDevelopment()) return UnprocessableEntity();
 
             if (!_processes.All.TryGetValue(Name, out var streamInfo)) return NotFound();
             streamInfo.Viewers.AddOrUpdate(HttpContext.Connection.RemoteIpAddress!, DateTime.UtcNow, (k, oldValue) => DateTime.UtcNow);

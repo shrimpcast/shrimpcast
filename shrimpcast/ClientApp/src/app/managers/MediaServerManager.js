@@ -11,14 +11,6 @@ class MediaServerManager {
       .catch((ex) => console.log(ex));
     return response?.data;
   }
-  static async GetDiskUsage(host, token) {
-    const response = await axios
-      .get(`${host}/api/mediaserver/GetDiskUsage?AuthToken=${token}`, {
-        timeout: 10000,
-      })
-      .catch((ex) => console.log(ex));
-    return response?.data;
-  }
   static async GetStreamStats(abortControllerSignal) {
     const response = await axios
       .get(`/api/mediaserver/GetStreamStats?sessionToken=${LocalStorageManager.getToken()}`, {
