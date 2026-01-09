@@ -88,7 +88,7 @@ namespace shrimpcast.Controllers
         {
             var session = await _sessionRepository.GetExistingByTokenAsync(probeDTO.SessionToken);
             if (session == null || !session.IsAdmin) throw new Exception("Permission denied.");
-            return await _ffmpegRepository.Probe(probeDTO.CustomHeaders, probeDTO.URL);
+            return await _ffmpegRepository.Probe(probeDTO.CustomHeaders, probeDTO.URL, probeDTO.ForceHLS);
         }
 
         [HttpGet, Route("Streams/{Name}/{File}")]

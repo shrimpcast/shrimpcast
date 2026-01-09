@@ -1,4 +1,15 @@
-import { Alert, Box, Button, CircularProgress, Divider, Snackbar, Typography, Paper } from "@mui/material";
+import {
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  Divider,
+  Snackbar,
+  Typography,
+  Paper,
+  FormControlLabel,
+  Checkbox,
+} from "@mui/material";
 import { useState } from "react";
 import MediaServerManager from "../../../../managers/MediaServerManager";
 import GenericAddObjectTable from "../GenericAddObjectTable";
@@ -26,6 +37,7 @@ const ProbeObject = ({ setStreams, url, title, type }) => {
   const [loading, setLoading] = useState(false),
     [showToast, setShowToast] = useState(false),
     [toastMessage, setToastMessage] = useState(""),
+    [forceHls, setForceHls] = useState(false),
     [customHeaders, setCustomHeaders] = useState([]);
 
   const displayToast = (message) => {
@@ -35,7 +47,7 @@ const ProbeObject = ({ setStreams, url, title, type }) => {
     closeToast = () => setShowToast(false),
     executeProbe = async () => {
       setLoading(true);
-      const response = await MediaServerManager.Probe(url, customHeaders);
+      const response = await MediaServerManager.Probe(url, customHeaders, forceHls);
       setLoading(false);
       if (!response || typeof response === "string") {
         displayToast(response || "Error: network error. Try again.");
@@ -51,6 +63,7 @@ const ProbeObject = ({ setStreams, url, title, type }) => {
           index: stream.index,
         }));
         streams.customHeaders = `${customHeaders.map((h) => `${h.header}:${h.value}`).join("\r\n")}\r\n`;
+        streams.videoStreamProbeForceHLS = forceHls;
       }
 
       if (type === "all" || type === "audio") {
@@ -64,6 +77,7 @@ const ProbeObject = ({ setStreams, url, title, type }) => {
           index: stream.index,
         }));
         streams.customAudioHeaders = `${customHeaders.map((h) => `${h.header}:${h.value}`).join("\r\n")}\r\n`;
+        streams.audioCustomSourceProbeForceHLS = forceHls;
       }
 
       setStreams(streams);
@@ -104,6 +118,12 @@ const ProbeObject = ({ setStreams, url, title, type }) => {
         </Typography>
         <Divider sx={{ mt: 1 }} />
       </Box>
+
+      <FormControlLabel
+        onChange={(e) => setForceHls(e.target.checked)}
+        control={<Checkbox checked={forceHls} />}
+        label={"Treat input as HLS"}
+      />
 
       <Paper
         variant="outlined"

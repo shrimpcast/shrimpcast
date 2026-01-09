@@ -32,6 +32,8 @@
 
         public string? VideoTranscodingPreset { get; set; }
 
+        public bool VideoStreamProbeForceHLS { get; set; }
+
         public int? AudioStreamIndex { get; set; }
 
         public string? AudioEncodingPreset { get; set; }
@@ -43,6 +45,8 @@
         public bool AudioTranscodingLoudnessNormalization { get; set; }
 
         public string? AudioCustomSource { get; set; }
+
+        public bool AudioCustomSourceProbeForceHLS { get; set; }
 
         public string? Watermark { get; set; }
 

@@ -9,5 +9,7 @@ namespace shrimpcast.Entities.DTO
         public required string URL { get; set; }
 
         public string? CustomHeaders { get; set; }
+
+        public bool ForceHLS { get; set; }
     }
 }

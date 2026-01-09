@@ -41,9 +41,9 @@ namespace shrimpcast.Data.Repositories.Interfaces
         #endregion
 
         #region Process lifecycle
-        public async Task<JsonNode?> Probe(string? Headers, string URL)
+        public async Task<JsonNode?> Probe(string? Headers, string URL, bool ForceHLS)
         {
-            var command = BuildProbeCommand(Headers, URL);
+            var command = BuildProbeCommand(Headers, URL, ForceHLS);
             try
             {
                 var probe = await ProcessLauncher.LaunchProcess(FFProbeProcess, command, ReturnOutput: true);
@@ -303,11 +303,12 @@ namespace shrimpcast.Data.Repositories.Interfaces
         #endregion
 
         #region Command builders
-        private string BuildProbeCommand(string? Headers, string URL)
+        private string BuildProbeCommand(string? Headers, string URL, bool ForceHLS)
         {
             var command = $"-v quiet -print_format json -show_format -show_streams";
 
             if (!string.IsNullOrEmpty(Headers)) command += $" -headers \"{Headers}\"";
+            if (ForceHLS) command += " -f hls";
             command += $" -i {URL}";
 
             return command;
@@ -329,6 +330,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             var shouldSeek = stream.StartAt != null && stream.StartAt.Value.ToString() != "00:00:00" ? $"-ss {stream.StartAt.Value}" : string.Empty;
 
             if (stream.CustomHeaders != "\r\n") command += $" -headers \"{stream.CustomHeaders}\"";
+            if (stream.VideoStreamProbeForceHLS) command += $" -f hls";
 
             command += $" -re -rw_timeout 5000000 {shouldSeek} -i \"{stream.IngressUri}\"{(!string.IsNullOrEmpty(shouldSeek) ? " -copyts" : "")}";
 
@@ -345,6 +347,8 @@ namespace shrimpcast.Data.Repositories.Interfaces
             if (audioIndexSource > 0)
             {
                 if (stream.CustomAudioHeaders != "\r\n") command += $" -headers \"{stream.CustomAudioHeaders}\"";
+                if (stream.AudioCustomSourceProbeForceHLS) command += $" -f hls";
+
                 command += $" -fflags +genpts -thread_queue_size 512 -re -rw_timeout 5000000 -i \"{stream.AudioCustomSource}\"";
             }
 
