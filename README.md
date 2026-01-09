@@ -22,6 +22,7 @@ Shrimpcast is a highly customizable, flexible, battle-tested, high performance, 
 - [Debug](#debug)
 - [Usage](#usage)
   - [Getting started](#getting-started)
+  - [How to set up your first stream](#how-to-set-up-your-first-stream)
   - [Configuration](#configuration)
     - [Site](#site)
     - [Chat](#chat)
@@ -34,7 +35,8 @@ Shrimpcast is a highly customizable, flexible, battle-tested, high performance, 
     - [Vapid](#vapid)
     - [Golden pass](#golden-pass)
     - [Turnstile](#turnstile)
-  - [Active Users](#active-users)
+    - [Load balancing](#load-balancing)
+  - [Media server](#media-server)
   - [Bans](#bans)
   - [Mutes](#mutes)
   - [Auto-mod filters](#auto-mod-filters)
@@ -50,7 +52,7 @@ Shrimpcast is a highly customizable, flexible, battle-tested, high performance, 
 - [Update](#update)
 - [License](#license)
 
-_Last revision: **2.0.0** (not fully complete)_
+_Last revision: **2.0.6**_
 
 ## Features
 
@@ -89,7 +91,7 @@ To install Shrimpcast, follow these steps:
 > [!IMPORTANT]
 > SSL will be automatically configured. You **MUST** have properly configured DNS records before running the script.
 
-2. (Optional) If you're using Cloudflare as a reverse proxy, run:
+2. (Optional) If you're using Cloudflare as a reverse proxy, run: <br>
 
    ```bash
    wget -O cloudflare_setup.sh https://github.com/shrimpcast/shrimpcast/releases/latest/download/cloudflare_setup.sh
@@ -98,97 +100,45 @@ To install Shrimpcast, follow these steps:
    ```
 
    This script will restrict traffic outside Cloudflare and apply a few required configuration tweaks.
-   > If you are using cloudflare, remember to set SSL to strict mode. Otherwise, cloudflare won't be able to connect to your origin.
+   
+> [!IMPORTANT]
+> If you are using cloudflare, remember to set SSL to strict mode. Otherwise, cloudflare won't be able to connect to your origin.
 
 
-And that's it! Shrimpcast should now be up and running. You can now try to access your domain URL. Make sure to save the admin session that was generated during the installation, which you can find at `cat /root/shrimpcast/setup/GeneratedAdminToken.txt; echo`, or at the end of step 1.
+And that's it! Shrimpcast should now be up and running. You can now try to access your domain URL. Make sure to save the admin session that was generated during the installation, which you can find by running 
+```bash 
+cat /root/shrimpcast/setup/GeneratedAdminToken.txt; echo
+```
+Or at the end of step 1.
 
 ## Troubleshooting
 
-- .NET SDK installed but not found: <br>
-  run `sudo snap remove dotnet-sdk && sudo apt remove -y 'dotnet*' 'aspnetcore*' 'netstandard*' && sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list /etc/apt/sources.list.d/microsoft-prod.list.save && sudo apt update && sudo apt install -y dotnet8`
+- .NET SDK installed but not found: run <br>
+  ```bash
+  sudo snap remove dotnet-sdk &&
+  sudo apt remove -y 'dotnet*' 'aspnetcore*' 'netstandard*' &&
+  sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list /etc/apt/sources.list.d/microsoft-prod.list.save &&
+  sudo apt update &&
+  sudo apt install -y dotnet8
+  ```
   then add the `--skipdotnet` flag to the install script and re-run it: `./install.sh [...] --skipdotnet`
 - Certbot fails: <br>
   Ensure that port 80 on your VPS is publicly accessible and that your domain’s DNS is correctly configured. Then run:
-  `sudo apt-get remove --purge nginx nginx-common`  <br>
-  `sudo rm -rf /etc/nginx`  <br>
-  `sudo apt-get autoremove --purge`  <br>
+  ```bash
+  sudo apt-get remove --purge nginx nginx-common &&
+  sudo rm -rf /etc/nginx &&  
+  sudo apt-get autoremove --purge
+  ``` 
   then re-run the install script.
 
 ## Throughput estimation
-This guide will help you accurately measure your server's actual upload speed using parallel connections, simulating real-world network usage.
-
-### 1. Set up real-time monitoring
-
-Open your first SSH session and run:
-
+Accurately measure your server's actual upload speed:
 ```bash
-apt update && apt install nload
-nload
+sudo apt-get install curl
+curl -s https://packagecloud.io/install/repositories/ookla/speedtest-cli/script.deb.sh | sudo bash
+sudo apt-get install speedtest
+speedtest
 ```
-
-### 2. Run the speed test
-
-Open a second SSH session and run:
-
-- Option 1 ([LibreSpeed CLI tool](https://github.com/librespeed/speedtest-cli))
-```bash
-# Download and extract librespeed-cli
-wget https://github.com/librespeed/speedtest-cli/releases/download/v1.0.11/librespeed-cli_1.0.11_linux_386.tar.gz
-tar -xzf librespeed-cli_1.0.11_linux_386.tar.gz
-
-# Launch multiple parallel upload tests
-for i in {1..8}; do 
-  ./librespeed-cli --no-download --no-icmp --duration 30 &
-done
-wait
-```
-
-- Option 2 (Speedtest CLI)
-```bash
-# Download and install speedtest-cli
-apt update && apt install speedtest-cli
-
-# Launch multiple parallel upload tests
-for i in {1..8}; do 
-  speedtest-cli --no-download --secure &
-done
-wait
-```
-
-This will:
-- Provide a realistic measurement of your server's maximum upload capacity
-
-## Example output
-
-When running properly, you'll see real-time throughput statistics in your first terminal window while the tests are executing in your second window.
-
-![Upload speed test results example](https://github.com/user-attachments/assets/3f035573-3408-4cfb-857a-03637f6bf2e6)
-
-
-## Why this works
-
-By running multiple parallel upload tests, you simulate real-world conditions where multiple connections share your server's bandwidth, giving you a more accurate picture of your server's true upload capabilities than a single-threaded test.
-
-## Media server
-
-<img width="1200" height="855" alt="image" src="https://github.com/user-attachments/assets/2e2b1f0e-76dd-4832-834c-b890f1e5f280" />
-
-### RTMP Endpoints
-Defines RTMP ingress and egress points. For example, you can configure an RTMP endpoint to receive a stream directly from **OBS**.
-
-### Outputs
-Generates high-performance **HLS** streams. Accepts a wide range of input formats including HLS sources, RTMP/SRT egress endpoints, **VOD**, and **FLV** — essentially any video-compatible source.  
-If you intend to stream from an RTMP input, use the corresponding **RTMP egress URL**.
-
-### Probe
-Configures input settings. Supports **H.264/AAC** transcoding and custom audio sources.  
-While transcoding is CPU-intensive, it ensures your input is properly encoded for playback across all devices.  
-This is particularly useful for **VOD** inputs or sources that may contain corrupted or incompatible media.
-
-  
-  <img width="600" height="622" alt="image" src="https://github.com/user-attachments/assets/71f379f1-e0d7-4327-b44a-c761cb3fb176" />
-
 
 ## Debug
 
@@ -217,7 +167,7 @@ And that's it! You're now authenticated as an admin.
 
 Once you're authenticated as an admin, you will have the following options:
 
-![image](https://github.com/user-attachments/assets/06ab5f4b-05e0-4221-9630-b8ef69e05b1a)
+<img width="408" height="35" alt="image" src="https://github.com/user-attachments/assets/73b38ffb-3a5f-4b1a-8518-a6207c18f600" /><br>
   - [Configuration](#configuration)
     - [Site](#site)
     - [Chat](#chat)
@@ -230,7 +180,8 @@ Once you're authenticated as an admin, you will have the following options:
     - [Vapid](#vapid)
     - [Golden pass](#golden-pass)
     - [Turnstile](#turnstile)
-  - [Active Users](#active-users)
+    - [Load balancing](#load-balancing)
+  - [Media server](#media-server)
   - [Bans](#bans)
   - [Mutes](#mutes)
   - [Auto-mod filters](#auto-mod-filters)
@@ -254,9 +205,10 @@ Once you're authenticated as an admin, you will have the following options:
 - **Stream description**: Site/stream description. Use \n for line breaks.
 
 #### Chat
-<img width="1119" height="797" alt="image" src="https://github.com/user-attachments/assets/25a9b748-45e1-442a-89d4-77a20698f9ba" />
+<img width="1273" height="849" alt="image" src="https://github.com/user-attachments/assets/ff7c4837-10f5-4380-a4b2-6055c4fe86bb" />
 
 - **Enable chat:** Determines whether the chat feature is enabled or disabled for users.
+- **Strip non ASCII characters:** Determines whether characters beyond the ASCII range, including Latin-A, may be used in chat messages.
 - **Allow verified users only:** Specifies whether chat is restricted to verified users only.
 - **Max visible messages:** Sets the maximum number of messages visible in the chat interface.
 - **Message age limit (mins):** Specifies the age threshold of messages to display in the chat.
@@ -268,20 +220,21 @@ Once you're authenticated as an admin, you will have the following options:
 - **Default name for new users:** Sets the default username assigned to new users.
 
 #### Stream
-<img width="1528" height="733" alt="image" src="https://github.com/user-attachments/assets/302bf87c-b114-4633-b7bd-ee9a9f41d46c" />
+<img width="1600" height="666" alt="image" src="https://github.com/user-attachments/assets/d61ce80f-ce8b-4aa5-9a2a-fb869ea76792" />
 
 - **Enable stream:** Shows or hides the player.
 - **Show viewer count per stream:** Shows viewer count per stream.
 - **Name:** Source name, also used for routing.
 - **Title**: Optional source title displayed on the stream selection page. If left empty, the source name will be used instead.
 - **URL:** URL source for the stream feed.
-- **Thumbnail:** Determines the thumbnail used on the multistream preview for each source.
+- **Thumbnail:** Determines the thumbnail used on the multistream preview for each source. If left empty, and the input is a server stream, the default generated thumbnail will used.
 - **Legacy player**: Uses the browser’s native player for streaming. Also compatible with platforms like YouTube, Twitch, Streamable, and others.
 - **Embed:** Dictates whether to treat URLs as embedded content.
 - **With credentials:** Determines whether the player sends authentication cookies (HLS only). Use only if necessary.
-- **Reset on start**: If enabled, restarts the media server when the scheduled start time is triggered. Useful for restarting queued movies.
+- **UPD media on switch**: If enabled, the media server stream will adopt the same enabled state as the stream source when the scheduled start time is triggered. Note both the media server stream name & the source name need to have the same exact name.
 - **Schedule start**: Schedules a background job to automatically enable the source. If already enabled, a countdown timer will be displayed.
 - **Schedule end**: Schedules a background job to automatically disable the source.
+- **Sort priority**: The numeric sort priority used to display streams in ascending order.
 
 #### Poll
 ![image](https://github.com/user-attachments/assets/40d82667-cc50-41b8-b142-23260028102e)
@@ -303,7 +256,7 @@ Once you're authenticated as an admin, you will have the following options:
 - **Optional header for sending the API key:** Allows sending the API key in a custom header.
 - **VPN detection match criteria:** Customize how the JSON response is matched (e.g., `{"proxy": (value), "hosting": (value)}`).
 
-### Bingo 
+#### Bingo 
 ![image](https://github.com/user-attachments/assets/32a9a460-d2ac-4724-b426-d8a8dd3b22d6)
 - **Show bingo:** Determines whether the bingo is displayed.
 - **Enable auto marking:** Specifies whether automatic marking of options is enabled once a certain threshold is met.
@@ -347,25 +300,48 @@ Once you're authenticated as an admin, you will have the following options:
 ![image](https://github.com/user-attachments/assets/072a8c57-a9f8-413e-ac10-2325ba83d86f)
 - Requires [Cloudflare Turnstile](https://www.cloudflare.com/products/turnstile/) verification for new users.
 
-### Bans
-![image](https://github.com/shrimpcast/shrimpcast/assets/167498236/c4066618-ae54-4930-ae06-7a773d339872)
+#### Load balancing
+<img width="1273" height="349" alt="image" src="https://github.com/user-attachments/assets/e0935596-9a45-46d0-866d-c0a34b48a906" /><br>
+- **Send metrics:** Specifies whether instance resource usage statistics are sent.
+- **Master instance domain:** The domain to which metrics are reported. Format should be `domain.tld`. Do not include protocols or slashes.
+- **Auth token:** The auth token used for metrics reporting. Must be the same on both master and slave instances.
 
-Shows the list of banned users. Use the button on the right to unban the user.
+## Media server
+
+<img width="1405" height="783" alt="image" src="https://github.com/user-attachments/assets/8c983b44-e67a-41a6-9846-f08bb9efd52a" />
+
+### RTMP Endpoints
+Defines RTMP ingress and egress points. For example, you can configure an RTMP endpoint to receive a stream directly from **OBS**.
+
+### Outputs
+Generates high-performance **HLS** streams. Accepts a wide range of input formats including HLS sources, RTMP/SRT egress endpoints, **VOD**, and **FLV** — essentially any video-compatible source.  
+If you intend to stream from an RTMP input, use the corresponding **RTMP egress URL**.
+
+### Probe
+Configures input settings. Supports **H.264/AAC** transcoding and custom audio sources.  
+While transcoding is CPU-intensive, it ensures your input is properly encoded for playback across all devices.  
+This is particularly useful for **VOD** inputs or sources that may contain corrupted or incompatible media.
+
+  
+  <img width="600" height="622" alt="image" src="https://github.com/user-attachments/assets/71f379f1-e0d7-4327-b44a-c761cb3fb176" />
+
+### Bans
+<img width="600" height="167" alt="image" src="https://github.com/user-attachments/assets/9d5ec050-3993-4c1e-be57-05c488e2dff5" />
+
+Shows the list of banned users. Use the button on the right to unban a user.  
+Format: `{[M]/[A] (manual/automod)} {name} {creation date} [all known token IPs]`
 
 ### Mutes
 ![image](https://github.com/shrimpcast/shrimpcast/assets/167498236/45a00624-5b5e-4456-999f-0a1ea85697e0)
 
 Shows the list of currently muted users. To remove a mute, use the button on the right.
 
-### Active users
-![image](https://github.com/shrimpcast/shrimpcast/assets/167498236/13d5e33d-121e-4f16-b243-778017587cfb)
-
-Show the list of active users. Use the button on the right to display their information.
-
 ### Auto-mod filters
-![image](https://github.com/shrimpcast/shrimpcast/assets/167498236/43fdfdd5-da5c-46fd-9d5c-9bcebd777f92)
+<img width="600" height="267" alt="image" src="https://github.com/user-attachments/assets/b945836a-4a53-469d-bf4b-287c8cbf8eaf" /> 
 
 Shows the list of active auto-mod filters. Use the button on the right to remove them.
+- **Ignore case**: ignores letter casing in the given string. For example, for `test`, `TEST` and `tEsT` will all match.  
+- **Ignore accents**: ignores diacritics in the given string. For example, for `test`, `tést` and `teśt` will all match.
 
 ### Moderators
 ![image](https://github.com/shrimpcast/shrimpcast/assets/167498236/9f9183d5-f3ee-4086-9f9c-7eb54725ebe0)
@@ -388,7 +364,7 @@ Shows the list of active emotes. To add a new emote, click on "ADD". Keep in min
 Shows the list of bingo options. To add a new option, click on "ADD".
 
 ### Message and user management
-![image](https://github.com/shrimpcast/shrimpcast/assets/167498236/3f3f9780-c7e4-4106-a9e4-1ba28fa3cda8)
+<img width="319" height="40" alt="image" src="https://github.com/user-attachments/assets/9ec8a14d-2342-40a7-9c7e-0c52225bee81" />
 
 While authenticated as an admin, hover over a message and you will have the options to:
 1. Remove the message (by clicking on the remove button)
@@ -434,6 +410,33 @@ Retrieve the SessionId from the [Message and User Management](#message-and-user-
 - `!resetallsavedvpnrecords` — Clears all saved VPN-related IP records.
 - `!tryipservice [IP?]` — Tests the IP service. If no IP is provided, it defaults to the requester’s IP.
 - `!redirectsource [FROM] [TO]` — Redirects users watching source `FROM` to source `TO`.
+
+# How to set up your first stream
+
+Go to the [media server](#media-server) and set up a stream: <br>
+
+<img width="1542" height="189" alt="image" src="https://github.com/user-attachments/assets/243d5cb6-4d79-4035-8652-0d29cf16973d" /> <br>
+- **Enabled:** Specifies whether the stream is enabled.
+- **Name:** The name of the stream.
+- **Ingress URL:** The input media URL. Can be any supported media type, including VOD. To read from RTMP (for example if you'd like to use OBS), you must first set up an RTMP endpoint (see [RTMP endpoints](#rtmp-endpoints)).
+- **HLS segment length:** HLS segment duration in seconds. Cannot be lower than 2.
+- **HLS list size:** HLS playlist length. Cannot be lower than 6.
+- **Thumbnail interval:** Specifies how often a thumbnail is generated, in seconds. Minimum is 15 seconds.
+- **Watermark URL:** A watermark that is hard-burned into the top-right of the stream. Requires transcoding to be enabled.
+- **Subtitles URL:** Subtitles that are hard-burned into the stream. Requires transcoding to be enabled.
+- **Start time:** The timestamp at which media playback starts. Useful for VOD.
+
+Then, click `RUN PROBE` to probe the URL: <br> <br>
+<img width="600" height="417" alt="image" src="https://github.com/user-attachments/assets/b03f48b8-4d00-4344-be5f-791c0aa08c49" /><br>
+- **Treat input as HLS:** Specifies whether to force the input to be treated as HLS when the content type cannot be automatically determined. Useful, for example, when using a plain-text M3U8 file with a different extension.
+- **Custom headers:** Custom HTTP headers to include with the request (for example, `Referer`).
+
+Once your stream is up and running, go to the active stream processes panel and click `Preview`.<br><br>
+<img width="1150" height="122" alt="image" src="https://github.com/user-attachments/assets/51029f71-011f-49cc-bd14-b13c887d13c2" />
+Then click on `copy` <br><br>
+<img width="900" height="65" alt="image" src="https://github.com/user-attachments/assets/4bb1efe7-c5c3-4991-9997-f5ecbb8be996" />
+
+You now have a stream up and running. You can now go to [sources](#stream) and use your URL as the input.
 
 ## Update
 If you want to update to the latest version of shrimpcast, you can do so by running
