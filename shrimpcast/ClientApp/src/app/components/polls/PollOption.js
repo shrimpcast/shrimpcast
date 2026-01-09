@@ -6,6 +6,7 @@ import ConfirmDialog from "../others/ConfirmDialog";
 import { Radio } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import GenericActionList from "../layout/Actions/GenericActionList";
+import MessageWrapper from "../chat/MessageTypes/MessageWrapper";
 
 const PollOptionSx = (selected) => ({
     width: "100%",
@@ -83,77 +84,91 @@ const PollOption = React.memo((props) => {
     [showPromptDialog, setShowPromptDialog] = useState(false),
     openConfirmPrompt = () => setShowPromptDialog(true),
     closeConfirmPrompt = () => setShowPromptDialog(false),
+    [submitting, setSubmitting] = useState(false),
     [showVotes, setShowVotes] = useState(false),
     openVotes = () => setShowVotes(true),
     closeVotes = () => setShowVotes(false),
     removeOption = async () => {
+      setSubmitting(true);
       const response = await PollManager.RemoveOption(signalR, props.pollOptionId);
       if (response) closeConfirmPrompt();
+      setSubmitting(false);
     },
     voteOption = async () => {
+      if (submitting) return;
+
+      setSubmitting(true);
       const response = await PollManager.VoteOption(signalR, props.pollOptionId);
 
       if (response > 0) props.setSelectedOption(response);
       else if (response === -1) props.setSelectedOption(0);
+      setSubmitting(false);
     },
     isSelected = props.selectedOption === props.pollOptionId,
     showPublicVotes = isAdmin || configuration.showVotes;
 
   return (
-    <Box display="flex">
-      <Box sx={RadioContainerSx(isSelected)}>
-        <Radio checked={isSelected} onClick={voteOption} sx={RadioSx} />
-      </Box>
-      <Box sx={PollOptionSx(isSelected)}>
-        <LinearProgress variant="determinate" value={props.percentage ?? 0} sx={ProgressSx} />
-        <Box sx={OptionValueSx}>
-          <Box
-            sx={TextSx(isAdmin ? 55.45 : 23.45, configuration.showVotes)}
-            className="scrollbar-custom scrollbar-custom-secondary"
-          >
-            {props.value}
+    <MessageWrapper useTransition={props.useTransition}>
+      <Box display="flex">
+        <Box sx={RadioContainerSx(isSelected)}>
+          <Radio disabled={submitting} checked={isSelected} onClick={voteOption} sx={RadioSx} />
+        </Box>
+        <Box sx={PollOptionSx(isSelected)}>
+          <LinearProgress variant="determinate" value={props.percentage ?? 0} sx={ProgressSx} />
+          <Box sx={OptionValueSx}>
+            <Box
+              sx={TextSx(isAdmin ? 55.45 : 23.45, configuration.showVotes)}
+              className="scrollbar-custom scrollbar-custom-secondary"
+            >
+              {props.value}
+            </Box>
+          </Box>
+          <Box sx={RemoveSx}>
+            <Chip
+              icon={showPublicVotes ? <VisibilityIcon /> : null}
+              label={props.voteCount}
+              size="small"
+              color="secondary"
+              sx={showPublicVotes ? ViewBtnSx : { marginTop: "3px", fontWeight: "bold" }}
+              onClick={showPublicVotes ? openVotes : null}
+            />
+            {showVotes && (
+              <GenericActionList
+                title={`Votes for [${props.value}]`}
+                getItems={() => PollManager.ShowVotes(signalR, props.pollOptionId)}
+                identifier="sessionId"
+                contentIdentifier="sessionName"
+                skipButton={true}
+                {...props}
+                createdAt={null}
+                closeCallback={closeVotes}
+                responseIsTitleObject={{
+                  appendTitle: "[{0} connected user(s)]",
+                  appendKey: "activeUsers",
+                  value: "votes",
+                  greenFlag: "connected",
+                }}
+              />
+            )}
+            {isAdmin && (
+              <>
+                <IconButton onClick={openConfirmPrompt} sx={RemoveBtnSx}>
+                  <DeleteIcon sx={{ fontSize: "16px" }} />
+                </IconButton>
+                {showPromptDialog && (
+                  <ConfirmDialog
+                    isLoading={submitting}
+                    title="Remove option?"
+                    confirm={removeOption}
+                    cancel={closeConfirmPrompt}
+                  />
+                )}
+              </>
+            )}
           </Box>
         </Box>
-        <Box sx={RemoveSx}>
-          <Chip
-            icon={showPublicVotes ? <VisibilityIcon /> : null}
-            label={props.voteCount}
-            size="small"
-            color="secondary"
-            sx={showPublicVotes ? ViewBtnSx : { marginTop: "3px", fontWeight: "bold" }}
-            onClick={showPublicVotes ? openVotes : null}
-          />
-          {showVotes && (
-            <GenericActionList
-              title={`Votes for [${props.value}]`}
-              getItems={() => PollManager.ShowVotes(signalR, props.pollOptionId)}
-              identifier="sessionId"
-              contentIdentifier="sessionName"
-              skipButton={true}
-              {...props}
-              createdAt={null}
-              closeCallback={closeVotes}
-              responseIsTitleObject={{
-                appendTitle: "[{0} connected user(s)]",
-                appendKey: "activeUsers",
-                value: "votes",
-                greenFlag: "connected",
-              }}
-            />
-          )}
-          {isAdmin && (
-            <>
-              <IconButton onClick={openConfirmPrompt} sx={RemoveBtnSx}>
-                <DeleteIcon sx={{ fontSize: "16px" }} />
-              </IconButton>
-              {showPromptDialog && (
-                <ConfirmDialog title="Remove option?" confirm={removeOption} cancel={closeConfirmPrompt} />
-              )}
-            </>
-          )}
-        </Box>
       </Box>
-    </Box>
+    </MessageWrapper>
   );
 });
 

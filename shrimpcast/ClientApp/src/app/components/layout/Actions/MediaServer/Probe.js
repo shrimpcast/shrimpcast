@@ -309,6 +309,8 @@ const Probe = ({ onSuccess, value }) => {
                     ...config,
                     customHeaders: streams.customHeaders,
                     customAudioHeaders: streams.customAudioHeaders,
+                    videoStreamProbeForceHLS: streams.videoStreamProbeForceHLS,
+                    audioCustomSourceProbeForceHLS: streams.audioCustomSourceProbeForceHLS,
                   });
                   handleClose();
                 }}

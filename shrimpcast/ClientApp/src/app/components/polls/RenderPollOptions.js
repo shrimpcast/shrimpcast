@@ -27,6 +27,7 @@ const RenderPollOptions = (props) => {
       signalR.on(SignalRManager.events.pollOptionAdded, (newOption) =>
         setOptions((existingOptions) => {
           let newOptions = existingOptions;
+          newOption.useTransition = true;
           newOptions = newOptions.concat(newOption);
           return newOptions;
         })

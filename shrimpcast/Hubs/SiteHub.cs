@@ -496,7 +496,18 @@ namespace shrimpcast.Hubs
                 return 0;
             }
 
-            var pollOption = await _pollRepository.AddOption(Session.SessionId, option);
+            PollOption pollOption;
+
+            try
+            {
+                pollOption = await _pollRepository.AddOption(Session.SessionId, option);
+            }
+            catch (InvalidDataException)
+            {
+                await DispatchSystemMessage("Suggestion already exists.");
+                return 0;
+            }
+
             await Clients.All.SendAsync("OptionAdded", pollOption);
             int result = 0;
             if (!Connection.Session.IsAdmin)

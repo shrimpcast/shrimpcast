@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import MediaServerManager from "../../../../managers/MediaServerManager";
 import ResourceUsageWidget from "./ResourceUsageWidget";
 import { Box } from "@mui/material";
-import LocalStorageManager from "../../../../managers/LocalStorageManager";
 
 const SystemStats = () => {
   const defaultModel = {

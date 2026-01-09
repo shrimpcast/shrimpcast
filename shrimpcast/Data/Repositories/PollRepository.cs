@@ -82,7 +82,7 @@ namespace shrimpcast.Data.Repositories
             };
 
             var exists = await _context.PollOptions.FirstOrDefaultAsync(po => po.IsActive && po.Value == Option);
-            if (exists != null) throw new Exception("Option already exists.");
+            if (exists != null) throw new InvalidDataException();
 
             await _context.AddAsync(PollOption);
             await _context.SaveChangesAsync();

@@ -11,7 +11,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
         Task InitStreamProcesses();
         void InitStreamProcess(MediaServerStream stream, string StartedBy);
         Task<bool> StopStreamProcess(string stream, string reason);
-        Task<JsonNode?> Probe(string? Headers, string URL);
+        Task<JsonNode?> Probe(string? Headers, string URL, bool ForceHLS);
         string GetStreamDirectory(string Name);
         bool HasExited(Process process);
         Process[] GetActiveFFMPEGProcesses();
