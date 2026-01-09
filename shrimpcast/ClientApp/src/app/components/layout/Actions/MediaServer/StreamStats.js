@@ -90,7 +90,6 @@ const BoxSx = {
     color: "text.secondary",
   },
   ViewerCountIconSx = {
-    verticalAlign: "top",
     fontSize: "13px",
     position: "relative",
     top: "2px",
