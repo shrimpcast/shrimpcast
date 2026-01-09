@@ -83,18 +83,25 @@ const PollOption = React.memo((props) => {
     [showPromptDialog, setShowPromptDialog] = useState(false),
     openConfirmPrompt = () => setShowPromptDialog(true),
     closeConfirmPrompt = () => setShowPromptDialog(false),
+    [submitting, setSubmitting] = useState(false),
     [showVotes, setShowVotes] = useState(false),
     openVotes = () => setShowVotes(true),
     closeVotes = () => setShowVotes(false),
     removeOption = async () => {
+      setSubmitting(true);
       const response = await PollManager.RemoveOption(signalR, props.pollOptionId);
       if (response) closeConfirmPrompt();
+      setSubmitting(false);
     },
     voteOption = async () => {
+      if (submitting) return;
+
+      setSubmitting(true);
       const response = await PollManager.VoteOption(signalR, props.pollOptionId);
 
       if (response > 0) props.setSelectedOption(response);
       else if (response === -1) props.setSelectedOption(0);
+      setSubmitting(false);
     },
     isSelected = props.selectedOption === props.pollOptionId,
     showPublicVotes = isAdmin || configuration.showVotes;
@@ -102,7 +109,7 @@ const PollOption = React.memo((props) => {
   return (
     <Box display="flex">
       <Box sx={RadioContainerSx(isSelected)}>
-        <Radio checked={isSelected} onClick={voteOption} sx={RadioSx} />
+        <Radio disabled={submitting} checked={isSelected} onClick={voteOption} sx={RadioSx} />
       </Box>
       <Box sx={PollOptionSx(isSelected)}>
         <LinearProgress variant="determinate" value={props.percentage ?? 0} sx={ProgressSx} />
@@ -147,7 +154,12 @@ const PollOption = React.memo((props) => {
                 <DeleteIcon sx={{ fontSize: "16px" }} />
               </IconButton>
               {showPromptDialog && (
-                <ConfirmDialog title="Remove option?" confirm={removeOption} cancel={closeConfirmPrompt} />
+                <ConfirmDialog
+                  isLoading={submitting}
+                  title="Remove option?"
+                  confirm={removeOption}
+                  cancel={closeConfirmPrompt}
+                />
               )}
             </>
           )}

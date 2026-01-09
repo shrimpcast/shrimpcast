@@ -1,4 +1,4 @@
-import { Box, Button, IconButton, InputAdornment, TextField, Typography } from "@mui/material";
+import { Box, Button, CircularProgress, IconButton, InputAdornment, TextField, Typography } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import AddIcon from "@mui/icons-material/Add";
 import PollManager from "../../managers/PollManager";
@@ -33,20 +33,25 @@ const Poll = (props) => {
     openConfirmPrompt = () => setShowPromptDialog(true),
     closeConfirmPrompt = () => setShowPromptDialog(false),
     [selectedOption, setSelectedOption] = useState(null),
+    [submitting, setSubmitting] = useState(false),
     submitOption = async () => {
       const pollOption = newPollOption.trim();
-      if (!pollOption) return;
+      if (!pollOption || submitting) return;
 
+      setSubmitting(true);
       const response = await PollManager.NewOption(props.signalR, pollOption);
       if (response > 0) setSelectedOption(response);
       if (response !== undefined) setNewPollOption("");
+      setSubmitting(false);
     },
     changeInput = (e) =>
       setNewPollOption(ChatActionsManager.normalizeString(config.stripNonASCIIChars, e.target.value)),
     handleKeys = async (e) => e.key === "Enter" && (await submitOption()),
     removeAllOptions = async () => {
+      setSubmitting(true);
       const response = await PollManager.RemoveOption(props.signalR, 0);
       if (response) closeConfirmPrompt();
+      setSubmitting(false);
     };
 
   useEffect(() => {
@@ -66,7 +71,12 @@ const Poll = (props) => {
               Reset
             </Button>
             {showPromptDialog && (
-              <ConfirmDialog title="Remove all options?" confirm={removeAllOptions} cancel={closeConfirmPrompt} />
+              <ConfirmDialog
+                title="Remove all options?"
+                isLoading={submitting}
+                confirm={removeAllOptions}
+                cancel={closeConfirmPrompt}
+              />
             )}
           </>
         )}
@@ -77,8 +87,8 @@ const Poll = (props) => {
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
-                <IconButton onClick={submitOption} sx={AddOptionButtonSx} edge="end">
-                  <AddIcon />
+                <IconButton disabled={submitting} onClick={submitOption} sx={AddOptionButtonSx} edge="end">
+                  {submitting ? <CircularProgress size={12} /> : <AddIcon />}
                 </IconButton>
               </InputAdornment>
             ),
@@ -95,6 +105,7 @@ const Poll = (props) => {
           onKeyDown={handleKeys}
           value={newPollOption}
           sx={{ marginTop: "10px" }}
+          disabled={submitting}
         />
       )}
     </Box>
