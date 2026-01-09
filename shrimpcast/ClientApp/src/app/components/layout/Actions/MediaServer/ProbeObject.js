@@ -62,7 +62,7 @@ const ProbeObject = ({ setStreams, url, title, type }) => {
           label: `STREAM ${stream.index} - ${stream.width}x${stream.height}`,
           index: stream.index,
         }));
-        streams.customHeaders = `${customHeaders.map((h) => `${h.header}:${h.value}`).join("\r\n")}\r\n`;
+        streams.customHeaders = `${customHeaders.map((h) => `${h.header}: ${h.value}`).join("\r\n")}\r\n`;
         streams.videoStreamProbeForceHLS = forceHls;
       }
 
@@ -76,7 +76,7 @@ const ProbeObject = ({ setStreams, url, title, type }) => {
           label: `STREAM [${stream.index}]`,
           index: stream.index,
         }));
-        streams.customAudioHeaders = `${customHeaders.map((h) => `${h.header}:${h.value}`).join("\r\n")}\r\n`;
+        streams.customAudioHeaders = `${customHeaders.map((h) => `${h.header}: ${h.value}`).join("\r\n")}\r\n`;
         streams.audioCustomSourceProbeForceHLS = forceHls;
       }
 

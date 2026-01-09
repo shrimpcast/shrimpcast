@@ -52,7 +52,7 @@ class MediaServerManager {
   static async Probe(url, headers, forceHls) {
     let formData = new FormData();
     formData.append("URL", url);
-    formData.append("CustomHeaders", `${headers.map((h) => `${h.header}:${h.value}`).join("\r\n")}\r\n`);
+    formData.append("CustomHeaders", `${headers.map((h) => `${h.header}: ${h.value}`).join("\r\n")}\r\n`);
     formData.append("SessionToken", LocalStorageManager.getToken());
     formData.append("ForceHLS", forceHls);
     const response = await axios
