@@ -9,12 +9,11 @@ using System.Text.Json.Nodes;
 
 namespace shrimpcast.Data.Repositories.Interfaces
 {
-    public class FFMPEGRepository(IMediaServerStreamRepository mediaServerStreamRepository, Processes<SiteHub> processes, MediaServerLogs<SiteHub> mediaServerLogs, RateLimits<SiteHub> rateLimits) : IFFMPEGRepository
+    public class FFMPEGRepository(IMediaServerStreamRepository mediaServerStreamRepository, Processes<SiteHub> processes, MediaServerLogs<SiteHub> mediaServerLogs) : IFFMPEGRepository
     {
         private readonly IMediaServerStreamRepository _mediaServerStreamRepository = mediaServerStreamRepository;
         private readonly Processes<SiteHub> _processes = processes;
         private readonly MediaServerLogs<SiteHub> _mediaServerLogs = mediaServerLogs;
-        private readonly RateLimits<SiteHub> _rateLimits = rateLimits;
         
         private const string FFMPEGProcess = "ffmpeg";
         private const string FFProbeProcess = "ffprobe";
@@ -140,8 +139,6 @@ namespace shrimpcast.Data.Repositories.Interfaces
 
             try
             {
-                _rateLimits.CleanupIfNeeded();
-
                 foreach (var streamInfo in _processes.All.Values)
                 {
                     var stream = streamInfo.Stream;
