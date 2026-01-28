@@ -20,18 +20,13 @@ namespace shrimpcast.Data.Services.Interfaces
         public void Initialize()
         {
             if (Initialized) throw new Exception("Initialize() can only be called once per runtime");
-            BackgroundJob.Enqueue(() => SendInstanceMetrics());
-            BackgroundJob.Enqueue(() => ReportSelfMetrics());
+            RecurringJob.AddOrUpdate("send-instance-metrics", () => SendInstanceMetrics(), Constants.SECONDS_TO_CRON(3));
+            RecurringJob.AddOrUpdate("report-self-metrics", () => ReportSelfMetrics(), Constants.SECONDS_TO_CRON(3));
             _fFMPEGRepository.MediaServerLog("Initialized metric reports");
             Initialized = true;
         }
 
-        public async Task SendInstanceMetrics()
-        {
-            if (_configurationSingleton.Configuration.LbSendInstanceMetrics) await ReportMetrics();
-            BackgroundJob.Schedule(() => SendInstanceMetrics(), TimeSpan.FromSeconds(3));
-        }
-
+        [DisableConcurrentExecution(timeoutInSeconds: 3)]
         public async Task ReportSelfMetrics()
         {
             try
@@ -47,14 +42,15 @@ namespace shrimpcast.Data.Services.Interfaces
             }
             catch (Exception ex)
             {
-                _fFMPEGRepository.MediaServerLog($"Could not self report instance metrics: {ex.Message}");
+                _fFMPEGRepository.MediaServerLog($"Job report-self-metrics failed: {ex.Message}");
             }
-
-            BackgroundJob.Schedule(() => ReportSelfMetrics(), TimeSpan.FromSeconds(1));
         }
 
-        private async Task ReportMetrics()
+        [DisableConcurrentExecution(timeoutInSeconds: 10)]
+        public async Task SendInstanceMetrics()
         {
+            if (!_configurationSingleton.Configuration.LbSendInstanceMetrics) return;
+
             try
             {
                 var config = _configurationSingleton.Configuration;
@@ -86,7 +82,7 @@ namespace shrimpcast.Data.Services.Interfaces
             }
             catch (Exception ex)
             {
-                _fFMPEGRepository.MediaServerLog($"Could not report instance metrics: {ex.Message}");
+                _fFMPEGRepository.MediaServerLog($"Job send-instance-metrics failed: {ex.Message}");
             }
         }
     }

@@ -77,11 +77,12 @@ namespace shrimpcast.Hubs
 
         private void EnsureInitialized()
         {
-            if (Interlocked.CompareExchange(ref _configurationSingleton.AppInitialized, 1, 0) == 0)
-            {
-                BackgroundJob.Enqueue(() => RemoveStaleClients(Constants.FIREANDFORGET_TOKEN));
-                _ffmpegRepository.MediaServerLog("Initialized RemoveStaleClients");
-            }
+            if (Interlocked.CompareExchange(ref _configurationSingleton.AppInitialized, 1, 0) != 0) return;
+
+            ScheduleBackgroundJobs();
+
+            RecurringJob.AddOrUpdate("remove-stale-clients", () => RemoveStaleClients(Constants.FIREANDFORGET_TOKEN), Constants.SECONDS_TO_CRON(15));
+            _ffmpegRepository.MediaServerLog($"Initialized hub jobs");
         }
 
         private Configuration Configuration => _configurationSingleton.Configuration;
@@ -1396,6 +1397,7 @@ namespace shrimpcast.Hubs
             ? ASCIIRegex().Replace(input.Trim().Normalize(NormalizationForm.FormKD).Normalize(NormalizationForm.FormC), "")
             : input.Trim();
 
+        [DisableConcurrentExecution(timeoutInSeconds: 3)]
         public async Task RemoveStaleClients(string VerificationToken)
         {
             if (VerificationToken != Constants.FIREANDFORGET_TOKEN) return;
@@ -1420,10 +1422,8 @@ namespace shrimpcast.Hubs
             }
             catch (Exception ex)
             {
-                _ffmpegRepository.MediaServerLog($"Could not execute RemoveStaleClients(): {ex.Message}");
+                _ffmpegRepository.MediaServerLog($"Job remove-stale-clients failed: {ex.Message}");
             }
-
-            BackgroundJob.Schedule(() => RemoveStaleClients(Constants.FIREANDFORGET_TOKEN), TimeSpan.FromSeconds(15));
         }
 
         [GeneratedRegex(@"(\d+) (.+)$")]

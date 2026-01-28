@@ -25,7 +25,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
         {
             if (Initialized) throw new Exception("Initialize() can only be called once per runtime");
             await InitStreamProcesses();
-            BackgroundJob.Enqueue(() => DoBackgroundTasks());
+            RecurringJob.AddOrUpdate("background-tasks", () => DoBackgroundTasks(), Constants.SECONDS_TO_CRON(3));
             MediaServerLog("Initialized background tasks");
             Initialized = true;
         }
@@ -132,6 +132,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
         #endregion
 
         #region Background Tasks 
+        [DisableConcurrentExecution(timeoutInSeconds: 10)]
         public async Task DoBackgroundTasks()
         {
             var now = DateTime.UtcNow;
@@ -211,8 +212,6 @@ namespace shrimpcast.Data.Repositories.Interfaces
             {
                 MediaServerLog($"Could not execute background processes: {ex.Message}");
             }
-
-            BackgroundJob.Schedule(() => DoBackgroundTasks(), TimeSpan.FromSeconds(3));
         }
 
         public async Task ShouldRestartStream(string Name)
