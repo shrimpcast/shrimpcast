@@ -9,17 +9,19 @@ using System.Text;
 
 namespace shrimpcast.Data.Services.Interfaces
 {
-    public class ReportMetricsService(IFFMPEGRepository fFMPEGRepository, ConfigurationSingleton configurationSingleton, Processes<SiteHub> processes) : IReportMetricsService
+    public class ReportMetricsService(IFFMPEGRepository fFMPEGRepository, ConfigurationSingleton configurationSingleton, Processes<SiteHub> processes, LBMetrics<SiteHub> lbMetrics) : IReportMetricsService
     {
         private readonly IFFMPEGRepository _fFMPEGRepository = fFMPEGRepository;
         private readonly ConfigurationSingleton _configurationSingleton = configurationSingleton;
         private readonly Processes<SiteHub> _processes = processes;
+        private readonly LBMetrics<SiteHub> _lbMetrics = lbMetrics;
         private static bool Initialized = false;
 
         public void Initialize()
         {
             if (Initialized) throw new Exception("Initialize() can only be called once per runtime");
             BackgroundJob.Enqueue(() => SendInstanceMetrics());
+            BackgroundJob.Enqueue(() => ReportSelfMetrics());
             _fFMPEGRepository.MediaServerLog("Initialized metric reports");
             Initialized = true;
         }
@@ -28,6 +30,27 @@ namespace shrimpcast.Data.Services.Interfaces
         {
             if (_configurationSingleton.Configuration.LbSendInstanceMetrics) await ReportMetrics();
             BackgroundJob.Schedule(() => SendInstanceMetrics(), TimeSpan.FromSeconds(3));
+        }
+
+        public async Task ReportSelfMetrics()
+        {
+            try
+            {
+                var totalViewerCount = _processes.All.Values.Sum(p => p.Viewers.Count);
+                var metrics = new LBMetric
+                {
+                    InstanceName = "Resource usage - system",
+                    Metrics = await new SystemStats().GetStats(totalViewerCount),
+                };
+
+                _lbMetrics.All.AddOrUpdate(metrics.InstanceName, metrics, (k, oldValue) => metrics);
+            }
+            catch (Exception ex)
+            {
+                _fFMPEGRepository.MediaServerLog($"Could not self report instance metrics: {ex.Message}");
+            }
+
+            BackgroundJob.Schedule(() => ReportSelfMetrics(), TimeSpan.FromSeconds(1));
         }
 
         private async Task ReportMetrics()

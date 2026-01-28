@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.SignalR;
 using shrimpcast.Data.Repositories.Interfaces;
 using shrimpcast.Entities;
 using shrimpcast.Entities.DTO;
-using shrimpcast.Helpers;
 using shrimpcast.Hubs;
 using shrimpcast.Hubs.Dictionaries;
 
@@ -27,15 +26,15 @@ namespace shrimpcast.Controllers
             var session = await _sessionRepository.GetExistingByTokenAsync(sessionToken);
             if (session == null || !session.IsAdmin) throw new Exception("Permission denied.");
 
-            var statsInfo = new SystemStats();
             return new
             {
-                system = await statsInfo.GetStats(),
-                instances = _lbMetrics.All.Values.Select(instance => new
-                {
-                    stats = instance, 
-                    isHealthy = (DateTime.UtcNow - instance.ReportTime).TotalSeconds < 9,
-                }),
+                selfInstanceName = "Resource usage - system",
+                instances = _lbMetrics.All.Values.OrderByDescending(instance => instance.InstanceName)
+                                                 .Select(instance => new
+                                                 {
+                                                     stats = instance,
+                                                     isHealthy = (DateTime.UtcNow - instance.ReportTime).TotalSeconds < 9,
+                                                 }),
             };
         }
 
