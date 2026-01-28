@@ -181,7 +181,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
                     }
 
                     // ------ calculate stream bitrate ------ //
-                    streamInfo.Bitrate = GetStreamBitrate(stream.Name, streamInfo.Stream.SegmentLength);
+                    streamInfo.Bitrate = await GetStreamBitrate(stream.Name);
 
                     // ------ remove stale viewers ------ //
                     RemoveStaleViewers(streamInfo, now);
@@ -225,21 +225,31 @@ namespace shrimpcast.Data.Repositories.Interfaces
             else _processes.All.TryRemove(Name, out _);
         }
 
-        private int GetStreamBitrate(string StreamName, int segmentDuration)
+        private async Task<int> GetStreamBitrate(string streamName)
         {
             try
             {
-                var dir = GetStreamDirectory(StreamName);
+                var dir = GetStreamDirectory(streamName);
+                var playlist = Directory.GetFiles(dir, "*.m3u8", SearchOption.TopDirectoryOnly).FirstOrDefault();
+                if (playlist == null) return 0;
+
+                var lines = await File.ReadAllLinesAsync(playlist);
+                var TARGET_DURATION = "#EXT-X-TARGETDURATION:";
+                var tdLine = lines.First(l => l.StartsWith(TARGET_DURATION));
+                var targetDuration = int.Parse(tdLine.Substring(TARGET_DURATION.Length));
+
                 var tsFiles = Directory.GetFiles(dir, "*.ts", SearchOption.TopDirectoryOnly);
                 if (tsFiles.Length == 0) return 0;
+
                 long totalBytes = tsFiles.Sum(f => new FileInfo(f).Length);
-                double totalSeconds = tsFiles.Length * segmentDuration;
+                double totalSeconds = tsFiles.Length * targetDuration;
                 double bitrateBps = totalBytes * 8 / totalSeconds;
                 double bitrateKbps = bitrateBps / 1000;
                 return (int)bitrateKbps;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                MediaServerLog($"Error while calculating bitrate for {streamName}: {ex.Message}");
                 return 0;
             }
         }
