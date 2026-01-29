@@ -87,7 +87,7 @@ namespace shrimpcast.Controllers
         {
             var session = await _sessionRepository.GetExistingByTokenAsync(probeDTO.SessionToken);
             if (session == null || !session.IsAdmin) throw new Exception("Permission denied.");
-            return await _ffmpegRepository.Probe(probeDTO.CustomHeaders, probeDTO.URL, probeDTO.ForceHLS);
+            return await _ffmpegRepository.ProbeStreamProcess(probeDTO.CustomHeaders, probeDTO.URL, probeDTO.ForceHLS);
         }
 
         [HttpGet, Route("Streams/{Name}/{File}")]
@@ -134,7 +134,7 @@ namespace shrimpcast.Controllers
             {
                 url = $"{url.Trim()}/{streamName}";
                 var targets = _processes.All.Values.Where(p => p.Stream.IngressUri == url).ToList();
-                targets.ForEach(async target => await _ffmpegRepository.StopStreamProcess(target.Stream.Name, "publish-done"));
+                targets.ForEach(target => _ffmpegRepository.StopStreamProcess(target.Stream.Name, "publish-done"));
             }
 
             return Ok();

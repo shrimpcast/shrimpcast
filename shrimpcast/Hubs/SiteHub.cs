@@ -896,7 +896,6 @@ namespace shrimpcast.Hubs
             await ShouldGrantAccess();
             var added = await _mediaServerStreamRepository.Add(MediaServerStream);
             if (added == null) return null;
-            if (added.IsEnabled) _ffmpegRepository.InitStreamProcess(added, "user");
             return added;
         }
 
@@ -904,23 +903,16 @@ namespace shrimpcast.Hubs
         {
             await ShouldGrantAccess();
             var removed = await _mediaServerStreamRepository.Remove(MediaServerStreamId);
-            await _ffmpegRepository.StopStreamProcess(removed, "removed");
+            _ffmpegRepository.StopStreamProcess(removed, "removed");
+            _processes.All.TryRemove(removed, out var _);
             return true;
         }
 
         public async Task<bool> EditMediaServerStream([FromBody] MediaServerStream MediaServerStream, string? FireAndForgetToken = null)
         {
             if (FireAndForgetToken != Constants.FIREANDFORGET_TOKEN) await ShouldGrantAccess();
-            var streamName = MediaServerStream.Name;
-            var statusBeforeEdit = (await _mediaServerStreamRepository.GetByName(streamName))!.IsEnabled;
             var edited = await _mediaServerStreamRepository.Edit(MediaServerStream);
-
-            await _ffmpegRepository.StopStreamProcess(MediaServerStream.Name, FireAndForgetToken != null ? "scheduler" : "edited");
-            if (MediaServerStream.IsEnabled && statusBeforeEdit == false)
-            {
-                _ffmpegRepository.InitStreamProcess(MediaServerStream, FireAndForgetToken != null ? "scheduler" : "user");
-            }
-
+            _ffmpegRepository.StopStreamProcess(MediaServerStream.Name, FireAndForgetToken != null ? "scheduled-job" : "edited");
             return edited;
         }
 
