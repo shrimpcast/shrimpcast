@@ -231,6 +231,6 @@ _Pvt_Extensions
 # FAKE - F# Make
 .fake/
 
-#Others
+# Others
 GeneratedAdminToken.txt
 streams/
