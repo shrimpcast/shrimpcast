@@ -9,12 +9,11 @@ using System.Text.Json.Nodes;
 
 namespace shrimpcast.Data.Repositories.Interfaces
 {
-    public class FFMPEGRepository(IMediaServerStreamRepository mediaServerStreamRepository, Processes<SiteHub> processes, MediaServerLogs<SiteHub> mediaServerLogs, RateLimits<SiteHub> rateLimits) : IFFMPEGRepository
+    public class FFMPEGRepository(IMediaServerStreamRepository mediaServerStreamRepository, Processes<SiteHub> processes, MediaServerLogs<SiteHub> mediaServerLogs) : IFFMPEGRepository
     {
         private readonly IMediaServerStreamRepository _mediaServerStreamRepository = mediaServerStreamRepository;
         private readonly Processes<SiteHub> _processes = processes;
         private readonly MediaServerLogs<SiteHub> _mediaServerLogs = mediaServerLogs;
-        private readonly RateLimits<SiteHub> _rateLimits = rateLimits;
         
         private const string FFMPEGProcess = "ffmpeg";
         private const string FFProbeProcess = "ffprobe";
@@ -22,26 +21,19 @@ namespace shrimpcast.Data.Repositories.Interfaces
         private static bool Initialized = false;
 
         #region General init
-        public async Task Initialize()
+        public void Initialize()
         {
             if (Initialized) throw new Exception("Initialize() can only be called once per runtime");
-            await InitStreamProcesses();
-            BackgroundJob.Enqueue(() => DoBackgroundTasks());
-            MediaServerLog("Initialized background tasks");
+            KillAllProcesses();
+            RecurringJob.AddOrUpdate("process-scheduler-tasks", () => ProcessSchedulerTasks(), Constants.SECONDS_TO_CRON(3));
+            MediaServerLog("Initialized process scheduler tasks");
             Initialized = true;
         }
 
-        public async Task InitStreamProcesses()
-        {
-            MediaServerLog($"Starting processes...");
-            KillAllProcesses();
-            var streams = await _mediaServerStreamRepository.GetEnabled();
-            foreach (var stream in streams) InitStreamProcess(stream, "system");
-        }
         #endregion
 
         #region Process lifecycle
-        public async Task<JsonNode?> Probe(string? Headers, string URL, bool ForceHLS)
+        public async Task<JsonNode?> ProbeStreamProcess(string? Headers, string URL, bool ForceHLS)
         {
             var command = BuildProbeCommand(Headers, URL, ForceHLS);
             try
@@ -55,12 +47,13 @@ namespace shrimpcast.Data.Repositories.Interfaces
             }
         }
 
-        public void InitStreamProcess(MediaServerStream stream, string StartedBy)
+        private StreamInfo InitStreamProcess(MediaServerStream stream)
         {
             try
             {
                 CleanStreamDirectory(stream.Name);
                 var streamInfo = BuildStreamCommand(stream);
+                _processes.All.AddOrUpdate(stream.Name, streamInfo, (k, oldValue) => streamInfo);
 
                 streamInfo.Process.OutputDataReceived += (_, e) => LogFfmpeg(stream.Name, e?.Data);
                 streamInfo.Process.ErrorDataReceived += (_, e) => LogFfmpeg(stream.Name, e?.Data);
@@ -70,34 +63,34 @@ namespace shrimpcast.Data.Repositories.Interfaces
                 streamInfo.Process.BeginOutputReadLine();
                 streamInfo.Process.BeginErrorReadLine();
 
-                _processes.All.AddOrUpdate(stream.Name, streamInfo, (k, oldValue) => streamInfo);
-                MediaServerLog($"Started process {stream.Name}. Started by {StartedBy}");
+                MediaServerLog($"Started process {stream.Name}");
+                return streamInfo;
             }
             catch (Exception ex)
             {
                 MediaServerLog($"Could not start process {stream.Name}. {ex.Message}");
-                BackgroundJob.Enqueue(() => ShouldRestartStream(stream.Name));
+                throw new Exception("Failed to start process");
             }
         }
 
-        public async Task<bool> StopStreamProcess(string stream, string reason)
+        public void StopStreamProcess(string stream, string reason)
         {
             _processes.All.TryGetValue(stream, out var processInfo);
-            if (processInfo == null || HasExited(processInfo.Process)) return false;
+            if (processInfo == null || HasExited(processInfo.Process)) return;
             MediaServerLog($"Stop called on process {stream}. Reason = {reason}");
-            if (reason != "stale") processInfo.Stream.IsEnabled = false;
+            processInfo.Stream.IsEnabled = false;
+            
             try
             {
-                processInfo.Process.Kill(true);
-                await processInfo.Process.WaitForExitAsync();
+                processInfo.Process.Kill();
                 CleanStreamDirectory(stream);
                 MediaServerLog($"Stopped process {stream}");
             }
             catch (Exception ex)
             {
                 MediaServerLog($"ERROR: Could not stop {stream}. {ex.Message}");
+                throw new Exception("Failed to stop process");
             }
-            return true;
         }
         #endregion
 
@@ -132,112 +125,114 @@ namespace shrimpcast.Data.Repositories.Interfaces
         }
         #endregion
 
-        #region Background Tasks 
-        public async Task DoBackgroundTasks()
+        #region Process scheduler tasks 
+        [DisableConcurrentExecution(timeoutInSeconds: 5)]
+        // Sequential process scheduler
+        // Ensures the correct state of a stream process
+        public async Task ProcessSchedulerTasks()
         {
-            var now = DateTime.UtcNow;
-            var MaxStaleTimeInSeconds = 12;
-
             try
             {
-                _rateLimits.CleanupIfNeeded();
+                var streams = await _mediaServerStreamRepository.GetAll();
 
-                foreach (var streamInfo in _processes.All.Values)
+                foreach (var stream in streams)
                 {
-                    var stream = streamInfo.Stream;
+                    _processes.All.TryGetValue(stream.Name, out var streamInfo);
 
-                    // ------ check if process is stale ------ //
-                    var (AddedAt, Content) = streamInfo.Logs.LastOrDefault();
-                    if (Content != null && ((now - AddedAt).TotalSeconds > MaxStaleTimeInSeconds))
-                    {
-                        await StopStreamProcess(stream.Name, "stale");
+                    // stream disabled and process not in memory or running
+                    if (streamInfo == null && !stream.IsEnabled)
+                    { 
+                        continue; 
                     }
 
-                    // ------ check if process has exited and should be restarted ------ //
-                    if (HasExited(streamInfo.Process))
+                    // stream disabled and process still in memory or running
+                    if (streamInfo != null && !stream.IsEnabled)
                     {
-                        BackgroundJob.Enqueue(() => ShouldRestartStream(stream.Name));
+                        StopStreamProcess(stream.Name, "disabled");
+                        _processes.All.TryRemove(stream.Name, out var _);
+                        continue;
+                    }
+
+                    if (
+                        // stream enabled and process not in memory
+                        streamInfo == null && stream.IsEnabled
+                        ||
+                        // stream enabled and process in memory but not running
+                        streamInfo != null && stream.IsEnabled && HasExited(streamInfo.Process)
+                        )
+                    {
+                        streamInfo = InitStreamProcess(stream);
+                    }
+
+                    // ------  check if process is stale  ------ //
+                    var (AddedAt, Content) = streamInfo!.Logs.LastOrDefault();
+                    if (Content != null && ((DateTime.UtcNow - AddedAt).TotalSeconds > 12))
+                    {
+                        StopStreamProcess(stream.Name, "stale");
                         continue;
                     }
 
                     // ------ calculate process CPU usage ------ //
-                    try
-                    {
-                        if (streamInfo.ProcessorUsage != null)
-                        {
-                            var currentCpu = streamInfo.Process.TotalProcessorTime;
-                            var curTime = DateTime.UtcNow;
-
-                            double cpuUsedMs = (currentCpu - streamInfo.ProcessorUsage.Value.CpuTime).TotalMilliseconds;
-                            double totalMsPassed = (curTime - streamInfo.ProcessorUsage.Value.Time).TotalMilliseconds;
-
-                            double cpuUsageTotal = cpuUsedMs / (Environment.ProcessorCount * totalMsPassed) * 100;
-
-                            streamInfo.ProcessorUsageComputed = $"CPU: {cpuUsageTotal:F2}%";
-                        }
-                        streamInfo.ProcessorUsage = (streamInfo.Process.TotalProcessorTime, DateTime.UtcNow);
-                    }
-                    catch (Exception)
-                    {
-                        MediaServerLog($"Error logging CPU time for {stream.Name}");
-                    }
+                    CalculateCPUUsage(streamInfo);
 
                     // ------ calculate stream bitrate ------ //
-                    streamInfo.Bitrate = GetStreamBitrate(stream.Name, streamInfo.Stream.SegmentLength);
+                    streamInfo.Bitrate = await GetStreamBitrate(stream.Name);
 
                     // ------ remove stale viewers ------ //
-                    RemoveStaleViewers(streamInfo, now);
+                    RemoveStaleViewers(streamInfo);
 
                     // ------ generate thumbnail ------ //
-                    var lastScreenshotTime = streamInfo.LastScreenshot;
-                    if (lastScreenshotTime != null && (now - lastScreenshotTime).Value.TotalSeconds < stream.SnapshotInterval) continue;
-
-                    string? screenshotCommand = BuildScreenshotCommand(stream.Name);
-                    if (screenshotCommand == null) continue;
-
-                    try
-                    {
-                        var captured = await ProcessLauncher.LaunchProcess(FFMPEGProcess, screenshotCommand, "Success", false);
-                        if (captured == "Success")
-                        {
-                            streamInfo.LastScreenshot = now;
-                            MediaServerLog($"Captured snapshot for {stream.Name}");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        MediaServerLog($"Could not capture snapshot for {stream.Name}. {ex.Message}");
-                    }
+                    BackgroundJob.Enqueue(() => MakeThumbnail(stream.Name));
                 }
             }
             catch (Exception ex)
             {
-                MediaServerLog($"Could not execute background processes: {ex.Message}");
+                MediaServerLog($"Job process-scheduler-tasks failed: {ex.Message}:{ex.InnerException}");
             }
-
-            BackgroundJob.Schedule(() => DoBackgroundTasks(), TimeSpan.FromSeconds(3));
         }
 
-        public async Task ShouldRestartStream(string Name)
-        {
-            var updatedStream = await _mediaServerStreamRepository.GetByName(Name);
-            if (updatedStream != null && updatedStream.IsEnabled)
-            {
-                MediaServerLog($"Attempting to restart {Name}");
-                InitStreamProcess(updatedStream, "restart attempt.");
-            }
-            else _processes.All.TryRemove(Name, out _);
-        }
-
-        private int GetStreamBitrate(string StreamName, int segmentDuration)
+        private void CalculateCPUUsage(StreamInfo streamInfo)
         {
             try
             {
-                var dir = GetStreamDirectory(StreamName);
+                if (streamInfo.ProcessorUsage != null)
+                {
+                    var currentCpu = streamInfo.Process.TotalProcessorTime;
+                    var curTime = DateTime.UtcNow;
+
+                    double cpuUsedMs = (currentCpu - streamInfo.ProcessorUsage.Value.CpuTime).TotalMilliseconds;
+                    double totalMsPassed = (curTime - streamInfo.ProcessorUsage.Value.Time).TotalMilliseconds;
+
+                    double cpuUsageTotal = cpuUsedMs / (Environment.ProcessorCount * totalMsPassed) * 100;
+
+                    streamInfo.ProcessorUsageComputed = $"CPU: {cpuUsageTotal:F2}%";
+                }
+                streamInfo.ProcessorUsage = (streamInfo.Process.TotalProcessorTime, DateTime.UtcNow);
+            }
+            catch (Exception)
+            {
+                MediaServerLog($"Error logging CPU time for {streamInfo.Stream.Name}");
+            }
+        }
+
+        private async Task<int> GetStreamBitrate(string streamName)
+        {
+            try
+            {
+                var dir = GetStreamDirectory(streamName);
+                var playlist = Directory.GetFiles(dir, "*.m3u8", SearchOption.TopDirectoryOnly).FirstOrDefault();
+                if (playlist == null) return 0;
+
+                var lines = await File.ReadAllLinesAsync(playlist);
+                var TARGET_DURATION = "#EXT-X-TARGETDURATION:";
+                var tdLine = lines.First(l => l.StartsWith(TARGET_DURATION));
+                var targetDuration = int.Parse(tdLine.Substring(TARGET_DURATION.Length));
+
                 var tsFiles = Directory.GetFiles(dir, "*.ts", SearchOption.TopDirectoryOnly);
                 if (tsFiles.Length == 0) return 0;
+
                 long totalBytes = tsFiles.Sum(f => new FileInfo(f).Length);
-                double totalSeconds = tsFiles.Length * segmentDuration;
+                double totalSeconds = tsFiles.Length * targetDuration;
                 double bitrateBps = totalBytes * 8 / totalSeconds;
                 double bitrateKbps = bitrateBps / 1000;
                 return (int)bitrateKbps;
@@ -248,12 +243,43 @@ namespace shrimpcast.Data.Repositories.Interfaces
             }
         }
 
-        private static void RemoveStaleViewers(StreamInfo process, DateTime now)
+        private static void RemoveStaleViewers(StreamInfo process)
         {
+            var now = DateTime.UtcNow;
             var toRemove = process.Viewers.Where(v => (now - v.Value).TotalSeconds > 15);
+
             foreach (var item in toRemove)
             {
                 process.Viewers.TryRemove(item);
+            }
+        }
+
+        public async Task MakeThumbnail(string streamName)
+        {
+            _processes.All.TryGetValue(streamName, out var streamInfo);
+            if (streamInfo == null) return;
+
+            var stream = streamInfo.Stream;
+            var now = DateTime.UtcNow;
+
+            var lastScreenshotTime = streamInfo.LastScreenshot;
+            if (lastScreenshotTime != null && (now - lastScreenshotTime).Value.TotalSeconds < stream.SnapshotInterval) return;
+
+            string? screenshotCommand = BuildScreenshotCommand(stream.Name);
+            if (screenshotCommand == null) return;
+
+            try
+            {
+                var captured = await ProcessLauncher.LaunchProcess(FFMPEGProcess, screenshotCommand, "Success", false);
+                if (captured == "Success")
+                {
+                    streamInfo.LastScreenshot = now;
+                    MediaServerLog($"Captured snapshot for {stream.Name}");
+                }
+            }
+            catch (Exception ex)
+            {
+                MediaServerLog($"Could not capture snapshot for {stream.Name}. {ex.Message}");
             }
         }
         #endregion
@@ -262,9 +288,9 @@ namespace shrimpcast.Data.Repositories.Interfaces
         public Process[] GetActiveFFMPEGProcesses() =>
             Process.GetProcessesByName(FFMPEGProcess);
 
-        public void KillAllProcesses()
+        private void KillAllProcesses()
         {
-            foreach (var process in GetActiveFFMPEGProcesses()) process.Kill(true);
+            foreach (var process in GetActiveFFMPEGProcesses()) process.Kill();
             CleanStreamDirectory(CleanRoot: true);
         }
 

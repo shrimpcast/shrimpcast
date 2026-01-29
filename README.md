@@ -19,7 +19,7 @@ Shrimpcast is a highly customizable, flexible, battle-tested, high performance, 
 - [Troubleshooting](#troubleshooting)
 - [Throughput estimation](#throughput-estimation)
 - [Media server](#media-server)
-- [Debug](#debug)
+- [Development](#development)
 - [Usage](#usage)
   - [Getting started](#getting-started)
   - [How to set up your first stream](#how-to-set-up-your-first-stream)
@@ -140,15 +140,21 @@ sudo apt-get install speedtest
 speedtest
 ```
 
-## Debug
+## Development
 
-First, clone the repository.
-To debug the project, you will need:
-- Visual Studio / VS code
-- .NET 8 SDK & runtime
-- PostgreSQL
+To build and debug the project, you will need:
 
-Make sure that your PostgreSQL instance is properly configured.
+- An IDE: **Visual Studio**, **VS Code**, or **Rider**
+- **.NET 8 SDK and runtime**
+- **PostgreSQL**
+- **FFmpeg 6 or later**  
+  *(On Windows, ensure FFmpeg is available on your system `PATH`)*
+
+### Windows-only requirements
+
+- Git
+- Add Git’s `bin` directory to your system `PATH`  
+  *(typically `C:\Program Files\Git\usr\bin`), as the project relies on several Bash utilities*
 
 ## Usage
 

@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.SignalR;
 using shrimpcast.Data.Repositories.Interfaces;
 using shrimpcast.Entities;
 using shrimpcast.Entities.DTO;
-using shrimpcast.Helpers;
 using shrimpcast.Hubs;
 using shrimpcast.Hubs.Dictionaries;
 
@@ -27,15 +26,15 @@ namespace shrimpcast.Controllers
             var session = await _sessionRepository.GetExistingByTokenAsync(sessionToken);
             if (session == null || !session.IsAdmin) throw new Exception("Permission denied.");
 
-            var statsInfo = new SystemStats();
             return new
             {
-                system = await statsInfo.GetStats(),
-                instances = _lbMetrics.All.Values.Select(instance => new
-                {
-                    stats = instance, 
-                    isHealthy = (DateTime.UtcNow - instance.ReportTime).TotalSeconds < 9,
-                }),
+                selfInstanceName = "Resource usage - system",
+                instances = _lbMetrics.All.Values.OrderByDescending(instance => instance.InstanceName)
+                                                 .Select(instance => new
+                                                 {
+                                                     stats = instance,
+                                                     isHealthy = (DateTime.UtcNow - instance.ReportTime).TotalSeconds < 9,
+                                                 }),
             };
         }
 
@@ -88,7 +87,7 @@ namespace shrimpcast.Controllers
         {
             var session = await _sessionRepository.GetExistingByTokenAsync(probeDTO.SessionToken);
             if (session == null || !session.IsAdmin) throw new Exception("Permission denied.");
-            return await _ffmpegRepository.Probe(probeDTO.CustomHeaders, probeDTO.URL, probeDTO.ForceHLS);
+            return await _ffmpegRepository.ProbeStreamProcess(probeDTO.CustomHeaders, probeDTO.URL, probeDTO.ForceHLS);
         }
 
         [HttpGet, Route("Streams/{Name}/{File}")]
@@ -135,7 +134,7 @@ namespace shrimpcast.Controllers
             {
                 url = $"{url.Trim()}/{streamName}";
                 var targets = _processes.All.Values.Where(p => p.Stream.IngressUri == url).ToList();
-                targets.ForEach(async target => await _ffmpegRepository.StopStreamProcess(target.Stream.Name, "publish-done"));
+                targets.ForEach(target => _ffmpegRepository.StopStreamProcess(target.Stream.Name, "publish-done"));
             }
 
             return Ok();

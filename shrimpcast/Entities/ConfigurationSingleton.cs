@@ -7,6 +7,7 @@ namespace shrimpcast.Entities
     {
         private readonly IServiceScopeFactory _serviceScopeFactory = serviceScopeFactory;
         private Configuration? _configuration;
+
         public Configuration Configuration
         {
             get
@@ -16,6 +17,8 @@ namespace shrimpcast.Entities
             }
             set { _configuration = value; }
         }
+
+        public int AppInitialized = 0;
 
         public async Task Initialize()
         {

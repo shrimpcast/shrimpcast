@@ -103,7 +103,7 @@ using (var scope = app.Services.CreateScope())
     await configuration.Initialize();
 
     var processes = services.GetRequiredService<IFFMPEGRepository>();
-    await processes.Initialize();
+    processes.Initialize();
 
     var metrics = services.GetRequiredService<IReportMetricsService>();
     metrics.Initialize();

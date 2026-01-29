@@ -127,9 +127,9 @@ fi
 dotnet dev-certs https
 
 # Install ffmpeg
-sudo add-apt-repository ppa:ubuntuhandbook1/ffmpeg6
+sudo add-apt-repository -y ppa:ubuntuhandbook1/ffmpeg6
 sudo apt-get update
-sudo apt-get install ffmpeg
+sudo apt-get install -y ffmpeg
 
 # Create systemd service file
 cat <<EOF | tee /etc/systemd/system/shrimpcast.service >/dev/null
