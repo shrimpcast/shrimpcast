@@ -4,7 +4,7 @@ namespace shrimpcast.Entities
 {
     public class Constants
     {
-        public const string BACKEND_VERSION = "2.0.6";
+        public const string BACKEND_VERSION = "2.0.7";
 
         public const string PING_COMMAND = "!ping";
 
@@ -43,7 +43,9 @@ namespace shrimpcast.Entities
         public const string RATE_LIMITED = "Too many invocations";
 
         public readonly static string[] SOURCE_RESERVERD_WORDS = ["chat", "live", "api", "embed"];
-        
+
+        public static string SECONDS_TO_CRON(int Seconds) => $"*/{Seconds} * * * * *";
+
         public static bool IsDevelopment() =>
             Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
 

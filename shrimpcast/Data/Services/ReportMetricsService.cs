@@ -9,29 +9,48 @@ using System.Text;
 
 namespace shrimpcast.Data.Services.Interfaces
 {
-    public class ReportMetricsService(IFFMPEGRepository fFMPEGRepository, ConfigurationSingleton configurationSingleton, Processes<SiteHub> processes) : IReportMetricsService
+    public class ReportMetricsService(IFFMPEGRepository fFMPEGRepository, ConfigurationSingleton configurationSingleton, Processes<SiteHub> processes, LBMetrics<SiteHub> lbMetrics) : IReportMetricsService
     {
         private readonly IFFMPEGRepository _fFMPEGRepository = fFMPEGRepository;
         private readonly ConfigurationSingleton _configurationSingleton = configurationSingleton;
         private readonly Processes<SiteHub> _processes = processes;
+        private readonly LBMetrics<SiteHub> _lbMetrics = lbMetrics;
         private static bool Initialized = false;
 
         public void Initialize()
         {
             if (Initialized) throw new Exception("Initialize() can only be called once per runtime");
-            BackgroundJob.Enqueue(() => SendInstanceMetrics());
+            RecurringJob.AddOrUpdate("send-instance-metrics", () => SendInstanceMetrics(), Constants.SECONDS_TO_CRON(3));
+            RecurringJob.AddOrUpdate("report-self-metrics", () => ReportSelfMetrics(), Constants.SECONDS_TO_CRON(3));
             _fFMPEGRepository.MediaServerLog("Initialized metric reports");
             Initialized = true;
         }
 
-        public async Task SendInstanceMetrics()
+        [DisableConcurrentExecution(timeoutInSeconds: 3)]
+        public async Task ReportSelfMetrics()
         {
-            if (_configurationSingleton.Configuration.LbSendInstanceMetrics) await ReportMetrics();
-            BackgroundJob.Schedule(() => SendInstanceMetrics(), TimeSpan.FromSeconds(3));
+            try
+            {
+                var totalViewerCount = _processes.All.Values.Sum(p => p.Viewers.Count);
+                var metrics = new LBMetric
+                {
+                    InstanceName = "Resource usage - system",
+                    Metrics = await new SystemStats().GetStats(totalViewerCount),
+                };
+
+                _lbMetrics.All.AddOrUpdate(metrics.InstanceName, metrics, (k, oldValue) => metrics);
+            }
+            catch (Exception ex)
+            {
+                _fFMPEGRepository.MediaServerLog($"Job report-self-metrics failed: {ex.Message}");
+            }
         }
 
-        private async Task ReportMetrics()
+        [DisableConcurrentExecution(timeoutInSeconds: 10)]
+        public async Task SendInstanceMetrics()
         {
+            if (!_configurationSingleton.Configuration.LbSendInstanceMetrics) return;
+
             try
             {
                 var config = _configurationSingleton.Configuration;
@@ -63,7 +82,7 @@ namespace shrimpcast.Data.Services.Interfaces
             }
             catch (Exception ex)
             {
-                _fFMPEGRepository.MediaServerLog($"Could not report instance metrics: {ex.Message}");
+                _fFMPEGRepository.MediaServerLog($"Job send-instance-metrics failed: {ex.Message}");
             }
         }
     }

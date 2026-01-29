@@ -43,8 +43,9 @@ namespace shrimpcast.Hubs
         private readonly Pings<SiteHub> _pings;
         private readonly BingoSuggestions<SiteHub> _bingoSuggestions;
         private readonly Processes<SiteHub> _processes;
+        private readonly RateLimits<SiteHub> _rateLimits;
 
-        public SiteHub(IConfigurationRepository configurationRepository, ISessionRepository sessionRepository, IMessageRepository messageRepository, IBanRepository banRepository, IPollRepository pollRepository, ITorExitNodeRepository torExitNodeRepository, IHubContext<SiteHub> hubContext, ConfigurationSingleton configurationSingleton, Connections<SiteHub> activeConnections, Pings<SiteHub> pings, IOBSCommandsRepository obsCommandsRepository, IAutoModFilterRepository autoModFilterRepository, INotificationRepository notificationRepository, IEmoteRepository emoteRepository, IBingoRepository bingoRepository, IVpnAddressRepository vpnAddressRepository, BingoSuggestions<SiteHub> bingoSuggestions, IBTCServerRepository btcServerRepository, ISourceRepository sourceRepository, IStripeRepository stripeRepository, IMediaServerStreamRepository mediaServerStreamRepository, Processes<SiteHub> proccesses, IFFMPEGRepository ffmpegRepository, IRTMPEndpointRepository rtmpEndpointRepository)
+        public SiteHub(IConfigurationRepository configurationRepository, ISessionRepository sessionRepository, IMessageRepository messageRepository, IBanRepository banRepository, IPollRepository pollRepository, ITorExitNodeRepository torExitNodeRepository, IHubContext<SiteHub> hubContext, ConfigurationSingleton configurationSingleton, Connections<SiteHub> activeConnections, Pings<SiteHub> pings, IOBSCommandsRepository obsCommandsRepository, IAutoModFilterRepository autoModFilterRepository, INotificationRepository notificationRepository, IEmoteRepository emoteRepository, IBingoRepository bingoRepository, IVpnAddressRepository vpnAddressRepository, BingoSuggestions<SiteHub> bingoSuggestions, IBTCServerRepository btcServerRepository, ISourceRepository sourceRepository, IStripeRepository stripeRepository, IMediaServerStreamRepository mediaServerStreamRepository, Processes<SiteHub> proccesses, IFFMPEGRepository ffmpegRepository, IRTMPEndpointRepository rtmpEndpointRepository, RateLimits<SiteHub> rateLimits)
         {
             _configurationRepository = configurationRepository;
             _sessionRepository = sessionRepository;
@@ -70,6 +71,18 @@ namespace shrimpcast.Hubs
             _processes = proccesses;
             _ffmpegRepository = ffmpegRepository;
             _rtmpEndpointRepository = rtmpEndpointRepository;
+            _rateLimits = rateLimits;
+            EnsureInitialized();
+        }
+
+        private void EnsureInitialized()
+        {
+            if (Interlocked.CompareExchange(ref _configurationSingleton.AppInitialized, 1, 0) != 0) return;
+
+            ScheduleBackgroundJobs();
+
+            RecurringJob.AddOrUpdate("remove-stale-clients", () => RemoveStaleClients(Constants.FIREANDFORGET_TOKEN), Constants.SECONDS_TO_CRON(15));
+            _ffmpegRepository.MediaServerLog($"Initialized hub jobs");
         }
 
         private Configuration Configuration => _configurationSingleton.Configuration;
@@ -121,11 +134,10 @@ namespace shrimpcast.Hubs
             try
             {
                 var SessionId = GetCurrentConnection().Session.SessionId;
-                ActiveConnections.TryRemove(Context.ConnectionId, out _);
-                await TriggerUserCountChange(false, null, SessionId);
-                await TriggerSourceViewerCountChange(false);
+                await DoDisconnectCleanup(Context.ConnectionId, SessionId);
                 await base.OnDisconnectedAsync(exception);
-            } catch (Exception) { } // Session already disconnected
+            } 
+            catch (Exception) { } // Session already disconnected. OnDisconnected isn't 100% reliable and can sometimes be fired twice or not at all. This is a SignalR issue.
         }
 
         public async Task GetUserCount() => await TriggerUserCountChange(true, null, null);
@@ -884,7 +896,6 @@ namespace shrimpcast.Hubs
             await ShouldGrantAccess();
             var added = await _mediaServerStreamRepository.Add(MediaServerStream);
             if (added == null) return null;
-            if (added.IsEnabled) _ffmpegRepository.InitStreamProcess(added, "user");
             return added;
         }
 
@@ -892,23 +903,16 @@ namespace shrimpcast.Hubs
         {
             await ShouldGrantAccess();
             var removed = await _mediaServerStreamRepository.Remove(MediaServerStreamId);
-            await _ffmpegRepository.StopStreamProcess(removed, "removed");
+            _ffmpegRepository.StopStreamProcess(removed, "removed");
+            _processes.All.TryRemove(removed, out var _);
             return true;
         }
 
         public async Task<bool> EditMediaServerStream([FromBody] MediaServerStream MediaServerStream, string? FireAndForgetToken = null)
         {
             if (FireAndForgetToken != Constants.FIREANDFORGET_TOKEN) await ShouldGrantAccess();
-            var streamName = MediaServerStream.Name;
-            var statusBeforeEdit = (await _mediaServerStreamRepository.GetByName(streamName))!.IsEnabled;
             var edited = await _mediaServerStreamRepository.Edit(MediaServerStream);
-
-            await _ffmpegRepository.StopStreamProcess(MediaServerStream.Name, FireAndForgetToken != null ? "scheduler" : "edited");
-            if (MediaServerStream.IsEnabled && statusBeforeEdit == false)
-            {
-                _ffmpegRepository.InitStreamProcess(MediaServerStream, FireAndForgetToken != null ? "scheduler" : "user");
-            }
-
+            _ffmpegRepository.StopStreamProcess(MediaServerStream.Name, FireAndForgetToken != null ? "scheduled-job" : "edited");
             return edited;
         }
 
@@ -968,7 +972,7 @@ namespace shrimpcast.Hubs
             if (SelfInvoked) await Clients.Caller.SendAsync("UserCountChange", obj);
             else
             {
-                await Clients.All.SendAsync("UserCountChange", obj);
+                await _hubContext.Clients.All.SendAsync("UserCountChange", obj);
                 // Session being different to null means it's a connected event
                 if (session != null) await SendAdminUserStatusUpdate(session);
                 else if (!ActiveConnections.Any(ac => ac.Value.Session.SessionId == sessionId))
@@ -990,7 +994,7 @@ namespace shrimpcast.Hubs
                                                                             .Count()
                                                });
             if (SelfInvoked) await Clients.Caller.SendAsync("SourceViewerCountChange", values);
-            else await Clients.All.SendAsync("SourceViewerCountChange", values);
+            else await _hubContext.Clients.All.SendAsync("SourceViewerCountChange", values);
         }
 
 
@@ -1005,8 +1009,15 @@ namespace shrimpcast.Hubs
                 session.IsAdmin,
             } : sessionId;
             
-            if (Configuration.ShowConnectedUsers) await Clients.All.SendAsync(eventType, value);
-            else await Clients.Clients(admins).SendAsync(eventType, value);
+            if (Configuration.ShowConnectedUsers) await _hubContext.Clients.All.SendAsync(eventType, value);
+            else await _hubContext.Clients.Clients(admins).SendAsync(eventType, value);
+        }
+
+        private async Task DoDisconnectCleanup(string ConnectionId, int SessionId)
+        {
+            ActiveConnections.TryRemove(ConnectionId, out _);
+            await TriggerUserCountChange(false, null, SessionId);
+            await TriggerSourceViewerCountChange(false);
         }
 
         private async Task<string?> IsChatActionAllowed(string Post)
@@ -1377,6 +1388,35 @@ namespace shrimpcast.Hubs
             Configuration.StripNonASCIIChars 
             ? ASCIIRegex().Replace(input.Trim().Normalize(NormalizationForm.FormKD).Normalize(NormalizationForm.FormC), "")
             : input.Trim();
+
+        [DisableConcurrentExecution(timeoutInSeconds: 3)]
+        public async Task RemoveStaleClients(string VerificationToken)
+        {
+            if (VerificationToken != Constants.FIREANDFORGET_TOKEN) return;
+
+            try
+            {
+                _rateLimits.CleanupIfNeeded();
+                
+                var utcNow = DateTime.UtcNow;
+                var toRemove = ActiveConnections.Where(ac => (utcNow - ac.Value.LastPing).TotalSeconds > 60);
+                var toBeRemovedCount = toRemove.Count();
+
+                foreach (var toBeRemoved in toRemove)
+                {
+                    await DoDisconnectCleanup(toBeRemoved.Key, toBeRemoved.Value.Session.SessionId);
+                }
+
+                if (toBeRemovedCount > 0)
+                { 
+                    _ffmpegRepository.MediaServerLog($"Removed {toBeRemovedCount} stale client(s).");
+                }
+            }
+            catch (Exception ex)
+            {
+                _ffmpegRepository.MediaServerLog($"Job remove-stale-clients failed: {ex.Message}");
+            }
+        }
 
         [GeneratedRegex(@"(\d+) (.+)$")]
         private static partial Regex PingRegex();
