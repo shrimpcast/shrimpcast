@@ -1404,7 +1404,7 @@ namespace shrimpcast.Hubs
                 foreach (var toBeRemoved in toRemove)
                 {
                     await DoDisconnectCleanup(toBeRemoved.Key, toBeRemoved.Value.Session.SessionId);
-                    _ffmpegRepository.MediaServerLog($"Removed [{toBeRemoved.Key}::{toBeRemoved.Value.Session.SessionId}:{toBeRemoved.Value.Session.SessionNames.Last()}] due to inactivity.");
+                    _ffmpegRepository.MediaServerLog($"Removed [{toBeRemoved.Key}::{toBeRemoved.Value.Session.SessionId}:{toBeRemoved.Value.Session.SessionNames.Last().Name}] due to inactivity.");
                 }
             }
             catch (Exception ex)
