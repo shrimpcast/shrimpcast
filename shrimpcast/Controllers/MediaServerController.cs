@@ -102,7 +102,9 @@ namespace shrimpcast.Controllers
 
             var directory = _ffmpegRepository.GetStreamDirectory(Name);
             var contentType = isPlaylist ? "application/vnd.apple.mpegurl" : "video/mp2t";
-            return PhysicalFile(Path.Combine(directory, File.ToLower()), contentType);
+            var path = Path.Combine(directory, File.ToLower());
+            if (!System.IO.File.Exists(path)) return NotFound();
+            return PhysicalFile(path, contentType);
         }
 
         [HttpPost, Route("AuthenticatePublish")]

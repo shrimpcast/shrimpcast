@@ -82,6 +82,7 @@ namespace shrimpcast.Hubs
             ScheduleBackgroundJobs();
 
             RecurringJob.AddOrUpdate("remove-stale-clients", () => RemoveStaleClients(Constants.FIREANDFORGET_TOKEN), Constants.SECONDS_TO_CRON(15));
+            RecurringJob.AddOrUpdate("clients-heartbeat", () => Heartbeat(Constants.FIREANDFORGET_TOKEN), Constants.SECONDS_TO_CRON(30));
             _ffmpegRepository.MediaServerLog($"Initialized hub jobs");
         }
 
@@ -1400,16 +1401,10 @@ namespace shrimpcast.Hubs
                 
                 var utcNow = DateTime.UtcNow;
                 var toRemove = ActiveConnections.Where(ac => (utcNow - ac.Value.LastPing).TotalSeconds > 60);
-                var toBeRemovedCount = toRemove.Count();
-
                 foreach (var toBeRemoved in toRemove)
                 {
                     await DoDisconnectCleanup(toBeRemoved.Key, toBeRemoved.Value.Session.SessionId);
-                }
-
-                if (toBeRemovedCount > 0)
-                { 
-                    _ffmpegRepository.MediaServerLog($"Removed {toBeRemovedCount} stale client(s).");
+                    _ffmpegRepository.MediaServerLog($"Removed [{toBeRemoved.Key}::{toBeRemoved.Value.Session.SessionId}:{toBeRemoved.Value.Session.SessionNames.Last()}] due to inactivity.");
                 }
             }
             catch (Exception ex)
@@ -1417,6 +1412,15 @@ namespace shrimpcast.Hubs
                 _ffmpegRepository.MediaServerLog($"Job remove-stale-clients failed: {ex.Message}");
             }
         }
+
+        [DisableConcurrentExecution(timeoutInSeconds: 2)]
+        public async Task Heartbeat(string VerificationToken)
+        {
+            if (VerificationToken != Constants.FIREANDFORGET_TOKEN) return;
+            await _hubContext.Clients.All.SendAsync("Heartbeat");
+        }
+
+        public string HeartbeatAck() => "Ok";
 
         [GeneratedRegex(@"(\d+) (.+)$")]
         private static partial Regex PingRegex();

@@ -45,6 +45,9 @@ const WiFiSignalStrength = (props) => {
   useEffect(() => {
     const addHandlers = () => {
         signalR.on(SignalRManager.events.pong, (Timestamp) => setRtt(Date.now() - Timestamp));
+        signalR.on(SignalRManager.events.heartbeat, () => {
+          signalR.invoke("HeartbeatAck").catch((ex) => console.log(ex));
+        });
         const ping = () => signalR.invoke(SignalRManager.events.ping, Date.now()).catch((ex) => console.log(ex));
         ping();
         window.interval = setInterval(ping, 5000);
@@ -52,6 +55,7 @@ const WiFiSignalStrength = (props) => {
       removeHandlers = () => {
         clearInterval(window.interval);
         signalR.off(SignalRManager.events.pong);
+        signalR.off(SignalRManager.events.heartbeat);
       };
 
     addHandlers();

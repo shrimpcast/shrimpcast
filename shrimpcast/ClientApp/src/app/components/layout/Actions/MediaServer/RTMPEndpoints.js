@@ -76,7 +76,7 @@ const RTMPEndpoints = (props) => {
       setItems(endpoints);
       signalR.on(SignalRManager.events.publishStatusChange, updatePublishStatus);
     };
-    getItems();
+    setTimeout(getItems, 250);
     return () => signalR.off(SignalRManager.events.publishStatusChange);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
