@@ -47,11 +47,11 @@ const WiFiSignalStrength = (props) => {
         signalR.on(SignalRManager.events.pong, (Timestamp) => setRtt(Date.now() - Timestamp));
         const ping = () => signalR.invoke(SignalRManager.events.ping, Date.now()).catch((ex) => console.log(ex));
         ping();
-        window.interval = setInterval(ping, 5000);
+        window.pingInterval = setInterval(ping, 5000);
         signalR.on(SignalRManager.events.heartbeat, ping);
       },
       removeHandlers = () => {
-        clearInterval(window.interval);
+        clearInterval(window.pingInterval);
         signalR.off(SignalRManager.events.pong);
         signalR.off(SignalRManager.events.heartbeat);
       };
