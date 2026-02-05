@@ -10,6 +10,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
         Task<Message> Add(bool runCooldownChecks, int SessionId, string RemoteAddress, string Content, string MessageType);
         Task<bool> Remove(int MessageId, int DeletedBy);
         Task<bool> HasEnoughCountBySessionId(int SessionId, int RequiredCount);
+        bool IsInEnglish(string Content);
     }
 }
 

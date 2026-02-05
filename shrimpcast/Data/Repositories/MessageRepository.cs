@@ -58,7 +58,7 @@ namespace shrimpcast.Data.Repositories
             var lastSent = message?.CreatedAt;
             var secondsDifference = DateTime.UtcNow.Subtract(lastSent.GetValueOrDefault()).TotalSeconds;
             var requiredTime = _configurationSingleton.Configuration.MessageDelayTime;
-            
+
             if (secondsDifference < requiredTime)
             {
                 var diff = Math.Ceiling(requiredTime - secondsDifference);
@@ -121,6 +121,15 @@ namespace shrimpcast.Data.Repositories
                                             .Take(RequiredCount)
                                             .CountAsync();
             return ActualCount == RequiredCount;
+        }
+
+        public bool IsInEnglish(string Content)
+        {
+            var detector = _configurationSingleton.LanguageDetector;
+            var detectedLang = detector.Predict(Content.ToLower(), 1).FirstOrDefault();
+            if (detectedLang == null) return true;
+            var isEnglishDetected = detectedLang.Label == "__label__en";
+            return (isEnglishDetected && detectedLang.Probability > 0.55) || (!isEnglishDetected  && detectedLang.Probability < 0.55);
         }
     }
 }

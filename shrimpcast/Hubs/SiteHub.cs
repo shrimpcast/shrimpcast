@@ -1073,6 +1073,18 @@ namespace shrimpcast.Hubs
                 return $"Error: {Constants.VPN_DISABLED_MESSAGE}";
             }
 
+            try
+            {
+                if (Configuration.AllowOnlyEnglishPosts && !_messageRepository.IsInEnglish(Post))
+                {
+                    return $"Error: only english posts are allowed at this time.";
+                }
+            }
+            catch (Exception ex)
+            {
+                _ffmpegRepository.MediaServerLog($"IsInEnglish() failed: {ex.Message}");
+            }
+
             var linkMatches = URLRegex().Matches(Post.ToLower()).Count;
             if (linkMatches == 0) return null;
             
@@ -1401,7 +1413,7 @@ namespace shrimpcast.Hubs
                 await _hubContext.Clients.All.SendAsync("Heartbeat");
 
                 var utcNow = DateTime.UtcNow;
-                var toRemove = ActiveConnections.Where(ac => (utcNow - ac.Value.LastPing).TotalSeconds > 60);
+                var toRemove = ActiveConnections.Where(ac => (utcNow - ac.Value.LastPing).TotalSeconds > 300);
                 foreach (var toBeRemoved in toRemove)
                 {
                     await DoDisconnectCleanup(toBeRemoved.Key, toBeRemoved.Value.Session.SessionId);
