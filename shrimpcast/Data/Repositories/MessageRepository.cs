@@ -129,7 +129,7 @@ namespace shrimpcast.Data.Repositories
             var detectedLang = detector.Predict(Content.ToLower(), 1).FirstOrDefault();
             if (detectedLang == null) return true;
             var isEnglishDetected = detectedLang.Label == "__label__en";
-            return (isEnglishDetected && detectedLang.Probability > 0.55) || (!isEnglishDetected  && detectedLang.Probability < 0.55);
+            return isEnglishDetected || detectedLang.Probability < 0.55;
         }
     }
 }
