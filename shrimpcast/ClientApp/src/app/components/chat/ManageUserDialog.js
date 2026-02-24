@@ -1,6 +1,6 @@
 import DialogTitle from "@mui/material/DialogTitle";
 import Dialog from "@mui/material/Dialog";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -51,12 +51,14 @@ const ManageUserDialog = (props) => {
     //targetUserPublic means that the user is authenticated as an admin and the target is not an admin
     targetUserPublic = siteAdmin && !isAdmin,
     showActionsPanel = !isAdmin && (!isMod || siteAdmin) && sessionId !== userSessionId,
-    actions = siteAdmin
-      ? ChatActionsManager.admin_actions
+    isTargetIgnored = ChatActionsManager.IsIgnored(sessionId),
+    visibleActions = siteAdmin
+      ? ChatActionsManager.admin_actions(isTargetIgnored)
       : siteMod
-      ? ChatActionsManager.mod_actions
-      : ChatActionsManager.public_actions,
-    actionKeys = Object.keys(actions),
+        ? ChatActionsManager.mod_actions(isTargetIgnored)
+        : ChatActionsManager.public_actions(isTargetIgnored),
+    visibleActionKeys = Object.keys(visibleActions),
+    allActions = ChatActionsManager.actions(isTargetIgnored),
     [open, setOpen] = useState(false),
     setOpened = () => setOpen(true),
     setClosed = () => {
@@ -71,32 +73,31 @@ const ManageUserDialog = (props) => {
     closeConfirmPrompt = () => setShowPromptDialog({ open: false, type: "" }),
     executeAction = async () => {
       let successfulResponse = false,
-        { type } = showPromptDialog,
-        actions = ChatActionsManager.actions;
+        { type } = showPromptDialog;
 
       switch (type) {
-        case actions.mod(userInfo.isMod):
+        case allActions.mod(userInfo.isMod):
           successfulResponse = await ChatActionsManager.ToggleModStatus(signalR, sessionId, !userInfo.isMod);
           break;
-        case actions.verify(userInfo.isVerified):
+        case allActions.verify(userInfo.isVerified):
           successfulResponse = await ChatActionsManager.ToggleVerifiedStatus(signalR, sessionId, !userInfo.isVerified);
           break;
-        case actions.ignore:
-          successfulResponse = ChatActionsManager.Ignore(sessionId, sentBy);
+        case allActions.ignore:
+          successfulResponse = ChatActionsManager.ToggleIgnoreStatus(sessionId, sentBy);
           break;
-        case actions.mute:
+        case allActions.mute:
           successfulResponse = await ChatActionsManager.Mute(signalR, sessionId);
           break;
-        case actions.ban:
+        case allActions.ban:
           successfulResponse = await ChatActionsManager.Ban(signalR, sessionId, false, false);
           break;
-        case actions.silentBan:
+        case allActions.silentBan:
           successfulResponse = await ChatActionsManager.Ban(signalR, sessionId, true, false);
           break;
-        case actions.silentBanAndDelete:
+        case allActions.silentBanAndDelete:
           successfulResponse = await ChatActionsManager.Ban(signalR, sessionId, true, true);
           break;
-        case actions.filterBan:
+        case allActions.filterBan:
           successfulResponse = await AutoModFiltersManager.Add(signalR, sessionId, props.messageId);
           break;
         default:
@@ -182,17 +183,17 @@ const ManageUserDialog = (props) => {
                         variant="contained"
                         color="primary"
                         sx={{ width: "100%", mb: "5px" }}
-                        onClick={() => openConfirmPrompt(ChatActionsManager.actions.verify(userInfo.isVerified))}
+                        onClick={() => openConfirmPrompt(allActions.verify(userInfo.isVerified))}
                       >
-                        {ChatActionsManager.actions.verify(userInfo.isVerified)}
+                        {allActions.verify(userInfo.isVerified)}
                       </Button>
                       <Button
                         variant="contained"
                         color="primary"
                         sx={{ width: "100%" }}
-                        onClick={() => openConfirmPrompt(ChatActionsManager.actions.mod(userInfo.isMod))}
+                        onClick={() => openConfirmPrompt(allActions.mod(userInfo.isMod))}
                       >
-                        {ChatActionsManager.actions.mod(userInfo.isMod)}
+                        {allActions.mod(userInfo.isMod)}
                       </Button>
                     </Grid>
                   )}
@@ -224,15 +225,15 @@ const ManageUserDialog = (props) => {
                       <Typography>Moderate</Typography>
                       <Divider />
                       <Box height="200px">
-                        {actionKeys.map((actionKey) => (
+                        {visibleActionKeys.map((actionKey) => (
                           <Button
-                            onClick={() => openConfirmPrompt(actions[actionKey])}
+                            onClick={() => openConfirmPrompt(visibleActions[actionKey])}
                             variant="contained"
                             color="error"
-                            sx={BanSx(actionKeys.length)}
+                            sx={BanSx(visibleActionKeys.length)}
                             key={actionKey}
                           >
-                            {actions[actionKey]}
+                            {visibleActions[actionKey]}
                           </Button>
                         ))}
 

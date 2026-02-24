@@ -1,28 +1,28 @@
 import LocalStorageManager from "./LocalStorageManager";
 
 class ChatActionsManager {
-  static public_actions = {
-    ignore: "Ignore",
-  };
+  static public_actions = (isIgnored) => ({
+    ignore: isIgnored ? "Unignore" : "Ignore",
+  });
 
-  static mod_actions = {
-    ...this.public_actions,
+  static mod_actions = (isIgnored) => ({
+    ...this.public_actions(isIgnored),
     mute: "Mute",
-  };
+  });
 
-  static admin_actions = {
-    ...this.mod_actions,
+  static admin_actions = (isIgnored) => ({
+    ...this.mod_actions(isIgnored),
     ban: "Ban",
     silentBan: "Silent ban",
     silentBanAndDelete: "Silent ban and delete",
     filterBan: "Filter and ban",
-  };
+  });
 
-  static actions = {
+  static actions = (isIgnored) => ({
     mod: (isMod) => (isMod ? "Unmod" : "Mod"),
     verify: (isVerified) => (isVerified ? "Unverify" : "Verify"),
-    ...this.admin_actions,
-  };
+    ...this.admin_actions(isIgnored),
+  });
 
   static normalizeString = (shouldStrip, input) =>
     shouldStrip
@@ -82,9 +82,12 @@ class ChatActionsManager {
     if (!ignoredUsers) ignoredUsers = LocalStorageManager.getIgnoredUsers();
     return Boolean(ignoredUsers.find((eu) => eu.sessionId === sessionId));
   }
-  static Ignore(sessionId, sessionName) {
+  static ToggleIgnoreStatus(sessionId, sessionName) {
     let ignoredUsers = LocalStorageManager.getIgnoredUsers();
-    if (this.IsIgnored(sessionId, ignoredUsers)) return true;
+    if (this.IsIgnored(sessionId, ignoredUsers)) {
+      this.Unignore(null, sessionId);
+      return true;
+    }
     ignoredUsers.push({ sessionId, n: sessionName });
     return LocalStorageManager.setIgnoredUsers(ignoredUsers);
   }
