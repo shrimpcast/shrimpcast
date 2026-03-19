@@ -184,11 +184,11 @@ const StreamStats = (props) => {
           <Divider />
         </Box>
 
-        {stats === null ? (
+        {!stats ? (
           <Box width="40px" ml="auto" mr="auto" mt={2}>
             <CircularProgress color="secondary" />
           </Box>
-        ) : stats.length === 0 ? (
+        ) : !stats?.length ? (
           <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ py: 2 }}>
             No active streams
           </Typography>
@@ -231,10 +231,10 @@ const StreamStats = (props) => {
                             stat.processStatus.runningStatus === "Stopping"
                               ? "error"
                               : stat.processStatus.runningStatus === "Connected"
-                              ? "success"
-                              : stat.processStatus.runningStatus === "Connecting"
-                              ? "info"
-                              : "warning"
+                                ? "success"
+                                : stat.processStatus.runningStatus === "Connecting"
+                                  ? "info"
+                                  : "warning"
                           }
                           size="small"
                           variant="overline"
