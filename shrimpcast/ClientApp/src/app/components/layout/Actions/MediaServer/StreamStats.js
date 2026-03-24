@@ -201,6 +201,7 @@ const StreamStats = (props) => {
                     <Stack sx={StackCardSx}>
                       <Typography variant="overline" sx={StreamTitleSx}>
                         {stat.name}
+                        {stat.processStatus.playing ? " - " + stat.processStatus.playing.toUpperCase() : null}
                       </Typography>
 
                       <Stack minWidth="600px" justifyContent="end" direction="row" spacing={1.2}>

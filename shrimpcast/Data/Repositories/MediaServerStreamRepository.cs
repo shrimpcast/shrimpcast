@@ -16,8 +16,19 @@ namespace shrimpcast.Data.Repositories.Interfaces
             return result > 0 ? mediaServerStream : throw new Exception("Could not add media server stream.");
         }
 
-        public async Task<List<MediaServerStream>> GetAll() =>
-            await _context.MediaServerStreams.AsNoTracking().ToListAsync();
+        public async Task<List<MediaServerStream>> GetAll(bool? filterByType = null)
+        {
+            if (filterByType == null)
+            {
+                return await _context.MediaServerStreams.AsNoTracking()
+                                                        .ToListAsync();
+            }
+
+            return await _context.MediaServerStreams.AsNoTracking()
+                                                    .Where(m => m.IsPlaylist == filterByType)
+                                                    .OrderBy(m => m.Name)
+                                                    .ToListAsync();
+        }
 
         public async Task<List<MediaServerStream>> GetEnabled() =>
             await _context.MediaServerStreams.AsNoTracking().Where(m => m.IsEnabled).ToListAsync();

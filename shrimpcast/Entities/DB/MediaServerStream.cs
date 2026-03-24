@@ -53,5 +53,7 @@
         public string? Subtitles { get; set; }
 
         public TimeSpan? StartAt { get; set; }
+
+        public required bool IsPlaylist { get; set; }
     }
 }

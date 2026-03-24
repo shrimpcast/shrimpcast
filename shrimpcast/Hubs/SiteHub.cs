@@ -920,10 +920,10 @@ namespace shrimpcast.Hubs
             return edited;
         }
 
-        public async Task<List<MediaServerStream>> GetAllMediaServerStreams()
+        public async Task<List<MediaServerStream>> GetAllMediaServerStreams(bool playlistsOnly)
         {
             await ShouldGrantAccess();
-            return await _mediaServerStreamRepository.GetAll();
+            return await _mediaServerStreamRepository.GetAll(playlistsOnly);
         }
 
         public async Task<RTMPEndpoint?> AddRTMPEndpoint([FromBody] RTMPEndpoint rtmpEndpoint)
