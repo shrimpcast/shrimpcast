@@ -206,7 +206,9 @@ namespace shrimpcast.Data.Repositories.Interfaces
             var nextSourceName = string.Empty;
             try
             {
-                var playlistSources = playlist.IngressUri.Split(",");
+                var playlistSources = playlist.IngressUri.Split(",")
+                                                         .Select(source => source.ToLower().Trim())
+                                                         .ToArray();
 
                 if (streamInfo == null) nextSourceName = playlistSources[0];
                 else

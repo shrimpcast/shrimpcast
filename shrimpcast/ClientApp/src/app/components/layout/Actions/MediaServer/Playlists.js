@@ -41,7 +41,7 @@ const Playlists = (props) => {
         segmentLength: 2,
         listSize: 6,
         snapshotInterval: 60,
-        lowLatency: true,
+        lowLatency: false,
         videoStreamIndex: -1,
         videoEncodingPreset: "NONE_PLAYLIST",
         videoTranscodingBitrate: -1,
