@@ -9,8 +9,8 @@ namespace shrimpcast.Data.Repositories.Interfaces
 
         public async Task<MediaServerStream?> Add(MediaServerStream mediaServerStream)
         {
-            if (_context.MediaServerStreams.AsNoTracking().FirstOrDefault(m => m.Name == mediaServerStream.Name) != null) return null;
             Validate(mediaServerStream);
+            if (_context.MediaServerStreams.AsNoTracking().FirstOrDefault(m => m.Name == mediaServerStream.Name) != null) return null;
             await _context.AddAsync(mediaServerStream);
             var result = await _context.SaveChangesAsync();
             return result > 0 ? mediaServerStream : throw new Exception("Could not add media server stream.");
@@ -56,7 +56,9 @@ namespace shrimpcast.Data.Repositories.Interfaces
             if (stream.SnapshotInterval < 15 || stream.SegmentLength < 2 || stream.ListSize < 6)
             {
                 throw new InvalidDataException();
-            } 
+            }
+
+            stream.Name = stream.Name.ToLower();
         }
     }
 }
