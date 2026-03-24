@@ -201,7 +201,7 @@ namespace shrimpcast.Hubs
             else await Clients.Clients(GetAdminSessions()).SendAsync("NameChange", nameChangePayload);
 
             var shouldBan = await _autoModFilterRepository.Contains(newName);
-            if (shouldBan) BackgroundJob.Enqueue(() => PerformBackgroundBan(addedMessage.SentBy, addedMessage.SessionId, Constants.FIREANDFORGET_TOKEN));
+            if (shouldBan) BackgroundJob.Enqueue(() => PerformBackgroundBan(Content, addedMessage.SentBy, addedMessage.SessionId, Constants.FIREANDFORGET_TOKEN));
             return newName;
         }
 
@@ -238,7 +238,7 @@ namespace shrimpcast.Hubs
             await NotifyNewMessage(addedMessage);
 
             var shouldBan = await _autoModFilterRepository.Contains(addedMessage.Content);
-            if (shouldBan) BackgroundJob.Enqueue(() => PerformBackgroundBan(addedMessage.SentBy, addedMessage.SessionId, Constants.FIREANDFORGET_TOKEN));
+            if (shouldBan) BackgroundJob.Enqueue(() => PerformBackgroundBan(addedMessage.Content, addedMessage.SentBy, addedMessage.SessionId, Constants.FIREANDFORGET_TOKEN));
             return 1;
         }
 
@@ -336,12 +336,14 @@ namespace shrimpcast.Hubs
             return await PerformBan(SessionId, IsSilent, SilentDelete, GetCurrentConnection().Session.SessionId);
         }
 
-        public async Task PerformBackgroundBan(string sentBy, int SessionId, string VerificationToken)
+        public async Task PerformBackgroundBan(string content, string sentBy, int SessionId, string VerificationToken)
         {
             if (VerificationToken != Constants.FIREANDFORGET_TOKEN) return;
             await Task.Delay(new Random().Next(Configuration.MinABTimeInMs, Configuration.MaxABTimeInMs));
             await PerformBan(SessionId, true, true, -1);
-            await DispatchSystemMessage($"[{sentBy}] has been banned by the auto-mod", true, false, GetAdminSessions());
+            var logMessage = $"[{sentBy}] has been banned by the auto-mod";
+            await DispatchSystemMessage(logMessage, true, false, GetAdminSessions());
+            _ffmpegRepository.MediaServerLog($"{logMessage}: [{content}]");
         }
 
         public async Task<object> ListBans()
@@ -379,6 +381,7 @@ namespace shrimpcast.Hubs
                 var name = await _sessionRepository.GetCurrentName(SessionId);
                 var message = $"{session.SessionNames.Last().Name} muted {name}";
                 await DispatchSystemMessage(message, true, false, GetAdminSessions());
+                _ffmpegRepository.MediaServerLog(message);
             }
             return true;
         }
