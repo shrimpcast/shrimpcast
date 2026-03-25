@@ -497,6 +497,12 @@ Then click on `copy` <br><br>
 
 You now have a stream up and running. You can now go to [sources](#stream) and use your URL as the input.
 
+# Playlists
+<img width="1542" height="253" alt="image" src="https://github.com/user-attachments/assets/5cf51b21-7c10-4625-963e-594c63c3d725" />
+<img width="600" height="189" alt="image" src="https://github.com/user-attachments/assets/a60f65fb-4446-462b-a663-ec3cbd947734" />
+
+You can create playlists from media streams. For example, given sources like movie1, movie2, and movie3, you can add them as a comma-separated list to a playlist ( ``movie1,movie2,movie3`` ).
+
 ## Update
 If you want to update to the latest version of shrimpcast, you can do so by running
    ```bash
