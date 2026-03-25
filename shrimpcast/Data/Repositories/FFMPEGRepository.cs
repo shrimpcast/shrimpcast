@@ -47,23 +47,24 @@ namespace shrimpcast.Data.Repositories.Interfaces
             }
         }
 
-        private StreamInfo InitStreamProcess(MediaServerStream stream)
+        private StreamInfo InitStreamProcess(MediaServerStream stream, MediaServerStream? playlist = null)
         {
             try
             {
-                CleanStreamDirectory(stream.Name);
-                var streamInfo = BuildStreamCommand(stream);
-                _processes.All.AddOrUpdate(stream.Name, streamInfo, (k, oldValue) => streamInfo);
+                var streamName = playlist != null ? playlist.Name : stream.Name;
+                CleanStreamDirectory(streamName);
+                var streamInfo = BuildStreamCommand(stream, playlist);
+                _processes.All.AddOrUpdate(streamName, streamInfo, (k, oldValue) => streamInfo);
 
-                streamInfo.Process.OutputDataReceived += (_, e) => LogFfmpeg(stream.Name, e?.Data);
-                streamInfo.Process.ErrorDataReceived += (_, e) => LogFfmpeg(stream.Name, e?.Data);
-                streamInfo.Process.Exited += (sender, e) => LogProcessCrash(stream.Name);
+                streamInfo.Process.OutputDataReceived += (_, e) => LogFfmpeg(streamName, e?.Data);
+                streamInfo.Process.ErrorDataReceived += (_, e) => LogFfmpeg(streamName, e?.Data);
+                streamInfo.Process.Exited += (sender, e) => LogProcessCrash(streamName);
 
                 streamInfo.Process.Start();
                 streamInfo.Process.BeginOutputReadLine();
                 streamInfo.Process.BeginErrorReadLine();
 
-                MediaServerLog($"Started process {stream.Name}");
+                MediaServerLog($"Started process {streamName}{(playlist != null ? $". [PLAYLIST] Playing: {stream.Name}" : null )}");
                 return streamInfo;
             }
             catch (Exception ex)
@@ -79,6 +80,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             if (processInfo == null || HasExited(processInfo.Process)) return;
             MediaServerLog($"Stop called on process {stream}. Reason = {reason}");
             processInfo.Stream.IsEnabled = false;
+            processInfo.Playlist_CurrentlyPlaying = null;
             
             try
             {
@@ -161,7 +163,15 @@ namespace shrimpcast.Data.Repositories.Interfaces
                         streamInfo != null && stream.IsEnabled && HasExited(streamInfo.Process)
                         )
                     {
-                        streamInfo = InitStreamProcess(stream);
+                        if (stream.IsPlaylist)
+                        {
+                            var nextSource = GetPlaylistSource(streamInfo, streams, stream);
+                            streamInfo = InitStreamProcess(nextSource, stream);
+                        }
+                        else
+                        {
+                            streamInfo = InitStreamProcess(stream);
+                        }
                     }
 
                     // ------  check if process is stale  ------ //
@@ -188,6 +198,53 @@ namespace shrimpcast.Data.Repositories.Interfaces
             catch (Exception ex)
             {
                 MediaServerLog($"Job process-scheduler-tasks failed: {ex.Message}:{ex.InnerException}");
+            }
+        }
+
+        private MediaServerStream GetPlaylistSource(StreamInfo? streamInfo, List<MediaServerStream> streams, MediaServerStream playlist)
+        {
+            var nextSourceName = string.Empty;
+            try
+            {
+                var playlistSources = playlist.IngressUri.Split(",")
+                                                         .Select(source => source.ToLower().Trim())
+                                                         .ToArray();
+
+                if (streamInfo == null) nextSourceName = playlistSources[0];
+                else
+                {
+                    var currentlyPlayingIndex = Array.FindIndex(playlistSources, p => p == streamInfo.Playlist_CurrentlyPlaying);
+                    if (currentlyPlayingIndex == -1 || currentlyPlayingIndex + 1 >= playlistSources.Length)
+                    {
+                        nextSourceName = playlistSources[0];
+                    }
+                    else
+                    {
+                        nextSourceName = playlistSources[currentlyPlayingIndex + 1];
+                    }
+
+                    streamInfo.Playlist_CurrentlyPlaying = nextSourceName;
+                }
+
+                return streams.First(stream => stream.Name == nextSourceName);
+            }
+            catch (Exception ex)
+            {
+                MediaServerLog($"Error on playlist [{playlist.Name}:{nextSourceName}] ({playlist.IngressUri}): {ex.Message}");
+                // Return a placeholder object which will immediatly crash so the playlist can continue cycling items
+                return new MediaServerStream
+                {
+                    IngressUri = string.Empty,
+                    IsEnabled = true,
+                    IsPlaylist = false,
+                    ListSize = 0,
+                    LowLatency = false,
+                    Name = nextSourceName,
+                    SegmentLength = 0,
+                    SnapshotInterval = 0,
+                    VideoEncodingPreset = string.Empty,
+                    VideoStreamIndex = 0,
+                };
             }
         }
 
@@ -349,11 +406,12 @@ namespace shrimpcast.Data.Repositories.Interfaces
             return command;
         }
 
-        private StreamInfo BuildStreamCommand(MediaServerStream stream)
+        private StreamInfo BuildStreamCommand(MediaServerStream stream, MediaServerStream? playlist = null)
         {
             var audioIndexSource = string.IsNullOrEmpty(stream.AudioCustomSource) ? 0 : 1;
             var command = "-loglevel info -y -fflags +genpts -thread_queue_size 512";
             var shouldSeek = stream.StartAt != null && stream.StartAt.Value.ToString() != "00:00:00" ? $"-ss {stream.StartAt.Value}" : string.Empty;
+            var streamName = playlist != null ? playlist.Name : stream.Name;
 
             if (stream.CustomHeaders != "\r\n") command += $" -headers \"{stream.CustomHeaders}\"";
             if (stream.VideoStreamProbeForceHLS) command += $" -f hls";
@@ -425,17 +483,18 @@ namespace shrimpcast.Data.Repositories.Interfaces
 
             if (stream.LowLatency) command += " -flags +low_delay";
 
-            var dirInfo = Directory.CreateDirectory(GetStreamDirectory(stream.Name));
+            var dirInfo = Directory.CreateDirectory(GetStreamDirectory(streamName));
             command += $" -f hls -hls_time {stream.SegmentLength} -hls_list_size {stream.ListSize} -hls_flags delete_segments+append_list+program_date_time+temp_file -hls_delete_threshold 4 -hls_segment_filename \"{Path.Combine(dirInfo.FullName, "live_%03d.ts")}\" {Path.Combine(dirInfo.FullName, "index.m3u8")}";
 
             return new StreamInfo
             {
                 LaunchCommand = $"{FFMPEGProcess} {command}",
-                StreamPath = GetWebStreamPath(stream.Name.ToLower()),
+                StreamPath = GetWebStreamPath(streamName),
                 FullStreamPath = Path.Combine(dirInfo.FullName, "index.m3u8"),
-                Stream = stream,
+                Stream = playlist != null ? playlist : stream,
                 Process = ProcessLauncher.MakeProcess(FFMPEGProcess, command, true),
                 StartTime = DateTime.UtcNow,
+                Playlist_CurrentlyPlaying = stream.Name,
             };
         }
         #endregion

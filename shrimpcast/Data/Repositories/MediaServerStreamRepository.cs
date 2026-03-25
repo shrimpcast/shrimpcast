@@ -9,15 +9,26 @@ namespace shrimpcast.Data.Repositories.Interfaces
 
         public async Task<MediaServerStream?> Add(MediaServerStream mediaServerStream)
         {
+            await Validate(mediaServerStream);
             if (_context.MediaServerStreams.AsNoTracking().FirstOrDefault(m => m.Name == mediaServerStream.Name) != null) return null;
-            Validate(mediaServerStream);
             await _context.AddAsync(mediaServerStream);
             var result = await _context.SaveChangesAsync();
             return result > 0 ? mediaServerStream : throw new Exception("Could not add media server stream.");
         }
 
-        public async Task<List<MediaServerStream>> GetAll() =>
-            await _context.MediaServerStreams.AsNoTracking().ToListAsync();
+        public async Task<List<MediaServerStream>> GetAll(bool? filterByType = null)
+        {
+            if (filterByType == null)
+            {
+                return await _context.MediaServerStreams.AsNoTracking()
+                                                        .ToListAsync();
+            }
+
+            return await _context.MediaServerStreams.AsNoTracking()
+                                                    .Where(m => m.IsPlaylist == filterByType)
+                                                    .OrderBy(m => m.Name)
+                                                    .ToListAsync();
+        }
 
         public async Task<List<MediaServerStream>> GetEnabled() =>
             await _context.MediaServerStreams.AsNoTracking().Where(m => m.IsEnabled).ToListAsync();
@@ -27,8 +38,8 @@ namespace shrimpcast.Data.Repositories.Interfaces
 
         public async Task<bool> Edit(MediaServerStream _mediaServerStream)
         {
+            await Validate(_mediaServerStream);
             var mediaServerStream = await _context.MediaServerStreams.FirstAsync(m => m.MediaServerStreamId == _mediaServerStream.MediaServerStreamId);
-            Validate(_mediaServerStream);
             _context.Entry(mediaServerStream).CurrentValues.SetValues(_mediaServerStream);
             return await _context.SaveChangesAsync() > 0;
         }
@@ -40,12 +51,31 @@ namespace shrimpcast.Data.Repositories.Interfaces
             return await _context.SaveChangesAsync() > 0 ? mediaServerStream.Name : throw new Exception("Could not remove item.");
         }
 
-        private void Validate(MediaServerStream stream)
+        private async Task Validate(MediaServerStream stream)
         {
             if (stream.SnapshotInterval < 15 || stream.SegmentLength < 2 || stream.ListSize < 6)
             {
                 throw new InvalidDataException();
-            } 
+            }
+
+            stream.Name = stream.Name.ToLower();
+
+            if (!stream.IsPlaylist) return;
+
+            var all = await GetAll(false);
+            var playlistSources = stream.IngressUri.Split(",")
+                                        .Select(source => source.ToLower().Trim())
+                                        .ToArray();
+
+            var matchingSources = all.Where(stream => playlistSources.Contains(stream.Name))
+                                     .Count();
+
+            if (matchingSources != playlistSources.Distinct().Count())
+            {
+                throw new InvalidOperationException();
+            }
+
+            stream.IngressUri = string.Join(",", playlistSources);
         }
     }
 }

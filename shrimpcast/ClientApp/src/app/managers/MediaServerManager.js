@@ -39,8 +39,10 @@ class MediaServerManager {
       .catch((ex) => console.log(ex));
     return response;
   }
-  static async GetAll(signalR) {
-    const response = await signalR.invoke("GetAllMediaServerStreams").catch((ex) => console.log(ex));
+  static async GetAll(signalR, playlistsOnly) {
+    const response = await signalR
+      .invoke("GetAllMediaServerStreams", Boolean(playlistsOnly))
+      .catch((ex) => console.log(ex));
     return response;
   }
   static async Edit(signalR, mediaServerStream, extraEditObjects) {

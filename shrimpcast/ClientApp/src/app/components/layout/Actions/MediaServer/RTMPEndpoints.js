@@ -82,19 +82,19 @@ const RTMPEndpoints = (props) => {
   }, []);
 
   return (
-    <>
-      <Typography variant="overline" mt={1} mb={1}>
+    <Box mt={1}>
+      <Typography variant="overline">
         RTMP ENDPOINTS
-        <Divider />
+        <Divider sx={{ mb: 1 }} />
       </Typography>
       {!items ? (
-        <Box width="40px" ml="auto" mr="auto" mt={1}>
+        <Box width="40px" ml="auto" mr="auto" mt={2}>
           <CircularProgress color="secondary" />
         </Box>
       ) : (
         <GenericAddObjectTable setItems={setItems} {...tableModel} items={items} signalR={signalR} />
       )}
-    </>
+    </Box>
   );
 };
 

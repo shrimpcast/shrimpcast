@@ -101,6 +101,7 @@ const MediaServer = (props) => {
       watermark: "",
       subtitles: "",
       startAt: null,
+      isPlaylist: false,
     },
     identifier: "name",
     itemsKey: "media server streams",

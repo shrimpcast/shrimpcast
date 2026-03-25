@@ -62,6 +62,7 @@ namespace shrimpcast.Controllers
                     bitrate = p.Value.Bitrate,
                     cpuUsage = p.Value.ProcessorUsageComputed,
                     viewers = p.Value.Viewers.Count,
+                    playing = p.Value.Stream.IsPlaylist ? p.Value.Playlist_CurrentlyPlaying : null
                 }
             });
         }

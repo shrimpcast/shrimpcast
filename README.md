@@ -52,7 +52,7 @@ Shrimpcast is a highly customizable, flexible, battle-tested, high performance, 
 - [Update](#update)
 - [License](#license)
 
-_Last revision: **2.0.6**_
+_Last revision: **2.0.8**_
 
 ## Features
 
@@ -63,6 +63,7 @@ _Last revision: **2.0.6**_
 - **Battle-tested with thousands of concurrent users**
 - **Out-of-the-box Cloudflare support**
 - **Feature rich**
+- **Inbuilt load balancing**
 
 ## Installation
 
@@ -312,6 +313,58 @@ Once you're authenticated as an admin, you will have the following options:
 - **Master instance domain:** The domain to which metrics are reported. Format should be `domain.tld`. Do not include protocols or slashes.
 - **Auth token:** The auth token used for metrics reporting. Must be the same on both master and slave instances.
 
+### Load balancing setup
+
+Set up your child instances on a subdomain (e.g., `lb(n).domain`), using the same auth token across all instances. Then enable sending metrics from each load balancing instance to the master instance domain.
+
+### Configuring a load-balanced stream
+
+To load balance a stream, configure a source using the following format:
+
+```
+[lbs]{settings}[/lbs]https://{subdomain}{lbi}.domain/..stream.../index.m3u8
+```
+
+---
+
+### Load balancing modes
+
+### 1. Instance Count
+
+Distribute traffic evenly across a fixed number of instances.
+
+**Example:** balance across 5 instances (`lb1` through `lb5`):
+
+```
+[lbs]5[/lbs]https://lb{lbi}.domain/api/mediaserver/streams/stream/index.m3u8
+```
+
+> **Note:** All child instances must produce identical HLS output for this to work correctly.
+
+---
+
+### 2. Instance count with exclusions
+
+Distribute traffic across a range of instances while skipping specific ones.
+
+**Example:** balance across 5 instances, excluding `lb1` and `lb5` (uses `lb2`, `lb3`, `lb4`):
+
+```
+[lbs]ei5_1,5[/lbs]https://lb{lbi}.domain/api/mediaserver/streams/stream/index.m3u8
+```
+
+---
+
+### 3. Weighted distribution
+
+Steer traffic to specific instances by percentage.
+
+**Example:** 50% to `lb1`, 20% to `lb2`, 10% each to `lb3`, `lb4`, and `lb5`:
+
+```
+[lbs]w50,20,10,10,10[/lbs]https://lb{lbi}.domain/api/mediaserver/streams/stream/index.m3u8
+```   
+  
 ## Media server
 
 <img width="1405" height="783" alt="image" src="https://github.com/user-attachments/assets/8c983b44-e67a-41a6-9846-f08bb9efd52a" />
@@ -443,6 +496,12 @@ Then click on `copy` <br><br>
 <img width="900" height="65" alt="image" src="https://github.com/user-attachments/assets/4bb1efe7-c5c3-4991-9997-f5ecbb8be996" />
 
 You now have a stream up and running. You can now go to [sources](#stream) and use your URL as the input.
+
+# Playlists
+<img width="1542" height="253" alt="image" src="https://github.com/user-attachments/assets/5cf51b21-7c10-4625-963e-594c63c3d725" />
+<img width="600" height="189" alt="image" src="https://github.com/user-attachments/assets/a60f65fb-4446-462b-a663-ec3cbd947734" />
+
+You can create playlists from media streams. For example, given sources like movie1, movie2, and movie3, you can add them as a comma-separated list to a playlist ( ``movie1,movie2,movie3`` ).
 
 ## Update
 If you want to update to the latest version of shrimpcast, you can do so by running

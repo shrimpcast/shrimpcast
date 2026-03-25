@@ -2,6 +2,7 @@ import { Box, Divider, Typography, useTheme } from "@mui/material";
 import SystemStats from "./SystemStats";
 import StreamStats from "./StreamStats";
 import RTMPEndpoints from "./RTMPEndpoints";
+import Playlists from "./Playlists";
 
 const ContainerSx = (theme) => ({
     display: "flex",
@@ -37,9 +38,10 @@ const Panel = (props) => {
         </Box>
       </Box>
       <RTMPEndpoints {...props} />
-      <Typography variant="overline" mt={1} mb={1}>
-        CONFIGURE OUTPUTS
-        <Divider />
+      <Playlists {...props} />
+      <Typography variant="overline">
+        HLS OUTPUTS
+        <Divider sx={{ mb: 1 }} />
       </Typography>
     </Box>
   );
