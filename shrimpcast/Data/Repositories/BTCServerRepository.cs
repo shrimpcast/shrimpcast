@@ -21,7 +21,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             return status;
         }
 
-        public async Task<string> GenerateInvoice(string name, int sessionId)
+        public async Task<string> GenerateInvoice(string name, int sessionId, int amount)
         {
             if (!await CheckStatus()) throw new Exception("BTCServer is unavailable.");
             var configuration = _configurationSingleton.Configuration;
@@ -32,7 +32,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             var payload = "{\"metadata\": {\"itemDesc\": \"{0}\", \"orderId\": \"{1}\"},\"amount\": \"{2}\"}"
                           .Replace("{0}", description)
                           .Replace("{1}", $"{sessionId}")
-                          .Replace("{2}", $"{configuration.GoldenPassValue}");
+                          .Replace("{2}", $"{amount}");
             var content = new StringContent(payload, null, "application/json");
             request.Content = content;
             var response = await client.SendAsync(request);

@@ -851,8 +851,9 @@ namespace shrimpcast.Hubs
         #endregion
 
         #region Golden pass
-        public async Task<string> BeginPurchase(bool isCrypto)
+        public async Task<string> BeginPurchase(bool isCrypto, int amount)
         {
+            if (amount < Configuration.GoldenPassValue) return $"Error: Minimum amount is ${Configuration.GoldenPassValue}";
             string? response;
             try
             {
@@ -861,7 +862,7 @@ namespace shrimpcast.Hubs
                 {
                     if (Configuration.EnableBTCServer)
                     {
-                        response = await _btcServerRepository.GenerateInvoice(session.SessionNames.Last().Name, session.SessionId);
+                        response = await _btcServerRepository.GenerateInvoice(session.SessionNames.Last().Name, session.SessionId, amount);
                     }
                     else response = "Error: BTCServer is disabled.";
                 }
@@ -870,7 +871,7 @@ namespace shrimpcast.Hubs
                     if (Configuration.EnableStripe)
                     {
                         var host = Context.GetHttpContext()?.Request.Host.Value ?? string.Empty;
-                        response = await _stripeRepository.GenerateInvoice(session.SessionNames.Last().Name, session.SessionId, host);
+                        response = await _stripeRepository.GenerateInvoice(session.SessionNames.Last().Name, session.SessionId, host, amount);
                     }
                     else response = "Error: Stripe is disabled.";
                 }

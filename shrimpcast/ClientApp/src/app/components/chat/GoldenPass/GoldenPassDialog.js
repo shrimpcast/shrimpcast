@@ -1,12 +1,24 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import DialogTitle from "@mui/material/DialogTitle";
 import Dialog from "@mui/material/Dialog";
-import { Box, DialogContent, Divider, Typography, Button, CircularProgress, Snackbar, Alert } from "@mui/material";
+import {
+  Box,
+  DialogContent,
+  Divider,
+  Typography,
+  Button,
+  CircularProgress,
+  Snackbar,
+  Alert,
+  TextField,
+} from "@mui/material";
 import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
 import TokenManager from "../../../managers/TokenManager";
 import InvoiceTable from "./InvoiceTable";
 import KeyframesManager from "../../../managers/KeyframesManager";
 import { yellow } from "@mui/material/colors";
+import ToggleButton from "@mui/material/ToggleButton";
+import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 
 const DialogSx = {
     borderRadius: "10px",
@@ -46,7 +58,9 @@ const DialogSx = {
 
 const GoldenPassDialog = (props) => {
   const { closeDialog, configuration, goldenPassTitle, signalR, colours } = props,
-    { enableStripe, enableBTCServer } = configuration,
+    { enableStripe, enableBTCServer, goldenPassValue } = configuration,
+    [amount, setAmount] = useState(goldenPassValue),
+    customAmountReference = useRef(null),
     [colour, setColour] = useState(colours[0].colourHex),
     [loading, setLoading] = useState(false),
     [invoices, setInvoices] = useState(null),
@@ -61,7 +75,7 @@ const GoldenPassDialog = (props) => {
     },
     beginPurchase = async (isCrypto) => {
       setLoading(true);
-      const response = await TokenManager.BeginGoldenPassPurchase(signalR, isCrypto);
+      const response = await TokenManager.BeginGoldenPassPurchase(signalR, isCrypto, amount);
       setLoading(false);
       if (!response || response.includes("Error")) {
         setToastMessage(response || "Error: could not complete purchase.");
@@ -72,6 +86,26 @@ const GoldenPassDialog = (props) => {
       if (isCrypto) setCheckoutUrl(response);
       else window.open(response, "_self");
       getInvoices();
+    },
+    [alignment, setAlignment] = useState("default"),
+    handleAlignment = (event, newAlignment) => {
+      if (!newAlignment) return;
+      setAlignment(newAlignment);
+
+      if (newAlignment === "default") {
+        setAmount(goldenPassValue);
+      } else {
+        setTimeout(() => customAmountReference.current.focus(), 100);
+      }
+    },
+    setCustomAmount = (event, isBlur) => {
+      const customAmount = +event.target.value;
+      if (isNaN(customAmount)) return;
+      if (isBlur && customAmount < goldenPassValue) {
+        setAmount(goldenPassValue);
+        return;
+      }
+      setAmount(customAmount);
     };
 
   useEffect(() => {
@@ -83,7 +117,7 @@ const GoldenPassDialog = (props) => {
           if (index + 1 === colours.length) index = -1;
           return colours[index + 1].colourHex;
         }),
-      2000
+      2000,
     );
     return () => {
       setInvoices(null);
@@ -105,10 +139,10 @@ const GoldenPassDialog = (props) => {
         </DialogTitle>
         <DialogContent sx={DialogContentSx}>
           <Typography variant="body1" marginTop="5px">
-            Buy the {goldenPassTitle} golden pass if you wish to support the site, and enjoy complimentary benefits such
+            Get the {goldenPassTitle} golden pass if you wish to support the site, and enjoy complimentary benefits such
             as:
           </Typography>
-          <Box marginTop="10px" mb={3}>
+          <Box marginTop="10px" mb={1}>
             <Typography variant="body2" sx={GoldenPassGlow(colour)}>
               - <WorkspacePremiumIcon sx={{ fontSize: "13px", position: "relative", top: "1px" }} /> Glowie username
             </Typography>
@@ -116,6 +150,52 @@ const GoldenPassDialog = (props) => {
             <Typography variant="body2">- Unlimited duration </Typography>
             {enableBTCServer && <Typography variant="body2">- 100% anonymous via crypto</Typography>}
             <Typography variant="body2">- All payments are processed automatically</Typography>
+          </Box>
+          <Box mb={2}>
+            <Typography display="inline-block" variant="body1">
+              Contribution amount:
+            </Typography>
+            <ToggleButtonGroup
+              size="small"
+              value={alignment}
+              exclusive
+              onChange={handleAlignment}
+              aria-label="text alignment"
+              sx={{ ml: 1 }}
+            >
+              <ToggleButton value="default" aria-label="default aligned">
+                USD ${goldenPassValue}
+              </ToggleButton>
+              <ToggleButton
+                value="custom"
+                aria-label="custom aligned"
+                sx={{ borderTopRightRadius: "0px", borderBottomRightRadius: "0px" }}
+              >
+                CUSTOM $
+              </ToggleButton>
+            </ToggleButtonGroup>
+            <TextField
+              onChange={setCustomAmount}
+              onBlur={(e) => setCustomAmount(e, true)}
+              variant="outlined"
+              type="number"
+              size="small"
+              value={amount.toString()}
+              inputProps={{
+                sx: {
+                  height: "21.5px",
+                  width: "60px",
+                },
+              }}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderTopLeftRadius: 0,
+                  borderBottomLeftRadius: 0,
+                },
+                display: alignment !== "custom" ? "none" : "initial",
+              }}
+              inputRef={customAmountReference}
+            />
           </Box>
           {enableBTCServer && (
             <Box justifyContent="center" display="flex">
@@ -125,7 +205,7 @@ const GoldenPassDialog = (props) => {
                 variant="contained"
                 sx={BuyButtonSx}
               >
-                Buy with crypto - USD ${configuration.goldenPassValue}
+                Contribute with crypto - USD ${amount}
                 {loading && <CircularProgress color="primary" sx={{ ml: "10px" }} size={14} />}
               </Button>
             </Box>
@@ -138,7 +218,7 @@ const GoldenPassDialog = (props) => {
                 variant="contained"
                 sx={BuyButtonSx}
               >
-                Buy with card (stripe) - USD ${configuration.goldenPassValue}
+                Contribute with card (stripe) - USD ${amount}
                 {loading && <CircularProgress color="primary" sx={{ ml: "10px" }} size={14} />}
               </Button>
             </Box>

@@ -15,7 +15,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             return account.ChargesEnabled;
         }
 
-        public async Task<string> GenerateInvoice(string name, int sessionId, string successUrl)
+        public async Task<string> GenerateInvoice(string name, int sessionId, string successUrl, int amount)
         {
             if (!await CheckStatus()) throw new Exception("Stripe is unavailable.");
             var configuration = _configurationSingleton.Configuration;
@@ -32,7 +32,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
                             PriceData = new SessionLineItemPriceDataOptions
                             {
                                 Currency = "usd",
-                                UnitAmount = configuration.GoldenPassValue * 100,
+                                UnitAmount = amount * 100,
                                 ProductData = new SessionLineItemPriceDataProductDataOptions
                                 {
                                     Name = description
