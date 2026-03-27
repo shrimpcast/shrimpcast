@@ -329,7 +329,7 @@ To load balance a stream, configure a source using the following format:
 
 ### Load balancing modes
 
-### 1. Instance Count
+### 1. Instance count
 
 Distribute traffic evenly across a fixed number of instances.
 
