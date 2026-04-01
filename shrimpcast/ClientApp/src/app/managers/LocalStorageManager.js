@@ -5,6 +5,7 @@ class LocalStorageManager {
     showNotificationsPrompt: "notifications_prompt_hidden",
     showGitHubPrompt: "github_prompt_hidden",
     recentlyUsedEmotes: "recently_used_emotes",
+    playerVolume: "player_volume",
   };
 
   static setStorage(key, value) {
@@ -73,6 +74,16 @@ class LocalStorageManager {
       emotes = JSON.parse(this.getStorage(this.localStorage.recentlyUsedEmotes));
     } catch (e) {}
     return Array.isArray(emotes) ? emotes : [];
+  }
+
+  static setPlayerVolume(volume) {
+    this.setStorage(this.localStorage.playerVolume, volume);
+    return true;
+  }
+
+  static getPlayerVolume() {
+    const volume = +this.getStorage(this.localStorage.playerVolume);
+    return isNaN(volume) || volume > 1 || volume < 0 ? 1 : volume;
   }
 }
 
