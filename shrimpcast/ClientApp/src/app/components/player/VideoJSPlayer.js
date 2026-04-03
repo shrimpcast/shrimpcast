@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import videojs from "video.js";
 import { Box, CircularProgress } from "@mui/material";
+import LocalStorageManager from "../../managers/LocalStorageManager";
 
 const Loader = {
   width: "50px",
@@ -17,6 +18,7 @@ const VideoJSPlayer = (props) => {
     [cssLoaded, setCssLoaded] = useState(false),
     { options, theme } = props,
     play = (player) => {
+      player.volume(LocalStorageManager.getPlayerVolume());
       player.muted(false);
       setTimeout(() => {
         player.play().catch(() => {
@@ -87,6 +89,11 @@ const VideoJSPlayer = (props) => {
             }
           } catch (e) {}
         }, 5000);
+      });
+
+      player.on("volumechange", () => {
+        const currentVolume = player.volume();
+        LocalStorageManager.setPlayerVolume(currentVolume);
       });
 
       if (isError) {

@@ -15,6 +15,10 @@ const ShowPing = (props) => {
     signalR.on(SignalRManager.events.ping, async (ping) => {
       setMessage(ping);
       await PingManager.ConfirmPingReception(signalR, ping.pingId, false);
+      try {
+        const audio = new Audio("/media/blip.wav");
+        audio.play();
+      } catch (e) {}
     });
     return () => signalR.off(SignalRManager.events.ping);
     // eslint-disable-next-line react-hooks/exhaustive-deps
