@@ -188,7 +188,7 @@ const StreamStats = (props) => {
           <Box width="40px" ml="auto" mr="auto" mt={2}>
             <CircularProgress color="secondary" />
           </Box>
-        ) : !stats?.length ? (
+        ) : !Array.isArray(stats) || !stats.length ? (
           <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ py: 2 }}>
             No active streams
           </Typography>
