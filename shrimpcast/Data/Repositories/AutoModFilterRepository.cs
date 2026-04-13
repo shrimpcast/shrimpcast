@@ -7,7 +7,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
     {
         private readonly APPContext _context = context;
 
-        public async Task<AutoModFilter> Add(AutoModFilter autoModFilter)
+        public async Task<AutoModFilter?> Add(AutoModFilter autoModFilter)
         {
             if (_context.AutoModFilters.AsNoTracking().FirstOrDefault(filter => filter.Content == autoModFilter.Content) != null) return null;
             await _context.AddAsync(autoModFilter);
