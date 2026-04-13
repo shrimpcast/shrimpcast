@@ -30,6 +30,9 @@ namespace shrimpcast.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("AutoModFilterId"));
 
+                    b.Property<bool>("AutoBan")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("text");

@@ -200,7 +200,7 @@ namespace shrimpcast.Hubs
             if (Configuration.ShowConnectedUsers) await Clients.All.SendAsync("NameChange", nameChangePayload);
             else await Clients.Clients(GetAdminSessions()).SendAsync("NameChange", nameChangePayload);
 
-            var shouldBan = await _autoModFilterRepository.Contains(newName);
+            var shouldBan = await _autoModFilterRepository.Contains(newName, true);
             if (shouldBan) BackgroundJob.Enqueue(() => PerformBackgroundBan(Content, addedMessage.SentBy, addedMessage.SessionId, Constants.FIREANDFORGET_TOKEN));
             return newName;
         }
@@ -237,7 +237,7 @@ namespace shrimpcast.Hubs
             addedMessage.UserColorDisplay = session.UserColorDisplay;
             await NotifyNewMessage(addedMessage);
 
-            var shouldBan = await _autoModFilterRepository.Contains(addedMessage.Content);
+            var shouldBan = await _autoModFilterRepository.Contains(addedMessage.Content, true);
             if (shouldBan) BackgroundJob.Enqueue(() => PerformBackgroundBan(addedMessage.Content, addedMessage.SentBy, addedMessage.SessionId, Constants.FIREANDFORGET_TOKEN));
             return 1;
         }
@@ -446,20 +446,26 @@ namespace shrimpcast.Hubs
         {
             await ShouldGrantAccess();
             var Message = await _messageRepository.GetById(MessageId);
-            await _autoModFilterRepository.Add(Message.Content, false, false);
+            await _autoModFilterRepository.Add(new AutoModFilter
+            {
+                Content = Message.Content,
+                IgnoreCase = false,
+                IgnoreDiacritic = false,
+                AutoBan = true,
+            });
             return await PerformBan(SessionId, true, true, GetCurrentConnection().Session.SessionId);
         }
 
-        public async Task<AutoModFilter?> AddAutoModFilterWithText([FromBody] string Content, [FromBody] bool IgnoreCase, [FromBody] bool IgnoreDiacritic)
+        public async Task<AutoModFilter?> AddAutoModFilterWithText([FromBody] AutoModFilter filter)
         {
             await ShouldGrantAccess();
-            Content = Content.Trim();
-            if (string.IsNullOrEmpty(Content) || Content.Length < 5)
+            filter.Content = filter.Content.Trim();
+            if (string.IsNullOrEmpty(filter.Content) || filter.Content.Length < 2)
             {
-                await DispatchSystemMessage("Content length must be at least 5.");
+                await DispatchSystemMessage("Content length must be at least 2.");
                 return null;
             }
-            return await _autoModFilterRepository.Add(Content, IgnoreCase, IgnoreDiacritic);
+            return await _autoModFilterRepository.Add(filter);
         }
 
         public async Task<bool> RemoveAutoModFilter([FromBody] int AutoModFilterId)
@@ -486,7 +492,7 @@ namespace shrimpcast.Hubs
         {
             var Connection = GetCurrentConnection();
             var Session = Connection.Session;
-            if (await CanUsePoll() is var notAllowedMessage && notAllowedMessage != null)
+            if (await CanUsePoll(option) is var notAllowedMessage && notAllowedMessage != null)
             {
                 await DispatchSystemMessage(notAllowedMessage);
                 return 0;
@@ -1035,6 +1041,12 @@ namespace shrimpcast.Hubs
                 return "Chat is temporarily disabled.";
             }
 
+            var containsProhibitedWords = await _autoModFilterRepository.Contains(Post, false);
+            if (containsProhibitedWords)
+            {
+                return "Your post contains forbidden words. Please reformat.";
+            }
+
             var MutedUntil = connection.Session.MutedUntil.GetValueOrDefault();
             var difference = DateTime.UtcNow.Subtract(MutedUntil).TotalMinutes;
             if (difference < 0)
@@ -1102,13 +1114,13 @@ namespace shrimpcast.Hubs
             await Clients.All.SendAsync("VoteUpdate", votes);
         }
 
-        private async Task<string?> CanUsePoll()
+        private async Task<string?> CanUsePoll(string? Post = null)
         {
             var Connection = GetCurrentConnection();
             var Session = Connection.Session;
             if (Session.IsAdmin) return null;
 
-            var notAllowedMessage = await IsChatActionAllowed(string.Empty);
+            var notAllowedMessage = await IsChatActionAllowed(Post ?? string.Empty);
             if (notAllowedMessage != null) return notAllowedMessage;
 
             var MinCount = Configuration.MinSentToParticipate;

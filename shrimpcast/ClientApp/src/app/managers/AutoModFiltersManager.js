@@ -4,9 +4,7 @@ class AutoModFiltersManager {
     return response;
   }
   static async AddWithText(signalR, filter) {
-    const response = await signalR
-      .invoke("AddAutoModFilterWithText", filter.content, filter.ignoreCase, filter.ignoreDiacritic)
-      .catch((ex) => console.log(ex));
+    const response = await signalR.invoke("AddAutoModFilterWithText", filter).catch((ex) => console.log(ex));
     return response;
   }
   static async Remove(signalR, autoModFilter) {

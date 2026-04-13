@@ -12,5 +12,7 @@ namespace shrimpcast.Entities.DB
         public required bool IgnoreCase { get; set; }
 
         public required bool IgnoreDiacritic { get; set; }
+
+        public required bool AutoBan { get; set; }
     }
 }
