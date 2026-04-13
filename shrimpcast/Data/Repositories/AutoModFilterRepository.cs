@@ -16,7 +16,9 @@ namespace shrimpcast.Data.Repositories.Interfaces
         }
 
         public async Task<List<AutoModFilter>> GetAll() =>
-            await _context.AutoModFilters.OrderBy(filter => filter.AutoModFilterId).ToListAsync();
+            await _context.AutoModFilters.AsNoTracking() 
+                                         .OrderBy(filter => filter.AutoModFilterId)
+                                         .ToListAsync();
 
         public async Task<bool> Edit(AutoModFilter filter)
         {
