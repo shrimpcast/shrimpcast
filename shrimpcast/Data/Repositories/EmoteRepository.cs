@@ -10,18 +10,20 @@ namespace shrimpcast.Data.Repositories.Interfaces
 
         public async Task<object> GetAll()
         {
-            var emotes = await _context.Emotes.AsNoTracking().Select(emote => new
-            {
-                emote.EmoteId,
-                name = $":{emote.Name}:",
-                url = Constants.EMOTE_GET(emote.Name),
-            }).ToListAsync();
+            var emotes = await _context.Emotes.AsNoTracking()
+                                              .OrderBy(emote => emote.EmoteId)
+                                              .Select(emote => new
+                                              {
+                                                  emote.EmoteId,
+                                                  name = $":{emote.Name}:",
+                                                  url = Constants.EMOTE_GET(emote.Name),
+                                              }).ToListAsync();
             return emotes;
         }
 
-        public async Task<Emote> Get(string name)
+        public async Task<Emote?> Get(string name)
         {
-            var emote = await _context.Emotes.AsNoTracking().FirstAsync(emote => emote.Name == name);
+            var emote = await _context.Emotes.AsNoTracking().FirstOrDefaultAsync(emote => emote.Name == name);
             return emote;
         }
 
