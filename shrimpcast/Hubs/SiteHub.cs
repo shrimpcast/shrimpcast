@@ -1044,7 +1044,7 @@ namespace shrimpcast.Hubs
             var containsProhibitedWords = await _autoModFilterRepository.Contains(Post, false);
             if (containsProhibitedWords)
             {
-                return "Your post contains forbidden words. Please reformat.";
+                return "Your post contains banned text. Please reformat.";
             }
 
             var MutedUntil = connection.Session.MutedUntil.GetValueOrDefault();
