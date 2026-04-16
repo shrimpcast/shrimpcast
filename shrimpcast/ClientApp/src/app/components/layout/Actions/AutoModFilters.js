@@ -24,11 +24,17 @@ const AutoModFilters = (props) => {
         type: 1,
         color: "success",
       },
+      {
+        name: "autoBan",
+        label: "Auto ban",
+        type: 1,
+        color: "success",
+      },
     ],
     requiredFields: ["content"],
     reservedWords: [],
     reservedWordField: "content",
-    model: { content: "", ignoreCase: false, ignoreDiacritic: false },
+    model: { content: "", ignoreCase: false, ignoreDiacritic: false, autoBan: false },
     identifier: "content",
     itemsKey: "filters",
     customActions: {

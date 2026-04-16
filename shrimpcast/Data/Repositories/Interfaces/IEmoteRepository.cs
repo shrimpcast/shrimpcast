@@ -10,7 +10,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
 
        Task<bool> Remove(int emoteId);
 
-       Task<Emote> Get(string name);
+       Task<Emote?> Get(string name);
     }
 }
 

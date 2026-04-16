@@ -7,25 +7,18 @@ namespace shrimpcast.Data.Repositories.Interfaces
     {
         private readonly APPContext _context = context;
 
-        public async Task<AutoModFilter?> Add(string Content, bool IgnoreCase, bool IgnoreDiacritic)
+        public async Task<AutoModFilter?> Add(AutoModFilter autoModFilter)
         {
-            if (_context.AutoModFilters.AsNoTracking().FirstOrDefault(filter => filter.Content == Content) != null) return null;
-            var filter = new AutoModFilter
-            {
-                Content = Content,
-                IgnoreCase = IgnoreCase,
-                IgnoreDiacritic = IgnoreDiacritic,
-            };
-            await _context.AddAsync(filter);
+            if (_context.AutoModFilters.AsNoTracking().FirstOrDefault(filter => filter.Content == autoModFilter.Content) != null) return null;
+            await _context.AddAsync(autoModFilter);
             var result = await _context.SaveChangesAsync();
-            return result > 0 ? filter : throw new Exception("Could not add filter.");
+            return result > 0 ? autoModFilter : throw new Exception("Could not add filter.");
         }
 
-        public async Task<List<AutoModFilter>> GetAll()
-        {
-            var query = _context.AutoModFilters.AsNoTracking();
-            return await query.ToListAsync();
-        }
+        public async Task<List<AutoModFilter>> GetAll() =>
+            await _context.AutoModFilters.AsNoTracking() 
+                                         .OrderBy(filter => filter.AutoModFilterId)
+                                         .ToListAsync();
 
         public async Task<bool> Edit(AutoModFilter filter)
         {
@@ -41,11 +34,12 @@ namespace shrimpcast.Data.Repositories.Interfaces
             return await _context.SaveChangesAsync() > 0;
         }
 
-        public async Task<bool> Contains(string Content)
+        public async Task<bool> Contains(string Content, bool IsAutoBanType)
         {
             var query = _context.AutoModFilters
                                 .AsNoTracking()
                                 .AnyAsync(f =>
+                                 f.AutoBan == IsAutoBanType && (
                                  // Ignore case only
                                  (f.IgnoreCase && !f.IgnoreDiacritic && Content.ToLower().Contains(f.Content.ToLower()))
                                  ||
@@ -57,6 +51,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
                                  ||
                                  // Neither
                                  (!f.IgnoreCase && !f.IgnoreDiacritic && Content.Contains(f.Content))
+                                 )
                                 );
             return await query;
         }

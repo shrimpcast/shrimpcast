@@ -26,9 +26,10 @@ namespace shrimpcast.Controllers
 
         [HttpGet, Route("Get/{Name}")]
         [ResponseCache(Duration = 31536000)]
-        public async Task<FileContentResult> Get(string Name)
+        public async Task<IActionResult> Get(string Name)
         {
             var emote = await _emoteRepository.Get(Name);
+            if (emote == null) return NotFound();
             return File(emote.Content, emote.ContentType);
         }
     }
