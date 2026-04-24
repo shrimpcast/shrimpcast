@@ -14,19 +14,19 @@ import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import ReplyIcon from "@mui/icons-material/Reply";
 import LocalPoliceIcon from "@mui/icons-material/LocalPolice";
 
-const WrapperTextBoxSx = {
+const WrapperTextBoxSx = (color) => ({
     margin: "5px 0",
     padding: "8px 10px",
     wordWrap: "break-word",
     position: "relative",
     backgroundColor: "rgba(0,0,0,0.3)",
     transition: "background-color 0.15s linear",
-    borderLeft: "3px solid transparent",
+    borderLeft: `3px solid ${color}`,
     "&:hover": {
       backgroundColor: "rgba(255,255,255,0.08)",
       borderLeftColor: "rgba(255,255,255,0.3)",
     },
-  },
+  }),
   TextSx = (color, force, gt) => ({
     fontWeight: color || force ? "bold" : "none",
     color: color ? color : gt ? "#789922" : "white",
@@ -139,7 +139,10 @@ const UserMessage = React.memo((props) => {
 
   return (
     <MessageWrapper useTransition={props.useTransition}>
-      <Box className="wrapper-comment" sx={WrapperTextBoxSx}>
+      <Box
+        className="wrapper-comment"
+        sx={WrapperTextBoxSx(isAdmin ? "#b23c17" : isMod ? "#66ccff" : userColorDisplay)}
+      >
         <Box className="wrapper-overlay" sx={OverlaySx}>
           <Tooltip title="Reply">
             <IconButton sx={OverlayButtonSx} onClick={replyToUser}>
@@ -214,7 +217,7 @@ const UserMessage = React.memo((props) => {
               <Typography key={i} component="span" sx={HighlightSx}>
                 {match}
               </Typography>
-            )
+            ),
           )}
           {isMiniminized && props.content.length > maxLengthTruncation && (
             <DefaultLink component="button" sx={ExpandButtonSx} title="Click to expand" onClick={openMinimized}>
