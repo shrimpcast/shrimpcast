@@ -38,6 +38,8 @@ const AutoComplete = (props) => {
       setAutoCompleteIndex(0);
       setTimeout(() => {
         const current = _ref.current;
+        current.focus();
+        current.setSelectionRange(current.value.length, current.value.length);
         current.scrollLeft = current.scrollWidth;
       }, 100);
     },
