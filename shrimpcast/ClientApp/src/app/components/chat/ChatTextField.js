@@ -59,22 +59,29 @@ const SendInputSx = {
     left: "3px",
   });
 
+const AutoCompleteTypes = {
+  "@": { propName: "nameSuggestions" },
+  "/": { propName: "enabledSources", flatten: (sources) => sources.map((source) => source.name) },
+  ":": { propName: "emotes", flatten: (emotes) => emotes.map((emote) => emote.name.replace(":", "")) },
+};
+
 const ChatTextField = (props) => {
   const [message, setMessage] = useState(""),
     [focused, setFocused] = useState(false),
     [loading, setLoading] = useState(false),
     [showAutocomplete, setShowAutocomplete] = useState(false),
     [autoCompleteIndex, setAutoCompleteIndex] = useState(0),
+    [autoCompleteType, setAutoCompleteType] = useState(null),
     { signalR, configuration, isAdmin, connectionStatus } = props,
     changeInput = (e) => {
       const target = e.target,
         ne = e.nativeEvent;
       setMessage(ChatActionsManager.normalizeString(configuration.stripNonASCIIChars, target.value));
-      if (ne?.data === "@") {
+
+      if (!showAutocomplete && AutoCompleteTypes[ne?.data]) {
         setAutoCompleteIndex(0);
         setShowAutocomplete(true);
-      } else if (ne?.inputType === "deleteContentBackward" && message.charAt(target.selectionStart) === "@") {
-        setShowAutocomplete(false);
+        setAutoCompleteType({ selectionStart: ne.target.selectionEnd, data: AutoCompleteTypes[ne?.data] });
       }
     },
     submitMessage = async () => {
@@ -99,12 +106,25 @@ const ChatTextField = (props) => {
           break;
         case "ArrowUp":
           autoCompleteIndex > 0 && setAutoCompleteIndex((index) => index - 1);
+          e.preventDefault();
           break;
         case "ArrowDown":
           setAutoCompleteIndex((index) => index + 1);
+          e.preventDefault();
+          break;
+        case "Tab":
+          setAutoCompleteIndex(autoCompleteIndex === 0 ? Number.MIN_SAFE_INTEGER : -autoCompleteIndex);
+          e.preventDefault();
           break;
         default:
           break;
+      }
+    },
+    sholdCloseAutoComplete = (e) => {
+      if (!showAutocomplete) return;
+      if (e?.target?.selectionStart < autoCompleteType?.selectionStart) {
+        setShowAutocomplete(false);
+        return;
       }
     },
     isDisabled = !configuration.chatEnabled && !isAdmin,
@@ -114,7 +134,12 @@ const ChatTextField = (props) => {
     toggleAutoScroll = () => props.toggleAutoScroll((state) => !state),
     replyToUser = (e) => {
       setMessage((message) => message + e.detail.content);
-      textFieldReference.current.focus();
+      const current = textFieldReference.current;
+      setTimeout(() => {
+        current.focus();
+        current.setSelectionRange(current.value.length, current.value.length);
+        current.scrollLeft = current.scrollWidth;
+      }, 100);
     };
 
   useEffect(() => {
@@ -126,12 +151,18 @@ const ChatTextField = (props) => {
     <Box sx={SendInputSx}>
       {showAutocomplete && (
         <AutoComplete
-          nameSuggestions={props.nameSuggestions}
+          nameSuggestions={
+            autoCompleteType.data.flatten
+              ? autoCompleteType.data.flatten(props[autoCompleteType.data.propName])
+              : props[autoCompleteType.data.propName]
+          }
+          startIndex={autoCompleteType.selectionStart}
           setShowAutocomplete={setShowAutocomplete}
           message={message}
           setMessage={setMessage}
           autoCompleteIndex={autoCompleteIndex}
           setAutoCompleteIndex={setAutoCompleteIndex}
+          _ref={textFieldReference}
         />
       )}
       <TextField
@@ -169,6 +200,7 @@ const ChatTextField = (props) => {
         fullWidth
         sx={SendTextFieldSx}
         onKeyDown={handleKeys}
+        onKeyUp={sholdCloseAutoComplete}
         onInput={changeInput}
         value={message}
         disabled={isDisabled}

@@ -29,6 +29,8 @@ namespace shrimpcast.Data.Repositories.Interfaces
 
         public async Task<object> Add(IFormFile emote, string name)
         {
+            name = name.ToLower().Trim();
+            if (string.IsNullOrEmpty(name)) throw new Exception("Name must have a value.");
             if (await ExistsByName(name)) throw new Exception("Emote already exists.");
             byte[] emoteBytes;
             using (var ms = new MemoryStream())

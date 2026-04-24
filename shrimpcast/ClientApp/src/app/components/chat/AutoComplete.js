@@ -3,6 +3,7 @@ import ClickAwayListener from "@mui/material/ClickAwayListener";
 import { Box, Paper } from "@mui/material";
 import { MenuList, MenuItem, ListItemText } from "@mui/material";
 import { useEffect, useRef } from "react";
+import KeyboardReturnIcon from "@mui/icons-material/KeyboardReturn";
 
 const AutoCompleteWrapperSx = {
     position: "absolute",
@@ -19,22 +20,28 @@ const AutoCompleteWrapperSx = {
 
 const AutoComplete = (props) => {
   const handleClose = () => props.setShowAutocomplete(false),
-    { message, nameSuggestions, setMessage, autoCompleteIndex, setAutoCompleteIndex } = props,
+    { message, nameSuggestions, setMessage, autoCompleteIndex, setAutoCompleteIndex, startIndex, _ref } = props,
     filterNames = () => {
-      const substring = message
-        .substring(message.lastIndexOf("@") + 1)
-        .toLowerCase()
-        .trim();
+      const substring = message.substring(startIndex).toLowerCase().trim();
       const options = nameSuggestions.filter((suggestion) => suggestion.toLowerCase().includes(substring));
-      return options;
+      if (options.length === 1 && options[0].toLowerCase() === substring) {
+        setTimeout(() => handleSuggestionClick(options[0]), 100);
+      }
+      return options.slice(0, 10);
     },
     handleSuggestionClick = (suggestion) => {
       setMessage((message) => {
         handleClose();
-        const substring = message.substring(0, message.lastIndexOf("@") + 1);
+        const substring = message.substring(0, startIndex);
         return `${substring}${suggestion} `;
       });
       setAutoCompleteIndex(0);
+      setTimeout(() => {
+        const current = _ref.current;
+        current.focus();
+        current.setSelectionRange(current.value.length, current.value.length);
+        current.scrollLeft = current.scrollWidth;
+      }, 100);
     },
     options = filterNames(),
     scrollReference = useRef();
@@ -81,6 +88,7 @@ const AutoComplete = (props) => {
                       },
                     }}
                   />
+                  {index === autoCompleteIndex && <KeyboardReturnIcon fontSize="small" />}
                 </MenuItem>
               ))}
             </MenuList>
