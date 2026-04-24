@@ -134,7 +134,12 @@ const ChatTextField = (props) => {
     toggleAutoScroll = () => props.toggleAutoScroll((state) => !state),
     replyToUser = (e) => {
       setMessage((message) => message + e.detail.content);
-      textFieldReference.current.focus();
+      const current = textFieldReference.current;
+      setTimeout(() => {
+        current.focus();
+        current.setSelectionRange(current.value.length, current.value.length);
+        current.scrollLeft = current.scrollWidth;
+      }, 100);
     };
 
   useEffect(() => {
