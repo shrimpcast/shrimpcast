@@ -191,7 +191,11 @@ const UserMessage = React.memo((props) => {
               leaveDelay={0}
               arrow
               title={agoText}
-              onOpen={() => setAgoText(verboseHMS(props.createdAt))}
+              onOpen={() =>
+                setAgoText(
+                  `${isAdmin ? "[Admin] - " : isMod ? "[Mod] - " : isGolden ? "[Golden] - " : ""}${verboseHMS(props.createdAt)}`,
+                )
+              }
             >
               <span>{props.sentBy}</span>
             </Tooltip>
