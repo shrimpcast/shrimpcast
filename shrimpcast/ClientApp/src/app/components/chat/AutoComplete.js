@@ -25,7 +25,7 @@ const AutoComplete = (props) => {
       const substring = message.substring(startIndex).toLowerCase().trim();
       const options = nameSuggestions.filter((suggestion) => suggestion.toLowerCase().includes(substring));
       if (options.length === 1 && options[0].toLowerCase() === substring) {
-        setTimeout(() => handleSuggestionClick(options[0]), 100);
+        setTimeout(() => handleSuggestionClick(options[0]), 10);
       }
       return options.slice(0, 10);
     },
@@ -41,7 +41,7 @@ const AutoComplete = (props) => {
         current.focus();
         current.setSelectionRange(current.value.length, current.value.length);
         current.scrollLeft = current.scrollWidth;
-      }, 100);
+      }, 10);
     },
     options = filterNames(),
     scrollReference = useRef();
