@@ -1,7 +1,8 @@
 import ClickAwayListener from "@mui/material/ClickAwayListener";
-import { Avatar, Box, Divider, IconButton, Paper, Typography } from "@mui/material";
+import { Avatar, Box, Divider, IconButton, Paper, Typography, Skeleton } from "@mui/material";
 import LocalStorageManager from "../../../managers/LocalStorageManager";
-import React from "react";
+import React, { useState } from "react";
+import ErrorIcon from "@mui/icons-material/Error";
 
 const EmotesWrapperSx = {
     position: "absolute",
@@ -18,11 +19,38 @@ const EmotesWrapperSx = {
     maxHeight: "200px",
     overflowY: "scroll",
   },
-  EmoteSx = {
-    borderRadius: "0px",
+  EmoteSx = (show) => ({
     width: "30px",
     height: "30px",
-  };
+    display: show ? "flex" : "none",
+    backgroundColor: "transparent !important",
+  });
+
+const AvatarWithFallback = ({ src, alt }) => {
+  const [loaded, setLoaded] = useState(false),
+    [error, setError] = useState(false),
+    size = 30;
+
+  return (
+    <>
+      {!loaded && !error && <Skeleton variant="circular" width={size} height={size} />}
+
+      <Avatar
+        variant="rounded"
+        src={src}
+        alt={alt}
+        title={error ? `Could not load ${alt}` : alt}
+        sx={EmoteSx(loaded || error)}
+        imgProps={{
+          onLoad: () => setLoaded(true),
+          onError: () => setError(true),
+        }}
+      >
+        <ErrorIcon sx={{ color: "red" }} />
+      </Avatar>
+    </>
+  );
+};
 
 const EmoteSection = ({ text, emotes, emoteClick }) => (
   <>
@@ -32,7 +60,7 @@ const EmoteSection = ({ text, emotes, emoteClick }) => (
     </Typography>
     {emotes.map((emote) => (
       <IconButton onClick={() => emoteClick(emote.name)} key={emote.name}>
-        <Avatar alt={emote.alt} sx={EmoteSx} src={emote.url} />
+        <AvatarWithFallback alt={emote.name} src={emote.url} />
       </IconButton>
     ))}
   </>

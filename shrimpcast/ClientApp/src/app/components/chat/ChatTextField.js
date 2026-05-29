@@ -139,7 +139,7 @@ const ChatTextField = (props) => {
         current.focus();
         current.setSelectionRange(current.value.length, current.value.length);
         current.scrollLeft = current.scrollWidth;
-      }, 100);
+      }, 10);
     };
 
   useEffect(() => {

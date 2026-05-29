@@ -24,11 +24,15 @@ html {
 
 @keyframes admin-glow {
   from {
-    text-shadow: 0 0 5px #b23c17, 0 0 5px #b71c1c;
+    text-shadow:
+      0 0 5px #b23c17,
+      0 0 5px #b71c1c;
   }
 
   to {
-    text-shadow: 0 0 20px #b23c17, 0 0 20px #b71c1c;
+    text-shadow:
+      0 0 20px #b23c17,
+      0 0 20px #b71c1c;
   }
 }
 
@@ -42,11 +46,15 @@ html {
 
 @keyframes mod-glow {
   from {
-    text-shadow: 0 0 5px #66ccff, 0 0 5px #99eaff;
+    text-shadow:
+      0 0 5px #66ccff,
+      0 0 5px #99eaff;
   }
 
   to {
-    text-shadow: 0 0 20px #66ccff, 0 0 20px #99eaff;
+    text-shadow:
+      0 0 20px #66ccff,
+      0 0 20px #99eaff;
   }
 }
 
@@ -70,7 +78,9 @@ html {
 
 .neon-text {
   color: #ff9100;
-  text-shadow: 0 0 10px #ff9100, 0 0 20px #ff9100;
+  text-shadow:
+    0 0 10px #ff9100,
+    0 0 20px #ff9100;
 }
 
 .noselect {
@@ -94,6 +104,10 @@ html {
   margin-right: 2.5px;
   border-radius: 0;
   vertical-align: bottom;
+}
+
+img[hidden] {
+  display: none !important;
 }
 
 .full-height {
