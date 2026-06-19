@@ -6,6 +6,7 @@ class LocalStorageManager {
     showGitHubPrompt: "github_prompt_hidden",
     recentlyUsedEmotes: "recently_used_emotes",
     playerVolume: "player_volume",
+    playerMuted: "player_muted",
   };
 
   static setStorage(key, value) {
@@ -43,7 +44,7 @@ class LocalStorageManager {
     let users;
     try {
       users = JSON.parse(this.getStorage(this.localStorage.ignoredUsers));
-    } catch (e) {}
+    } catch (e) { }
     return Array.isArray(users) ? users : [];
   }
 
@@ -72,7 +73,7 @@ class LocalStorageManager {
     let emotes;
     try {
       emotes = JSON.parse(this.getStorage(this.localStorage.recentlyUsedEmotes));
-    } catch (e) {}
+    } catch (e) { }
     return Array.isArray(emotes) ? emotes : [];
   }
 
@@ -84,6 +85,20 @@ class LocalStorageManager {
   static getPlayerVolume() {
     const volume = +this.getStorage(this.localStorage.playerVolume);
     return isNaN(volume) || volume > 1 || volume < 0 ? 1 : volume;
+  }
+
+  static setPlayerMuted(isMuted) {
+    this.setStorage(this.localStorage.playerMuted, isMuted);
+    return true;
+  }
+
+  static getPlayerMuted() {
+    const isMuted = this.getStorage(this.localStorage.playerMuted);
+    try {
+      return JSON.parse(isMuted);
+    } catch (e) {
+      return false;
+    }
   }
 }
 

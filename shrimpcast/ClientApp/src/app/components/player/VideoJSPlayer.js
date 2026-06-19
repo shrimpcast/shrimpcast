@@ -19,7 +19,7 @@ const VideoJSPlayer = (props) => {
     { options, theme } = props,
     play = (player) => {
       player.volume(LocalStorageManager.getPlayerVolume());
-      player.muted(false);
+      player.muted(LocalStorageManager.getPlayerMuted());
       setTimeout(() => {
         player.play().catch(() => {
           if (player && player.isDisposed()) return;
@@ -87,13 +87,15 @@ const VideoJSPlayer = (props) => {
             if (player?.readyState() <= 2) {
               restart("waiting");
             }
-          } catch (e) {}
+          } catch (e) { }
         }, 5000);
       });
 
       player.on("volumechange", () => {
         const currentVolume = player.volume();
+        const isMuted = player.muted();
         LocalStorageManager.setPlayerVolume(currentVolume);
+        LocalStorageManager.setPlayerMuted(isMuted);
       });
 
       if (isError) {
