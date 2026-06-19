@@ -465,7 +465,8 @@ namespace shrimpcast.Data.Repositories.Interfaces
             else
             {
                 var bitrate = stream.VideoTranscodingBitrate;
-                command += $" -codec:v libx264 -preset:v {stream.VideoTranscodingPreset} -b:v {bitrate}k -maxrate:v {bitrate}k -bufsize:v {bitrate}k -r {stream.VideoTranscodingFramerate} -sc_threshold 0 -pix_fmt yuv420p -g 120 -keyint_min 120 -fps_mode auto -tune:v zerolatency";
+                var keyInt = stream.VideoTranscodingFramerate * stream.SegmentLength;
+                command += $" -codec:v libx264 -preset:v {stream.VideoTranscodingPreset} -b:v {bitrate}k -maxrate:v {bitrate}k -bufsize:v {bitrate}k -r {stream.VideoTranscodingFramerate} -sc_threshold 0 -pix_fmt yuv420p -g {keyInt} -keyint_min {keyInt} -fps_mode auto -tune:v zerolatency";
             }
 
             if (stream.AudioStreamIndex != null)

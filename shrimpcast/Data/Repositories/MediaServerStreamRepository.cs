@@ -53,7 +53,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
 
         private async Task Validate(MediaServerStream stream)
         {
-            if (stream.SnapshotInterval < 15 || stream.SegmentLength < 1 || stream.ListSize < 6)
+            if (stream.SnapshotInterval < 15 || stream.SegmentLength < 1 || stream.ListSize < 6 || stream.VideoTranscodingFramerate < 15)
             {
                 throw new InvalidDataException();
             }
