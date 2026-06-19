@@ -2,23 +2,18 @@ import { red } from "@mui/material/colors";
 import NotificationBar from "./NotificationBar";
 import LiveTvIcon from "@mui/icons-material/LiveTv";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
 
 const MultistreamPrompt = () => {
   const navigate = useNavigate(),
-    switchStreams = () => navigate("/"),
-    [show, setShow] = useState(true),
-    close = () => setShow(false);
+    switchStreams = () => navigate("/");
 
-  return show ? (
-    <NotificationBar
-      onClick={switchStreams}
-      text={`Multistreams: click to switch streams`}
-      icon={LiveTvIcon}
-      palette={red}
-      close={close}
-    />
-  ) : null;
+  return <NotificationBar
+    onClick={switchStreams}
+    text={`Multistreams: click to switch streams`}
+    icon={LiveTvIcon}
+    palette={red}
+    skipCloseButton={true}
+  />
 };
 
 export default MultistreamPrompt;
