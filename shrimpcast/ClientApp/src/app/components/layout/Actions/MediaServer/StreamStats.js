@@ -30,15 +30,15 @@ import ScheduleIcon from "@mui/icons-material/Schedule";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 
 const BoxSx = {
-    overflowY: "auto",
-    width: "100%",
-    boxShadow: 3,
-    bgcolor: "background.paper",
-    mt: 1,
-    p: 1.5,
-    mr: 1,
-    borderRadius: 3,
-  },
+  overflowY: "auto",
+  width: "100%",
+  boxShadow: 3,
+  bgcolor: "background.paper",
+  mt: 1,
+  p: 1.5,
+  mr: 1,
+  borderRadius: 3,
+},
   CardSx = (theme) => ({
     borderRadius: 2,
     borderColor: "divider",
@@ -337,6 +337,17 @@ const StreamStats = (props) => {
                           type: "application/x-mpegURL",
                         },
                       ],
+                      liveui: true,
+                      controlBar: {
+                        progressControl: false,
+                        currentTimeDisplay: false,
+                        durationDisplay: false,
+                        timeDivider: false,
+                      },
+                      liveTracker: {
+                        trackingThreshold: 1,
+                        liveTolerance: 1
+                      }
                     }}
                     theme={theme}
                   />

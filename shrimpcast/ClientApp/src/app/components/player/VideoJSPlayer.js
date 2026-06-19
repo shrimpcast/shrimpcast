@@ -18,8 +18,6 @@ const VideoJSPlayer = (props) => {
     [cssLoaded, setCssLoaded] = useState(false),
     { options, theme } = props,
     play = (player) => {
-      player.volume(LocalStorageManager.getPlayerVolume());
-      player.muted(LocalStorageManager.getPlayerMuted());
       setTimeout(() => {
         player.play().catch(() => {
           if (player && player.isDisposed()) return;
@@ -67,6 +65,8 @@ const VideoJSPlayer = (props) => {
         }
 
         player.el().style.color = theme.palette.secondary[500];
+        player.volume(LocalStorageManager.getPlayerVolume());
+        player.muted(LocalStorageManager.getPlayerMuted());
         if (options.autoplay) play(player);
       }));
 

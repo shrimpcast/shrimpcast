@@ -12,9 +12,7 @@
   background-color: currentColor;
 }
 
-.video-js.skin_slate
-  .vjs-volume-panel.vjs-control.vjs-volume-panel-horizontal:hover
-  .vjs-volume-control.vjs-control.vjs-volume-horizontal {
+.video-js.skin_slate .vjs-volume-panel.vjs-control.vjs-volume-panel-horizontal:hover .vjs-volume-control.vjs-control.vjs-volume-horizontal {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -22,9 +20,7 @@
   transition: width 0.1s;
 }
 
-.video-js.skin_slate
-  .vjs-volume-panel.vjs-control.vjs-volume-panel-horizontal:active
-  .vjs-volume-control.vjs-control.vjs-volume-horizontal {
+.video-js.skin_slate .vjs-volume-panel.vjs-control.vjs-volume-panel-horizontal:active .vjs-volume-control.vjs-control.vjs-volume-horizontal {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -47,7 +43,7 @@
   display: none !important;
 }
 
-.video-js.skin_slate .vjs-progress-control > .vjs-progress-holder.vjs-slider {
+.video-js.skin_slate .vjs-progress-control>.vjs-progress-holder.vjs-slider {
   margin: 0 !important;
 }
 
@@ -65,7 +61,7 @@
 }
 
 .video-js.skin_slate .vjs-big-play-button .vjs-icon-placeholder:before,
-.vjs-button > .vjs-icon-placeholder:before {
+.vjs-button>.vjs-icon-placeholder:before {
   position: relative !important;
 }
 
@@ -75,7 +71,7 @@
   top: -1px;
 }
 
-.vjs-button > .vjs-icon-placeholder:before {
+.vjs-button>.vjs-icon-placeholder:before {
   font-size: 2em !important;
 }
 
@@ -106,13 +102,13 @@
   display: none;
 }
 
-.video-js.skin_slate .vjs-remaining-time.vjs-time-control.vjs-control > span.vjs-remaining-time-display {
+.video-js.skin_slate .vjs-remaining-time.vjs-time-control.vjs-control>span.vjs-remaining-time-display {
   line-height: 3.5em;
   font-size: 1.1em;
   min-width: 4em;
 }
 
-.video-js.skin_slate .vjs-time-divider > div {
+.video-js.skin_slate .vjs-time-divider>div {
   display: flex;
   justify-content: center;
 }
@@ -132,6 +128,24 @@
   margin: 4px 0px 4px 12px;
   border-radius: 5px;
   color: white !important;
+}
+
+.video-js.skin_slate .vjs-seek-to-live-control {
+  height: 2.2em;
+  display: flex;
+  align-items: center;
+  font-family: monospace;
+  width: 4.5em;
+  justify-content: center;
+  background: #4d4d4d;
+  margin-top: 8.5px;
+  margin-left: 10px;
+  border-radius: 5px;
+  color: white !important;
+}
+
+.video-js.skin_slate .vjs-at-live-edge {
+  background: rgb(102, 3, 3);
 }
 
 .video-js.skin_slate .vjs-time-control {

@@ -29,6 +29,7 @@ const SitePlayer = (props) => {
       controls: true,
       fill: true,
       playsinline: true,
+      userActions: { hotkeys: true },
       sources: [
         {
           src: url,
@@ -43,6 +44,17 @@ const SitePlayer = (props) => {
       poster: url.includes("/streams/")
         ? url.substr(0, url.lastIndexOf(".")) + `.jpg?nocache=${Date.now()}`
         : thumbnail,
+      liveui: true,
+      controlBar: {
+        progressControl: false,
+        currentTimeDisplay: false,
+        durationDisplay: false,
+        timeDivider: false,
+      },
+      liveTracker: {
+        trackingThreshold: 1,
+        liveTolerance: 1
+      }
     },
     [muted, setMuted] = useState(false),
     tryPlay = () => {
