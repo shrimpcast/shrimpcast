@@ -337,17 +337,6 @@ const StreamStats = (props) => {
                           type: "application/x-mpegURL",
                         },
                       ],
-                      liveui: true,
-                      controlBar: {
-                        progressControl: false,
-                        currentTimeDisplay: false,
-                        durationDisplay: false,
-                        timeDivider: false,
-                      },
-                      liveTracker: {
-                        trackingThreshold: 1,
-                        liveTolerance: 1
-                      }
                     }}
                     theme={theme}
                   />
