@@ -96,6 +96,7 @@ namespace shrimpcast.Hubs
         {
             var RemoteAddress = (Context.Features.Get<IHttpConnectionFeature>()?.RemoteIpAddress?.ToString()) ?? throw new Exception("IP can't be null.");
             var accessToken = (Context.GetHttpContext()?.Request.Query["accessToken"].ToString()) ?? throw new Exception("AccessToken can't be null.");
+            var userAgent = Context.GetHttpContext()?.Request.Headers["user-agent"].ToString();
             var Session = await _sessionRepository.GetExistingAsync(accessToken, RemoteAddress);
             var isClosed = !(Session?.IsAdmin).GetValueOrDefault() && Configuration.OpenAt > DateTime.UtcNow;
             
@@ -123,6 +124,7 @@ namespace shrimpcast.Hubs
                 RemoteAdress = RemoteAddress,
                 Session = Session,
                 ConnectedAt = DateTime.UtcNow,
+                UserAgent = userAgent,
             });
 
             await AbortIfBanned();
@@ -186,9 +188,10 @@ namespace shrimpcast.Hubs
             string Content = $"{currentName} changed his name to {newName}.",
                    MessageType = "NameChange";
 
-            var addedMessage = await _messageRepository.Add(!Session.IsAdmin && !Session.IsGolden, Session.SessionId, RemoteAddress, Content, MessageType);
+            var addedMessage = await _messageRepository.Add(!Session.IsAdmin && !Session.IsGolden, Session.SessionId, RemoteAddress, CurrentConnection.UserAgent, Content, MessageType);
             addedMessage.SentBy = newName;
             addedMessage.RemoteAddress = string.Empty;
+            addedMessage.UserAgent = string.Empty;
             addedMessage.UserColorDisplay = string.Empty;
             await NotifyNewMessage(addedMessage);
 
@@ -228,12 +231,13 @@ namespace shrimpcast.Hubs
             if (await DispatchCommand(message, CurrentConnection)) return 1;
 
             var session = CurrentConnection.Session;
-            var addedMessage = await _messageRepository.Add(!session.IsAdmin && !session.IsGolden, session.SessionId, RemoteAddress, message, "UserMessage");
+            var addedMessage = await _messageRepository.Add(!session.IsAdmin && !session.IsGolden, session.SessionId, RemoteAddress, CurrentConnection.UserAgent, message, "UserMessage");
             addedMessage.SentBy = session.SessionNames.Last().Name;
             addedMessage.IsAdmin = session.IsAdmin;
             addedMessage.IsMod = session.IsMod;
             addedMessage.IsGolden = session.IsGolden;
             addedMessage.RemoteAddress = string.Empty;
+            addedMessage.UserAgent = string.Empty;
             addedMessage.UserColorDisplay = session.UserColorDisplay;
             await NotifyNewMessage(addedMessage);
 
@@ -271,7 +275,7 @@ namespace shrimpcast.Hubs
             else
             {
                 activeSessions = ActiveConnections.Where(ac => ac.Value.Session.SessionId == SessionId)
-                                                  .Select(ac => $"{ac.Key}:{ac.Value.RemoteAdress}")
+                                                  .Select(ac => $"{ac.Value.RemoteAdress}~{ac.Value.UserAgent}~{ac.Key}")
                                                   .ToList();
             }
 
@@ -279,6 +283,7 @@ namespace shrimpcast.Hubs
             {
                 basicResponse,
                 IP = messageInfo?.RemoteAddress,
+                UA = messageInfo?.UserAgent,
                 IPs = IPs.Select(ip => ip.RemoteAddress),
                 activeSessions,
                 userInfo.MutedUntil,

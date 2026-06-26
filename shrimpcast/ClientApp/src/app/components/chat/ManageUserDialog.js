@@ -54,8 +54,8 @@ const ManageUserDialog = (props) => {
     actions = siteAdmin
       ? ChatActionsManager.admin_actions
       : siteMod
-      ? ChatActionsManager.mod_actions
-      : ChatActionsManager.public_actions,
+        ? ChatActionsManager.mod_actions
+        : ChatActionsManager.public_actions,
     actionKeys = Object.keys(actions),
     [open, setOpen] = useState(false),
     setOpened = () => setOpen(true),
@@ -175,6 +175,18 @@ const ManageUserDialog = (props) => {
                         with ID {props.messageId}
                       </Typography>
                     )}
+                    {siteAdmin && userInfo.ua && (
+                      <Typography>
+                        User-Agent:{" "}
+                        <Link
+                          sx={{ wordWrap: "break-word" }}
+                          href={`https://gs.statcounter.com/detect?useragent=${userInfo.ua}`}
+                          target="_blank"
+                        >
+                          {userInfo.ua}
+                        </Link>
+                      </Typography>
+                    )}
                   </Grid>
                   {targetUserPublic && (
                     <Grid xs={12} sm={2} pb="5px">
@@ -206,15 +218,35 @@ const ManageUserDialog = (props) => {
                   {siteAdmin && (
                     <>
                       <Grid xs={12} sm={6}>
-                        <Typography>All token IPs:</Typography>
+                        <Typography>All session addresses:</Typography>
                         <VirtualizedList list={userInfo.iPs} />
                       </Grid>
                       <Grid xs={12} sm={isAdmin ? 12 : 6}>
-                        <Typography sx={MessageIPSx}>Active sessions{userInfo.ip && ` on ${userInfo.ip}`}:</Typography>
+                        <Typography sx={MessageIPSx}>
+                          Active sessions
+                          {userInfo.ip ? (
+                            <>
+                              {" "}
+                              on{" "}
+                              <Link
+                                sx={{ wordWrap: "break-word" }}
+                                href={`https://whatismyipaddress.com/ip/${userInfo.ip}`}
+                                target="_blank"
+                              >
+                                {userInfo.ip}
+                              </Link>
+                            </>
+                          ) : (
+                            " for session token"
+                          )}
+                          :
+                        </Typography>
                         {!userInfo.activeSessions?.length ? (
-                          <Typography>IP not connected.</Typography>
+                          <Typography>
+                            {props.useSession ? "Session not connected" : "Remote address not connected"}
+                          </Typography>
                         ) : (
-                          <VirtualizedList list={userInfo.activeSessions} />
+                          <VirtualizedList isComplexType={props.useSession} list={userInfo.activeSessions} />
                         )}
                       </Grid>
                     </>

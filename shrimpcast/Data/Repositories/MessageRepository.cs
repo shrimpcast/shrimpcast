@@ -68,7 +68,7 @@ namespace shrimpcast.Data.Repositories
             return null;
         }
 
-        public async Task<Message> Add(bool runCooldownChecks, int SessionId, string RemoteAddress, string Content, string MessageType)
+        public async Task<Message> Add(bool runCooldownChecks, int SessionId, string RemoteAddress, string? UserAgent, string Content, string MessageType)
         {
             using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
             try
@@ -89,6 +89,7 @@ namespace shrimpcast.Data.Repositories
                     Content = Content,
                     RemoteAddress = RemoteAddress,
                     MessageType = MessageType,
+                    UserAgent = UserAgent?.Replace("~", string.Empty),
                 };
 
                 await _context.AddAsync(Message);
