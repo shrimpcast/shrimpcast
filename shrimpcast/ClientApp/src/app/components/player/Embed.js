@@ -28,6 +28,13 @@ const Embed = () => {
       poster: url?.includes("/streams/")
         ? url.substr(0, url.lastIndexOf(".")) + `.jpg?nocache=${Date.now()}`
         : undefined,
+      userActions: { hotkeys: true },
+      controlBar: {
+        progressControl: false,
+        currentTimeDisplay: false,
+        durationDisplay: false,
+        timeDivider: false,
+      },
     },
     theme = makeTheme();
 
