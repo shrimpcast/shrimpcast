@@ -1201,7 +1201,7 @@ namespace shrimpcast.Hubs
             {
                 await NotifyNewMessage(new Message
                 {
-                    Content = SilentDelete ? "" : $"{result.SessionNames.Last().Name} was removed from chat",
+                    Content = SilentDelete ? "" : $"{result.SessionNames.Last().Name} has been removed from chat",
                     CreatedAt = DateTime.UtcNow,
                     MessageType = "UserBanned",
                     SessionId = SessionId,
