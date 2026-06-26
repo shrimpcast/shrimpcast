@@ -18,7 +18,7 @@ const ListSx = {
 
 const RemoteAddressLink = ({ value, isUA }) => {
   const service = isUA
-    ? `https://gs.statcounter.com/detect?useragent=${value}`
+    ? `https://gs.statcounter.com/detect?useragent=${encodeURIComponent(value)}`
     : `https://whatismyipaddress.com/ip/${value}`;
   return (
     <Link href={service} target="_blank">
@@ -46,7 +46,7 @@ const ComplexRow = (index, value) => {
     connectionId = values[2];
 
   return (
-    <ListItem key={index} sx={RowSx}>
+    <ListItem key={index}>
       <Typography component="span">
         [{connectionId}] <Divider />
         IP = <RemoteAddressLink value={ip} /> <br />

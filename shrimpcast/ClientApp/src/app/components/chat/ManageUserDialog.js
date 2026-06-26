@@ -180,7 +180,7 @@ const ManageUserDialog = (props) => {
                         User-Agent:{" "}
                         <Link
                           sx={{ wordWrap: "break-word" }}
-                          href={`https://gs.statcounter.com/detect?useragent=${userInfo.ua}`}
+                          href={`https://gs.statcounter.com/detect?useragent=${encodeURIComponent(userInfo.ua)}`}
                           target="_blank"
                         >
                           {userInfo.ua}
