@@ -25,6 +25,9 @@ namespace shrimpcast.Entities.DB
 
         public required string MessageType { get; set; }
 
+        [JsonIgnore]
+        public string? UserAgent { get; set; } = string.Empty;
+
         [NotMapped]
         public string? UserColorDisplay { get; set; }
 

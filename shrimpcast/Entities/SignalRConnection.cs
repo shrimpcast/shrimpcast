@@ -8,6 +8,8 @@ namespace shrimpcast.Entities
 
         public required string RemoteAdress { get; set; }
 
+        public string? UserAgent { get; set; }
+
         public string? QueryParams { get; set; }
 
         public DateTime LastPing { get; set; } = DateTime.UtcNow;
