@@ -212,13 +212,13 @@ const ManageUserDialog = (props) => {
                 <Divider />
                 <Grid container spacing={2} mt="2px">
                   <Grid xs={12} sm={siteAdmin || showActionsPanel ? 6 : 12}>
-                    <Typography>Previous names:</Typography>
+                    <Typography>Previous names ({userInfo.basicResponse.previousNames.length}):</Typography>
                     <VirtualizedList list={userInfo.basicResponse.previousNames} />
                   </Grid>
                   {siteAdmin && (
                     <>
                       <Grid xs={12} sm={6}>
-                        <Typography>All session addresses:</Typography>
+                        <Typography>All session addresses ({userInfo.iPs.length}):</Typography>
                         <VirtualizedList list={userInfo.iPs} />
                       </Grid>
                       <Grid xs={12} sm={isAdmin ? 12 : 6}>
