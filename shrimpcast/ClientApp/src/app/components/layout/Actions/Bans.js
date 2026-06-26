@@ -19,6 +19,7 @@ const Bans = (props) => {
         appendKey: "totalBans",
         value: "bans",
       }}
+      maxLength={120}
       {...props}
     />
   );

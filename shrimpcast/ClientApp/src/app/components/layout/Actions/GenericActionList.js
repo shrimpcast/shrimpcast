@@ -31,7 +31,7 @@ const GenericActionList = (props) => {
       props.closeCallback && props.closeCallback();
     },
     setOpened = () => setOpen(true),
-    { signalR, responseIsTitleObject, skipConfirmDelete, CustomHeaderComponent } = props,
+    { signalR, responseIsTitleObject, skipConfirmDelete, CustomHeaderComponent, maxLength } = props,
     [titleAppend, setTitleAppend] = useState(""),
     getItems = async () => {
       const items = await props.getItems(signalR);
@@ -175,7 +175,12 @@ const GenericActionList = (props) => {
       )}
       {showPromptDialog.open && (
         <ConfirmDialog
-          title={`Are you sure you want to ${props.actionName || "remove"} ${showPromptDialog.content}?`}
+          title={`Are you sure you want to ${props.actionName || "remove"} 
+           ${
+             showPromptDialog.content.length > maxLength
+               ? showPromptDialog.content.substring(0, maxLength) + "..."
+               : showPromptDialog.content
+           }?`}
           confirm={() => removeItem(showPromptDialog.id)}
           cancel={closeConfirmPrompt}
         />
