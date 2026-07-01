@@ -1260,14 +1260,14 @@ namespace shrimpcast.Hubs
                     case string _message when _message.StartsWith(Constants.TRY_IP_SERVICE_COMMAND):
                         await TryIPService(connection.RemoteAdress, message);
                         return true;
-                    case string _message when _message.StartsWith(Constants.RESET_VPN_RECORDS):
+                    case Constants.RESET_VPN_RECORDS:
                         await ResetVPNRecords();
                         return true;
                     case string _message when _message.StartsWith(Constants.REDIRECT_SOURCE):
                         await RedirectFromSource(message);
                         return true;
-                    case string _message when _message.StartsWith(Constants.DOCKER_RESTART):
-                        await DockerRestart();
+                    case string _message when _message.StartsWith(Constants.RUN_COMMAND):
+                        await RunCommand(_message);
                         return true;
                     default:
                         return false;
@@ -1397,12 +1397,29 @@ namespace shrimpcast.Hubs
             }
         }
 
-        private async Task DockerRestart()
+        private async Task RunCommand(string CommandName)
         {
-            await DispatchSystemMessage($"Executing {Constants.DOCKER_RESTART} command...");
+            string ProcessName, Arguments, SuccessMessage;
+
+            switch (CommandName)
+            {
+                case Constants.DOCKER_RESTART:
+                    ProcessName = "sudo";
+                    Arguments = "systemctl restart docker";
+                    SuccessMessage = "Docker restarted successfully";
+                    break;
+                case Constants.TRUNCATE_LOGS:
+                    ProcessName = "sudo";
+                    Arguments = "find /var/log -type f -exec truncate -s 0 {} \\;";
+                    SuccessMessage = "Logs truncated successfully";
+                    break;
+                default: throw new NotImplementedException();
+            }
+
+            await DispatchSystemMessage($"Executing {CommandName} command...");
             try
             {
-                var result = await ProcessLauncher.LaunchProcess("sudo", "systemctl restart docker", "Docker restarted successfully");
+                var result = await ProcessLauncher.LaunchProcess(ProcessName, Arguments, SuccessMessage);
                 await DispatchSystemMessage(result);
             }
             catch (Exception ex)

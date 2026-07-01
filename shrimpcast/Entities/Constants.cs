@@ -22,7 +22,11 @@ namespace shrimpcast.Entities
 
         public const string REDIRECT_SOURCE = $"!redirectsource";
 
-        public const string DOCKER_RESTART = $"!restartdocker";
+        public const string RUN_COMMAND = "!run";
+
+        public const string DOCKER_RESTART = $"{RUN_COMMAND}restartdocker";
+
+        public const string TRUNCATE_LOGS = $"{RUN_COMMAND}truncatelogs";
 
         public const string FILTERS = "filters.json";
 
