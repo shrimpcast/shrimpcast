@@ -1410,7 +1410,7 @@ namespace shrimpcast.Hubs
                     break;
                 case Constants.TRUNCATE_LOGS:
                     ProcessName = "sudo";
-                    Arguments = "find /var/log -type f -exec truncate -s 0 {} \\;";
+                    Arguments = "find /var/log -type f -exec truncate -s 0 {} +";
                     SuccessMessage = "Logs truncated successfully";
                     break;
                 default: throw new NotImplementedException();
@@ -1419,8 +1419,8 @@ namespace shrimpcast.Hubs
             await DispatchSystemMessage($"Executing {CommandName} command...");
             try
             {
-                var result = await ProcessLauncher.LaunchProcess(ProcessName, Arguments, SuccessMessage);
-                await DispatchSystemMessage(result);
+                await ProcessLauncher.LaunchProcess(ProcessName, Arguments);
+                await DispatchSystemMessage(SuccessMessage);
             }
             catch (Exception ex)
             {
