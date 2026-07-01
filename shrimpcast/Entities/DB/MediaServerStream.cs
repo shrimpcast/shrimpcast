@@ -16,7 +16,7 @@
 
         public required int SnapshotInterval { get; set; }
 
-        public required bool LowLatency { get; set; }
+        public required bool ExitOnFail { get; set; }
 
         public string? CustomHeaders { get; set; }
 

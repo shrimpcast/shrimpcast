@@ -238,7 +238,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
                     IsEnabled = true,
                     IsPlaylist = false,
                     ListSize = 0,
-                    LowLatency = false,
+                    ExitOnFail = false,
                     Name = nextSourceName,
                     SegmentLength = 0,
                     SnapshotInterval = 0,
@@ -409,14 +409,14 @@ namespace shrimpcast.Data.Repositories.Interfaces
         private StreamInfo BuildStreamCommand(MediaServerStream stream, MediaServerStream? playlist = null)
         {
             var audioIndexSource = string.IsNullOrEmpty(stream.AudioCustomSource) ? 0 : 1;
-            var command = "-loglevel info -y -fflags +genpts -thread_queue_size 512";
-            var shouldSeek = stream.StartAt != null && stream.StartAt.Value.ToString() != "00:00:00" ? $"-ss {stream.StartAt.Value}" : string.Empty;
+            var command = $"-loglevel info -y {(stream.ExitOnFail ? "-xerror " : "")}-fflags +genpts -thread_queue_size 512";
+            var shouldSeek = stream.StartAt != null && stream.StartAt.Value.ToString() != "00:00:00" ? $"-ss {stream.StartAt.Value} " : string.Empty;
             var streamName = playlist != null ? playlist.Name : stream.Name;
 
             if (stream.CustomHeaders != "\r\n") command += $" -headers \"{stream.CustomHeaders}\"";
             if (stream.VideoStreamProbeForceHLS) command += $" -f hls";
 
-            command += $" -re -rw_timeout 5000000 {shouldSeek} -i \"{stream.IngressUri}\"{(!string.IsNullOrEmpty(shouldSeek) ? " -copyts" : "")}";
+            command += $" -re -rw_timeout 5000000 {shouldSeek}-i \"{stream.IngressUri}\"{(!string.IsNullOrEmpty(shouldSeek) ? " -copyts" : "")}";
 
             var isPassthrough = stream.VideoEncodingPreset == "PASSTHROUGH";
             var hasWatermark = !isPassthrough && !string.IsNullOrEmpty(stream.Watermark);
@@ -482,7 +482,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             }
             else command += " -an";
 
-            if (stream.LowLatency) command += " -flags +low_delay";
+            command += " -flags +low_delay";
 
             var dirInfo = Directory.CreateDirectory(GetStreamDirectory(streamName));
             command += $" -f hls -hls_time {stream.SegmentLength} -hls_list_size {stream.ListSize} -hls_flags delete_segments+append_list+program_date_time+temp_file -hls_delete_threshold 4 -hls_segment_filename \"{Path.Combine(dirInfo.FullName, "live_%03d.ts")}\" {Path.Combine(dirInfo.FullName, "index.m3u8")}";
