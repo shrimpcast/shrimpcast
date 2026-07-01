@@ -4,7 +4,7 @@ namespace shrimpcast.Entities
 {
     public class Constants
     {
-        public const string BACKEND_VERSION = "2.1.3";
+        public const string BACKEND_VERSION = "2.1.4";
 
         public const string PING_COMMAND = "!ping";
 
@@ -21,6 +21,12 @@ namespace shrimpcast.Entities
         public const string RESET_VPN_RECORDS = $"!resetallsavedvpnrecords";
 
         public const string REDIRECT_SOURCE = $"!redirectsource";
+
+        public const string RUN_COMMAND = "!run";
+
+        public const string DOCKER_RESTART = $"{RUN_COMMAND}restartdocker";
+
+        public const string TRUNCATE_LOGS = $"{RUN_COMMAND}truncatelogs";
 
         public const string FILTERS = "filters.json";
 
@@ -42,7 +48,9 @@ namespace shrimpcast.Entities
 
         public const string RATE_LIMITED = "Too many invocations";
 
-        public readonly static string[] SOURCE_RESERVERD_WORDS = ["chat", "live", "api", "embed"];
+        public readonly static string[] SOURCE_RESERVERD_WORDS = ["chat", "live", "api", "embed", "invalid", "dropping"];
+
+        public const string FFMPEG_INVALID_TS = "invalid dropping";
 
         public static string SECONDS_TO_CRON(int Seconds) => $"*/{Seconds} * * * * *";
 

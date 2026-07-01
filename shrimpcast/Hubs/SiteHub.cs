@@ -9,6 +9,7 @@ using shrimpcast.Data.Repositories.Interfaces;
 using shrimpcast.Entities;
 using shrimpcast.Entities.DB;
 using shrimpcast.Entities.DTO;
+using shrimpcast.Helpers;
 using shrimpcast.Hubs.Dictionaries;
 using System.Collections.Concurrent;
 using System.Text;
@@ -1259,11 +1260,14 @@ namespace shrimpcast.Hubs
                     case string _message when _message.StartsWith(Constants.TRY_IP_SERVICE_COMMAND):
                         await TryIPService(connection.RemoteAdress, message);
                         return true;
-                    case string _message when _message.StartsWith(Constants.RESET_VPN_RECORDS):
+                    case Constants.RESET_VPN_RECORDS:
                         await ResetVPNRecords();
                         return true;
                     case string _message when _message.StartsWith(Constants.REDIRECT_SOURCE):
                         await RedirectFromSource(message);
+                        return true;
+                    case string _message when _message.StartsWith(Constants.RUN_COMMAND):
+                        await RunCommand(_message);
                         return true;
                     default:
                         return false;
@@ -1386,6 +1390,37 @@ namespace shrimpcast.Hubs
                     to,
                 });
                 await DispatchSystemMessage($"Redirected users from {from} to {to}");
+            }
+            catch (Exception ex)
+            {
+                await DispatchSystemMessage(ex.Message);
+            }
+        }
+
+        private async Task RunCommand(string CommandName)
+        {
+            string ProcessName, Arguments, SuccessMessage;
+
+            switch (CommandName)
+            {
+                case Constants.DOCKER_RESTART:
+                    ProcessName = "sudo";
+                    Arguments = "systemctl restart docker";
+                    SuccessMessage = "Docker restarted successfully";
+                    break;
+                case Constants.TRUNCATE_LOGS:
+                    ProcessName = "sudo";
+                    Arguments = "find /var/log -type f -exec truncate -s 0 {} +";
+                    SuccessMessage = "Logs truncated successfully";
+                    break;
+                default: throw new NotImplementedException();
+            }
+
+            await DispatchSystemMessage($"Executing {CommandName} command...");
+            try
+            {
+                await ProcessLauncher.LaunchProcess(ProcessName, Arguments);
+                await DispatchSystemMessage(SuccessMessage);
             }
             catch (Exception ex)
             {
