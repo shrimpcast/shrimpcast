@@ -9,6 +9,7 @@ using shrimpcast.Data.Repositories.Interfaces;
 using shrimpcast.Entities;
 using shrimpcast.Entities.DB;
 using shrimpcast.Entities.DTO;
+using shrimpcast.Helpers;
 using shrimpcast.Hubs.Dictionaries;
 using System.Collections.Concurrent;
 using System.Text;
@@ -1265,6 +1266,9 @@ namespace shrimpcast.Hubs
                     case string _message when _message.StartsWith(Constants.REDIRECT_SOURCE):
                         await RedirectFromSource(message);
                         return true;
+                    case string _message when _message.StartsWith(Constants.DOCKER_RESTART):
+                        await DockerRestart();
+                        return true;
                     default:
                         return false;
                 }
@@ -1386,6 +1390,20 @@ namespace shrimpcast.Hubs
                     to,
                 });
                 await DispatchSystemMessage($"Redirected users from {from} to {to}");
+            }
+            catch (Exception ex)
+            {
+                await DispatchSystemMessage(ex.Message);
+            }
+        }
+
+        private async Task DockerRestart()
+        {
+            await DispatchSystemMessage($"Executing {Constants.DOCKER_RESTART} command...");
+            try
+            {
+                var result = await ProcessLauncher.LaunchProcess("sudo", "systemctl restart docker", "Docker restarted successfully");
+                await DispatchSystemMessage(result);
             }
             catch (Exception ex)
             {

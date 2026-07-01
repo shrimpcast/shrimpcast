@@ -22,6 +22,8 @@ namespace shrimpcast.Entities
 
         public const string REDIRECT_SOURCE = $"!redirectsource";
 
+        public const string DOCKER_RESTART = $"!restartdocker";
+
         public const string FILTERS = "filters.json";
 
         public static readonly string FIREANDFORGET_TOKEN = SecureToken.GenerateTokenThreadSafe();
