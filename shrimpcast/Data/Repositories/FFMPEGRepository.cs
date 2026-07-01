@@ -174,11 +174,19 @@ namespace shrimpcast.Data.Repositories.Interfaces
                         }
                     }
 
-                    // ------  check if process is stale  ------ //
                     var (AddedAt, Content) = streamInfo!.Logs.LastOrDefault();
+
+                    // ------  check if process is stale  ------ //
                     if (Content != null && ((DateTime.UtcNow - AddedAt).TotalSeconds > 12))
                     {
                         StopStreamProcess(stream.Name, "stale");
+                        continue;
+                    }
+
+                    // ------  check if process is corrupted  ------ //
+                    if (Content != null && stream.ExitOnFail && Content.Contains(Constants.FFMPEG_INVALID_TS))
+                    {
+                        StopStreamProcess(stream.Name, "corrupted");
                         continue;
                     }
 

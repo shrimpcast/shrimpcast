@@ -48,7 +48,9 @@ namespace shrimpcast.Entities
 
         public const string RATE_LIMITED = "Too many invocations";
 
-        public readonly static string[] SOURCE_RESERVERD_WORDS = ["chat", "live", "api", "embed"];
+        public readonly static string[] SOURCE_RESERVERD_WORDS = ["chat", "live", "api", "embed", "invalid", "dropping"];
+
+        public const string FFMPEG_INVALID_TS = "invalid dropping";
 
         public static string SECONDS_TO_CRON(int Seconds) => $"*/{Seconds} * * * * *";
 
