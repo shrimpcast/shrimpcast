@@ -32,6 +32,8 @@ const GenericActionList = (props) => {
     },
     setOpened = () => setOpen(true),
     { signalR, responseIsTitleObject, skipConfirmDelete, CustomHeaderComponent, maxLength } = props,
+    [expanded, setExpanded] = useState(false),
+    toggleExpanded = () => setExpanded((e) => !e),
     [titleAppend, setTitleAppend] = useState(""),
     getItems = async () => {
       const items = await props.getItems(signalR);
@@ -91,8 +93,20 @@ const GenericActionList = (props) => {
                 {titleAppend}
               </Typography>
             </Typography>
+
+            {maxLength && items?.length ? (
+              <Button onClick={toggleExpanded} sx={{ marginLeft: "auto" }} variant="contained" color="success">
+                {expanded ? "COLLAPSE ALL" : "EXPAND ALL"}
+              </Button>
+            ) : null}
+
             {props.customButton && (
-              <Button onClick={openAddDialog} sx={{ marginLeft: "auto" }} variant="contained" color="success">
+              <Button
+                onClick={openAddDialog}
+                sx={{ marginLeft: maxLength && items?.length ? "10px" : "auto" }}
+                variant="contained"
+                color="success"
+              >
                 {props.customButton}
               </Button>
             )}
@@ -151,7 +165,11 @@ const GenericActionList = (props) => {
                     }
                   >
                     <ListItemText
-                      primary={item[props.contentIdentifier]}
+                      primary={
+                        item[props.contentIdentifier].length > maxLength && !expanded
+                          ? item[props.contentIdentifier].substring(0, maxLength) + "..."
+                          : item[props.contentIdentifier]
+                      }
                       sx={[
                         {
                           wordBreak: "break-word",
