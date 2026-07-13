@@ -37,7 +37,7 @@ namespace shrimpcast.Controllers
 
             if (!isAdmin)
             {
-                var isBanned = await _banRepository.IsBanned(remoteAddress, ensureCreated.SessionToken);
+                var isBanned = await _banRepository.IsBanned(remoteAddress, ensureCreated.SessionId);
                 object? message = null;
                 if (isBanned) message = Constants.BANNED_MESSAGE;
                 else 

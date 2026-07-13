@@ -29,12 +29,11 @@ namespace shrimpcast.Data.Repositories
             return result > 0 ? Session : throw new Exception("Could not apply ban.");
         }
 
-        public async Task<bool> IsBanned(string RemoteAddress, string accessToken)
+        public async Task<bool> IsBanned(string RemoteAddress, int SessionId)
         {
             var query = from bans in _context.Bans
                         join sip in _context.SessionIPs on bans.SessionId equals sip.SessionId
-                        join s in _context.Sessions on bans.SessionId equals s.SessionId
-                        where sip.RemoteAddress == RemoteAddress || s.SessionToken == accessToken
+                        where sip.RemoteAddress == RemoteAddress || bans.SessionId == SessionId
                         select sip.RemoteAddress;
             return await query.AsNoTracking().AnyAsync();
         }

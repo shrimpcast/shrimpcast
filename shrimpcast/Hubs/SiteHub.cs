@@ -1053,13 +1053,10 @@ namespace shrimpcast.Hubs
                 return "Your post contains banned text. Please reformat.";
             }
 
-            var MutedUntil = connection.Session.MutedUntil.GetValueOrDefault();
-            var difference = DateTime.UtcNow.Subtract(MutedUntil).TotalMinutes;
-            if (difference < 0)
+            var IsMuted = await _sessionRepository.IsMuted(connection.RemoteAdress, connection.Session.SessionId);
+            if (IsMuted != null)
             {
-                var timeDifference = MutedUntil.Subtract(DateTime.UtcNow);
-                var minuteDifference = Math.Ceiling(timeDifference.TotalMinutes);
-                return $"You have been muted for {minuteDifference} {(minuteDifference == 1 ? "minute" : "minutes")}.";
+                return IsMuted;
             }
 
             if (connection.Session.IsGolden) return null;
@@ -1217,7 +1214,7 @@ namespace shrimpcast.Hubs
             var Connection = GetCurrentConnection();
             if (Connection.Session.IsAdmin) return;
             var IsVerified = Connection.Session.IsVerified;
-            var IsBanned = await _banRepository.IsBanned(Connection.RemoteAdress, Connection.Session.SessionToken);
+            var IsBanned = await _banRepository.IsBanned(Connection.RemoteAdress, Connection.Session.SessionId);
             var triggeredVPNVerification = false;
             if (!IsVerified && (Configuration.SiteBlockVPNConnections || Configuration.ChatBlockVPNConnections))
             {
