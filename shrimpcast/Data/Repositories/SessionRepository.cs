@@ -257,6 +257,12 @@ namespace shrimpcast.Data.Repositories
             return null;
         }
 
+        public async Task<string?> SetUserLabel(string? Label, int SessionId)
+        {
+            var Session = await GetExistingByIdAsync(SessionId, true);
+            Session.UserLabel = Label == "null" ? null : Label;
+            return await _context.SaveChangesAsync() > 0 ? Session.UserLabel : throw new Exception("Could not update record.");
+        }
 
         private static string? BuildMutedStringMinutes(DateTime MutedUntil)
         {
@@ -274,4 +280,3 @@ namespace shrimpcast.Data.Repositories
         }
     }
 }
-

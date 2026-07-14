@@ -13,6 +13,9 @@ import { Link as RouterLink } from "react-router-dom";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import ReplyIcon from "@mui/icons-material/Reply";
 import LocalPoliceIcon from "@mui/icons-material/LocalPolice";
+import UserLabel from "./UserLabel";
+import MessageIcon from "@mui/icons-material/Message";
+import LabelIcon from "@mui/icons-material/Label";
 
 const WrapperTextBoxSx = (color) => ({
     margin: "5px 0",
@@ -143,8 +146,19 @@ const UserMessage = React.memo((props) => {
     [externalOpenUserDialog, setExternalOpenUserDialog] = useState(false),
     openExternalUserDialog = () => setExternalOpenUserDialog(true),
     closeExternalUserDialog = () => setExternalOpenUserDialog(false),
-    { isAdmin, isMod, isGolden, maxLengthTruncation, userColorDisplay, emotes, enabledSources, urlRegex, chatRegex } =
-      props,
+    {
+      isAdmin,
+      isMod,
+      isGolden,
+      maxLengthTruncation,
+      userColorDisplay,
+      emotes,
+      enabledSources,
+      urlRegex,
+      chatRegex,
+      showUserLabels,
+      userLabel,
+    } = props,
     removeMessage = async () => {
       const response = await ChatActionsManager.RemoveMessage(props.signalR, props.messageId);
       if (response) closeConfirmPrompt();
@@ -157,12 +171,15 @@ const UserMessage = React.memo((props) => {
         : props.content,
     getEmote = (emoteName) => emotes.find((emote) => emote.name === emoteName),
     getSource = (sourceName) => enabledSources.find((eS) => `/${eS.name.toLowerCase()}` === sourceName),
-    replyToUser = () => {
+    dispatchTextEvent = (content) => {
       const event = new CustomEvent("userReply", {
-        detail: { content: ` @${props.sentBy} ` },
+        detail: { content: content },
       });
       document.dispatchEvent(event);
     },
+    replyToUser = () => dispatchTextEvent(` @${props.sentBy} `),
+    sendDirectMessage = () => dispatchTextEvent(`!ping ${props.sessionId} `),
+    setUserLabel = () => dispatchTextEvent(`!userlabel ${props.sessionId} `),
     [agoText, setAgoText] = useState("");
 
   return (
@@ -186,6 +203,16 @@ const UserMessage = React.memo((props) => {
           />
           {props.siteAdmin && (
             <>
+              <Tooltip title="Send DM">
+                <IconButton sx={OverlayButtonSx} onClick={sendDirectMessage}>
+                  <MessageIcon sx={{ fontSize: "16px" }} />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Set user label">
+                <IconButton sx={OverlayButtonSx} onClick={setUserLabel}>
+                  <LabelIcon sx={{ fontSize: "16px" }} />
+                </IconButton>
+              </Tooltip>
               <Tooltip title="Remove message">
                 <IconButton sx={OverlayButtonSx} onClick={openConfirmPrompt}>
                   <DeleteIcon sx={{ fontSize: "16px" }} />
@@ -197,6 +224,9 @@ const UserMessage = React.memo((props) => {
             </>
           )}
         </Box>
+        {showUserLabels && !isAdmin && !isMod && (
+          <UserLabel color={userColorDisplay} label={userLabel} isGolden={isGolden} />
+        )}
         <Box display="inline-block">
           <Typography
             sx={[TextSx(userColorDisplay, true), HoverUnderlineSx, isGolden ? GoldenPassGlow(userColorDisplay) : null]}

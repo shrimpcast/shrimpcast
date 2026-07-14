@@ -102,11 +102,13 @@ const RenderChatMessages = (props) => {
                   const { content } = message,
                     isModAdded = content === "ModAdded",
                     isModRemoved = content === "ModRemoved",
-                    isGoldenAdded = content === "GoldenAdded";
+                    isGoldenAdded = content === "GoldenAdded",
+                    isLabelChanged = content.startsWith("[UL]");
 
                   if (isModAdded) m.isMod = true;
                   else if (isModRemoved) m.isMod = false;
                   else if (isGoldenAdded) m.isGolden = true;
+                  else if (isLabelChanged) m.userLabel = content.replace("[UL]", "");
                   else m.userColorDisplay = content;
                 }
               });
@@ -149,7 +151,7 @@ const RenderChatMessages = (props) => {
       if (abortControllerSignal.aborted) return;
       const ignoredUsers = LocalStorageManager.getIgnoredUsers().map((iu) => iu.sessionId);
       existingMessages = existingMessages.filter(
-        (em) => em.isAdmin || em.isMod || !ignoredUsers.includes(em.sessionId)
+        (em) => em.isAdmin || em.isMod || !ignoredUsers.includes(em.sessionId),
       );
 
       existingMessages = existingMessages.reverse();
@@ -187,7 +189,7 @@ const RenderChatMessages = (props) => {
         configuration.showPoll,
         configuration.showBingo,
         bingoButtonExpanded,
-        !isAdmin && !isGolden && configuration.showGoldenPassButton && goldenPassExpanded
+        !isAdmin && !isGolden && configuration.showGoldenPassButton && goldenPassExpanded,
       )}
     >
       {loading && (
@@ -210,6 +212,7 @@ const RenderChatMessages = (props) => {
               signalR={signalR}
               enableChristmasTheme={configuration.enableChristmasTheme}
               enableHalloweenTheme={configuration.enableHalloweenTheme}
+              showUserLabels={configuration.showUserLabels}
               userSessionId={props.sessionId}
               maxLengthTruncation={configuration.maxLengthTruncation}
               enabledSources={enabledSources}
@@ -217,7 +220,7 @@ const RenderChatMessages = (props) => {
               chatRegex={chatRegex}
               {...message}
             />
-          ))
+          )),
       )}
       <Box ref={scrollReference}></Box>
       {pendingMessages > 0 && (

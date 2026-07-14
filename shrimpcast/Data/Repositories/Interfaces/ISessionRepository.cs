@@ -23,6 +23,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
         Task<bool> IsTurnstileTokenValid(string response, string remoteAddress);
         Task<bool> SetTurnstilePassed(int sessionId);
         Task<string?> IsMuted(string RemoteAddress, int SessionId);
+        Task<string?> SetUserLabel(string? Label, int SessionId);
     }
 }
 
