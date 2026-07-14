@@ -37,7 +37,7 @@ namespace shrimpcast.Controllers
 
             if (!isAdmin)
             {
-                var isBanned = await _banRepository.IsBanned(remoteAddress, ensureCreated.SessionToken);
+                var isBanned = await _banRepository.IsBanned(remoteAddress, ensureCreated.SessionId);
                 object? message = null;
                 if (isBanned) message = Constants.BANNED_MESSAGE;
                 else 
@@ -114,6 +114,7 @@ namespace shrimpcast.Controllers
             var canAddVote = await _pollRepository.CanAddVote(remoteAddress, ensureCreated.SessionId);
             var colours = await _nameColourRepository.GetAll();
             var subscribed = await _notificationRepository.ExistsById(ensureCreated.SessionId);
+            var commands = isAdmin ? Constants.ALL_COMMANDS : null;
 
             return new
             {
@@ -125,6 +126,7 @@ namespace shrimpcast.Controllers
                 colours,
                 subscribed,
                 isAdmin,
+                commands,
                 ensureCreated.IsMod,
                 ensureCreated.IsGolden,
                 ensureCreated.SessionId,

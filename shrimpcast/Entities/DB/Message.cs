@@ -42,6 +42,9 @@ namespace shrimpcast.Entities.DB
 
         [NotMapped]
         public bool IsGolden { get; set; }
+
+        [NotMapped]
+        public string? UserLabel { get; set; }
     }
 }
 

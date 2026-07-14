@@ -58,10 +58,10 @@ const ComplexRow = (index, value) => {
 
 export default function VirtualizedList(props) {
   const list = props.list || [],
-    { isComplexType } = props;
+    { isComplexType, height } = props;
   return (
     <Box sx={ListSx}>
-      <Virtuoso data={list} itemContent={isComplexType ? ComplexRow : SimpleRow} style={{ height: 200 }} />
+      <Virtuoso data={list} itemContent={isComplexType ? ComplexRow : SimpleRow} style={{ height: height || 200 }} />
     </Box>
   );
 }

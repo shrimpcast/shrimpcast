@@ -14,6 +14,8 @@ const Mutes = (props) => {
       identifier="sessionId"
       contentIdentifier="sessionName"
       actionName="unmute"
+      maxLength={120}
+      showScroll={true}
       {...props}
     />
   );

@@ -129,11 +129,11 @@ namespace shrimpcast.Data.Repositories
             return await SessionIPs.ToListAsync();
         }
 
-        public async Task<DateTime> Mute(int sessionId)
+        public async Task<DateTime> Mute(int sessionId, bool isPermanent)
         {
             var MuteLength = _configurationSingleton.Configuration.MuteLenghtInMinutes;
             var Session = await GetExistingByIdAsync(sessionId, true);
-            Session.MutedUntil = DateTime.UtcNow.AddMinutes(MuteLength);
+            Session.MutedUntil = DateTime.UtcNow.AddMinutes(isPermanent ? int.MaxValue : MuteLength);
             return await _context.SaveChangesAsync() > 0 ? Session.MutedUntil.Value : throw new Exception("Could not update record.");
         }
 
@@ -153,10 +153,13 @@ namespace shrimpcast.Data.Repositories
                               select new
                               {
                                   session.SessionId,
-                                  SessionName = (from sn in _context.SessionNames where sn.SessionId == session.SessionId orderby sn.CreatedAt select sn.Name).Last(),
+                                  SessionName =
+                                  (from sn in _context.SessionNames where sn.SessionId == session.SessionId orderby sn.CreatedAt select sn.Name).Last()
+                                  + $" ({BuildMutedStringMinutes(session.MutedUntil.GetValueOrDefault())} left) \n"
+                                  + $" [{string.Join(", ", from sip in _context.SessionIPs where sip.SessionId == session.SessionId select sip.RemoteAddress)}]",
                               };
             var result = await activeMutes.AsNoTracking().ToListAsync();
-            return result.Cast<object>().ToList();
+            return [.. result.Cast<object>()];
         }
 
         public async Task<bool> Unmute(int sessionId)
@@ -184,7 +187,7 @@ namespace shrimpcast.Data.Repositories
                        };
 
             var result = await mods.AsNoTracking().ToListAsync();
-            return result.Cast<object>().ToList();
+            return [.. result.Cast<object>()];
         }
 
         public async Task<bool> ToggleVerifiedStatus(int sessionId, bool shouldVerify)
@@ -235,6 +238,45 @@ namespace shrimpcast.Data.Repositories
             }
             return responseContent.Success;
         }
+
+        public async Task<string?> IsMuted(string RemoteAddress, int SessionId)
+        {
+            var utcNow = DateTime.UtcNow;
+            var activeMuteByRemoteAddressQuery = from Session in _context.Sessions
+                                                 join sip in _context.SessionIPs on Session.SessionId equals sip.SessionId
+                                                 where Session.MutedUntil > utcNow && (sip.RemoteAddress == RemoteAddress || Session.SessionId  == SessionId) 
+                                                 select Session.MutedUntil;
+
+            var activeMuteByRemoteAddress = await activeMuteByRemoteAddressQuery.FirstOrDefaultAsync();
+            var MutedUntil = BuildMutedStringMinutes(activeMuteByRemoteAddress.GetValueOrDefault());
+            if (MutedUntil != null)
+            {
+                return $"You have been muted for {MutedUntil}";
+            }
+
+            return null;
+        }
+
+        public async Task<string?> SetUserLabel(string? Label, int SessionId)
+        {
+            var Session = await GetExistingByIdAsync(SessionId, true);
+            Session.UserLabel = Label == "null" ? null : Label;
+            return await _context.SaveChangesAsync() > 0 ? Session.UserLabel : throw new Exception("Could not update record.");
+        }
+
+        private static string? BuildMutedStringMinutes(DateTime MutedUntil)
+        {
+            var utcNow = DateTime.UtcNow;
+            var difference = utcNow.Subtract(MutedUntil).TotalMinutes;
+
+            if (difference < 0)
+            {
+                var timeDifference = MutedUntil.Subtract(utcNow);
+                var minuteDifference = Math.Ceiling(timeDifference.TotalMinutes);
+                return $"{minuteDifference} {(minuteDifference == 1 ? "minute" : "minutes")}";
+            }
+
+            return null;
+        }
     }
 }
-

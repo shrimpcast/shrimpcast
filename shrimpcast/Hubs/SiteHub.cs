@@ -97,7 +97,7 @@ namespace shrimpcast.Hubs
         {
             var RemoteAddress = (Context.Features.Get<IHttpConnectionFeature>()?.RemoteIpAddress?.ToString()) ?? throw new Exception("IP can't be null.");
             var accessToken = (Context.GetHttpContext()?.Request.Query["accessToken"].ToString()) ?? throw new Exception("AccessToken can't be null.");
-            var userAgent = Context.GetHttpContext()?.Request.Headers["user-agent"].ToString();
+            var userAgent = Context.GetHttpContext()?.Request.Headers.UserAgent.ToString();
             var Session = await _sessionRepository.GetExistingAsync(accessToken, RemoteAddress);
             var isClosed = !(Session?.IsAdmin).GetValueOrDefault() && Configuration.OpenAt > DateTime.UtcNow;
             
@@ -240,6 +240,7 @@ namespace shrimpcast.Hubs
             addedMessage.RemoteAddress = string.Empty;
             addedMessage.UserAgent = string.Empty;
             addedMessage.UserColorDisplay = session.UserColorDisplay;
+            addedMessage.UserLabel = session.UserLabel;
             await NotifyNewMessage(addedMessage);
 
             var shouldBan = await _autoModFilterRepository.Contains(addedMessage.Content, true);
@@ -371,11 +372,11 @@ namespace shrimpcast.Hubs
         #endregion
 
         #region Mutes
-        public async Task<bool> Mute([FromBody] int SessionId)
+        public async Task<bool> Mute([FromBody] int SessionId, bool IsPermanent)
         {
             await ShouldGrantAccess(true);
             var session = GetCurrentConnection().Session;
-            var mutedUntil = await _sessionRepository.Mute(SessionId);
+            var mutedUntil = await _sessionRepository.Mute(SessionId, IsPermanent);
 
             foreach (var connection in ActiveConnections.Where(ac => ac.Value.Session.SessionId == SessionId))
             {
@@ -1053,13 +1054,10 @@ namespace shrimpcast.Hubs
                 return "Your post contains banned text. Please reformat.";
             }
 
-            var MutedUntil = connection.Session.MutedUntil.GetValueOrDefault();
-            var difference = DateTime.UtcNow.Subtract(MutedUntil).TotalMinutes;
-            if (difference < 0)
+            var IsMuted = await _sessionRepository.IsMuted(connection.RemoteAdress, connection.Session.SessionId);
+            if (IsMuted != null)
             {
-                var timeDifference = MutedUntil.Subtract(DateTime.UtcNow);
-                var minuteDifference = Math.Ceiling(timeDifference.TotalMinutes);
-                return $"You have been muted for {minuteDifference} {(minuteDifference == 1 ? "minute" : "minutes")}.";
+                return IsMuted;
             }
 
             if (connection.Session.IsGolden) return null;
@@ -1217,7 +1215,7 @@ namespace shrimpcast.Hubs
             var Connection = GetCurrentConnection();
             if (Connection.Session.IsAdmin) return;
             var IsVerified = Connection.Session.IsVerified;
-            var IsBanned = await _banRepository.IsBanned(Connection.RemoteAdress, Connection.Session.SessionToken);
+            var IsBanned = await _banRepository.IsBanned(Connection.RemoteAdress, Connection.Session.SessionId);
             var triggeredVPNVerification = false;
             if (!IsVerified && (Configuration.SiteBlockVPNConnections || Configuration.ChatBlockVPNConnections))
             {
@@ -1268,6 +1266,9 @@ namespace shrimpcast.Hubs
                         return true;
                     case string _message when _message.StartsWith(Constants.RUN_COMMAND):
                         await RunCommand(_message);
+                        return true;
+                    case string _message when _message.StartsWith(Constants.SET_USER_LABEL):
+                        await SetUserLabel(_message);
                         return true;
                     default:
                         return false;
@@ -1421,6 +1422,36 @@ namespace shrimpcast.Hubs
             {
                 await ProcessLauncher.LaunchProcess(ProcessName, Arguments);
                 await DispatchSystemMessage(SuccessMessage);
+            }
+            catch (Exception ex)
+            {
+                await DispatchSystemMessage(ex.Message);
+            }
+        }
+
+        private async Task SetUserLabel(string message)
+        {
+            await DispatchSystemMessage($"Executing {Constants.SET_USER_LABEL} command...");
+            try
+            {
+                var Matches = PingRegex().Matches(message);
+                var SessionId = int.Parse(Matches[0].Groups[1].Value);
+                var Label = NormalizeString(Matches[0].Groups[2].Value);
+                var UpdatedLabel = await _sessionRepository.SetUserLabel(Label, SessionId);
+
+                var connections = ActiveConnections.Where(ac => ac.Value.Session.SessionId == SessionId);
+                foreach (var connection in connections) connection.Value.Session.UserLabel = UpdatedLabel;
+
+                await NotifyNewMessage(new Message
+                {
+                    Content = $"[UL]{UpdatedLabel}",
+                    CreatedAt = DateTime.UtcNow,
+                    MessageType = "UserColourChange",
+                    SessionId = SessionId,
+                    MessageId = new Random().Next()
+                });
+
+                await DispatchSystemMessage($"Successfully executed {Constants.SET_USER_LABEL}");
             }
             catch (Exception ex)
             {

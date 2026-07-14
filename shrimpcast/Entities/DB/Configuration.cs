@@ -10,6 +10,8 @@ namespace shrimpcast.Entities.DB
 
         public required bool ChatEnabled { get; set; }
 
+        public required bool ShowUserLabels { get; set; }
+
         public required bool EnableVerifiedMode { get;set; }
         
         public required int MaxConnectionsPerIP { get; set; }
@@ -254,6 +256,7 @@ namespace shrimpcast.Entities.DB
                     values = new object[]
                     {
                         new { name = nameof(config.ChatEnabled).ToLower(), label = "Enable chat", value = config.ChatEnabled },
+                        new { name = nameof(config.ShowUserLabels).ToLower(), label = "Show user labels", value = config.ShowUserLabels },
                         new { name = nameof(config.EnableVerifiedMode).ToLower(), label = "Allow verified users only", value = config.EnableVerifiedMode },
                         new { name = nameof(config.StripNonASCIIChars).ToLower(), label = "Strip non ASCII characters", value = config.StripNonASCIIChars },
                         new { name = nameof(config.MaxMessagesToShow).ToLower(), label = "Max visible messages", value = config.MaxMessagesToShow },

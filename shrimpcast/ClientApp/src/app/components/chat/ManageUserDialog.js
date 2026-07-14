@@ -84,8 +84,11 @@ const ManageUserDialog = (props) => {
         case actions.ignore:
           successfulResponse = ChatActionsManager.Ignore(sessionId, sentBy);
           break;
-        case actions.mute:
-          successfulResponse = await ChatActionsManager.Mute(signalR, sessionId);
+        case actions.t_mute:
+          successfulResponse = await ChatActionsManager.Mute(signalR, sessionId, false);
+          break;
+        case actions.p_mute:
+          successfulResponse = await ChatActionsManager.Mute(signalR, sessionId, true);
           break;
         case actions.ban:
           successfulResponse = await ChatActionsManager.Ban(signalR, sessionId, false, false);
@@ -246,7 +249,11 @@ const ManageUserDialog = (props) => {
                             {props.useSession ? "Session not connected" : "Remote address not connected"}
                           </Typography>
                         ) : (
-                          <VirtualizedList isComplexType={props.useSession} list={userInfo.activeSessions} />
+                          <VirtualizedList
+                            isComplexType={props.useSession}
+                            list={userInfo.activeSessions}
+                            height={250}
+                          />
                         )}
                       </Grid>
                     </>
@@ -255,7 +262,7 @@ const ManageUserDialog = (props) => {
                     <Grid xs={12} sm={6} pb={2}>
                       <Typography>Moderate</Typography>
                       <Divider />
-                      <Box height="200px">
+                      <Box height={siteAdmin ? "250px" : "200px"}>
                         {actionKeys.map((actionKey) => (
                           <Button
                             onClick={() => openConfirmPrompt(actions[actionKey])}

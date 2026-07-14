@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace shrimpcast.Entities.DB
 {
@@ -24,6 +25,9 @@ namespace shrimpcast.Entities.DB
         public bool PassedTurnstile { get; set; }
 
         public required string UserColorDisplay { get; set; }
+
+        [MaxLength(32)]
+        public string? UserLabel { get; set; }
 
         public List<SessionName> SessionNames { get; set; } = [];
 

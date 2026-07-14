@@ -63,6 +63,7 @@ const AutoCompleteTypes = {
   "@": { propName: "nameSuggestions" },
   "/": { propName: "enabledSources", flatten: (sources) => sources.map((source) => source.name) },
   ":": { propName: "emotes", flatten: (emotes) => emotes.map((emote) => emote.name.replace(":", "")) },
+  "!": { propName: "commands", flatten: (commands) => commands.map((command) => command.replace("!", "")) },
 };
 
 const ChatTextField = (props) => {
