@@ -20,7 +20,8 @@ const AutoCompleteWrapperSx = {
 
 const AutoComplete = (props) => {
   const handleClose = () => props.setShowAutocomplete(false),
-    { message, nameSuggestions, setMessage, autoCompleteIndex, setAutoCompleteIndex, startIndex, _ref } = props,
+    { message, nameSuggestions, setMessage, autoCompleteIndex, setAutoCompleteIndex, startIndex, _ref, hideOnEmpty } =
+      props,
     filterNames = () => {
       const substring = message.substring(startIndex).toLowerCase().trim();
       const options = nameSuggestions.filter((suggestion) => suggestion.toLowerCase().includes(substring));
@@ -50,6 +51,8 @@ const AutoComplete = (props) => {
     if (options.length > 0 && autoCompleteIndex > options.length - 1) {
       setAutoCompleteIndex(options.length - 1);
     }
+
+    if (hideOnEmpty && !options.length) handleClose();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [options]);
 
@@ -65,7 +68,7 @@ const AutoComplete = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoCompleteIndex]);
 
-  return (
+  return hideOnEmpty && !options.length ? null : (
     <ClickAwayListener onClickAway={handleClose}>
       <Paper sx={AutoCompleteWrapperSx} elevation={4}>
         <Box sx={AutoCompleteSx}>

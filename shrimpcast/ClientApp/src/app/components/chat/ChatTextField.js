@@ -63,7 +63,11 @@ const AutoCompleteTypes = {
   "@": { propName: "nameSuggestions" },
   "/": { propName: "enabledSources", flatten: (sources) => sources.map((source) => source.name) },
   ":": { propName: "emotes", flatten: (emotes) => emotes.map((emote) => emote.name.replace(":", "")) },
-  "!": { propName: "commands", flatten: (commands) => commands.map((command) => command.replace("!", "")) },
+  "!": {
+    propName: "commands",
+    flatten: (commands) => commands.map((command) => command.replace("!", "")),
+    hideOnEmpty: true,
+  },
 };
 
 const ChatTextField = (props) => {
@@ -163,6 +167,7 @@ const ChatTextField = (props) => {
           setMessage={setMessage}
           autoCompleteIndex={autoCompleteIndex}
           setAutoCompleteIndex={setAutoCompleteIndex}
+          hideOnEmpty={autoCompleteType.data.hideOnEmpty}
           _ref={textFieldReference}
         />
       )}
