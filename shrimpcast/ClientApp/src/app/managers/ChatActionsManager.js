@@ -7,7 +7,8 @@ class ChatActionsManager {
 
   static mod_actions = {
     ...this.public_actions,
-    mute: "Mute",
+    t_mute: "TEMPORARY MUTE",
+    p_mute: "PERMANENT MUTE",
   };
 
   static admin_actions = {
@@ -42,8 +43,8 @@ class ChatActionsManager {
       .catch((ex) => console.log(ex));
     return response;
   }
-  static async Mute(signalR, sessionId) {
-    const response = await signalR.invoke("Mute", sessionId).catch((ex) => console.log(ex));
+  static async Mute(signalR, sessionId, isPermanent) {
+    const response = await signalR.invoke("Mute", sessionId, isPermanent).catch((ex) => console.log(ex));
     return response;
   }
   static async Unmute(signalR, sessionId) {

@@ -129,11 +129,11 @@ namespace shrimpcast.Data.Repositories
             return await SessionIPs.ToListAsync();
         }
 
-        public async Task<DateTime> Mute(int sessionId)
+        public async Task<DateTime> Mute(int sessionId, bool isPermanent)
         {
             var MuteLength = _configurationSingleton.Configuration.MuteLenghtInMinutes;
             var Session = await GetExistingByIdAsync(sessionId, true);
-            Session.MutedUntil = DateTime.UtcNow.AddMinutes(MuteLength);
+            Session.MutedUntil = DateTime.UtcNow.AddMinutes(isPermanent ? int.MaxValue : MuteLength);
             return await _context.SaveChangesAsync() > 0 ? Session.MutedUntil.Value : throw new Exception("Could not update record.");
         }
 

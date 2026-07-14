@@ -372,11 +372,11 @@ namespace shrimpcast.Hubs
         #endregion
 
         #region Mutes
-        public async Task<bool> Mute([FromBody] int SessionId)
+        public async Task<bool> Mute([FromBody] int SessionId, bool IsPermanent)
         {
             await ShouldGrantAccess(true);
             var session = GetCurrentConnection().Session;
-            var mutedUntil = await _sessionRepository.Mute(SessionId);
+            var mutedUntil = await _sessionRepository.Mute(SessionId, IsPermanent);
 
             foreach (var connection in ActiveConnections.Where(ac => ac.Value.Session.SessionId == SessionId))
             {
