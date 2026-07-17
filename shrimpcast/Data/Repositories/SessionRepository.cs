@@ -252,16 +252,21 @@ namespace shrimpcast.Data.Repositories
             var activeMuteByRemoteAddressQuery = from Session in _context.Sessions
                                                  join sip in _context.SessionIPs on Session.SessionId equals sip.SessionId
                                                  where Session.MutedUntil > utcNow && (sip.RemoteAddress == RemoteAddress || Session.SessionId  == SessionId) 
-                                                 select Session.MutedUntil;
+                                                 select Session;
 
-            var activeMuteByRemoteAddress = await activeMuteByRemoteAddressQuery.FirstOrDefaultAsync();
-            var MutedUntil = BuildMutedStringMinutes(activeMuteByRemoteAddress.GetValueOrDefault());
-            if (MutedUntil != null)
+            var activeMuteByRemoteAddress = await activeMuteByRemoteAddressQuery.AsNoTracking()
+                                                                                .FirstOrDefaultAsync();
+            if (activeMuteByRemoteAddress == null) return null;
+            var MutedUntil = BuildMutedStringMinutes(activeMuteByRemoteAddress.MutedUntil.GetValueOrDefault());
+            if (MutedUntil == null) return null;
+
+            if (activeMuteByRemoteAddress.MutedBySessionId.HasValue)
             {
-                return $"You have been muted for {MutedUntil}";
+                var mutedBySession = await GetExistingByIdAsync(activeMuteByRemoteAddress.MutedBySessionId.GetValueOrDefault(), false);
+                if (mutedBySession.IsMod) return $"{mutedBySession.SessionNames.Last().Name} has muted you for {MutedUntil}";
             }
 
-            return null;
+            return $"You have been muted for {MutedUntil}";
         }
 
         public async Task<string?> SetUserLabel(string? Label, int SessionId)
