@@ -36,7 +36,7 @@ const ChatMessagesSx = (activePoll, activeBingo, bingoButtonExpanded, showGolden
     bottom: "0",
   },
   // Use lookahead assertion to ensure we're matching the full name
-  NameRegex = (name) => `@${name}(?=[\\s.]|$)`,
+  NameRegex = (name) => `@\\[${name}\\](?=[\\s.]|$)`,
   SourcesRegex = (sources) => (sources ? `|(?:^|\\s)(?:${sources})(?=\\s|$)` : ""),
   URLRegex = "https?://\\S+",
   ChatRegex = (name, emotes, sources) => {

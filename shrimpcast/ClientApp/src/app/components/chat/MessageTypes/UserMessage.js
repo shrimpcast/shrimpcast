@@ -177,7 +177,7 @@ const UserMessage = React.memo((props) => {
       });
       document.dispatchEvent(event);
     },
-    replyToUser = () => dispatchTextEvent(` @${props.sentBy} `),
+    replyToUser = () => dispatchTextEvent(` @[${props.sentBy}] `),
     sendDirectMessage = () => dispatchTextEvent(`!ping ${props.sessionId} `),
     setUserLabel = () => dispatchTextEvent(`!userlabel ${props.sessionId} `),
     [agoText, setAgoText] = useState("");

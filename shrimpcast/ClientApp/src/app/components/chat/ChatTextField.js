@@ -60,7 +60,10 @@ const SendInputSx = {
   });
 
 const AutoCompleteTypes = {
-  "@": { propName: "nameSuggestions" },
+  "@": {
+    propName: "nameSuggestions",
+    flatten: (nameSuggestions) => nameSuggestions.map((nameSuggestion) => `[${nameSuggestion}]`),
+  },
   "/": { propName: "enabledSources", flatten: (sources) => sources.map((source) => source.name) },
   ":": { propName: "emotes", flatten: (emotes) => emotes.map((emote) => emote.name.replace(":", "")) },
   "!": {
