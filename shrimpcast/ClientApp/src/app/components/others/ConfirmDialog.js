@@ -15,7 +15,9 @@ const ConfirmDialog = (props) => {
       aria-labelledby="alert-dialog-title"
       aria-describedby="alert-dialog-description"
     >
-      <DialogTitle id="alert-dialog-title">{props.title}</DialogTitle>
+      <DialogTitle id="alert-dialog-title" sx={{ wordWrap: "break-word" }}>
+        {props.title}
+      </DialogTitle>
       {props.content && (
         <DialogContent>
           <DialogContentText id="alert-dialog-description">{props.content}</DialogContentText>

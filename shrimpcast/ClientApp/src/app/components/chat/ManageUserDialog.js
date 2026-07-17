@@ -161,7 +161,7 @@ const ManageUserDialog = (props) => {
           </DialogTitle>
           <DialogContent>
             {!userInfo ? (
-              <Box width="40px" ml="auto" mr="auto">
+              <Box width="40px" ml="auto" mr="auto" mt="10px">
                 <CircularProgress color="secondary" />
               </Box>
             ) : (
@@ -171,14 +171,36 @@ const ManageUserDialog = (props) => {
 
                   <Grid xs={12}>
                     <Typography>
-                      User first joined on {new Date(userInfo.basicResponse.createdAt).toLocaleString()}
-                      {siteAdmin && ` with ID ${sessionId}`}{" "}
+                      User first joined on{" "}
+                      <Typography variant="overline" lineHeight="initial">
+                        {new Date(userInfo.basicResponse.createdAt).toLocaleString()}
+                      </Typography>
+                      {siteAdmin && (
+                        <>
+                          {" "}
+                          with{" "}
+                          <Typography variant="overline" lineHeight="initial">
+                            ID {sessionId}
+                          </Typography>
+                        </>
+                      )}
                     </Typography>
                     {props.createdAt && (
-                      <Typography>Message sent at {new Date(props.createdAt).toLocaleString()}</Typography>
+                      <Typography>
+                        Message sent at{" "}
+                        <Typography variant="overline" lineHeight="initial">
+                          {new Date(props.createdAt).toLocaleString()}{" "}
+                        </Typography>{" "}
+                      </Typography>
                     )}
                     {userInfo.mutedUntil && (
-                      <Typography>Muted until {new Date(userInfo.mutedUntil).toLocaleString()}</Typography>
+                      <Typography>
+                        {" "}
+                        Muted until{" "}
+                        <Typography variant="overline" lineHeight="initial">
+                          {new Date(userInfo.mutedUntil).toLocaleString()}
+                        </Typography>
+                      </Typography>
                     )}
                     {siteAdmin && userInfo.ip && (
                       <Typography>
@@ -187,10 +209,15 @@ const ManageUserDialog = (props) => {
                           sx={{ wordWrap: "break-word" }}
                           href={`https://whatismyipaddress.com/ip/${userInfo.ip}`}
                           target="_blank"
+                          variant="overline"
+                          lineHeight="initial"
                         >
                           {userInfo.ip}
                         </Link>{" "}
-                        with ID {props.messageId}
+                        with{" "}
+                        <Typography variant="overline" lineHeight="initial">
+                          ID {props.messageId}
+                        </Typography>
                       </Typography>
                     )}
                     {siteAdmin && userInfo.ua && (
@@ -200,6 +227,8 @@ const ManageUserDialog = (props) => {
                           sx={{ wordWrap: "break-word" }}
                           href={`https://gs.statcounter.com/detect?useragent=${encodeURIComponent(userInfo.ua)}`}
                           target="_blank"
+                          variant="overline"
+                          lineHeight="initial"
                         >
                           {userInfo.ua}
                         </Link>
