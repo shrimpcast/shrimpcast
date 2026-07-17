@@ -232,8 +232,12 @@ const UserMessage = React.memo((props) => {
             </>
           )}
         </Box>
-        {showUserLabels && !isAdmin && !isMod && (
-          <UserLabel color={userColorDisplay} label={userLabel} isGolden={isGolden} />
+        {showUserLabels && (
+          <UserLabel
+            color={isAdmin ? "#b23c17" : isMod ? "#66ccff" : userColorDisplay}
+            label={userLabel}
+            isNormalUser={!isGolden && !isAdmin && !isMod}
+          />
         )}
         <Box display="inline-block">
           <Typography
