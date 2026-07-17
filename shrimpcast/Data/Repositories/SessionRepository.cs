@@ -129,11 +129,12 @@ namespace shrimpcast.Data.Repositories
             return await SessionIPs.ToListAsync();
         }
 
-        public async Task<DateTime> Mute(int sessionId, bool isPermanent)
+        public async Task<DateTime> Mute(int sessionId, bool isPermanent, int mutedBy)
         {
             var MuteLength = _configurationSingleton.Configuration.MuteLenghtInMinutes;
             var Session = await GetExistingByIdAsync(sessionId, true);
             Session.MutedUntil = DateTime.UtcNow.AddMinutes(isPermanent ? int.MaxValue : MuteLength);
+            Session.MutedBySessionId = mutedBy;
             return await _context.SaveChangesAsync() > 0 ? Session.MutedUntil.Value : throw new Exception("Could not update record.");
         }
 
@@ -156,7 +157,12 @@ namespace shrimpcast.Data.Repositories
                                   SessionName =
                                   (from sn in _context.SessionNames where sn.SessionId == session.SessionId orderby sn.CreatedAt select sn.Name).Last()
                                   + $" ({BuildMutedStringMinutes(session.MutedUntil.GetValueOrDefault())} left) \n"
-                                  + $" [{string.Join(", ", from sip in _context.SessionIPs where sip.SessionId == session.SessionId select sip.RemoteAddress)}]",
+                                  + (
+                                     session.MutedBySessionId != null
+                                     ? $"by {(from sn in _context.SessionNames where sn.SessionId == session.MutedBySessionId orderby sn.CreatedAt select sn.Name).Last()} \n"
+                                     : string.Empty
+                                    )
+                                  + $"[{string.Join(", ", from sip in _context.SessionIPs where sip.SessionId == session.SessionId select sip.RemoteAddress)}]",
                               };
             var result = await activeMutes.AsNoTracking().ToListAsync();
             return [.. result.Cast<object>()];
@@ -166,6 +172,7 @@ namespace shrimpcast.Data.Repositories
         {
             var Session = await GetExistingByIdAsync(sessionId, true);
             Session.MutedUntil = null;
+            Session.MutedBySessionId = null;
             return await _context.SaveChangesAsync() > 0 ? true : throw new Exception("Could not update record.");
         }
 

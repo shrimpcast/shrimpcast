@@ -143,7 +143,7 @@ const PollOption = React.memo((props) => {
                 createdAt={null}
                 closeCallback={closeVotes}
                 responseIsTitleObject={{
-                  appendTitle: "[{0} connected user(s)]",
+                  appendTitle: "{0} connected user(s)",
                   appendKey: "activeUsers",
                   value: "votes",
                   greenFlag: "connected",

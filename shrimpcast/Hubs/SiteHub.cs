@@ -189,7 +189,7 @@ namespace shrimpcast.Hubs
             string Content = $"{currentName} changed his name to {newName}.",
                    MessageType = "NameChange";
 
-            var addedMessage = await _messageRepository.Add(!Session.IsAdmin && !Session.IsGolden, Session.SessionId, RemoteAddress, CurrentConnection.UserAgent, Content, MessageType);
+            var addedMessage = await _messageRepository.Add(!Session.IsAdmin && !Session.IsGolden && !Session.IsMod, Session.SessionId, RemoteAddress, CurrentConnection.UserAgent, Content, MessageType);
             addedMessage.SentBy = newName;
             addedMessage.RemoteAddress = string.Empty;
             addedMessage.UserAgent = string.Empty;
@@ -232,7 +232,7 @@ namespace shrimpcast.Hubs
             if (await DispatchCommand(message, CurrentConnection)) return 1;
 
             var session = CurrentConnection.Session;
-            var addedMessage = await _messageRepository.Add(!session.IsAdmin && !session.IsGolden, session.SessionId, RemoteAddress, CurrentConnection.UserAgent, message, "UserMessage");
+            var addedMessage = await _messageRepository.Add(!session.IsAdmin && !session.IsGolden && !session.IsMod, session.SessionId, RemoteAddress, CurrentConnection.UserAgent, message, "UserMessage");
             addedMessage.SentBy = session.SessionNames.Last().Name;
             addedMessage.IsAdmin = session.IsAdmin;
             addedMessage.IsMod = session.IsMod;
@@ -322,8 +322,20 @@ namespace shrimpcast.Hubs
 
         public async Task<bool> RemoveMessage([FromBody] int MessageId)
         {
-            await ShouldGrantAccess();
-            var result = await _messageRepository.Remove(MessageId, GetCurrentConnection().Session.SessionId);
+            await ShouldGrantAccess(true);
+            var Session = GetCurrentConnection().Session;
+            Message RemovedMessage; 
+
+            try
+            {
+                RemovedMessage = await _messageRepository.Remove(MessageId, Session.IsMod);
+            }
+            catch (Exception ex)
+            {
+                await DispatchSystemMessage(ex.Message);
+                return true;
+            }
+
             await NotifyNewMessage(new Message
             {
                 Content = string.Empty,
@@ -332,7 +344,15 @@ namespace shrimpcast.Hubs
                 MessageId = MessageId,
                 SessionId = 0,
             });
-            return result;
+
+            if (Session.IsMod)
+            {
+                var removedSessionName = await _sessionRepository.GetCurrentName(RemovedMessage.SessionId);
+                var logMessage = $"{Session.SessionNames.Last().Name} removed a post from {removedSessionName}";
+                await LogModAction(logMessage, $"{logMessage} [{RemovedMessage.Content}]");
+            }
+            
+            return true;
         }
         #endregion
 
@@ -349,8 +369,7 @@ namespace shrimpcast.Hubs
             await Task.Delay(new Random().Next(Configuration.MinABTimeInMs, Configuration.MaxABTimeInMs));
             await PerformBan(SessionId, true, true, -1);
             var logMessage = $"[{sentBy}] has been banned by the auto-mod";
-            await DispatchSystemMessage(logMessage, true, false, GetAdminSessions());
-            _ffmpegRepository.MediaServerLog($"{logMessage}: [{content}]");
+            await LogModAction(logMessage, $"{logMessage}: [{content}]");
         }
 
         public async Task<object> ListBans()
@@ -376,7 +395,7 @@ namespace shrimpcast.Hubs
         {
             await ShouldGrantAccess(true);
             var session = GetCurrentConnection().Session;
-            var mutedUntil = await _sessionRepository.Mute(SessionId, IsPermanent);
+            var mutedUntil = await _sessionRepository.Mute(SessionId, IsPermanent, session.SessionId);
 
             foreach (var connection in ActiveConnections.Where(ac => ac.Value.Session.SessionId == SessionId))
             {
@@ -385,18 +404,22 @@ namespace shrimpcast.Hubs
 
             if (session.IsMod)
             {
-                var name = await _sessionRepository.GetCurrentName(SessionId);
-                var message = $"{session.SessionNames.Last().Name} muted {name}";
-                await DispatchSystemMessage(message, true, false, GetAdminSessions());
-                _ffmpegRepository.MediaServerLog(message);
+                var mutedSessionName = await _sessionRepository.GetCurrentName(SessionId);
+                var logMessage = $"{session.SessionNames.Last().Name} {(IsPermanent ? "permanently" : "temporarily")} muted {mutedSessionName}";
+                await LogModAction(logMessage);
             }
             return true;
         }
 
-        public async Task<List<object>> ListActiveMutes()
+        public async Task<object> ListActiveMutes()
         {
             await ShouldGrantAccess();
-            return await _sessionRepository.ListActiveMutes();
+            var activeMutes = await _sessionRepository.ListActiveMutes();
+            return new
+            {
+                totalMutes = activeMutes.Count,
+                activeMutes,
+            };
         }
 
         public async Task<bool> Unmute([FromBody] int SessionId)
@@ -1060,7 +1083,7 @@ namespace shrimpcast.Hubs
                 return IsMuted;
             }
 
-            if (connection.Session.IsGolden) return null;
+            if (connection.Session.IsGolden || connection.Session.IsMod) return null;
 
             if (Configuration.EnableVerifiedMode && !connection.Session.IsVerified)
             {
@@ -1499,6 +1522,12 @@ namespace shrimpcast.Hubs
             {
                 _ffmpegRepository.MediaServerLog($"Job remove-stale-clients failed: {ex.Message}");
             }
+        }
+
+        private async Task LogModAction(string log, string? mediaServerLog = null)
+        {
+            await DispatchSystemMessage(log, true, false, GetAdminSessions());
+            _ffmpegRepository.MediaServerLog(mediaServerLog ?? log);
         }
 
         [GeneratedRegex(@"(\d+) (.+)$")]

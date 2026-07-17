@@ -208,18 +208,26 @@ const UserMessage = React.memo((props) => {
                   <MessageIcon sx={{ fontSize: "16px" }} />
                 </IconButton>
               </Tooltip>
-              <Tooltip title="Set user label">
+              <Tooltip title="Set label">
                 <IconButton sx={OverlayButtonSx} onClick={setUserLabel}>
                   <LabelIcon sx={{ fontSize: "16px" }} />
                 </IconButton>
               </Tooltip>
-              <Tooltip title="Remove message">
+            </>
+          )}
+          {(props.siteAdmin || (props.siteMod && !isAdmin && !isMod)) && (
+            <>
+              <Tooltip title="Remove">
                 <IconButton sx={OverlayButtonSx} onClick={openConfirmPrompt}>
                   <DeleteIcon sx={{ fontSize: "16px" }} />
                 </IconButton>
               </Tooltip>
               {showPromptDialog && (
-                <ConfirmDialog title="Remove message?" confirm={removeMessage} cancel={closeConfirmPrompt} />
+                <ConfirmDialog
+                  title="Are you sure you want to delete this post?"
+                  confirm={removeMessage}
+                  cancel={closeConfirmPrompt}
+                />
               )}
             </>
           )}

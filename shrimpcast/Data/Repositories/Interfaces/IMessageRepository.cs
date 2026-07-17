@@ -8,7 +8,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
         Task<Message> GetById(int MessageId);
         Task<string?> ShouldEnforceCooldown(string RemoteAddress);
         Task<Message> Add(bool runCooldownChecks, int SessionId, string RemoteAddress, string? UserAgent, string Content, string MessageType);
-        Task<bool> Remove(int MessageId, int DeletedBy);
+        Task<Message> Remove(int MessageId, bool RequestedByMod);
         Task<bool> HasEnoughCountBySessionId(int SessionId, int RequiredCount);
     }
 }

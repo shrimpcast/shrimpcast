@@ -14,6 +14,10 @@ namespace shrimpcast.Entities.DB
 
         public DateTime? MutedUntil { get; set; }
 
+        public int? MutedBySessionId { get; set; }
+
+        public Session? MutedBySession { get; set; }
+
         public bool IsAdmin { get; set; }
 
         public bool IsMod { get; set; }
