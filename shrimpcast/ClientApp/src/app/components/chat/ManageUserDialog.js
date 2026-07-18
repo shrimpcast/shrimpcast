@@ -293,7 +293,7 @@ const ManageUserDialog = (props) => {
                       {/* ------------- Active connections ------------- */}
 
                       <Grid xs={12} sm={isAdmin ? 12 : 6}>
-                        <Typography variant="overline" lineHeight="initial" sx={MessageIPSx}>
+                        <Typography sx={MessageIPSx}>
                           Active sessions
                           {userInfo.ip ? (
                             <>
@@ -303,6 +303,8 @@ const ManageUserDialog = (props) => {
                                 sx={{ wordWrap: "break-word" }}
                                 href={`https://whatismyipaddress.com/ip/${userInfo.ip}`}
                                 target="_blank"
+                                variant="overline"
+                                lineHeight="initial"
                               >
                                 {userInfo.ip}
                               </Link>
@@ -314,7 +316,6 @@ const ManageUserDialog = (props) => {
                         </Typography>
                         {!userInfo.activeSessions?.length ? (
                           <Typography variant="overline" lineHeight="initial">
-                            <br />
                             {props.useSession ? "Session not connected" : "Remote address not connected"}
                           </Typography>
                         ) : (

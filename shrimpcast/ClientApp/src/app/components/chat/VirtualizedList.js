@@ -53,7 +53,7 @@ const ComplexRow = (index, value) => {
 
   return (
     <ListItem key={index}>
-      <Typography component="span">
+      <Typography component="span" variant="overline" lineHeight="initial">
         [{connectionId}] <Divider />
         IP = <RemoteAddressLink value={ip} /> <br />
         UA = {ua ? <RemoteAddressLink value={ua} isUA={true} /> : "Empty user-agent"}
