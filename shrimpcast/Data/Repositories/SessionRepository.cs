@@ -129,11 +129,12 @@ namespace shrimpcast.Data.Repositories
             return await SessionIPs.ToListAsync();
         }
 
-        public async Task<DateTime> Mute(int sessionId, bool isPermanent)
+        public async Task<DateTime> Mute(int sessionId, bool isPermanent, int mutedBy)
         {
             var MuteLength = _configurationSingleton.Configuration.MuteLenghtInMinutes;
             var Session = await GetExistingByIdAsync(sessionId, true);
             Session.MutedUntil = DateTime.UtcNow.AddMinutes(isPermanent ? int.MaxValue : MuteLength);
+            Session.MutedBySessionId = mutedBy;
             return await _context.SaveChangesAsync() > 0 ? Session.MutedUntil.Value : throw new Exception("Could not update record.");
         }
 
@@ -156,7 +157,12 @@ namespace shrimpcast.Data.Repositories
                                   SessionName =
                                   (from sn in _context.SessionNames where sn.SessionId == session.SessionId orderby sn.CreatedAt select sn.Name).Last()
                                   + $" ({BuildMutedStringMinutes(session.MutedUntil.GetValueOrDefault())} left) \n"
-                                  + $" [{string.Join(", ", from sip in _context.SessionIPs where sip.SessionId == session.SessionId select sip.RemoteAddress)}]",
+                                  + (
+                                     session.MutedBySessionId != null
+                                     ? $"by {(from sn in _context.SessionNames where sn.SessionId == session.MutedBySessionId orderby sn.CreatedAt select sn.Name).Last()} \n"
+                                     : string.Empty
+                                    )
+                                  + $"[{string.Join(", ", from sip in _context.SessionIPs where sip.SessionId == session.SessionId select sip.RemoteAddress)}]",
                               };
             var result = await activeMutes.AsNoTracking().ToListAsync();
             return [.. result.Cast<object>()];
@@ -166,6 +172,7 @@ namespace shrimpcast.Data.Repositories
         {
             var Session = await GetExistingByIdAsync(sessionId, true);
             Session.MutedUntil = null;
+            Session.MutedBySessionId = null;
             return await _context.SaveChangesAsync() > 0 ? true : throw new Exception("Could not update record.");
         }
 
@@ -245,16 +252,21 @@ namespace shrimpcast.Data.Repositories
             var activeMuteByRemoteAddressQuery = from Session in _context.Sessions
                                                  join sip in _context.SessionIPs on Session.SessionId equals sip.SessionId
                                                  where Session.MutedUntil > utcNow && (sip.RemoteAddress == RemoteAddress || Session.SessionId  == SessionId) 
-                                                 select Session.MutedUntil;
+                                                 select Session;
 
-            var activeMuteByRemoteAddress = await activeMuteByRemoteAddressQuery.FirstOrDefaultAsync();
-            var MutedUntil = BuildMutedStringMinutes(activeMuteByRemoteAddress.GetValueOrDefault());
-            if (MutedUntil != null)
+            var activeMuteByRemoteAddress = await activeMuteByRemoteAddressQuery.AsNoTracking()
+                                                                                .FirstOrDefaultAsync();
+            if (activeMuteByRemoteAddress == null) return null;
+            var MutedUntil = BuildMutedStringMinutes(activeMuteByRemoteAddress.MutedUntil.GetValueOrDefault());
+            if (MutedUntil == null) return null;
+
+            if (activeMuteByRemoteAddress.MutedBySessionId.HasValue)
             {
-                return $"You have been muted for {MutedUntil}";
+                var mutedBySession = await GetExistingByIdAsync(activeMuteByRemoteAddress.MutedBySessionId.GetValueOrDefault(), false);
+                if (mutedBySession.IsMod) return $"{mutedBySession.SessionNames.Last().Name} has muted you for {MutedUntil}";
             }
 
-            return null;
+            return $"You have been muted for {MutedUntil}";
         }
 
         public async Task<string?> SetUserLabel(string? Label, int SessionId)

@@ -19,17 +19,29 @@ import ConfirmDialog from "../others/ConfirmDialog";
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import InfoIcon from "@mui/icons-material/Info";
 import AutoModFiltersManager from "../../managers/AutoModFiltersManager";
+import { useTheme } from "@emotion/react";
 
-const BanSx = (optionsCount) => ({
+const BanSx = (optionsCount, i) => ({
     width: "100%",
-    height: `calc(${100 / optionsCount}% - 9px)`,
-    marginTop: "9px",
+    minHeight: "40px",
+    height: `calc(${100 / optionsCount}%${i === optionsCount - 1 ? "" : " - 7.5px"})`,
+    marginBottom: i === optionsCount - 1 ? "0px" : "7.5px",
+    borderRadius: "5px",
   }),
   MessageIPSx = {
     overflow: "hidden",
     textOverflow: "ellipsis",
     whiteSpace: "nowrap",
-  };
+  },
+  ManageUserButtonSx = (theme, isRightButton) => ({
+    width: "49%",
+    ml: isRightButton ? "10px" : "0px",
+    [theme.breakpoints.down("md")]: {
+      width: "100%",
+      ml: "0px",
+      mt: isRightButton ? "7.5px" : "0px",
+    },
+  });
 
 const ManageUserDialog = (props) => {
   //siteAdmin means that the user is authenticated as an admin
@@ -57,6 +69,7 @@ const ManageUserDialog = (props) => {
         ? ChatActionsManager.mod_actions
         : ChatActionsManager.public_actions,
     actionKeys = Object.keys(actions),
+    theme = useTheme(),
     [open, setOpen] = useState(false),
     setOpened = () => setOpen(true),
     setClosed = () => {
@@ -148,22 +161,46 @@ const ManageUserDialog = (props) => {
           </DialogTitle>
           <DialogContent>
             {!userInfo ? (
-              <Box width="40px" ml="auto" mr="auto">
+              <Box width="40px" ml="auto" mr="auto" mt="10px">
                 <CircularProgress color="secondary" />
               </Box>
             ) : (
               <>
                 <Grid container alignItems="center">
-                  <Grid xs={12} sm={targetUserPublic ? 10 : 12}>
+                  {/* ------------- Basic user info ------------- */}
+
+                  <Grid xs={12}>
                     <Typography>
-                      User first joined on {new Date(userInfo.basicResponse.createdAt).toLocaleString()}
-                      {siteAdmin && ` with ID ${sessionId}`}{" "}
+                      User first joined on{" "}
+                      <Typography variant="overline" lineHeight="initial">
+                        {new Date(userInfo.basicResponse.createdAt).toLocaleString()}
+                      </Typography>
+                      {siteAdmin && (
+                        <>
+                          {" "}
+                          with{" "}
+                          <Typography variant="overline" lineHeight="initial">
+                            ID {sessionId}
+                          </Typography>
+                        </>
+                      )}
                     </Typography>
                     {props.createdAt && (
-                      <Typography>Message sent at {new Date(props.createdAt).toLocaleString()}</Typography>
+                      <Typography>
+                        Message sent at{" "}
+                        <Typography variant="overline" lineHeight="initial">
+                          {new Date(props.createdAt).toLocaleString()}{" "}
+                        </Typography>{" "}
+                      </Typography>
                     )}
                     {userInfo.mutedUntil && (
-                      <Typography>Muted until {new Date(userInfo.mutedUntil).toLocaleString()}</Typography>
+                      <Typography>
+                        {" "}
+                        Muted until{" "}
+                        <Typography variant="overline" lineHeight="initial">
+                          {new Date(userInfo.mutedUntil).toLocaleString()}
+                        </Typography>
+                      </Typography>
                     )}
                     {siteAdmin && userInfo.ip && (
                       <Typography>
@@ -172,10 +209,15 @@ const ManageUserDialog = (props) => {
                           sx={{ wordWrap: "break-word" }}
                           href={`https://whatismyipaddress.com/ip/${userInfo.ip}`}
                           target="_blank"
+                          variant="overline"
+                          lineHeight="initial"
                         >
                           {userInfo.ip}
                         </Link>{" "}
-                        with ID {props.messageId}
+                        with{" "}
+                        <Typography variant="overline" lineHeight="initial">
+                          ID {props.messageId}
+                        </Typography>
                       </Typography>
                     )}
                     {siteAdmin && userInfo.ua && (
@@ -185,45 +227,71 @@ const ManageUserDialog = (props) => {
                           sx={{ wordWrap: "break-word" }}
                           href={`https://gs.statcounter.com/detect?useragent=${encodeURIComponent(userInfo.ua)}`}
                           target="_blank"
+                          variant="overline"
+                          lineHeight="initial"
                         >
                           {userInfo.ua}
                         </Link>
                       </Typography>
                     )}
                   </Grid>
+
+                  {/* ------------- Management buttons ------------- */}
+
                   {targetUserPublic && (
-                    <Grid xs={12} sm={2} pb="5px">
+                    <Grid xs={12} mt="5px" mb="5px">
+                      <Divider sx={{ marginBottom: "5px" }} />
                       <Button
                         variant="contained"
                         color="primary"
-                        sx={{ width: "100%", mb: "5px" }}
+                        sx={ManageUserButtonSx(theme)}
                         onClick={() => openConfirmPrompt(ChatActionsManager.actions.verify(userInfo.isVerified))}
                       >
-                        {ChatActionsManager.actions.verify(userInfo.isVerified)}
+                        <Typography variant="overline">
+                          {ChatActionsManager.actions.verify(userInfo.isVerified)}
+                        </Typography>
                       </Button>
                       <Button
                         variant="contained"
                         color="primary"
-                        sx={{ width: "100%" }}
+                        sx={ManageUserButtonSx(theme, true)}
                         onClick={() => openConfirmPrompt(ChatActionsManager.actions.mod(userInfo.isMod))}
                       >
-                        {ChatActionsManager.actions.mod(userInfo.isMod)}
+                        <Typography variant="overline">{ChatActionsManager.actions.mod(userInfo.isMod)}</Typography>
                       </Button>
                     </Grid>
                   )}
                 </Grid>
                 <Divider />
+
+                {/* ------------- Information panels ------------- */}
+
                 <Grid container spacing={2} mt="2px">
+                  {/* ------------- Previous names ------------- */}
+
                   <Grid xs={12} sm={siteAdmin || showActionsPanel ? 6 : 12}>
-                    <Typography>Previous names ({userInfo.basicResponse.previousNames.length}):</Typography>
-                    <VirtualizedList list={userInfo.basicResponse.previousNames} />
+                    <Typography variant="overline" lineHeight="initial">
+                      Previous names ({userInfo.basicResponse.previousNames.length}):
+                    </Typography>
+                    <VirtualizedList
+                      list={userInfo.basicResponse.previousNames}
+                      dynamicHeight={!siteAdmin && !showActionsPanel}
+                    />
                   </Grid>
+
                   {siteAdmin && (
                     <>
+                      {/* ------------- Remote addresses (IPs) ------------- */}
+
                       <Grid xs={12} sm={6}>
-                        <Typography>All session addresses ({userInfo.iPs.length}):</Typography>
+                        <Typography variant="overline" lineHeight="initial">
+                          All session addresses ({userInfo.iPs.length}):
+                        </Typography>
                         <VirtualizedList list={userInfo.iPs} />
                       </Grid>
+
+                      {/* ------------- Active connections ------------- */}
+
                       <Grid xs={12} sm={isAdmin ? 12 : 6}>
                         <Typography sx={MessageIPSx}>
                           Active sessions
@@ -235,6 +303,8 @@ const ManageUserDialog = (props) => {
                                 sx={{ wordWrap: "break-word" }}
                                 href={`https://whatismyipaddress.com/ip/${userInfo.ip}`}
                                 target="_blank"
+                                variant="overline"
+                                lineHeight="initial"
                               >
                                 {userInfo.ip}
                               </Link>
@@ -245,33 +315,40 @@ const ManageUserDialog = (props) => {
                           :
                         </Typography>
                         {!userInfo.activeSessions?.length ? (
-                          <Typography>
+                          <Typography variant="overline" lineHeight="initial">
                             {props.useSession ? "Session not connected" : "Remote address not connected"}
                           </Typography>
                         ) : (
                           <VirtualizedList
                             isComplexType={props.useSession}
                             list={userInfo.activeSessions}
-                            height={250}
+                            dynamicHeight={!showActionsPanel && !props.useSession}
                           />
                         )}
                       </Grid>
                     </>
                   )}
+
+                  {/* ------------- Moderation buttons ------------- */}
+
                   {showActionsPanel && (
                     <Grid xs={12} sm={6} pb={2}>
-                      <Typography>Moderate</Typography>
-                      <Divider />
-                      <Box height={siteAdmin ? "250px" : "200px"}>
-                        {actionKeys.map((actionKey) => (
+                      <Typography variant="overline" lineHeight="initial">
+                        Moderate
+                      </Typography>
+                      <Divider sx={{ marginTop: "2.5px", marginBottom: "5px" }} />
+                      <Box height={"200px"} overflow={"auto"}>
+                        {actionKeys.map((actionKey, index) => (
                           <Button
                             onClick={() => openConfirmPrompt(actions[actionKey])}
                             variant="contained"
                             color="error"
-                            sx={BanSx(actionKeys.length)}
+                            sx={BanSx(actionKeys.length, index)}
                             key={actionKey}
                           >
-                            {actions[actionKey]}
+                            <Typography variant="overline" lineHeight="initial">
+                              {actions[actionKey]}
+                            </Typography>
                           </Button>
                         ))}
 

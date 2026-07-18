@@ -14,6 +14,11 @@ const Mutes = (props) => {
       identifier="sessionId"
       contentIdentifier="sessionName"
       actionName="unmute"
+      responseIsTitleObject={{
+        appendTitle: "{0} muted user(s)",
+        appendKey: "totalMutes",
+        value: "activeMutes",
+      }}
       maxLength={120}
       showScroll={true}
       {...props}

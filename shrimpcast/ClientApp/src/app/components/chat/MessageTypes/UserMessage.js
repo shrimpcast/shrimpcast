@@ -177,7 +177,7 @@ const UserMessage = React.memo((props) => {
       });
       document.dispatchEvent(event);
     },
-    replyToUser = () => dispatchTextEvent(` @${props.sentBy} `),
+    replyToUser = () => dispatchTextEvent(` @[${props.sentBy}] `),
     sendDirectMessage = () => dispatchTextEvent(`!ping ${props.sessionId} `),
     setUserLabel = () => dispatchTextEvent(`!userlabel ${props.sessionId} `),
     [agoText, setAgoText] = useState("");
@@ -208,24 +208,36 @@ const UserMessage = React.memo((props) => {
                   <MessageIcon sx={{ fontSize: "16px" }} />
                 </IconButton>
               </Tooltip>
-              <Tooltip title="Set user label">
+              <Tooltip title="Set label">
                 <IconButton sx={OverlayButtonSx} onClick={setUserLabel}>
                   <LabelIcon sx={{ fontSize: "16px" }} />
                 </IconButton>
               </Tooltip>
-              <Tooltip title="Remove message">
+            </>
+          )}
+          {(props.siteAdmin || (props.siteMod && !isAdmin && !isMod)) && (
+            <>
+              <Tooltip title="Remove">
                 <IconButton sx={OverlayButtonSx} onClick={openConfirmPrompt}>
                   <DeleteIcon sx={{ fontSize: "16px" }} />
                 </IconButton>
               </Tooltip>
               {showPromptDialog && (
-                <ConfirmDialog title="Remove message?" confirm={removeMessage} cancel={closeConfirmPrompt} />
+                <ConfirmDialog
+                  title="Are you sure you want to delete this post?"
+                  confirm={removeMessage}
+                  cancel={closeConfirmPrompt}
+                />
               )}
             </>
           )}
         </Box>
-        {showUserLabels && !isAdmin && !isMod && (
-          <UserLabel color={userColorDisplay} label={userLabel} isGolden={isGolden} />
+        {showUserLabels && (
+          <UserLabel
+            color={isAdmin ? "#b23c17" : isMod ? "#66ccff" : userColorDisplay}
+            label={userLabel}
+            isNormalUser={!isGolden && !isAdmin && !isMod}
+          />
         )}
         <Box display="inline-block">
           <Typography

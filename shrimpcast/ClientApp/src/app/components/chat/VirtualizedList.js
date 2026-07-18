@@ -8,7 +8,7 @@ import { Virtuoso } from "react-virtuoso";
 const ListSx = {
     bgcolor: "background.paper",
     borderRadius: "5px",
-    mt: "2.5px",
+    mt: "5px",
   },
   RowSx = {
     wordBreak: "break-all",
@@ -36,7 +36,13 @@ const ListItem = ({ children }) => {
 };
 
 const SimpleRow = (index, value) => {
-  return <ListItem key={index}> {isIP(value) ? <RemoteAddressLink value={value} /> : value} </ListItem>;
+  return (
+    <ListItem key={index}>
+      <Typography variant="overline" lineHeight="initial">
+        {isIP(value) ? <RemoteAddressLink value={value} /> : value}
+      </Typography>
+    </ListItem>
+  );
 };
 
 const ComplexRow = (index, value) => {
@@ -47,7 +53,7 @@ const ComplexRow = (index, value) => {
 
   return (
     <ListItem key={index}>
-      <Typography component="span">
+      <Typography component="span" variant="overline" lineHeight="initial">
         [{connectionId}] <Divider />
         IP = <RemoteAddressLink value={ip} /> <br />
         UA = {ua ? <RemoteAddressLink value={ua} isUA={true} /> : "Empty user-agent"}
@@ -58,10 +64,17 @@ const ComplexRow = (index, value) => {
 
 export default function VirtualizedList(props) {
   const list = props.list || [],
-    { isComplexType, height } = props;
+    { isComplexType, height, dynamicHeight } = props;
   return (
-    <Box sx={ListSx}>
-      <Virtuoso data={list} itemContent={isComplexType ? ComplexRow : SimpleRow} style={{ height: height || 200 }} />
-    </Box>
+    <>
+      <Divider sx={{ marginTop: "2.5px" }} />
+      <Box sx={ListSx}>
+        <Virtuoso
+          data={list}
+          itemContent={isComplexType ? ComplexRow : SimpleRow}
+          style={{ height: height || (dynamicHeight && list.length < 5 ? list.length * 48 : 200) }}
+        />
+      </Box>
+    </>
   );
 }

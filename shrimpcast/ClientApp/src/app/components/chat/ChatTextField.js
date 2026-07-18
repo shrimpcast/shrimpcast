@@ -60,13 +60,17 @@ const SendInputSx = {
   });
 
 const AutoCompleteTypes = {
-  "@": { propName: "nameSuggestions" },
-  "/": { propName: "enabledSources", flatten: (sources) => sources.map((source) => source.name) },
+  "@": {
+    propName: "nameSuggestions",
+    flatten: (nameSuggestions) => nameSuggestions.map((nameSuggestion) => `[${nameSuggestion}]`),
+  },
+  "/": { propName: "enabledSources", flatten: (sources) => sources.map((source) => source.name), hideOnEmpty: true },
   ":": { propName: "emotes", flatten: (emotes) => emotes.map((emote) => emote.name.replace(":", "")) },
   "!": {
     propName: "commands",
     flatten: (commands) => commands.map((command) => command.replace("!", "")),
     hideOnEmpty: true,
+    firstCharOnly: true,
   },
 };
 
@@ -125,7 +129,7 @@ const ChatTextField = (props) => {
           break;
       }
     },
-    sholdCloseAutoComplete = (e) => {
+    shouldCloseAutoComplete = (e) => {
       if (!showAutocomplete) return;
       if (e?.target?.selectionStart < autoCompleteType?.selectionStart) {
         setShowAutocomplete(false);
@@ -168,6 +172,8 @@ const ChatTextField = (props) => {
           autoCompleteIndex={autoCompleteIndex}
           setAutoCompleteIndex={setAutoCompleteIndex}
           hideOnEmpty={autoCompleteType.data.hideOnEmpty}
+          firstCharOnly={autoCompleteType.data.firstCharOnly}
+          AutoCompleteTypes={AutoCompleteTypes}
           _ref={textFieldReference}
         />
       )}
@@ -206,7 +212,7 @@ const ChatTextField = (props) => {
         fullWidth
         sx={SendTextFieldSx}
         onKeyDown={handleKeys}
-        onKeyUp={sholdCloseAutoComplete}
+        onKeyUp={shouldCloseAutoComplete}
         onInput={changeInput}
         value={message}
         disabled={isDisabled}

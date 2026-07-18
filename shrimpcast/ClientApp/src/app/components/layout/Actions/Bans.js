@@ -15,7 +15,7 @@ const Bans = (props) => {
       showScroll={true}
       actionName="unban"
       responseIsTitleObject={{
-        appendTitle: "[{0} banned user(s)]",
+        appendTitle: "{0} banned user(s)",
         appendKey: "totalBans",
         value: "bans",
       }}

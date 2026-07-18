@@ -10,11 +10,13 @@ namespace shrimpcast.Data.Repositories
     {
         private readonly APPContext _context;
         private readonly ConfigurationSingleton _configurationSingleton;
+        private readonly ISessionRepository _sessionRepository;
 
-        public MessageRepository(APPContext context, ConfigurationSingleton configurationSingleton)
+        public MessageRepository(APPContext context, ConfigurationSingleton configurationSingleton, ISessionRepository sessionRepository)
         {
             _context = context;
             _configurationSingleton = configurationSingleton;
+            _sessionRepository = sessionRepository;
         }
 
         public async Task<List<Message>> GetExisting()
@@ -107,12 +109,20 @@ namespace shrimpcast.Data.Repositories
             }
         }
 
-        public async Task<bool> Remove(int MessageId, int DeletedBy)
+        public async Task<Message> Remove(int MessageId, bool RequestedByMod)
         {
             var existingMessage = await _context.Messages.FirstAsync(message => message.MessageId == MessageId);
+            if (RequestedByMod)
+            {
+                var targetSession = await _sessionRepository.GetExistingByIdAsync(existingMessage.SessionId, true);
+                if (targetSession.IsMod || targetSession.IsAdmin)
+                {
+                    throw new Exception("You can't remove this post");
+                }
+            }
             _context.Messages.Remove(existingMessage);
             var result = await _context.SaveChangesAsync();
-            return result > 0 ? true : throw new Exception("Could not update record.");
+            return result > 0 ? existingMessage : throw new Exception("Could not remove record.");
         }
 
         public async Task<bool> HasEnoughCountBySessionId(int SessionId, int RequiredCount)

@@ -89,6 +89,7 @@ const GenericActionList = (props) => {
           <Box display="flex" width="100%" marginBottom={"10px"}>
             <Typography variant="h5" fontWeight="bold">
               {props.title}
+              <br />
               <Typography component="span" variant="subtitle1" color="text.secondary">
                 {titleAppend}
               </Typography>

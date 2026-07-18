@@ -20,8 +20,18 @@ const AutoCompleteWrapperSx = {
 
 const AutoComplete = (props) => {
   const handleClose = () => props.setShowAutocomplete(false),
-    { message, nameSuggestions, setMessage, autoCompleteIndex, setAutoCompleteIndex, startIndex, _ref, hideOnEmpty } =
-      props,
+    {
+      message,
+      nameSuggestions,
+      setMessage,
+      autoCompleteIndex,
+      setAutoCompleteIndex,
+      startIndex,
+      _ref,
+      hideOnEmpty,
+      firstCharOnly,
+      AutoCompleteTypes,
+    } = props,
     filterNames = () => {
       const substring = message.substring(startIndex).toLowerCase().trim();
       const options = nameSuggestions.filter((suggestion) => suggestion.toLowerCase().includes(substring));
@@ -45,30 +55,36 @@ const AutoComplete = (props) => {
       }, 10);
     },
     options = filterNames(),
-    scrollReference = useRef();
+    scrollReference = useRef(),
+    shouldAutoClose = () =>
+      (hideOnEmpty && !options.length) || (firstCharOnly && (!AutoCompleteTypes[message[0]] || startIndex > 1));
 
   useEffect(() => {
     if (options.length > 0 && autoCompleteIndex > options.length - 1) {
       setAutoCompleteIndex(options.length - 1);
     }
 
-    if (hideOnEmpty && !options.length) handleClose();
+    if (shouldAutoClose()) {
+      handleClose();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [options]);
 
   useEffect(() => {
-    if (options.length === 0) {
+    if (options.length === 0 || shouldAutoClose()) {
       setAutoCompleteIndex(0);
       return;
     }
 
     if (autoCompleteIndex < 0) {
       handleSuggestionClick(options[autoCompleteIndex === Number.MIN_SAFE_INTEGER ? 0 : Math.abs(autoCompleteIndex)]);
-    } else if (autoCompleteIndex < options.length) scrollReference.current.scrollIntoView();
+    } else if (autoCompleteIndex < options.length) {
+      scrollReference.current.scrollIntoView();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoCompleteIndex]);
 
-  return hideOnEmpty && !options.length ? null : (
+  return shouldAutoClose() ? null : (
     <ClickAwayListener onClickAway={handleClose}>
       <Paper sx={AutoCompleteWrapperSx} elevation={4}>
         <Box sx={AutoCompleteSx}>

@@ -1,12 +1,12 @@
 import { Box, Typography } from "@mui/material";
 
-const LabelContainerSx = (isGolden) => ({
+const LabelContainerSx = (isNormalUser) => ({
     backgroundColor: "#121212",
     height: "13.5px",
     borderRadius: "2.5px",
     display: "inline-block",
     position: "relative",
-    left: isGolden ? "1px" : "-1.5px",
+    left: isNormalUser ? "-1.5px" : "0px",
   }),
   LabelSx = (color) => ({
     fontSize: "10px",
@@ -19,11 +19,11 @@ const LabelContainerSx = (isGolden) => ({
   });
 
 const UserLabel = (props) => {
-  const { label, color, isGolden } = props;
+  const { label, color, isNormalUser } = props;
 
   return label ? (
     <Box sx={{ height: "13.5px", mb: "2.5px" }}>
-      <Box sx={LabelContainerSx(isGolden)}>
+      <Box sx={LabelContainerSx(isNormalUser)}>
         <Typography className="noselect" variant="overline" sx={LabelSx(color)}>
           {label}
         </Typography>
