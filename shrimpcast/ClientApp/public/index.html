@@ -1,8 +1,11 @@
-﻿<!DOCTYPE html>
+﻿<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="initial-scale=1, width=device-width, interactive-widget=resizes-content, user-scalable=no" />
+    <meta
+      name="viewport"
+      content="initial-scale=1, width=device-width, interactive-widget=resizes-content, user-scalable=no"
+    />
     <meta name="theme-color" content="#000000" />
     <base href="%PUBLIC_URL%/" />
     <!--
@@ -26,8 +29,7 @@
   <body>
     <noscript>
       <style>
-        /* Hide loading screen if JavaScript is disabled */
-        #loading-screen {
+        #root {
           display: none;
         }
       </style>
@@ -45,6 +47,10 @@
           <span class="text-s">POWERED BY SHRIMPCAST %REACT_APP_VERSION%</span>
         </div>
       </div>
+    </div>
+    <div id="oldbrowsers" hidden>
+      Your browser is too old to run this website.
+      <script src="%PUBLIC_URL%/isBrowserSupported.js?cacheBurst=%REACT_APP_CACHE_BUST%"></script>
     </div>
   </body>
 </html>
