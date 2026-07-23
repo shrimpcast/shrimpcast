@@ -8,18 +8,26 @@ import { useNavigate } from "react-router-dom";
 import SourceCountdown from "../layout/Actions/Sources/SourceCountdown";
 import ChatActionsManager from "../../managers/ChatActionsManager";
 import LoadBalancingManager from "../../managers/LoadBalancingManager";
+import MultistreamPrompt from "../layout/Prompts/MultistreamPrompt";
 
 const WrapperSx = {
-  width: "100%",
-  height: "100%",
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-};
+    width: "100%",
+    height: "100%",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  PlayerWrapperSx = (theme, isMultistreaming) => ({
+    width: "100%",
+    height: "100%",
+    [theme.breakpoints.down("md")]: {
+      height: `calc(100% - ${isMultistreaming ? 20 : 0}px)`,
+    },
+  });
 
 const SitePlayer = (props) => {
   const { streamStatus, signalR, configuration } = props,
-    { source, streamEnabled, mustPickStream } = streamStatus,
+    { source, streamEnabled, mustPickStream, isMultistreaming } = streamStatus,
     { useRTCEmbed, useLegacyPlayer, startsAt, withCredentials, thumbnail } = source,
     [url, setUrl] = useState(""),
     video = useRef(),
@@ -61,7 +69,8 @@ const SitePlayer = (props) => {
       }
     },
     navigate = useNavigate(),
-    showCountdown = startsAt && new Date(startsAt).getTime() - Date.now() > 0;
+    showCountdown = startsAt && new Date(startsAt).getTime() - Date.now() > 0,
+    showMultistream = streamEnabled && isMultistreaming && !mustPickStream;
 
   useEffect(() => {
     signalR.on(SignalRManager.events.redirectSource, (data) => {
@@ -90,32 +99,46 @@ const SitePlayer = (props) => {
         signalR={signalR}
         noCache={Date.now()}
       />
-    ) : showCountdown ? (
-      <SourceCountdown startsAt={startsAt} />
-    ) : useRTCEmbed ? (
-      <iframe
-        src={`${url}`}
-        title="rtc-embed"
-        id="rtc-embed"
-        allow="autoplay"
-        frameBorder="no"
-        scrolling="no"
-        allowFullScreen
-      ></iframe>
-    ) : !useLegacyPlayer ? (
-      <VideoJSPlayer options={videoJsOptions} theme={theme} />
     ) : (
-      <ReactPlayer
-        width={"100%"}
-        height={"100%"}
-        controls
-        playsinline
-        url={url}
-        ref={video}
-        playing={muted}
-        muted={muted}
-        onReady={tryPlay}
-      />
+      <>
+        <Box sx={PlayerWrapperSx(theme, isMultistreaming)}>
+          {showCountdown ? (
+            <SourceCountdown startsAt={startsAt} />
+          ) : useRTCEmbed ? (
+            <iframe
+              src={`${url}`}
+              title="rtc-embed"
+              id="rtc-embed"
+              allow="autoplay"
+              frameBorder="no"
+              scrolling="no"
+              allowFullScreen
+            ></iframe>
+          ) : !useLegacyPlayer ? (
+            <VideoJSPlayer options={videoJsOptions} theme={theme} />
+          ) : (
+            <ReactPlayer
+              width={"100%"}
+              height={"100%"}
+              controls
+              playsinline
+              url={url}
+              ref={video}
+              playing={muted}
+              muted={muted}
+              onReady={tryPlay}
+            />
+          )}
+        </Box>
+        {showMultistream && (
+          <MultistreamPrompt
+            showViewerCountPerStream={configuration.showViewerCountPerStream}
+            sources={streamStatus.sources}
+            signalR={signalR}
+            noCache={Date.now()}
+          />
+        )}
+      </>
     )
   ) : (
     <Box sx={WrapperSx}>

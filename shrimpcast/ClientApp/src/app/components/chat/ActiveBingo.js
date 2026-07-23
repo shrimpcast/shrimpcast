@@ -17,8 +17,8 @@ const BingoButtonSx = (height) => ({
     justifyContent: "center",
   }),
   ExpandLessBtnSx = {
-    height: "20px",
-    width: "20px",
+    height: "19px",
+    width: "19px",
     position: "absolute",
     top: "-4px",
   };

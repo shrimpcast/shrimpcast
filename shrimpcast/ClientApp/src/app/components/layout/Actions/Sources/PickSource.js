@@ -10,6 +10,7 @@ import LoadBalancingManager from "../../../../managers/LoadBalancingManager";
 const DEFAULT_THUMBNAIL = "/images/video_thumbnail.png",
   ContainerSx = {
     height: "100%",
+    width: "100%",
     display: "flex",
     flexDirection: "column",
     gap: 2,
@@ -48,7 +49,7 @@ const DEFAULT_THUMBNAIL = "/images/video_thumbnail.png",
     height: "100%",
     background: `linear-gradient(0deg, ${alpha("#000", 0.8)} 0%, ${alpha("#000", 0.4)} 50%, ${alpha(
       "#000",
-      0.2
+      0.2,
     )} 100%)`,
     opacity: hoveredIndex === index ? 0.8 : 0.6,
     transition: "opacity 0.3s ease",
@@ -120,7 +121,7 @@ const DEFAULT_THUMBNAIL = "/images/video_thumbnail.png",
 const ResolveThumbnail = (thumbnail, url, noCache) =>
   thumbnail || (url.includes("/streams/") ? url.substr(0, url.lastIndexOf(".")) + `.jpg?nocache=${noCache}` : null);
 
-const PickSource = ({ sources, signalR, showViewerCountPerStream, noCache }) => {
+const PickSource = ({ sources, signalR, showViewerCountPerStream, noCache, onClick }) => {
   const [hoveredIndex, setHoveredIndex] = useState(null),
     [viewerCount, setViewerCount] = useState(null),
     viewerCountRef = useRef(viewerCount);
@@ -153,6 +154,7 @@ const PickSource = ({ sources, signalR, showViewerCountPerStream, noCache }) => 
         >
           <Link
             to={`/${source.name.toLowerCase()}`}
+            onClick={onClick}
             style={{
               textDecoration: "none",
               display: "block",
@@ -171,10 +173,10 @@ const PickSource = ({ sources, signalR, showViewerCountPerStream, noCache }) => 
                 ResolveThumbnail(
                   source.thumbnail,
                   LoadBalancingManager.ResolveBalancing(source.url, `${source.name}-${noCache}`),
-                  noCache
+                  noCache,
                 ),
                 hoveredIndex,
-                index
+                index,
               )}
             >
               <Box sx={HoverSx(hoveredIndex, index)} />
