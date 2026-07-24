@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Box, Typography, Button, useMediaQuery, Tooltip } from "@mui/material";
+import { Box, Typography, Button, useMediaQuery, Tooltip, Slide } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
@@ -44,15 +44,12 @@ const LateralBarSx = (theme) => ({
     width: "calc(100% - 20px)",
     height: "100%",
     position: "absolute",
-    transform: show ? "translateX(0)" : "translateX(100%)",
-    transition: "transform 250ms ease-in-out",
-    willChange: "transform",
+    left: 0,
+    top: 0,
     zIndex: 1,
     [theme.breakpoints.down("md")]: {
       width: "100%",
       height: "calc(100% - 20px)",
-      transform: show ? "translateY(0)" : "translateY(100%)",
-      top: 0,
     },
   });
 
@@ -64,9 +61,11 @@ const MultistreamPrompt = (props) => {
 
   return (
     <>
-      <Box key={isMobile ? "mobile" : "desktop"} sx={PickSourceContainerSx(show, theme)}>
-        <PickSource onClick={toggleShow} {...props} />
-      </Box>
+      <Slide direction={isMobile ? "up" : "left"} in={show} mountOnEnter unmountOnExit>
+        <Box sx={PickSourceContainerSx(show, theme)}>
+          <PickSource onClick={toggleShow} {...props} />
+        </Box>
+      </Slide>
       <Tooltip
         title={show ? "Hide streams" : "Show streams"}
         placement={isMobile ? "top" : "right"}

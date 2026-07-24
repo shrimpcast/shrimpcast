@@ -18,10 +18,11 @@ const WrapperSx = {
     alignItems: "center",
   },
   PlayerWrapperSx = (theme, isMultistreaming) => ({
-    width: "100%",
+    width: `calc(100% - ${isMultistreaming ? 20 : 0}px)`,
     height: "100%",
     [theme.breakpoints.down("md")]: {
       height: `calc(100% - ${isMultistreaming ? 20 : 0}px)`,
+      width: "100%",
     },
   });
 
