@@ -136,7 +136,6 @@ const SitePlayer = (props) => {
             showViewerCountPerStream={configuration.showViewerCountPerStream}
             sources={streamStatus.sources}
             signalR={signalR}
-            noCache={Date.now()}
           />
         )}
       </>

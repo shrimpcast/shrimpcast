@@ -63,7 +63,7 @@ const MultistreamPrompt = (props) => {
     <>
       <Slide direction={isMobile ? "up" : "left"} in={show} mountOnEnter unmountOnExit>
         <Box sx={PickSourceContainerSx(show, theme)}>
-          <PickSource onClick={toggleShow} {...props} />
+          <PickSource onClick={toggleShow} noCache={Date.now()} {...props} />
         </Box>
       </Slide>
       <Tooltip

@@ -1,5 +1,5 @@
 import { IconButton, Menu, MenuItem, useMediaQuery, useTheme } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ConfigUserDialog from "./ConfigUserDialog";
 import Bans from "./Bans";
 import AutoModFilters from "./AutoModFilters";
@@ -15,7 +15,7 @@ import SiteInfo from "./SiteInfo";
 import MediaServer from "./MediaServer/MediaServer";
 import GithubPrompt from "../Prompts/GithubPrompt";
 import NotificationPrompt from "../Prompts/NotificationPrompt";
-import { blue, indigo } from "@mui/material/colors";
+import { indigo } from "@mui/material/colors";
 
 const MenuSx = {
     "& .MuiPaper-root": {
@@ -58,7 +58,7 @@ const Actions = (props) => {
         <SiteInfo {...props} />,
         <AccountInfo {...props} />,
         { el: <GithubPrompt />, color: indigo },
-        { el: <NotificationPrompt {...props} />, color: blue },
+        { el: <NotificationPrompt {...props} sx={MenuItemSx} />, mountOwnComponent: true },
         <IgnoredUsers {...props} customStyles={BorderRightRadius} />,
       ];
 
@@ -66,6 +66,13 @@ const Actions = (props) => {
   const open = Boolean(anchorEl);
   const handleClick = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
+
+  useEffect(() => {
+    if (open && !shouldCollapseMenu) {
+      setAnchorEl(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shouldCollapseMenu]);
 
   return shouldCollapseMenu ? (
     <>
@@ -91,11 +98,15 @@ const Actions = (props) => {
         }}
         sx={MenuSx}
       >
-        {actions.map((action, i) => (
-          <MenuItem sx={action?.color ? MenuItemSx(action.color) : null} key={i}>
-            {action?.el || action}
-          </MenuItem>
-        ))}
+        {actions.map((action, i) =>
+          action?.mountOwnComponent ? (
+            <React.Fragment key={i}>{action.el}</React.Fragment>
+          ) : (
+            <MenuItem sx={action?.color ? MenuItemSx(action.color) : null} key={i}>
+              {action?.el || action}
+            </MenuItem>
+          ),
+        )}
       </Menu>
     </>
   ) : (

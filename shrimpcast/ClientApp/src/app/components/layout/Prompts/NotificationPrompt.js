@@ -1,5 +1,5 @@
-import { Alert, CircularProgress, IconButton, Tooltip } from "@mui/material";
-import { blue, lightBlue } from "@mui/material/colors";
+import { Alert, CircularProgress, IconButton, MenuItem, Tooltip, useMediaQuery, useTheme } from "@mui/material";
+import { blue, blueGrey } from "@mui/material/colors";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import { useEffect, useState } from "react";
 import Snackbar from "@mui/material/Snackbar";
@@ -13,8 +13,22 @@ const IconSx = {
   },
 };
 
+const NotificationButton = ({ loading, askForPermission }) => {
+  return (
+    <Tooltip title={"Subscribe to notifications"} arrow>
+      <IconButton onClick={askForPermission} type="button" size="small" sx={IconSx} disabled={loading}>
+        {loading ? (
+          <CircularProgress size={24} sx={{ color: blueGrey[900] }} />
+        ) : (
+          <NotificationsIcon sx={{ color: "white" }} />
+        )}
+      </IconButton>
+    </Tooltip>
+  );
+};
+
 const NotificationPrompt = (props) => {
-  const { configuration } = props,
+  const { configuration, sx } = props,
     [loading, setLoading] = useState(false),
     [showNotificationsPrompt, setShowNotificationsPrompt] = useState(false),
     [toastMessage, setToastMessage] = useState(""),
@@ -42,7 +56,9 @@ const NotificationPrompt = (props) => {
       setShowNotificationsPrompt(false);
       setToastMessage("Enabled stream notifications");
       setShowToast(true);
-    };
+    },
+    theme = useTheme(),
+    isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   useEffect(() => {
     const notificationsFeatureAvailable = "serviceWorker" in navigator && "Notification" in window;
@@ -60,17 +76,14 @@ const NotificationPrompt = (props) => {
 
   return (
     <>
-      {showNotificationsPrompt && (
-        <Tooltip title={"Subscribe to notifications"} arrow>
-          <IconButton onClick={askForPermission} type="button" size="small" sx={IconSx} disabled={loading}>
-            {loading ? (
-              <CircularProgress size={24} sx={{ color: lightBlue[900] }} />
-            ) : (
-              <NotificationsIcon sx={{ color: "white" }} />
-            )}
-          </IconButton>
-        </Tooltip>
-      )}
+      {showNotificationsPrompt &&
+        (isMobile ? (
+          <MenuItem sx={sx(blue)}>
+            <NotificationButton loading={loading} askForPermission={askForPermission} />
+          </MenuItem>
+        ) : (
+          <NotificationButton loading={loading} askForPermission={askForPermission} />
+        ))}
       {showToast && (
         <Snackbar open={showToast} autoHideDuration={5000} onClose={closeToast}>
           <Alert
