@@ -165,7 +165,7 @@ const PickSource = ({ sources, signalR, showViewerCountPerStream, noCache, onCli
             {showViewerCountPerStream && (
               <Box sx={ViewerCountSx}>
                 <PeopleAltIcon sx={{ width: "12px", height: "12px" }} />
-                {viewerCount?.find((s) => s.name === source.name)?.count}
+                {viewerCount?.find((s) => s.name === source.name)?.count ?? "-"}
               </Box>
             )}
             <Box
