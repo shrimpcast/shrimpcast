@@ -5,7 +5,7 @@ import App from "./app/App";
 import { BrowserRouter, Routes, Route } from "react-router";
 import Embed from "./app/components/player/Embed";
 
-window.checkBrowserSupport(true);
+window.BrowserSupport.checkBrowserSupport(true);
 
 const rootElement = document.getElementById("root");
 const root = createRoot(rootElement);

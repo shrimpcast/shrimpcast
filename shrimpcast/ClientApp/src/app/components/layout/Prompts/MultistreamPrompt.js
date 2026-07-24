@@ -64,7 +64,7 @@ const MultistreamPrompt = (props) => {
 
   return (
     <>
-      <Box sx={PickSourceContainerSx(show, theme)}>
+      <Box key={isMobile ? "mobile" : "desktop"} sx={PickSourceContainerSx(show, theme)}>
         <PickSource onClick={toggleShow} {...props} />
       </Box>
       <Tooltip
