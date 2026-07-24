@@ -23,7 +23,7 @@ const ErrorAlert = (props) => {
       ) : (
         <Alert
           severity={isCountdown ? "info" : "error"}
-          action={<AccountInfo useRadius={true} skipValidation={true} />}
+          action={<AccountInfo customStyles={{ borderRadius: "5px" }} />}
         >
           {isCountdown ? (
             <CountdownTimer timestamp={disconnectMessage} />

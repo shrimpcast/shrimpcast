@@ -43,7 +43,7 @@ const EmotesAdmin = (props) => {
 
   return (
     <>
-      <Tooltip title="Emotes">
+      <Tooltip title="Emotes" arrow>
         <IconButton
           onClick={setOpened}
           type="button"

@@ -3,7 +3,6 @@ using shrimpcast.Entities;
 using shrimpcast.Entities.DB;
 using System.Collections.Concurrent;
 using WebPush;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace shrimpcast.Data.Repositories.Interfaces
 {
@@ -38,12 +37,6 @@ namespace shrimpcast.Data.Repositories.Interfaces
         {
             var notifications = await _context.Notifications.AsNoTracking().ToListAsync();
             return notifications;
-        }
-
-        public async Task<bool> ExistsById(int SessionId)
-        {
-            var exists = await _context.Notifications.AsNoTracking().FirstOrDefaultAsync(n => n.SessionId ==  SessionId);
-            return exists != null;
         }
 
         public async Task<string> SendAll()

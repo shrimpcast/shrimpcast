@@ -9,7 +9,6 @@ import ShowFireworks from "./others/ShowFireworks";
 import ShowSnow from "./others/ShowSnow";
 import ShowPing from "./others/ShowPing";
 import { useLocation } from "react-router-dom";
-import Prompts from "./layout/Prompts";
 
 const MainGridSx = {
     overflow: "hidden",
@@ -60,13 +59,7 @@ const MainGridSx = {
     [theme.breakpoints.down("md")]: {
       display: "block",
     },
-  }),
-  SiteDetailsSx = {
-    backgroundColor: "primary.900",
-    display: "flex",
-    flex: 1,
-    alignItems: "center",
-  };
+  });
 
 const Layout = (props) => {
   const theme = useTheme(),
@@ -130,9 +123,6 @@ const Layout = (props) => {
           >
             <Box sx={PlayerContainerSx}>
               <SitePlayer streamStatus={streamStatus} {...props} />
-            </Box>
-            <Box sx={SiteDetailsSx}>
-              <Prompts {...props} streamStatus={streamStatus} />
             </Box>
           </Grid>
         )}

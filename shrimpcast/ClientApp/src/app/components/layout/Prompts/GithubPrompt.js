@@ -1,26 +1,17 @@
 import { indigo } from "@mui/material/colors";
-import { useState } from "react";
-import LocalStorageManager from "../../../managers/LocalStorageManager";
-import NotificationBar from "./NotificationBar";
 import GitHubIcon from "@mui/icons-material/GitHub";
+import { IconButton, Link, Tooltip } from "@mui/material";
 
 const GithubPrompt = () => {
-  const [showPrompt, setShowPrompt] = useState(LocalStorageManager.shouldShowGitHubPrompt()),
-    hidePrompt = () => {
-      LocalStorageManager.hideGitHubPrompt();
-      setShowPrompt(false);
-    },
-    openRepository = () => window.open("https://github.com/shrimpcast/shrimpcast", "_blank");
-
-  return showPrompt ? (
-    <NotificationBar
-      onClick={openRepository}
-      close={hidePrompt}
-      text="Shrimpcast is open source. Check it out on GitHub"
-      icon={GitHubIcon}
-      palette={indigo}
-    />
-  ) : null;
+  return (
+    <Tooltip title={"Open GitHub repository"} arrow>
+      <Link href={"https://github.com/shrimpcast/shrimpcast"} target="_blank">
+        <IconButton type="button" size="small" sx={[{ backgroundColor: indigo[700], borderRadius: "0px" }]}>
+          <GitHubIcon sx={{ color: "white" }} />
+        </IconButton>
+      </Link>
+    </Tooltip>
+  );
 };
 
 export default GithubPrompt;

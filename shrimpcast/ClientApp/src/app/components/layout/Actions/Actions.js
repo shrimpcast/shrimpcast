@@ -13,6 +13,28 @@ import IgnoredUsers from "./IgnoredUsers";
 import BingoOptions from "./BingoOptions";
 import SiteInfo from "./SiteInfo";
 import MediaServer from "./MediaServer/MediaServer";
+import GithubPrompt from "../Prompts/GithubPrompt";
+import NotificationPrompt from "../Prompts/NotificationPrompt";
+import { blue, indigo } from "@mui/material/colors";
+
+const MenuSx = {
+    "& .MuiPaper-root": {
+      backgroundColor: "primary.700",
+      backgroundImage: "none",
+      left: "0px !important",
+      paddingBottom: "0px",
+    },
+  },
+  MenuItemSx = (color) => ({
+    backgroundColor: color[700],
+    "&:hover": {
+      backgroundColor: color[600],
+    },
+  }),
+  BorderRightRadius = {
+    borderTopRightRadius: "5px",
+    borderBottomRightRadius: "5px",
+  };
 
 const Actions = (props) => {
   const theme = useTheme();
@@ -30,9 +52,15 @@ const Actions = (props) => {
         <BingoOptions {...props} />,
         <IgnoredUsers {...props} />,
         <SiteInfo {...props} />,
-        <AccountInfo {...props} />,
+        <AccountInfo {...props} customStyles={BorderRightRadius} />,
       ]
-    : [<SiteInfo {...props} />, <AccountInfo {...props} />, <IgnoredUsers {...props} />];
+    : [
+        <SiteInfo {...props} />,
+        <AccountInfo {...props} />,
+        { el: <GithubPrompt />, color: indigo },
+        { el: <NotificationPrompt {...props} />, color: blue },
+        <IgnoredUsers {...props} customStyles={BorderRightRadius} />,
+      ];
 
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
@@ -59,24 +87,21 @@ const Actions = (props) => {
         onClose={handleClose}
         MenuListProps={{
           "aria-labelledby": "menu-button",
+          sx: { pb: 0 },
         }}
-        sx={{
-          "& .MuiPaper-root": {
-            backgroundColor: "primary.700",
-            backgroundImage: "none",
-            left: "0px !important",
-          },
-        }}
+        sx={MenuSx}
       >
         {actions.map((action, i) => (
-          <MenuItem key={i}>{action}</MenuItem>
+          <MenuItem sx={action?.color ? MenuItemSx(action.color) : null} key={i}>
+            {action?.el || action}
+          </MenuItem>
         ))}
       </Menu>
     </>
   ) : (
     <>
       {actions.map((action, i) => (
-        <React.Fragment key={i}> {action} </React.Fragment>
+        <React.Fragment key={i}> {action?.el || action}</React.Fragment>
       ))}
     </>
   );

@@ -103,7 +103,7 @@ const ConfigUserDialog = (props) => {
 
   return (
     <>
-      <Tooltip title="Configuration">
+      <Tooltip title="Configuration" arrow>
         <IconButton
           onClick={setOpened}
           type="button"
@@ -204,7 +204,7 @@ const ConfigUserDialog = (props) => {
                         useBorderRadius
                       />
                     </Box>
-                  )
+                  ),
                 )}
               </TabPanel>
             ))}

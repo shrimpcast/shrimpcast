@@ -2,8 +2,6 @@ class LocalStorageManager {
   static localStorage = {
     token: "access_token",
     ignoredUsers: "ignored_users",
-    showNotificationsPrompt: "notifications_prompt_hidden",
-    showGitHubPrompt: "github_prompt_hidden",
     recentlyUsedEmotes: "recently_used_emotes",
     playerVolume: "player_volume",
   };
@@ -45,22 +43,6 @@ class LocalStorageManager {
       users = JSON.parse(this.getStorage(this.localStorage.ignoredUsers));
     } catch (e) {}
     return Array.isArray(users) ? users : [];
-  }
-
-  static hideNotificationsPrompt() {
-    this.setStorage(this.localStorage.showNotificationsPrompt, true);
-  }
-
-  static shouldShowNotificationsPrompt() {
-    return !Boolean(this.getStorage(this.localStorage.showNotificationsPrompt));
-  }
-
-  static hideGitHubPrompt() {
-    this.setStorage(this.localStorage.showGitHubPrompt, true);
-  }
-
-  static shouldShowGitHubPrompt() {
-    return !Boolean(this.getStorage(this.localStorage.showGitHubPrompt));
   }
 
   static setRecentlyUsedEmotes(emotes) {

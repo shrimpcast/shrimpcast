@@ -1,23 +1,25 @@
-import { Alert } from "@mui/material";
-import { blue } from "@mui/material/colors";
+import { Alert, CircularProgress, IconButton, Tooltip } from "@mui/material";
+import { blue, lightBlue } from "@mui/material/colors";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import { useEffect, useState } from "react";
-import LocalStorageManager from "../../../managers/LocalStorageManager";
 import Snackbar from "@mui/material/Snackbar";
 import ServiceWorkerManager from "../../../managers/ServiceWorkerManager";
-import NotificationBar from "./NotificationBar";
+
+const IconSx = {
+  backgroundColor: blue[700],
+  borderRadius: "0px",
+  "&.Mui-disabled": {
+    backgroundColor: blue[900],
+  },
+};
 
 const NotificationPrompt = (props) => {
-  const { subscribed, configuration } = props,
+  const { configuration } = props,
     [loading, setLoading] = useState(false),
     [showNotificationsPrompt, setShowNotificationsPrompt] = useState(false),
     [toastMessage, setToastMessage] = useState(""),
     [showToast, setShowToast] = useState(false),
     closeToast = () => setShowToast(false),
-    hideNotificationsPrompt = () => {
-      LocalStorageManager.hideNotificationsPrompt();
-      setShowNotificationsPrompt(false);
-    },
     askForPermission = async () => {
       if (loading) return;
       let response;
@@ -31,7 +33,9 @@ const NotificationPrompt = (props) => {
 
       setLoading(false);
       if (!response) {
-        setToastMessage("Could not subscribe to notifications");
+        setToastMessage(
+          "Could not subscribe to notifications. Possible reasons: incognito window, blocked notifications.",
+        );
         setShowToast(true);
         return;
       }
@@ -43,13 +47,11 @@ const NotificationPrompt = (props) => {
   useEffect(() => {
     const notificationsFeatureAvailable = "serviceWorker" in navigator && "Notification" in window;
     if (!notificationsFeatureAvailable) return;
-    const permission = Notification.permission;
-    const notHiddenByUser = LocalStorageManager.shouldShowNotificationsPrompt();
-    const shouldShowPrompt = notHiddenByUser && permission !== "denied" && (!subscribed || permission !== "granted");
-    if (!shouldShowPrompt) return;
+
     const showPrompt = async () => {
-      await ServiceWorkerManager.getSWregistration();
-      setShowNotificationsPrompt(true);
+      const registration = await ServiceWorkerManager.getSWregistration();
+      const isSubscribed = await ServiceWorkerManager.isSubscribed(registration);
+      setShowNotificationsPrompt(isSubscribed);
     };
 
     showPrompt();
@@ -59,14 +61,15 @@ const NotificationPrompt = (props) => {
   return (
     <>
       {showNotificationsPrompt && (
-        <NotificationBar
-          onClick={askForPermission}
-          close={hideNotificationsPrompt}
-          text="ENABLE STREAM NOTIFICATIONS"
-          loading={loading}
-          icon={NotificationsIcon}
-          palette={blue}
-        />
+        <Tooltip title={"Subscribe to notifications"} arrow>
+          <IconButton onClick={askForPermission} type="button" size="small" sx={IconSx} disabled={loading}>
+            {loading ? (
+              <CircularProgress size={24} sx={{ color: lightBlue[900] }} />
+            ) : (
+              <NotificationsIcon sx={{ color: "white" }} />
+            )}
+          </IconButton>
+        </Tooltip>
       )}
       {showToast && (
         <Snackbar open={showToast} autoHideDuration={5000} onClose={closeToast}>
