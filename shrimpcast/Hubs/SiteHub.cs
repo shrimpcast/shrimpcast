@@ -1090,14 +1090,6 @@ namespace shrimpcast.Hubs
                 return "Error: Chat is currently restricted to verified users only.";
             }
 
-            int requiredSessionTime = Configuration.RequiredTokenTimeInMinutes;
-            var minutesDifference = DateTime.UtcNow.Subtract(connection.Session.CreatedAt).TotalMinutes;
-            if (minutesDifference < requiredSessionTime)
-            {
-                var diff = Math.Ceiling(requiredSessionTime - minutesDifference);
-                return $"You account is too new to post. You need to wait {diff} more {(diff == 1 ? "minute" : "minutes")}.";
-            }
-
             var shouldEnforceCooldown = await _messageRepository.ShouldEnforceCooldown(connection.RemoteAdress);
             if (shouldEnforceCooldown != null)
             {
@@ -1105,6 +1097,14 @@ namespace shrimpcast.Hubs
             }
 
             if (connection.Session.IsVerified) return null;
+
+            int requiredSessionTime = Configuration.RequiredTokenTimeInMinutes;
+            var minutesDifference = DateTime.UtcNow.Subtract(connection.Session.CreatedAt).TotalMinutes;
+            if (minutesDifference < requiredSessionTime)
+            {
+                var diff = Math.Ceiling(requiredSessionTime - minutesDifference);
+                return $"You account is too new to post. You need to wait {diff} more {(diff == 1 ? "minute" : "minutes")}.";
+            }
 
             if (Configuration.ChatBlockTORConnections && await _torExitNodeRepository.IsTorExitNode(connection.RemoteAdress))
             {
