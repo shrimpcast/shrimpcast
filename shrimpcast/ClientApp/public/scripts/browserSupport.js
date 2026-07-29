@@ -2,7 +2,6 @@
  * Checks browser support by detecting required features
  * Runs outside the React tree so it also works in browsers that cannot parse ES6
  **/
-"use strict";
 var BrowserSupport = {
   // From https://github.com/Modernizr/Modernizr/blob/master/feature-detects/css/flexgap.js
   supportsFlexGap: function () {
