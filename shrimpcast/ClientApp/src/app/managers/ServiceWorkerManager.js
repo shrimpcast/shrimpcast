@@ -28,7 +28,7 @@ class ServiceWorkerManager {
 
   static async isSubscribed(registration) {
     const subscription = await registration.pushManager.getSubscription();
-    return !Boolean(subscription);
+    return Boolean(subscription);
   }
 
   static async registerSWSubscription(publicVapidKey, signalR) {
