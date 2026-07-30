@@ -6,6 +6,7 @@ import {
   keyframes,
   MenuItem,
   Tooltip,
+  Typography,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
@@ -62,7 +63,9 @@ const NotificationButton = ({ loading, askForPermission, isMobile }) => {
       <Box sx={ContainerSx(isMobile, loading)}>
         <IconButton onClick={askForPermission} type="button" size="small" sx={IconSx(isMobile)} disabled={loading}>
           {loading ? (
-            <CircularProgress size={24} sx={{ color: blueGrey[900] }} />
+            <Typography mt="7px">
+              <CircularProgress size={24} sx={{ color: blueGrey[900] }} />
+            </Typography>
           ) : (
             <NotificationsIcon sx={{ color: "white" }} />
           )}
@@ -85,7 +88,10 @@ const NotificationPrompt = (props) => {
       setLoading(true);
 
       try {
-        response = await ServiceWorkerManager.registerSWSubscription(configuration.vapidPublicKey, props.signalR);
+        response = await Promise.race([
+          ServiceWorkerManager.registerSWSubscription(configuration.vapidPublicKey, props.signalR),
+          new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 7500)),
+        ]);
       } catch (e) {
         console.log(e);
       }
@@ -131,7 +137,11 @@ const NotificationPrompt = (props) => {
         ))}
       {showToast && (
         <Snackbar open={true} autoHideDuration={5000} onClose={closeToast}>
-          <Alert variant="filled" sx={ToastSx(theme, toastMessage)}>
+          <Alert
+            variant="filled"
+            severity={toastMessage.includes("Enabled") ? "success" : "error"}
+            sx={ToastSx(theme, toastMessage)}
+          >
             {toastMessage}
           </Alert>
         </Snackbar>
