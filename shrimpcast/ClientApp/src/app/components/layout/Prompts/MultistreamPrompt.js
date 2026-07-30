@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Box, Typography, Button, useMediaQuery, Tooltip, Slide } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
@@ -6,6 +6,8 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import PickSource from "../Actions/Sources/PickSource";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { Joyride, STATUS } from "react-joyride";
+import LocalStorageManager from "../../../managers/LocalStorageManager";
 
 const LateralBarSx = (theme) => ({
     width: "20px",
@@ -27,6 +29,13 @@ const LateralBarSx = (theme) => ({
       backgroundColor: "primary.900",
     },
     display: "block",
+    borderTopLeftRadius: "5px",
+    borderBottomLeftRadius: "5px",
+    [theme.breakpoints.down("md")]: {
+      borderTopLeftRadius: "5px",
+      borderTopRightRadius: "5px",
+      borderBottomLeftRadius: "0px",
+    },
   }),
   ButtonTextSx = (theme) => ({
     fontSize: "12px",
@@ -51,13 +60,46 @@ const LateralBarSx = (theme) => ({
       width: "100%",
       height: "calc(100% - 20px)",
     },
-  });
+  }),
+  TooltipSlotPropts = (isMobile) => ({
+    popper: {
+      modifiers: [
+        {
+          name: "offset",
+          options: {
+            offset: [isMobile ? -5 : 12, -12],
+          },
+        },
+      ],
+    },
+  }),
+  JoyrideOptions = {
+    dismissKeyAction: false,
+    disableFocusTrap: true,
+    overlayClickAction: false,
+    skipScroll: true,
+    skipBeacon: true,
+    buttons: ["primary"],
+    backgroundColor: "#333333",
+    textColor: "#ffffff",
+    primaryColor: "#ffffff",
+    arrowColor: "#333333",
+    overlayColor: "rgba(0, 0, 0, 0.7)",
+  };
 
 const MultistreamPrompt = (props) => {
   const [show, setShow] = useState(false),
     toggleShow = () => setShow((show) => !show),
     theme = useTheme(),
-    isMobile = useMediaQuery(theme.breakpoints.down("md"));
+    isMobile = useMediaQuery(theme.breakpoints.down("md")),
+    lateralBarReference = useRef(),
+    showTutorial = !LocalStorageManager.getPassedTutorial(),
+    handleJoyrideEvent = (data) => {
+      const { status } = data;
+      if (STATUS.FINISHED === status) {
+        LocalStorageManager.setPassedTutorial();
+      }
+    };
 
   return (
     <>
@@ -67,22 +109,12 @@ const MultistreamPrompt = (props) => {
         </Box>
       </Slide>
       <Tooltip
+        disableInteractive
         title={show ? "Hide streams" : "Show streams"}
         placement={isMobile ? "top" : "right"}
-        slotProps={{
-          popper: {
-            modifiers: [
-              {
-                name: "offset",
-                options: {
-                  offset: [isMobile ? -5 : 12, -12],
-                },
-              },
-            ],
-          },
-        }}
+        slotProps={TooltipSlotPropts(isMobile)}
       >
-        <Box sx={LateralBarSx}>
+        <Box ref={lateralBarReference} sx={LateralBarSx}>
           <Button sx={ButtonSx} onClick={toggleShow} size="large" variant="contained">
             <Typography sx={ButtonTextSx}>
               {!show ? (
@@ -100,6 +132,25 @@ const MultistreamPrompt = (props) => {
           </Button>
         </Box>
       </Tooltip>
+
+      {showTutorial && (
+        <Joyride
+          run={true}
+          steps={[
+            {
+              content: "Use this button to switch between all available streams",
+              placement: isMobile ? "top" : "left",
+              target: () => lateralBarReference.current,
+            },
+          ]}
+          onEvent={handleJoyrideEvent}
+          options={JoyrideOptions}
+          portalElement={document.getElementById("root")}
+          locale={{
+            close: "Understood",
+          }}
+        />
+      )}
     </>
   );
 };

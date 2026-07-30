@@ -4,6 +4,7 @@ class LocalStorageManager {
     ignoredUsers: "ignored_users",
     recentlyUsedEmotes: "recently_used_emotes",
     playerVolume: "player_volume",
+    hideTutorial: "hide_tutorial",
   };
 
   static setStorage(key, value) {
@@ -66,6 +67,14 @@ class LocalStorageManager {
   static getPlayerVolume() {
     const volume = +this.getStorage(this.localStorage.playerVolume);
     return isNaN(volume) || volume > 1 || volume < 0 ? 1 : volume;
+  }
+
+  static setPassedTutorial() {
+    this.setStorage(this.localStorage.hideTutorial, true);
+  }
+
+  static getPassedTutorial() {
+    return Boolean(this.getStorage(this.localStorage.hideTutorial));
   }
 }
 

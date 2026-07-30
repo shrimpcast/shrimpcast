@@ -15,6 +15,8 @@ const BingoButtonSx = (height) => ({
     maxHeight: `${height}px`,
     display: "flex",
     justifyContent: "center",
+    borderTopRightRadius: "5px",
+    borderTopLeftRadius: "5px",
   }),
   ExpandLessBtnSx = {
     height: "19px",

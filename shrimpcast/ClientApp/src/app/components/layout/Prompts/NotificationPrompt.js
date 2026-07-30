@@ -1,28 +1,73 @@
-import { Alert, CircularProgress, IconButton, MenuItem, Tooltip, useMediaQuery, useTheme } from "@mui/material";
+import {
+  Alert,
+  Box,
+  CircularProgress,
+  IconButton,
+  keyframes,
+  MenuItem,
+  Tooltip,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import { blue, blueGrey } from "@mui/material/colors";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import { useEffect, useState } from "react";
 import Snackbar from "@mui/material/Snackbar";
 import ServiceWorkerManager from "../../../managers/ServiceWorkerManager";
 
-const IconSx = {
-  backgroundColor: blue[700],
-  borderRadius: "0px",
-  "&.Mui-disabled": {
-    backgroundColor: blue[900],
-  },
-};
+const IconSx = (isMobile) => ({
+    backgroundColor: blue[700],
+    "&.Mui-disabled": {
+      backgroundColor: blue[700],
+    },
+    position: "relative",
+    zIndex: 1,
+    height: "31px",
+    width: "32px",
+    borderRadius: "0px",
+  }),
+  spin = keyframes`
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+`,
+  ContainerSx = (isMobile, loading) => ({
+    position: "relative",
+    backgroundColor: blue[700],
+    borderRadius: isMobile ? "5px" : "0px",
+    display: "inline-flex",
+    padding: "2px",
+    cursor: loading ? "not-allowed" : "pointer",
+    overflow: "hidden",
+    "&::before": {
+      content: '""',
+      position: "absolute",
+      inset: "-50%",
+      background: `conic-gradient(from 0deg, transparent 0%, ${blue[300]} 15%, transparent 30%)`,
+      animation: `${spin} 1.5s linear infinite`,
+    },
+  }),
+  ToastSx = (theme, toastMessage) => ({
+    width: "100%",
+    backgroundColor: (theme) =>
+      `${toastMessage.includes("Enabled") ? theme.palette.success.main : theme.palette.error.main} !important`,
+  });
 
-const NotificationButton = ({ loading, askForPermission }) => {
+const NotificationButton = ({ loading, askForPermission, isMobile }) => {
   return (
     <Tooltip title={"Subscribe to notifications"} arrow>
-      <IconButton onClick={askForPermission} type="button" size="small" sx={IconSx} disabled={loading}>
-        {loading ? (
-          <CircularProgress size={24} sx={{ color: blueGrey[900] }} />
-        ) : (
-          <NotificationsIcon sx={{ color: "white" }} />
-        )}
-      </IconButton>
+      <Box sx={ContainerSx(isMobile, loading)}>
+        <IconButton onClick={askForPermission} type="button" size="small" sx={IconSx(isMobile)} disabled={loading}>
+          {loading ? (
+            <CircularProgress size={24} sx={{ color: blueGrey[900] }} />
+          ) : (
+            <NotificationsIcon sx={{ color: "white" }} />
+          )}
+        </IconButton>
+      </Box>
     </Tooltip>
   );
 };
@@ -67,7 +112,7 @@ const NotificationPrompt = (props) => {
     const showPrompt = async () => {
       const registration = await ServiceWorkerManager.getSWregistration();
       const isSubscribed = await ServiceWorkerManager.isSubscribed(registration);
-      setShowNotificationsPrompt(isSubscribed);
+      setShowNotificationsPrompt(!isSubscribed);
     };
 
     showPrompt();
@@ -79,18 +124,14 @@ const NotificationPrompt = (props) => {
       {showNotificationsPrompt &&
         (isMobile ? (
           <MenuItem sx={sx(blue)}>
-            <NotificationButton loading={loading} askForPermission={askForPermission} />
+            <NotificationButton loading={loading} askForPermission={askForPermission} isMobile={isMobile} />
           </MenuItem>
         ) : (
           <NotificationButton loading={loading} askForPermission={askForPermission} />
         ))}
       {showToast && (
-        <Snackbar open={showToast} autoHideDuration={5000} onClose={closeToast}>
-          <Alert
-            severity={toastMessage.includes("Enabled") ? "success" : "error"}
-            variant="filled"
-            sx={{ width: "100%" }}
-          >
+        <Snackbar open={true} autoHideDuration={5000} onClose={closeToast}>
+          <Alert variant="filled" sx={ToastSx(theme, toastMessage)}>
             {toastMessage}
           </Alert>
         </Snackbar>
