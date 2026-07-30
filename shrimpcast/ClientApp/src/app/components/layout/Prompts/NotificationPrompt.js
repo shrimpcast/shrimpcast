@@ -115,13 +115,12 @@ const NotificationPrompt = (props) => {
     const notificationsFeatureAvailable = "serviceWorker" in navigator && "Notification" in window;
     if (!notificationsFeatureAvailable) return;
 
-    const showPrompt = async () => {
-      const registration = await ServiceWorkerManager.getSWregistration();
-      const isSubscribed = await ServiceWorkerManager.isSubscribed(registration);
+    const shouldShowPrompt = async () => {
+      const isSubscribed = await ServiceWorkerManager.isSubscribed();
       setShowNotificationsPrompt(!isSubscribed);
     };
 
-    showPrompt();
+    shouldShowPrompt();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

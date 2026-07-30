@@ -26,7 +26,8 @@ class ServiceWorkerManager {
     return await navigator.serviceWorker.ready;
   }
 
-  static async isSubscribed(registration) {
+  static async isSubscribed() {
+    const registration = await this.getSWregistration();
     const subscription = await registration.pushManager.getSubscription();
     return Boolean(subscription);
   }
