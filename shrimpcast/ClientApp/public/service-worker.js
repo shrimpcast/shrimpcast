@@ -1,5 +1,6 @@
 // Lightweight service worker for push notifications
 // Caching is disabled
+// Update lifecycle managed by REACT_APP_SERVICE_WORKER_VERSION
 
 self.addEventListener("message", (event) => {
   if (event.data && event.data.type === "SKIP_WAITING") {
