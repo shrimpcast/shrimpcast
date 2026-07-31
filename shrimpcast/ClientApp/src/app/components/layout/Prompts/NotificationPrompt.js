@@ -61,7 +61,14 @@ const NotificationButton = ({ loading, askForPermission, isMobile }) => {
   return (
     <Tooltip title={"Subscribe to notifications"} arrow>
       <Box sx={ContainerSx(isMobile, loading)}>
-        <IconButton onClick={askForPermission} type="button" size="small" sx={IconSx(isMobile)} disabled={loading}>
+        <IconButton
+          onClick={askForPermission}
+          type="button"
+          size="small"
+          sx={IconSx(isMobile)}
+          id={"notifications-button"}
+          disabled={loading}
+        >
           {loading ? (
             <Typography mt="7px">
               <CircularProgress size={24} sx={{ color: blueGrey[900] }} />
@@ -87,26 +94,32 @@ const NotificationPrompt = (props) => {
       let response;
       setLoading(true);
 
+      const errorCallback = (message) => {
+        setToastMessage(`Could not subscribe to notifications: ${message}`);
+        setShowToast(true);
+      };
+
       try {
         response = await Promise.race([
           ServiceWorkerManager.registerSWSubscription(configuration.vapidPublicKey, props.signalR),
           new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 7500)),
         ]);
       } catch (e) {
-        console.log(e);
+        errorCallback(`[${e.message.toLowerCase()}]`);
+        return;
+      } finally {
+        setLoading(false);
       }
 
-      setLoading(false);
       if (!response) {
-        setToastMessage(
-          "Could not subscribe to notifications. Possible reasons: incognito window, blocked notifications.",
-        );
-        setShowToast(true);
+        errorCallback("unknown reason.");
         return;
       }
+
       setShowNotificationsPrompt(false);
       setToastMessage("Enabled stream notifications");
       setShowToast(true);
+      document.dispatchEvent(new CustomEvent("endTutorial"));
     },
     theme = useTheme(),
     isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -126,14 +139,15 @@ const NotificationPrompt = (props) => {
 
   return (
     <>
-      {showNotificationsPrompt &&
-        (isMobile ? (
+      <Box hidden={!showNotificationsPrompt}>
+        {isMobile ? (
           <MenuItem sx={sx(blue)}>
             <NotificationButton loading={loading} askForPermission={askForPermission} isMobile={isMobile} />
           </MenuItem>
         ) : (
           <NotificationButton loading={loading} askForPermission={askForPermission} />
-        ))}
+        )}
+      </Box>
       {showToast && (
         <Snackbar open={true} autoHideDuration={5000} onClose={closeToast}>
           <Alert

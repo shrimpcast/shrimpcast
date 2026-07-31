@@ -1,8 +1,13 @@
-﻿#root,
-#rtc-embed,
+﻿html,
 body,
-html {
+#root,
+#rtc-embed {
   height: 100%;
+}
+
+body,
+#root {
+  overflow: hidden;
 }
 
 * {

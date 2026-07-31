@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Box, Typography, Button, useMediaQuery, Tooltip, Slide } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
@@ -85,6 +85,7 @@ const LateralBarSx = (theme) => ({
     primaryColor: "#ffffff",
     arrowColor: "#333333",
     overlayColor: "rgba(0, 0, 0, 0.7)",
+    zIndex: 10000,
   };
 
 const MultistreamPrompt = (props) => {
@@ -92,14 +93,23 @@ const MultistreamPrompt = (props) => {
     toggleShow = () => setShow((show) => !show),
     theme = useTheme(),
     isMobile = useMediaQuery(theme.breakpoints.down("md")),
-    lateralBarReference = useRef(),
-    showTutorial = !LocalStorageManager.getPassedTutorial(),
+    toggleMenuState = () => document.dispatchEvent(new CustomEvent("toggleMenu")),
+    [showTutorial, setShowTutorial] = useState(!LocalStorageManager.getPassedTutorial()),
     handleJoyrideEvent = (data) => {
+      if (!showTutorial) return;
       const { status } = data;
-      if (STATUS.FINISHED === status) {
-        LocalStorageManager.setPassedTutorial();
-      }
-    };
+      if (STATUS.FINISHED !== status) return;
+      LocalStorageManager.setPassedTutorial();
+      toggleMenuState();
+      setShowTutorial(false);
+    },
+    forceFinishTutorial = () => handleJoyrideEvent({ status: STATUS.FINISHED });
+
+  useEffect(() => {
+    document.addEventListener("endTutorial", forceFinishTutorial);
+    return () => document.removeEventListener("endTutorial", forceFinishTutorial);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showTutorial]);
 
   return (
     <>
@@ -114,7 +124,7 @@ const MultistreamPrompt = (props) => {
         placement={isMobile ? "top" : "right"}
         slotProps={TooltipSlotPropts(isMobile)}
       >
-        <Box ref={lateralBarReference} sx={LateralBarSx}>
+        <Box id="multistream-select" sx={LateralBarSx}>
           <Button sx={ButtonSx} onClick={toggleShow} size="large" variant="contained">
             <Typography sx={ButtonTextSx}>
               {!show ? (
@@ -140,14 +150,27 @@ const MultistreamPrompt = (props) => {
             {
               content: "Use this button to switch between all available streams",
               placement: isMobile ? "top" : "left",
-              target: () => lateralBarReference.current,
+              target: "#multistream-select",
+            },
+            {
+              content: "Use this button to enable stream notifications",
+              placement: isMobile ? "right" : "bottom",
+              target: "#notifications-button",
+              before: async () => {
+                toggleMenuState();
+                if (!isMobile) return;
+                await new Promise((resolve) => setTimeout(resolve, 250));
+              },
             },
           ]}
+          portalElement={document.getElementById("root")}
           onEvent={handleJoyrideEvent}
           options={JoyrideOptions}
-          portalElement={document.getElementById("root")}
           locale={{
             close: "Understood",
+          }}
+          floatingOptions={{
+            strategy: "fixed",
           }}
         />
       )}
