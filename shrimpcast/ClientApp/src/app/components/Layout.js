@@ -9,7 +9,6 @@ import ShowFireworks from "./others/ShowFireworks";
 import ShowSnow from "./others/ShowSnow";
 import ShowPing from "./others/ShowPing";
 import { useLocation } from "react-router-dom";
-import Prompts from "./layout/Prompts";
 
 const MainGridSx = {
     overflow: "hidden",
@@ -49,20 +48,18 @@ const MainGridSx = {
       pointerEvents: "none",
     },
   },
-  PlayerContainerSx = {
+  PlayerContainerSx = (theme) => ({
     height: "100%",
     margin: "0 auto",
     width: "100%",
-    borderRadius: "5px",
     backgroundColor: "#121212",
     overflow: "hidden",
-  },
-  SiteDetailsSx = {
-    backgroundColor: "primary.900",
     display: "flex",
-    flex: 1,
-    alignItems: "center",
-  };
+    position: "relative",
+    [theme.breakpoints.down("md")]: {
+      display: "block",
+    },
+  });
 
 const Layout = (props) => {
   const theme = useTheme(),
@@ -76,14 +73,14 @@ const Layout = (props) => {
       const { sources } = configuration,
         enabledSources = sources?.filter((source) => source.isEnabled),
         locationMatchesSource = enabledSources?.find(
-          (source) => source.name.toLowerCase() === sourceLocation.toLowerCase()
+          (source) => source.name.toLowerCase() === sourceLocation.toLowerCase(),
         ),
         isMultistreaming = enabledSources?.length > 1,
         source = locationMatchesSource
           ? locationMatchesSource
           : !isMultistreaming && enabledSources?.length
-          ? enabledSources[0]
-          : {},
+            ? enabledSources[0]
+            : {},
         mustPickStream = isMultistreaming && !locationMatchesSource;
 
       const StreamStatus = {
@@ -126,9 +123,6 @@ const Layout = (props) => {
           >
             <Box sx={PlayerContainerSx}>
               <SitePlayer streamStatus={streamStatus} {...props} />
-            </Box>
-            <Box sx={SiteDetailsSx}>
-              <Prompts {...props} streamStatus={streamStatus} />
             </Box>
           </Grid>
         )}

@@ -25,7 +25,7 @@ const Notifications = (props) => {
 
   return (
     <>
-      <Tooltip title="Dispatch notifications">
+      <Tooltip title="Dispatch notifications" arrow>
         <IconButton
           onClick={setOpened}
           type="button"

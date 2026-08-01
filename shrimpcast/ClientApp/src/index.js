@@ -5,6 +5,8 @@ import App from "./app/App";
 import { BrowserRouter, Routes, Route } from "react-router";
 import Embed from "./app/components/player/Embed";
 
+window.BrowserSupport.checkBrowserSupport(true);
+
 const rootElement = document.getElementById("root");
 const root = createRoot(rootElement);
 
@@ -16,5 +18,5 @@ root.render(
         <Route path="*" element={<App />} />
       </Routes>
     </BrowserRouter>
-  </React.StrictMode>
+  </React.StrictMode>,
 );

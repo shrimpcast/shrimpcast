@@ -13,7 +13,7 @@ const CountdownContainerSx = {
 
 const SourceCountdown = ({ startsAt }) => {
   return (
-    <Box sx={CountdownContainerSx}>
+    <Box key={startsAt} sx={CountdownContainerSx}>
       {Boolean(window.ResizeObserver) ? (
         <AutoTextSize maxFontSizePx={400} mode="boxoneline">
           <CountdownTimer timestamp={startsAt} skipText={true} />

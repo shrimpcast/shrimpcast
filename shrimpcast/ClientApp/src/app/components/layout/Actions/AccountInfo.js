@@ -73,9 +73,12 @@ const AccountInfo = (props) => {
 
   return (
     <>
-      <Tooltip title="Account info">
+      <Tooltip title="Account info" arrow>
         <IconButton
-          sx={{ backgroundColor: "primary.700", borderRadius: props.useRadius ? "5px" : "0px" }}
+          sx={[
+            { backgroundColor: "primary.700", borderRadius: "0px" },
+            props.customStyles && { ...props.customStyles },
+          ]}
           onClick={handleOpen}
           size="small"
           color="primary"

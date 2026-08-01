@@ -1,18 +1,32 @@
-import { IconButton, Menu, MenuItem, useMediaQuery, useTheme } from "@mui/material";
-import React, { useState } from "react";
+import { useMediaQuery, useTheme } from "@mui/material";
+import React, { useEffect, useState } from "react";
 import ConfigUserDialog from "./ConfigUserDialog";
 import Bans from "./Bans";
 import AutoModFilters from "./AutoModFilters";
 import Notifications from "./Notifications";
 import AccountInfo from "./AccountInfo";
 import EmotesAdmin from "./EmotesAdmin";
-import MenuIcon from "@mui/icons-material/Menu";
 import Mutes from "./Mutes";
 import Moderators from "./Moderators";
 import IgnoredUsers from "./IgnoredUsers";
 import BingoOptions from "./BingoOptions";
 import SiteInfo from "./SiteInfo";
 import MediaServer from "./MediaServer/MediaServer";
+import GithubPrompt from "../Prompts/GithubPrompt";
+import NotificationPrompt from "../Prompts/NotificationPrompt";
+import { indigo } from "@mui/material/colors";
+import ActionMenu from "./ActionMenu";
+
+const MenuItemSx = (color) => ({
+    backgroundColor: color[700],
+    "&:hover": {
+      backgroundColor: color[600],
+    },
+  }),
+  BorderRightRadius = {
+    borderTopRightRadius: "5px",
+    borderBottomRightRadius: "5px",
+  };
 
 const Actions = (props) => {
   const theme = useTheme();
@@ -30,53 +44,29 @@ const Actions = (props) => {
         <BingoOptions {...props} />,
         <IgnoredUsers {...props} />,
         <SiteInfo {...props} />,
-        <AccountInfo {...props} />,
+        <AccountInfo {...props} customStyles={BorderRightRadius} />,
       ]
-    : [<SiteInfo {...props} />, <AccountInfo {...props} />, <IgnoredUsers {...props} />];
+    : [
+        <SiteInfo {...props} />,
+        <AccountInfo {...props} />,
+        { el: <GithubPrompt />, color: indigo },
+        { el: <NotificationPrompt {...props} sx={MenuItemSx} />, mountOwnComponent: true },
+        <IgnoredUsers {...props} customStyles={BorderRightRadius} />,
+      ];
+  const [forceToggle, setForceToggle] = useState(false);
+  const toggleMenu = () => setForceToggle((forceToggle) => !forceToggle);
 
-  const [anchorEl, setAnchorEl] = useState(null);
-  const open = Boolean(anchorEl);
-  const handleClick = (event) => setAnchorEl(event.currentTarget);
-  const handleClose = () => setAnchorEl(null);
+  useEffect(() => {
+    document.addEventListener("toggleMenu", toggleMenu);
+    return () => document.removeEventListener("toggleMenu", toggleMenu);
+  }, []);
 
   return shouldCollapseMenu ? (
-    <>
-      <IconButton
-        aria-controls={open ? "menu" : undefined}
-        aria-haspopup="true"
-        aria-expanded={open ? "true" : undefined}
-        onClick={handleClick}
-        size="small"
-        color="primary"
-        id="menu-button"
-      >
-        <MenuIcon />
-      </IconButton>
-      <Menu
-        id="menu"
-        anchorEl={anchorEl}
-        open={open}
-        onClose={handleClose}
-        MenuListProps={{
-          "aria-labelledby": "menu-button",
-        }}
-        sx={{
-          "& .MuiPaper-root": {
-            backgroundColor: "primary.700",
-            backgroundImage: "none",
-            left: "0px !important",
-          },
-        }}
-      >
-        {actions.map((action, i) => (
-          <MenuItem key={i}>{action}</MenuItem>
-        ))}
-      </Menu>
-    </>
+    <ActionMenu actions={actions} forceState={forceToggle} {...props} />
   ) : (
     <>
       {actions.map((action, i) => (
-        <React.Fragment key={i}> {action} </React.Fragment>
+        <React.Fragment key={i}> {action?.el || action}</React.Fragment>
       ))}
     </>
   );

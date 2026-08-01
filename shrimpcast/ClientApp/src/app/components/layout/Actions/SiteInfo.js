@@ -26,7 +26,7 @@ const SiteInfo = (props) => {
 
   return (
     <>
-      <Tooltip title={`About ${streamTitle.trim() ? streamTitle.toLowerCase() : "this site"}`}>
+      <Tooltip title={`About ${streamTitle.trim() ? streamTitle.toLowerCase() : "this site"}`} arrow>
         <IconButton
           sx={{ backgroundColor: "primary.700", borderRadius: "0px" }}
           onClick={handleOpen}
@@ -46,8 +46,8 @@ const SiteInfo = (props) => {
                   ? enableChristmasTheme
                     ? "santa-hat-primary"
                     : enableHalloweenTheme
-                    ? "halloween-hat-primary"
-                    : null
+                      ? "halloween-hat-primary"
+                      : null
                   : null
               }`}
               sx={TitleSx}

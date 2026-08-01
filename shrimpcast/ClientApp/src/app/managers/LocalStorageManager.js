@@ -2,10 +2,9 @@ class LocalStorageManager {
   static localStorage = {
     token: "access_token",
     ignoredUsers: "ignored_users",
-    showNotificationsPrompt: "notifications_prompt_hidden",
-    showGitHubPrompt: "github_prompt_hidden",
     recentlyUsedEmotes: "recently_used_emotes",
     playerVolume: "player_volume",
+    hideTutorial: "hide_tutorial",
   };
 
   static setStorage(key, value) {
@@ -47,22 +46,6 @@ class LocalStorageManager {
     return Array.isArray(users) ? users : [];
   }
 
-  static hideNotificationsPrompt() {
-    this.setStorage(this.localStorage.showNotificationsPrompt, true);
-  }
-
-  static shouldShowNotificationsPrompt() {
-    return !Boolean(this.getStorage(this.localStorage.showNotificationsPrompt));
-  }
-
-  static hideGitHubPrompt() {
-    this.setStorage(this.localStorage.showGitHubPrompt, true);
-  }
-
-  static shouldShowGitHubPrompt() {
-    return !Boolean(this.getStorage(this.localStorage.showGitHubPrompt));
-  }
-
   static setRecentlyUsedEmotes(emotes) {
     this.setStorage(this.localStorage.recentlyUsedEmotes, JSON.stringify(emotes));
     return true;
@@ -84,6 +67,14 @@ class LocalStorageManager {
   static getPlayerVolume() {
     const volume = +this.getStorage(this.localStorage.playerVolume);
     return isNaN(volume) || volume > 1 || volume < 0 ? 1 : volume;
+  }
+
+  static setPassedTutorial() {
+    this.setStorage(this.localStorage.hideTutorial, true);
+  }
+
+  static getPassedTutorial() {
+    return Boolean(this.getStorage(this.localStorage.hideTutorial));
   }
 }
 

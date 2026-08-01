@@ -3,7 +3,6 @@ using shrimpcast.Entities;
 using shrimpcast.Entities.DB;
 using System.Collections.Concurrent;
 using WebPush;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace shrimpcast.Data.Repositories.Interfaces
 {
@@ -27,23 +26,10 @@ namespace shrimpcast.Data.Repositories.Interfaces
             return result > 0;
         }
 
-        public async Task<bool> Remove(int NotificationId)
-        {
-            var notification = await _context.Notifications.FirstAsync(notification => notification.NotificationId == NotificationId);
-            _context.Notifications.Remove(notification);
-            return await _context.SaveChangesAsync() > 0;
-        }
-
         public async Task<List<Notification>> GetAll()
         {
             var notifications = await _context.Notifications.AsNoTracking().ToListAsync();
             return notifications;
-        }
-
-        public async Task<bool> ExistsById(int SessionId)
-        {
-            var exists = await _context.Notifications.AsNoTracking().FirstOrDefaultAsync(n => n.SessionId ==  SessionId);
-            return exists != null;
         }
 
         public async Task<string> SendAll()

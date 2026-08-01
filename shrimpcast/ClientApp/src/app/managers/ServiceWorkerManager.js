@@ -26,6 +26,12 @@ class ServiceWorkerManager {
     return await navigator.serviceWorker.ready;
   }
 
+  static async isSubscribed() {
+    const registration = await this.getSWregistration();
+    const subscription = await registration.pushManager.getSubscription();
+    return Boolean(subscription);
+  }
+
   static async registerSWSubscription(publicVapidKey, signalR) {
     console.log("Attempting to register subscription....");
     const registration = await this.getSWregistration();
