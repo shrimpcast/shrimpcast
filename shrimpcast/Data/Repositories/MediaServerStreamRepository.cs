@@ -59,6 +59,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             }
 
             stream.Name = stream.Name.ToLower();
+            stream.IngressUri = stream.IngressUri.Trim();
 
             if (!stream.IsPlaylist) return;
 
