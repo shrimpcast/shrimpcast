@@ -113,7 +113,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             MediaServerLog($"Process {streamName} exited");
             if (streamInfo != null)
             {
-
+                if (streamInfo.Stream.IsPlaylist && streamInfo.Playlist_CurrentlyPlaying != null) MediaServerLog($"Playlist item: {streamInfo.Playlist_CurrentlyPlaying}");
                 MediaServerLog($"Duration: {TimeSpan.FromSeconds((int)(DateTime.UtcNow - streamInfo.StartTime).TotalSeconds)}");
                 MediaServerLog($"Last 5 logs: [{string.Join(",", streamInfo.Logs.TakeLast(5).Select(l => (l.AddedAt, l.Content.Trim())))}]");
             }
@@ -233,8 +233,16 @@ namespace shrimpcast.Data.Repositories.Interfaces
 
                     streamInfo.Playlist_CurrentlyPlaying = nextSourceName;
                 }
+                
+                if (string.IsNullOrEmpty(playlist.PlaylistPreset))
+                {
+                    return streams.First(stream => stream.Name == nextSourceName);
+                }
 
-                return streams.First(stream => stream.Name == nextSourceName);
+                var presetStream = streams.First(stream => stream.Name == playlist.PlaylistPreset);
+                presetStream.IngressUri = nextSourceName;
+                presetStream.Name = nextSourceName;
+                return presetStream;
             }
             catch (Exception ex)
             {

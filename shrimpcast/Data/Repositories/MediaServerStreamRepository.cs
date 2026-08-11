@@ -58,22 +58,32 @@ namespace shrimpcast.Data.Repositories.Interfaces
                 throw new InvalidDataException();
             }
 
-            stream.Name = stream.Name.ToLower();
+            stream.Name = stream.Name.ToLower().Trim();
             stream.IngressUri = stream.IngressUri.Trim();
 
             if (!stream.IsPlaylist) return;
+
+            stream.PlaylistPreset = stream.PlaylistPreset?.ToLower().Trim();
 
             var all = await GetAll(false);
             var playlistSources = stream.IngressUri.Split(",")
                                         .Select(source => source.ToLower().Trim())
                                         .ToArray();
 
-            var matchingSources = all.Where(stream => playlistSources.Contains(stream.Name))
-                                     .Count();
-
-            if (matchingSources != playlistSources.Distinct().Count())
+            if (string.IsNullOrEmpty(stream.PlaylistPreset))
             {
-                throw new InvalidOperationException();
+                var matchingSources = all.Where(stream => playlistSources.Contains(stream.Name))
+                                         .Count();
+
+                if (matchingSources != playlistSources.Distinct().Count())
+                {
+                    throw new InvalidOperationException();
+                }
+            }
+            else
+            {
+                _ = all.First(source => source.Name == stream.PlaylistPreset);
+                playlistSources = [..playlistSources.Where(source => !string.IsNullOrEmpty(source))];
             }
 
             stream.IngressUri = string.Join(",", playlistSources);

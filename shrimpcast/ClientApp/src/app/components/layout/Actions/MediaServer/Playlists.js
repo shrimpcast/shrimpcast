@@ -25,6 +25,12 @@ const Playlists = (props) => {
           color: "info",
         },
         {
+          name: "playlistPreset",
+          label: "Source preset",
+          type: 3,
+          color: "warning",
+        },
+        {
           name: "snapshotInterval",
           label: "Thumbnail interval",
           type: 6,
@@ -49,6 +55,7 @@ const Playlists = (props) => {
         audioAACBitrate: -1,
         audioTranscodingVolume: -1,
         isPlaylist: true,
+        playlistPreset: null,
       },
       identifier: "name",
       itemsKey: "playlists",

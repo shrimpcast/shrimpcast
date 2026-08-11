@@ -30,15 +30,15 @@ import ScheduleIcon from "@mui/icons-material/Schedule";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 
 const BoxSx = {
-  overflowY: "auto",
-  width: "100%",
-  boxShadow: 3,
-  bgcolor: "background.paper",
-  mt: 1,
-  p: 1.5,
-  mr: 1,
-  borderRadius: 3,
-},
+    overflowY: "auto",
+    width: "100%",
+    boxShadow: 3,
+    bgcolor: "background.paper",
+    mt: 1,
+    p: 1.5,
+    mr: 1,
+    borderRadius: 3,
+  },
   CardSx = (theme) => ({
     borderRadius: 2,
     borderColor: "divider",
@@ -201,7 +201,11 @@ const StreamStats = (props) => {
                     <Stack sx={StackCardSx}>
                       <Typography variant="overline" sx={StreamTitleSx}>
                         {stat.name}
-                        {stat.processStatus.playing ? " - " + stat.processStatus.playing.toUpperCase() : null}
+                        {stat.processStatus.playing
+                          ? " - " +
+                            (new URLSearchParams(stat.processStatus.playing).get("filename") ||
+                              stat.processStatus.playing)
+                          : null}
                       </Typography>
 
                       <Stack minWidth="600px" justifyContent="end" direction="row" spacing={1.2}>
