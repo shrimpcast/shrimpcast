@@ -234,15 +234,15 @@ namespace shrimpcast.Data.Repositories.Interfaces
                     streamInfo.Playlist_CurrentlyPlaying = nextSourceName;
                 }
                 
-                if (string.IsNullOrEmpty(playlist.PlaylistPreset))
+                if (!string.IsNullOrEmpty(playlist.PlaylistPreset))
                 {
-                    return streams.First(stream => stream.Name == nextSourceName);
+                    var presetStream = streams.First(stream => stream.Name == playlist.PlaylistPreset).Clone();
+                    presetStream.IngressUri = nextSourceName;
+                    presetStream.Name = nextSourceName;
+                    return presetStream;
                 }
 
-                var presetStream = streams.First(stream => stream.Name == playlist.PlaylistPreset);
-                presetStream.IngressUri = nextSourceName;
-                presetStream.Name = nextSourceName;
-                return presetStream;
+                return streams.First(stream => stream.Name == nextSourceName);
             }
             catch (Exception ex)
             {

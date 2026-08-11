@@ -57,5 +57,7 @@
         public required bool IsPlaylist { get; set; }
 
         public string? PlaylistPreset { get; set; }
+
+        public MediaServerStream Clone() => (MediaServerStream) MemberwiseClone();
     }
 }
