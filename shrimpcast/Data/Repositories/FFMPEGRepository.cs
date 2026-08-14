@@ -38,7 +38,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             var command = BuildProbeCommand(Headers, URL, ForceHLS);
             try
             {
-                var probe = await ProcessLauncher.LaunchProcess(FFProbeProcess, command, ReturnOutput: true);
+                var probe = await ProcessLauncher.LaunchProcess(FFProbeProcess, command, ReturnOutput: true, OperationTimeout: 25);
                 return JsonNode.Parse(probe);
             }
             catch (Exception)
@@ -77,7 +77,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
         public void StopStreamProcess(string stream, string reason)
         {
             _processes.All.TryGetValue(stream, out var processInfo);
-            if (processInfo == null || HasExited(processInfo.Process)) return;
+            if (processInfo == null || ProcessLauncher.HasProcessExited(processInfo.Process)) return;
             MediaServerLog($"Stop called on process {stream}. Reason = {reason}");
             processInfo.Stream.IsEnabled = false;
             processInfo.Playlist_CurrentlyPlaying = null;
@@ -160,7 +160,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
                         streamInfo == null && stream.IsEnabled
                         ||
                         // stream enabled and process in memory but not running
-                        streamInfo != null && stream.IsEnabled && HasExited(streamInfo.Process)
+                        streamInfo != null && stream.IsEnabled && ProcessLauncher.HasProcessExited(streamInfo.Process)
                         )
                     {
                         if (stream.IsPlaylist)
@@ -343,7 +343,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
 
             try
             {
-                var captured = await ProcessLauncher.LaunchProcess(FFMPEGProcess, screenshotCommand, "Success", false);
+                var captured = await ProcessLauncher.LaunchProcess(FFMPEGProcess, screenshotCommand, "Success", false, 1);
                 if (captured == "Success")
                 {
                     streamInfo.LastScreenshot = now;
@@ -365,19 +365,6 @@ namespace shrimpcast.Data.Repositories.Interfaces
         {
             foreach (var process in GetActiveFFMPEGProcesses()) process.Kill();
             CleanStreamDirectory(CleanRoot: true);
-        }
-
-        public bool HasExited(Process process)
-        {
-            try
-            {
-                return process.HasExited;
-            }
-            // Linux
-            catch (Exception)
-            {
-                return true;
-            }
         }
         #endregion
 

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.SignalR;
 using shrimpcast.Data.Repositories.Interfaces;
 using shrimpcast.Entities;
 using shrimpcast.Entities.DTO;
+using shrimpcast.Helpers;
 using shrimpcast.Hubs;
 using shrimpcast.Hubs.Dictionaries;
 
@@ -55,7 +56,7 @@ namespace shrimpcast.Controllers
                 processStatus = new
                 {
                     runningStatus = !p.Value.Stream.IsEnabled ? "Stopping"
-                                     : _ffmpegRepository.HasExited(p.Value.Process)
+                                     : ProcessLauncher.HasProcessExited(p.Value.Process)
                                         ? "Starting"
                                         : System.IO.File.Exists(p.Value.FullStreamPath) ? "Connected" : "Connecting",
                     runningTime = TimeSpan.FromSeconds((int)(DateTime.UtcNow - p.Value.StartTime).TotalSeconds),
