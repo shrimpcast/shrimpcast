@@ -395,7 +395,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
 
             if (!string.IsNullOrEmpty(Headers)) command += $" -headers \"{Headers}\"";
             if (ForceHLS) command += " -f hls";
-            command += $" -i {URL}";
+            command += $" -i \"{URL.Trim()}\"";
 
             return command;
         }
