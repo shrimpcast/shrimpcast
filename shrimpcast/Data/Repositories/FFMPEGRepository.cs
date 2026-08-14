@@ -349,6 +349,10 @@ namespace shrimpcast.Data.Repositories.Interfaces
                     streamInfo.LastScreenshot = now;
                     MediaServerLog($"Captured snapshot for {stream.Name}");
                 }
+                else
+                {
+                    MediaServerLog(captured);
+                }
             }
             catch (Exception ex)
             {
