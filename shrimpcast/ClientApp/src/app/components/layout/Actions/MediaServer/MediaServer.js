@@ -102,6 +102,7 @@ const MediaServer = (props) => {
       subtitles: "",
       startAt: null,
       isPlaylist: false,
+      plasylistPreset: null,
     },
     identifier: "name",
     itemsKey: "media server streams",

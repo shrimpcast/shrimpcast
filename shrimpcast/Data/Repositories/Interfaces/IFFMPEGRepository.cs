@@ -10,7 +10,6 @@ namespace shrimpcast.Data.Repositories.Interfaces
         Task<JsonNode?> ProbeStreamProcess(string? Headers, string URL, bool ForceHLS);
         void StopStreamProcess(string stream, string reason);
         string GetStreamDirectory(string Name);
-        bool HasExited(Process process);
         Process[] GetActiveFFMPEGProcesses();
     }
 }

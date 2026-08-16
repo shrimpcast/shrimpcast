@@ -38,7 +38,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             var command = BuildProbeCommand(Headers, URL, ForceHLS);
             try
             {
-                var probe = await ProcessLauncher.LaunchProcess(FFProbeProcess, command, ReturnOutput: true);
+                var probe = await ProcessLauncher.LaunchProcess(FFProbeProcess, command, ReturnOutput: true, OperationTimeout: 25);
                 return JsonNode.Parse(probe);
             }
             catch (Exception)
@@ -77,7 +77,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
         public void StopStreamProcess(string stream, string reason)
         {
             _processes.All.TryGetValue(stream, out var processInfo);
-            if (processInfo == null || HasExited(processInfo.Process)) return;
+            if (processInfo == null || ProcessLauncher.HasProcessExited(processInfo.Process)) return;
             MediaServerLog($"Stop called on process {stream}. Reason = {reason}");
             processInfo.Stream.IsEnabled = false;
             processInfo.Playlist_CurrentlyPlaying = null;
@@ -113,7 +113,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             MediaServerLog($"Process {streamName} exited");
             if (streamInfo != null)
             {
-
+                if (streamInfo.Stream.IsPlaylist && streamInfo.Playlist_CurrentlyPlaying != null) MediaServerLog($"Playlist item: {streamInfo.Playlist_CurrentlyPlaying}");
                 MediaServerLog($"Duration: {TimeSpan.FromSeconds((int)(DateTime.UtcNow - streamInfo.StartTime).TotalSeconds)}");
                 MediaServerLog($"Last 5 logs: [{string.Join(",", streamInfo.Logs.TakeLast(5).Select(l => (l.AddedAt, l.Content.Trim())))}]");
             }
@@ -160,7 +160,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
                         streamInfo == null && stream.IsEnabled
                         ||
                         // stream enabled and process in memory but not running
-                        streamInfo != null && stream.IsEnabled && HasExited(streamInfo.Process)
+                        streamInfo != null && stream.IsEnabled && ProcessLauncher.HasProcessExited(streamInfo.Process)
                         )
                     {
                         if (stream.IsPlaylist)
@@ -232,6 +232,14 @@ namespace shrimpcast.Data.Repositories.Interfaces
                     }
 
                     streamInfo.Playlist_CurrentlyPlaying = nextSourceName;
+                }
+                
+                if (!string.IsNullOrEmpty(playlist.PlaylistPreset))
+                {
+                    var presetStream = streams.First(stream => stream.Name == playlist.PlaylistPreset).Clone();
+                    presetStream.IngressUri = nextSourceName;
+                    presetStream.Name = nextSourceName;
+                    return presetStream;
                 }
 
                 return streams.First(stream => stream.Name == nextSourceName);
@@ -335,11 +343,15 @@ namespace shrimpcast.Data.Repositories.Interfaces
 
             try
             {
-                var captured = await ProcessLauncher.LaunchProcess(FFMPEGProcess, screenshotCommand, "Success", false);
+                var captured = await ProcessLauncher.LaunchProcess(FFMPEGProcess, screenshotCommand, "Success", false, 1);
                 if (captured == "Success")
                 {
                     streamInfo.LastScreenshot = now;
                     MediaServerLog($"Captured snapshot for {stream.Name}");
+                }
+                else
+                {
+                    MediaServerLog(captured);
                 }
             }
             catch (Exception ex)
@@ -357,19 +369,6 @@ namespace shrimpcast.Data.Repositories.Interfaces
         {
             foreach (var process in GetActiveFFMPEGProcesses()) process.Kill();
             CleanStreamDirectory(CleanRoot: true);
-        }
-
-        public bool HasExited(Process process)
-        {
-            try
-            {
-                return process.HasExited;
-            }
-            // Linux
-            catch (Exception)
-            {
-                return true;
-            }
         }
         #endregion
 
@@ -400,7 +399,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
 
             if (!string.IsNullOrEmpty(Headers)) command += $" -headers \"{Headers}\"";
             if (ForceHLS) command += " -f hls";
-            command += $" -i {URL}";
+            command += $" -i \"{URL.Trim()}\"";
 
             return command;
         }
