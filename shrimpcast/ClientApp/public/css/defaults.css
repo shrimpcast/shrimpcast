@@ -185,10 +185,6 @@ img[hidden] {
   left: -10.5px;
 }
 
-.vjs-poster img {
-  visibility: hidden;
-}
-
 .animated-background {
   position: relative;
   background: linear-gradient(135deg, #4b3a0a 0%, #3a2a00 100%);

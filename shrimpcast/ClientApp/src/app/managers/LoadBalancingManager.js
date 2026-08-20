@@ -23,6 +23,15 @@ class LoadBalancingManager {
   }
 
   static ResolveBalancing(input, cacheTimestampKey) {
+    try {
+      return this.DoResolve(input, cacheTimestampKey);
+    } catch (e) {
+      console.log(e);
+      return input;
+    }
+  }
+
+  static DoResolve(input, cacheTimestampKey) {
     if (!input?.startsWith("[lbs]")) return input;
     if (cacheTimestampKey && window[cacheTimestampKey]) return window[cacheTimestampKey];
 

@@ -1,5 +1,5 @@
 import { CssBaseline } from "@mui/material";
-import VideoJSPlayer from "./VideoJSPlayer";
+import VideoJSInstance from "./VideoJSInstance";
 import makeTheme from "../../theme/makeTheme";
 import { ThemeProvider } from "@emotion/react";
 import { useLocation } from "react-router-dom";
@@ -20,14 +20,6 @@ const Embed = () => {
           type: "application/x-mpegURL",
         },
       ],
-      html5: {
-        vhs: {
-          withCredentials: false,
-        },
-      },
-      poster: url?.includes("/streams/")
-        ? url.substr(0, url.lastIndexOf(".")) + `.jpg?nocache=${Date.now()}`
-        : undefined,
       userActions: { hotkeys: true },
       controlBar: {
         progressControl: false,
@@ -36,12 +28,15 @@ const Embed = () => {
         timeDivider: false,
       },
     },
-    theme = makeTheme();
+    theme = makeTheme(),
+    posterUrl = url?.includes("/streams/")
+      ? url.substr(0, url.lastIndexOf(".")) + `.jpg?nocache=${Date.now()}`
+      : undefined;
 
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <VideoJSPlayer options={videoJsOptions} theme={theme} />
+      <VideoJSInstance options={videoJsOptions} theme={theme} poster={posterUrl} />
     </ThemeProvider>
   );
 };

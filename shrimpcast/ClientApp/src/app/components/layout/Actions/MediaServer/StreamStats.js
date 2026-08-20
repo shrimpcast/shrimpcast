@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Box,
   Typography,
@@ -23,7 +23,7 @@ import {
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import CodeIcon from "@mui/icons-material/Code";
 import MediaServerManager from "../../../../managers/MediaServerManager";
-import VideoJSPlayer from "../../../player/VideoJSPlayer";
+import VideoJSInstance from "../../../player/VideoJSInstance";
 import HtmlIcon from "@mui/icons-material/Html";
 import GenericActionList from "../GenericActionList";
 import ScheduleIcon from "@mui/icons-material/Schedule";
@@ -152,6 +152,27 @@ const StreamStats = (props) => {
     setLogsLoading(null);
     handleOpenDialog({ rawJsonSettings: logs }, "json");
   };
+
+  const playerOptions = useMemo(() => {
+    return {
+      autoplay: true,
+      controls: true,
+      fill: true,
+      playsinline: true,
+      sources: [
+        {
+          src: window.location.origin + selectedItem?.streamUrl,
+          type: "application/x-mpegURL",
+        },
+      ],
+      controlBar: {
+        progressControl: false,
+        currentTimeDisplay: false,
+        durationDisplay: false,
+        timeDivider: false,
+      },
+    };
+  }, [selectedItem]);
 
   return (
     <Fade in timeout={400}>
@@ -328,28 +349,7 @@ const StreamStats = (props) => {
                 </Box>
               ) : (
                 <Box sx={{ height: "600px", borderRadius: 2 }}>
-                  <VideoJSPlayer
-                    options={{
-                      autoplay: true,
-                      controls: true,
-                      fill: true,
-                      playsinline: true,
-                      html5: { vhs: { withCredentials: false } },
-                      sources: [
-                        {
-                          src: window.location.origin + selectedItem?.streamUrl,
-                          type: "application/x-mpegURL",
-                        },
-                      ],
-                      controlBar: {
-                        progressControl: false,
-                        currentTimeDisplay: false,
-                        durationDisplay: false,
-                        timeDivider: false,
-                      },
-                    }}
-                    theme={theme}
-                  />
+                  <VideoJSInstance options={playerOptions} theme={theme} />
                   <Snackbar open={snackbarOpen} autoHideDuration={2000} onClose={handleSnackbarClose}>
                     <Alert severity="success" sx={{ width: "100%" }}>
                       URL copied to clipboard
