@@ -8,7 +8,6 @@ import SourceCountdown from "../layout/Actions/Sources/SourceCountdown";
 import ChatActionsManager from "../../managers/ChatActionsManager";
 import LoadBalancingManager from "../../managers/LoadBalancingManager";
 import MultistreamPrompt from "../layout/Prompts/MultistreamPrompt";
-import NativePlayerInstance from "./NativePlayerInstance";
 
 const WrapperSx = {
     width: "100%",
@@ -29,14 +28,14 @@ const WrapperSx = {
 const BigScreen = (props) => {
   const { streamStatus, signalR, configuration } = props,
     { source, streamEnabled, mustPickStream, isMultistreaming } = streamStatus,
-    { useRTCEmbed, useLegacyPlayer, startsAt, withCredentials, thumbnail } = source,
+    { startsAt, withCredentials, thumbnail } = source,
     theme = useTheme(),
-    url = LoadBalancingManager.ResolveBalancing(source.url) || "",
+    url = LoadBalancingManager.ResolveBalancing(source) || "",
     posterUrl = url.includes("/streams/")
       ? url.substr(0, url.lastIndexOf(".")) + `.jpg?nocache=${Date.now()}`
       : thumbnail,
     navigate = useNavigate(),
-    showCountdown = startsAt && new Date(startsAt).getTime() - Date.now() > 0,
+    showCountdown = (startsAt) => startsAt && new Date(startsAt).getTime() - Date.now() > 0,
     showMultistream = streamEnabled && isMultistreaming && !mustPickStream;
 
   const videoJsOptions = useMemo(() => {
@@ -81,34 +80,24 @@ const BigScreen = (props) => {
       <PickSource
         showViewerCountPerStream={configuration.showViewerCountPerStream}
         sources={streamStatus.sources}
+        showCountdown={showCountdown}
         signalR={signalR}
         noCache={Date.now()}
       />
     ) : (
       <>
         <Box sx={PlayerWrapperSx(theme, isMultistreaming)}>
-          {showCountdown ? (
+          {showCountdown(startsAt) ? (
             <SourceCountdown startsAt={startsAt} />
-          ) : useRTCEmbed ? (
-            <iframe
-              src={`${url}`}
-              title="rtc-embed"
-              id="rtc-embed"
-              allow="autoplay"
-              frameBorder="no"
-              scrolling="no"
-              allowFullScreen
-            ></iframe>
-          ) : !useLegacyPlayer ? (
-            <VideoJSInstance options={videoJsOptions} theme={theme} poster={posterUrl} />
           ) : (
-            <NativePlayerInstance url={url} />
+            <VideoJSInstance options={videoJsOptions} theme={theme} poster={posterUrl} />
           )}
         </Box>
         {showMultistream && (
           <MultistreamPrompt
             showViewerCountPerStream={configuration.showViewerCountPerStream}
             sources={streamStatus.sources}
+            showCountdown={showCountdown}
             signalR={signalR}
           />
         )}

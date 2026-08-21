@@ -196,7 +196,6 @@ const VideoJSInstance = (props) => {
     setMiscPlayerOptions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playerInitialized, poster, theme.palette.secondary]);
-  console.log(options.sources[0].src);
 
   return (
     <>

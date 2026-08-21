@@ -1,7 +1,6 @@
 ﻿html,
 body,
-#root,
-#rtc-embed {
+#root {
   height: 100%;
 }
 
@@ -117,11 +116,6 @@ img[hidden] {
 
 .full-height {
   height: 100% !important;
-}
-
-#rtc-embed {
-  width: 100%;
-  border: none;
 }
 
 .scrollbar-custom {

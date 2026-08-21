@@ -93,7 +93,18 @@ const BoxSx = {
     fontSize: "13px",
     position: "relative",
     top: "2px",
-  };
+  },
+  ChipSx = {
+    fontWeight: 600,
+    textTransform: "uppercase",
+    position: "relative",
+    top: "3.5px",
+  },
+  DialogContentSx = (dialogType, theme) => ({
+    px: 2,
+    py: 2,
+    backgroundColor: dialogType === "json" ? theme.palette.grey[900] : theme.palette.background.paper,
+  });
 
 const StreamStats = (props) => {
   const [stats, setStats] = useState(null);
@@ -264,12 +275,7 @@ const StreamStats = (props) => {
                           }
                           size="small"
                           variant="overline"
-                          sx={{
-                            fontWeight: 600,
-                            textTransform: "uppercase",
-                            position: "relative",
-                            top: "3.5px",
-                          }}
+                          sx={ChipSx}
                         />
                         {stat.processStatus.runningStatus === "Connected" && (
                           <Button
@@ -335,14 +341,7 @@ const StreamStats = (props) => {
                 </>
               )}
             </DialogTitle>
-            <DialogContent
-              sx={{
-                px: 2,
-                py: 2,
-                backgroundColor: dialogType === "json" ? theme.palette.grey[900] : theme.palette.background.paper,
-              }}
-              dividers
-            >
+            <DialogContent sx={DialogContentSx(dialogType, theme)} dividers>
               {dialogType === "json" ? (
                 <Box component="pre" sx={JsonPreviewSX} className="scrollbar-custom">
                   {JSON.stringify(selectedItem.rawJsonSettings, null, 2)?.replace(/\\"/g, '"')}

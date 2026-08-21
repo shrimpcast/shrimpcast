@@ -1,3 +1,5 @@
+import MediaServerManager from "./MediaServerManager";
+
 class LoadBalancingManager {
   static Random(max) {
     return Math.floor(Math.random() * max) + 1;
@@ -22,21 +24,17 @@ class LoadBalancingManager {
     return pick;
   }
 
-  static ResolveBalancing(input, cacheTimestampKey) {
-    try {
-      return this.DoResolve(input, cacheTimestampKey);
-    } catch (e) {
-      console.log(e);
-      return input;
-    }
+  static ResolveBalancing(input, isThumbnail) {
+    const { name, streamOverride, lbSettings } = input;
+    const isOverrideUrl = MediaServerManager.IsURL(streamOverride);
+    const streamUrlPath = isOverrideUrl.pathname || `/api/mediaserver/streams/${streamOverride || name}/index.m3u8`;
+    const origin = isOverrideUrl.origin || window.location.origin;
+    if (!lbSettings) return origin + streamUrlPath;
+    const hostname = isOverrideUrl.hostname || window.location.hostname;
+    return this.DoResolve(streamUrlPath, hostname, lbSettings, isThumbnail);
   }
 
-  static DoResolve(input, cacheTimestampKey) {
-    if (!input?.startsWith("[lbs]")) return input;
-    if (cacheTimestampKey && window[cacheTimestampKey]) return window[cacheTimestampKey];
-
-    const url = input.split("[/lbs]");
-    const lbs = url[0].replace("[lbs]", "");
+  static DoResolve(streamUrlPath, hostname, lbs, isThumbnail) {
     let pick;
 
     if (isNaN(lbs)) {
@@ -50,10 +48,8 @@ class LoadBalancingManager {
       pick = this.Random(lbs);
     }
 
-    const origin = url[1].replace("{lbi}", pick);
-
-    if (cacheTimestampKey) window[cacheTimestampKey] = origin;
-    else console.log("Resolved origin: " + origin);
+    const origin = `https://lb${pick}.${hostname}` + streamUrlPath;
+    if (!isThumbnail) console.log("Resolved origin: " + origin);
     return origin;
   }
 }

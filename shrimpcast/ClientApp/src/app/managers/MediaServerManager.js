@@ -95,6 +95,13 @@ class MediaServerManager {
       .catch((ex) => console.log(ex));
     return response?.data;
   }
+  static IsURL(url) {
+    try {
+      return new URL(url);
+    } catch (e) {
+      return false;
+    }
+  }
 }
 
 export default MediaServerManager;

@@ -24,11 +24,7 @@ const MediaServer = (props) => {
         type: 3,
         color: "info",
         probe: Probe,
-        enableProbeCondition: (url) => {
-          try {
-            return new URL(url);
-          } catch (e) {}
-        },
+        enableProbeCondition: MediaServerManager.IsURL,
         probeSuccess: {
           key: "probeSuccess",
           value: true,
