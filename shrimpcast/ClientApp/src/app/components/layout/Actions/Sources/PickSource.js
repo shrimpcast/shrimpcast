@@ -33,10 +33,9 @@ const DEFAULT_THUMBNAIL = "/images/video_thumbnail.png",
     opacity: hoveredIndex === index ? 1 : 0.95,
     minHeight: { xs: "50px", sm: "50px", md: "50px", lg: "100px" },
   }),
-  ImageSx = (thumbnail, hoveredIndex, index) => ({
+  ImageSx = (hoveredIndex, index) => ({
     width: "100%",
     height: "100%",
-    backgroundImage: `url(${thumbnail}), url(${DEFAULT_THUMBNAIL})`,
     backgroundSize: "cover",
     backgroundPosition: "center",
     position: "relative",
@@ -197,7 +196,11 @@ const PickSource = ({ sources, signalR, showViewerCountPerStream, noCache, onCli
                 </Box>
               )}
             </Box>
-            <Box sx={ImageSx(thumbnails[index], hoveredIndex, index)}>
+
+            <Box
+              sx={ImageSx(hoveredIndex, index)}
+              style={{ backgroundImage: `url(${thumbnails[index]}), url(${DEFAULT_THUMBNAIL})` }}
+            >
               <Box sx={HoverSx(hoveredIndex, index)} />
               <Box sx={TextContainerSx}>
                 <Typography sx={TextSx(hoveredIndex, index)}>
