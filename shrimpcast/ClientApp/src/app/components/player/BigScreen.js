@@ -30,7 +30,11 @@ const BigScreen = (props) => {
     { source, streamEnabled, mustPickStream, isMultistreaming } = streamStatus,
     { startsAt, withCredentials, thumbnail } = source,
     theme = useTheme(),
-    url = LoadBalancingManager.ResolveBalancing(source) || "",
+    url = useMemo(
+      () => LoadBalancingManager.ResolveBalancing(source) || "",
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      [source.streamOverride, source.lbSettings],
+    ),
     posterUrl = url.includes("/streams/")
       ? url.substr(0, url.lastIndexOf(".")) + `.jpg?nocache=${Date.now()}`
       : thumbnail,
