@@ -33,7 +33,7 @@ const BigScreen = (props) => {
     url = useMemo(
       () => LoadBalancingManager.ResolveBalancing(source) || "",
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      [source.streamOverride, source.lbSettings],
+      [source.name, source.streamOverride, source.lbSettings],
     ),
     posterUrl = url.includes("/streams/")
       ? url.substr(0, url.lastIndexOf(".")) + `.jpg?nocache=${Date.now()}`
