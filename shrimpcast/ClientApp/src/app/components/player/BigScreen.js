@@ -31,7 +31,7 @@ const BigScreen = (props) => {
     { startsAt, withCredentials, thumbnail } = source,
     theme = useTheme(),
     url = useMemo(
-      () => LoadBalancingManager.ResolveBalancing(source) || "",
+      () => LoadBalancingManager.ResolveBalancing(source),
       // eslint-disable-next-line react-hooks/exhaustive-deps
       [source.name, source.streamOverride, source.lbSettings],
     ),
@@ -78,6 +78,8 @@ const BigScreen = (props) => {
     return () => signalR.off(SignalRManager.events.redirectSource);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source]);
+
+  console.log(url);
 
   return streamEnabled ? (
     mustPickStream ? (
