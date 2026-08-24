@@ -60,6 +60,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
 
             stream.Name = stream.Name.ToLower().Trim();
             stream.IngressUri = stream.IngressUri.Trim();
+            if (!stream.IngressUri.StartsWith("http")) stream.ExitOnFail = true;
 
             if (!stream.IsPlaylist) return;
 
