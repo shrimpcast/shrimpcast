@@ -79,8 +79,6 @@ const BigScreen = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source]);
 
-  console.log(url);
-
   return streamEnabled ? (
     mustPickStream ? (
       <PickSource

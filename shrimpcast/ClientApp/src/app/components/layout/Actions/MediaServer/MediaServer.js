@@ -90,7 +90,7 @@ const MediaServer = (props) => {
       isEnabled: false,
       name: "",
       ingressUri: "",
-      segmentLength: 2,
+      segmentLength: 4,
       listSize: 6,
       snapshotInterval: 60,
       exitOnFail: false,
