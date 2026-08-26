@@ -13,15 +13,11 @@ namespace shrimpcast.Entities.DB
 
         public string? Title { get; set; }
 
-        public required string Url { get; set; }
+        public string? StreamOverride { get; set; }
 
         public string? Thumbnail { get; set; }
 
         public bool IsEnabled { get; set; }
-
-        public required bool UseLegacyPlayer { get; set; }
-
-        public required bool UseRTCEmbed { get; set; }
 
         [JsonIgnore]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -35,6 +31,8 @@ namespace shrimpcast.Entities.DB
         public required bool WithCredentials { get; set; }
 
         public int? SortPriority { get; set; }
+
+        public string? LbSettings { get; set; }
 
         public static Dictionary<string, object?> GetModel(bool avoidNormalization = false)
         {

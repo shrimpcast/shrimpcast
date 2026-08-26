@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-const CountdownTimer = ({ timestamp, skipText }) => {
+const CountdownTimer = ({ timestamp, skipText, skipReload, zeroCallback }) => {
   const calculateTimeLeft = () => {
       const endTime = new Date(timestamp);
       const difference = endTime.getTime() - Date.now();
@@ -34,7 +34,8 @@ const CountdownTimer = ({ timestamp, skipText }) => {
 
   useEffect(() => {
     if (timeLeft <= 0) {
-      window.location.reload();
+      !skipReload && window.location.reload();
+      zeroCallback && zeroCallback();
       return;
     }
 

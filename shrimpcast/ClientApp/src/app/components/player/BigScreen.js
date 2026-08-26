@@ -1,8 +1,7 @@
 import { Box, Typography, useTheme } from "@mui/material";
-import { useEffect, useRef, useState } from "react";
-import ReactPlayer from "react-player";
+import { useEffect, useMemo } from "react";
 import PickSource from "../layout/Actions/Sources/PickSource";
-import VideoJSPlayer from "./VideoJSPlayer";
+import VideoJSInstance from "./VideoJSInstance";
 import SignalRManager from "../../managers/SignalRManager";
 import { useNavigate } from "react-router-dom";
 import SourceCountdown from "../layout/Actions/Sources/SourceCountdown";
@@ -26,14 +25,25 @@ const WrapperSx = {
     },
   });
 
-const SitePlayer = (props) => {
+const BigScreen = (props) => {
   const { streamStatus, signalR, configuration } = props,
     { source, streamEnabled, mustPickStream, isMultistreaming } = streamStatus,
-    { useRTCEmbed, useLegacyPlayer, startsAt, withCredentials, thumbnail } = source,
-    [url, setUrl] = useState(""),
-    video = useRef(),
+    { startsAt, withCredentials, thumbnail } = source,
     theme = useTheme(),
-    videoJsOptions = {
+    url = useMemo(
+      () => LoadBalancingManager.ResolveBalancing(source),
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      [source.name, source.streamOverride, source.lbSettings],
+    ),
+    posterUrl = url.includes("/streams/")
+      ? url.substr(0, url.lastIndexOf(".")) + `.jpg?nocache=${Date.now()}`
+      : thumbnail,
+    navigate = useNavigate(),
+    showCountdown = (startsAt) => startsAt && new Date(startsAt).getTime() - Date.now() > 0,
+    showMultistream = streamEnabled && isMultistreaming && !mustPickStream;
+
+  const videoJsOptions = useMemo(() => {
+    return {
       autoplay: true,
       controls: true,
       fill: true,
@@ -42,16 +52,9 @@ const SitePlayer = (props) => {
         {
           src: url,
           type: "application/x-mpegURL",
-        },
-      ],
-      html5: {
-        vhs: {
           withCredentials,
         },
-      },
-      poster: url.includes("/streams/")
-        ? url.substr(0, url.lastIndexOf(".")) + `.jpg?nocache=${Date.now()}`
-        : thumbnail,
+      ],
       userActions: { hotkeys: true },
       controlBar: {
         progressControl: false,
@@ -59,19 +62,8 @@ const SitePlayer = (props) => {
         durationDisplay: false,
         timeDivider: false,
       },
-    },
-    [muted, setMuted] = useState(false),
-    tryPlay = () => {
-      let player = video.current.getInternalPlayer();
-      if (player.play !== undefined) {
-        player.play().catch(() => setMuted(true));
-      } else {
-        player.playVideo();
-      }
-    },
-    navigate = useNavigate(),
-    showCountdown = startsAt && new Date(startsAt).getTime() - Date.now() > 0,
-    showMultistream = streamEnabled && isMultistreaming && !mustPickStream;
+    };
+  }, [url, withCredentials]);
 
   useEffect(() => {
     signalR.on(SignalRManager.events.redirectSource, (data) => {
@@ -87,54 +79,29 @@ const SitePlayer = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source]);
 
-  useEffect(() => {
-    const resolved = LoadBalancingManager.ResolveBalancing(source.url);
-    if (resolved) setUrl(resolved);
-  }, [source.url]);
-
   return streamEnabled ? (
     mustPickStream ? (
       <PickSource
         showViewerCountPerStream={configuration.showViewerCountPerStream}
         sources={streamStatus.sources}
+        showCountdown={showCountdown}
         signalR={signalR}
         noCache={Date.now()}
       />
     ) : (
       <>
         <Box sx={PlayerWrapperSx(theme, isMultistreaming)}>
-          {showCountdown ? (
+          {showCountdown(startsAt) ? (
             <SourceCountdown startsAt={startsAt} />
-          ) : useRTCEmbed ? (
-            <iframe
-              src={`${url}`}
-              title="rtc-embed"
-              id="rtc-embed"
-              allow="autoplay"
-              frameBorder="no"
-              scrolling="no"
-              allowFullScreen
-            ></iframe>
-          ) : !useLegacyPlayer ? (
-            <VideoJSPlayer options={videoJsOptions} theme={theme} />
           ) : (
-            <ReactPlayer
-              width={"100%"}
-              height={"100%"}
-              controls
-              playsinline
-              url={url}
-              ref={video}
-              playing={muted}
-              muted={muted}
-              onReady={tryPlay}
-            />
+            <VideoJSInstance options={videoJsOptions} theme={theme} poster={posterUrl} />
           )}
         </Box>
         {showMultistream && (
           <MultistreamPrompt
             showViewerCountPerStream={configuration.showViewerCountPerStream}
             sources={streamStatus.sources}
+            showCountdown={showCountdown}
             signalR={signalR}
           />
         )}
@@ -149,4 +116,4 @@ const SitePlayer = (props) => {
   );
 };
 
-export default SitePlayer;
+export default BigScreen;

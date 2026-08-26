@@ -285,22 +285,20 @@ namespace shrimpcast.Entities.DB
                                 new { name = nameof(Source.IsEnabled).NormalizeToJavascript(), label = "Enabled", type = Constants.AddTableItem.boolean, color = "primary" },
                                 new { name = nameof(Source.Name).NormalizeToJavascript(), label = "Name", type = Constants.AddTableItem.text, color = string.Empty },
                                 new { name = nameof(Source.Title).NormalizeToJavascript(), label = "Title", type = Constants.AddTableItem.button, color = "success" },
-                                new { name = nameof(Source.Url).NormalizeToJavascript(), label = "URL", type = Constants.AddTableItem.button, color = "info"  },
+                                new { name = nameof(Source.StreamOverride).NormalizeToJavascript(), label = "Stream override", type = Constants.AddTableItem.button, color = "info"  },
                                 new { name = nameof(Source.Thumbnail).NormalizeToJavascript(), label = "Thumbnail", type = Constants.AddTableItem.image, color = string.Empty },
-                                new { name = nameof(Source.UseLegacyPlayer).NormalizeToJavascript(), label = "Native player", type = Constants.AddTableItem.boolean, color = "success" },
-                                new { name = nameof(Source.UseRTCEmbed).NormalizeToJavascript(), label = "Embed", type = Constants.AddTableItem.boolean, color = "error" },
                                 new { name = nameof(Source.WithCredentials).NormalizeToJavascript(), label = "With credentials", type = Constants.AddTableItem.boolean, color = "info" },
-                                new { name = nameof(Source.ResetOnScheduledSwitch).NormalizeToJavascript(), label = "UPD media on switch", type = Constants.AddTableItem.boolean, color = "warning"  },
+                                new { name = nameof(Source.ResetOnScheduledSwitch).NormalizeToJavascript(), label = "Sync on switch", type = Constants.AddTableItem.boolean, color = "warning"  },
                                 new { name = nameof(Source.StartsAt).NormalizeToJavascript(), label = "Schedule start", type = Constants.AddTableItem.date, color = string.Empty },
                                 new { name = nameof(Source.EndsAt).NormalizeToJavascript(), label = "Schedule end", type = Constants.AddTableItem.date, color = string.Empty  },
                                 new { name = nameof(Source.SortPriority).NormalizeToJavascript(), label = "Sort priority", type = Constants.AddTableItem.numeric, color = "primary"  },
+                                new { name = nameof(Source.LbSettings).NormalizeToJavascript(), label = "Load balancing rules", type = Constants.AddTableItem.button, color = "success"  },
                             },
                             // Only supports strings at the moment
                             // Do not pass non-string fields or it will break
                             requiredFields = new[]
                             {
                                 nameof(Source.Name).NormalizeToJavascript(),
-                                nameof(Source.Url).NormalizeToJavascript(),
                             },
                             // Field the reserved words apply to
                             reservedWordField = nameof(Source.Name).NormalizeToJavascript(),

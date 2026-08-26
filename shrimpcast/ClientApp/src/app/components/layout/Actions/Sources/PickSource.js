@@ -1,11 +1,13 @@
 import { Box, Typography, alpha } from "@mui/material";
 import { Link } from "react-router-dom";
 import PlayCircleFilledIcon from "@mui/icons-material/PlayCircleFilled";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import SignalRManager from "../../../../managers/SignalRManager";
 import ChatActionsManager from "../../../../managers/ChatActionsManager";
 import LoadBalancingManager from "../../../../managers/LoadBalancingManager";
+import CountdownTimer from "../../../others/CountdownTimer";
+import TimerIcon from "@mui/icons-material/Timer";
 
 const DEFAULT_THUMBNAIL = "/images/video_thumbnail.png",
   ContainerSx = {
@@ -31,10 +33,9 @@ const DEFAULT_THUMBNAIL = "/images/video_thumbnail.png",
     opacity: hoveredIndex === index ? 1 : 0.95,
     minHeight: { xs: "50px", sm: "50px", md: "50px", lg: "100px" },
   }),
-  ImageSx = (thumbnail, hoveredIndex, index) => ({
+  ImageSx = (hoveredIndex, index) => ({
     width: "100%",
     height: "100%",
-    backgroundImage: `url(${thumbnail}), url(${DEFAULT_THUMBNAIL})`,
     backgroundSize: "cover",
     backgroundPosition: "center",
     position: "relative",
@@ -88,11 +89,16 @@ const DEFAULT_THUMBNAIL = "/images/video_thumbnail.png",
     webkitTransform: "translate(-50%, -50%)",
     textAlign: "center",
   }),
-  ViewerCountSx = {
+  BadgeContainerSx = {
     position: "absolute",
     top: "10px",
     right: "10px",
-    backgroundColor: "info.main",
+    zIndex: 5,
+    display: "flex",
+  },
+  ViewerCountSx = (backgroundColor) => ({
+    ml: "7.5px",
+    backgroundColor,
     color: "white",
     padding: "4px 8px",
     borderRadius: "4px",
@@ -116,15 +122,30 @@ const DEFAULT_THUMBNAIL = "/images/video_thumbnail.png",
         opacity: 1,
       },
     },
+  }),
+  LinkSx = {
+    textDecoration: "none",
+    display: "block",
+    height: "100%",
+    position: "relative",
   };
 
 const ResolveThumbnail = (thumbnail, url, noCache) =>
   thumbnail || (url.includes("/streams/") ? url.substr(0, url.lastIndexOf(".")) + `.jpg?nocache=${noCache}` : null);
 
-const PickSource = ({ sources, signalR, showViewerCountPerStream, noCache, onClick }) => {
+const PickSource = ({ sources, signalR, showViewerCountPerStream, noCache, onClick, showCountdown }) => {
   const [hoveredIndex, setHoveredIndex] = useState(null),
     [viewerCount, setViewerCount] = useState(null),
     viewerCountRef = useRef(viewerCount);
+
+  const thumbnails = useMemo(
+    () =>
+      sources.map((source) =>
+        ResolveThumbnail(source.thumbnail, LoadBalancingManager.ResolveBalancing(source, true), noCache),
+      ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [noCache],
+  );
 
   useEffect(() => {
     viewerCountRef.current = viewerCount;
@@ -134,7 +155,9 @@ const PickSource = ({ sources, signalR, showViewerCountPerStream, noCache, onCli
     signalR.on(SignalRManager.events.sourceViewerCountChange, (count) => setViewerCount(count));
 
     setTimeout(() => {
-      if (!viewerCountRef.current) ChatActionsManager.GetSourceViewerCount(signalR);
+      if (!viewerCountRef.current) {
+        ChatActionsManager.GetSourceViewerCount(signalR);
+      }
     }, 500);
 
     return () => signalR.off(SignalRManager.events.sourceViewerCountChange);
@@ -152,32 +175,31 @@ const PickSource = ({ sources, signalR, showViewerCountPerStream, noCache, onCli
           onTouchStart={() => setHoveredIndex(index)}
           onTouchEnd={() => setHoveredIndex(null)}
         >
-          <Link
-            to={`/${source.name.toLowerCase()}`}
-            onClick={onClick}
-            style={{
-              textDecoration: "none",
-              display: "block",
-              height: "100%",
-              position: "relative",
-            }}
-          >
-            {showViewerCountPerStream && (
-              <Box sx={ViewerCountSx}>
-                <PeopleAltIcon sx={{ width: "12px", height: "12px" }} />
-                {viewerCount?.find((s) => s.name === source.name)?.count ?? "-"}
-              </Box>
-            )}
-            <Box
-              sx={ImageSx(
-                ResolveThumbnail(
-                  source.thumbnail,
-                  LoadBalancingManager.ResolveBalancing(source.url, `${source.name}-${noCache}`),
-                  noCache,
-                ),
-                hoveredIndex,
-                index,
+          <Link to={`/${source.name.toLowerCase()}`} onClick={onClick} style={LinkSx}>
+            <Box sx={BadgeContainerSx}>
+              {showCountdown(source.startsAt) && (
+                <Box sx={ViewerCountSx("error.main")}>
+                  <TimerIcon sx={{ width: "12px", height: "12px" }} />
+                  <CountdownTimer
+                    key={source.startsAt}
+                    timestamp={source.startsAt}
+                    skipText={true}
+                    skipReload={true}
+                    zeroCallback={() => setHoveredIndex(Date.now())}
+                  />
+                </Box>
               )}
+              {showViewerCountPerStream && (
+                <Box sx={ViewerCountSx("info.main")}>
+                  <PeopleAltIcon sx={{ width: "12px", height: "12px" }} />
+                  {viewerCount?.find((s) => s.name === source.name)?.count ?? "-"}
+                </Box>
+              )}
+            </Box>
+
+            <Box
+              sx={ImageSx(hoveredIndex, index)}
+              style={{ backgroundImage: `url(${thumbnails[index]}), url(${DEFAULT_THUMBNAIL})` }}
             >
               <Box sx={HoverSx(hoveredIndex, index)} />
               <Box sx={TextContainerSx}>

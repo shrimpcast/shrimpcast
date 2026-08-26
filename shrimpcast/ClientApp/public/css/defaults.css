@@ -1,7 +1,6 @@
 ﻿html,
 body,
-#root,
-#rtc-embed {
+#root {
   height: 100%;
 }
 
@@ -119,11 +118,6 @@ img[hidden] {
   height: 100% !important;
 }
 
-#rtc-embed {
-  width: 100%;
-  border: none;
-}
-
 .scrollbar-custom {
   scrollbar-width: thin;
   scrollbar-color: #ff9100 transparent;
@@ -183,10 +177,6 @@ img[hidden] {
   z-index: 1;
   top: -12.5px;
   left: -10.5px;
-}
-
-.vjs-poster img {
-  visibility: hidden;
 }
 
 .animated-background {

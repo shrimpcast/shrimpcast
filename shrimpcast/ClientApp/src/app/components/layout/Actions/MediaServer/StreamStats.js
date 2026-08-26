@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Box,
   Typography,
@@ -23,7 +23,7 @@ import {
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import CodeIcon from "@mui/icons-material/Code";
 import MediaServerManager from "../../../../managers/MediaServerManager";
-import VideoJSPlayer from "../../../player/VideoJSPlayer";
+import VideoJSInstance from "../../../player/VideoJSInstance";
 import HtmlIcon from "@mui/icons-material/Html";
 import GenericActionList from "../GenericActionList";
 import ScheduleIcon from "@mui/icons-material/Schedule";
@@ -93,7 +93,18 @@ const BoxSx = {
     fontSize: "13px",
     position: "relative",
     top: "2px",
-  };
+  },
+  ChipSx = {
+    fontWeight: 600,
+    textTransform: "uppercase",
+    position: "relative",
+    top: "3.5px",
+  },
+  DialogContentSx = (dialogType, theme) => ({
+    px: 2,
+    py: 2,
+    backgroundColor: dialogType === "json" ? theme.palette.grey[900] : theme.palette.background.paper,
+  });
 
 const StreamStats = (props) => {
   const [stats, setStats] = useState(null);
@@ -152,6 +163,27 @@ const StreamStats = (props) => {
     setLogsLoading(null);
     handleOpenDialog({ rawJsonSettings: logs }, "json");
   };
+
+  const playerOptions = useMemo(() => {
+    return {
+      autoplay: true,
+      controls: true,
+      fill: true,
+      playsinline: true,
+      sources: [
+        {
+          src: window.location.origin + selectedItem?.streamUrl,
+          type: "application/x-mpegURL",
+        },
+      ],
+      controlBar: {
+        progressControl: false,
+        currentTimeDisplay: false,
+        durationDisplay: false,
+        timeDivider: false,
+      },
+    };
+  }, [selectedItem]);
 
   return (
     <Fade in timeout={400}>
@@ -243,12 +275,7 @@ const StreamStats = (props) => {
                           }
                           size="small"
                           variant="overline"
-                          sx={{
-                            fontWeight: 600,
-                            textTransform: "uppercase",
-                            position: "relative",
-                            top: "3.5px",
-                          }}
+                          sx={ChipSx}
                         />
                         {stat.processStatus.runningStatus === "Connected" && (
                           <Button
@@ -314,42 +341,14 @@ const StreamStats = (props) => {
                 </>
               )}
             </DialogTitle>
-            <DialogContent
-              sx={{
-                px: 2,
-                py: 2,
-                backgroundColor: dialogType === "json" ? theme.palette.grey[900] : theme.palette.background.paper,
-              }}
-              dividers
-            >
+            <DialogContent sx={DialogContentSx(dialogType, theme)} dividers>
               {dialogType === "json" ? (
                 <Box component="pre" sx={JsonPreviewSX} className="scrollbar-custom">
                   {JSON.stringify(selectedItem.rawJsonSettings, null, 2)?.replace(/\\"/g, '"')}
                 </Box>
               ) : (
                 <Box sx={{ height: "600px", borderRadius: 2 }}>
-                  <VideoJSPlayer
-                    options={{
-                      autoplay: true,
-                      controls: true,
-                      fill: true,
-                      playsinline: true,
-                      html5: { vhs: { withCredentials: false } },
-                      sources: [
-                        {
-                          src: window.location.origin + selectedItem?.streamUrl,
-                          type: "application/x-mpegURL",
-                        },
-                      ],
-                      controlBar: {
-                        progressControl: false,
-                        currentTimeDisplay: false,
-                        durationDisplay: false,
-                        timeDivider: false,
-                      },
-                    }}
-                    theme={theme}
-                  />
+                  <VideoJSInstance options={playerOptions} theme={theme} />
                   <Snackbar open={snackbarOpen} autoHideDuration={2000} onClose={handleSnackbarClose}>
                     <Alert severity="success" sx={{ width: "100%" }}>
                       URL copied to clipboard

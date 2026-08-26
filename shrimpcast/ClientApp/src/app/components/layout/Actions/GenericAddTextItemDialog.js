@@ -34,7 +34,7 @@ const GenericAddTextItemDialog = (props) => {
     },
     submit = async () => {
       if (customCallback) {
-        customCallback(item, probeReturnData);
+        customCallback(item?.trim ? item.trim() || null : item, probeReturnData);
         closeDialog();
         return;
       }

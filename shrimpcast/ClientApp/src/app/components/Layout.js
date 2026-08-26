@@ -2,13 +2,13 @@ import { Box } from "@mui/material";
 import { useState } from "react";
 import Grid from "@mui/material/Unstable_Grid2";
 import { useTheme } from "@emotion/react";
-import SitePlayer from "./player/SitePlayer";
 import SiteTop from "./layout/SiteTop";
 import Chat from "./chat/Chat";
 import ShowFireworks from "./others/ShowFireworks";
 import ShowSnow from "./others/ShowSnow";
 import ShowPing from "./others/ShowPing";
 import { useLocation } from "react-router-dom";
+import BigScreen from "./player/BigScreen";
 
 const MainGridSx = {
     overflow: "hidden",
@@ -122,7 +122,7 @@ const Layout = (props) => {
             className={"scrollbar-custom"}
           >
             <Box sx={PlayerContainerSx}>
-              <SitePlayer streamStatus={streamStatus} {...props} />
+              <BigScreen streamStatus={streamStatus} {...props} />
             </Box>
           </Grid>
         )}
