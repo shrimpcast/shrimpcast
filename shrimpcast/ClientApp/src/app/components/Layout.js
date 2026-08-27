@@ -1,5 +1,5 @@
-import { Box } from "@mui/material";
-import { useState } from "react";
+import { Box, LinearProgress } from "@mui/material";
+import { useEffect, useState } from "react";
 import Grid from "@mui/material/Unstable_Grid2";
 import { useTheme } from "@emotion/react";
 import SiteTop from "./layout/SiteTop";
@@ -69,6 +69,8 @@ const Layout = (props) => {
     sourceLocation = location.pathname?.replace("/", ""),
     poppedOutChat = sourceLocation === "chat",
     [useFullChatMode, setFullChatMode] = useState(poppedOutChat),
+    [isNavigating, setNavigating] = useState(false),
+    setNavigatingTrue = () => setNavigating(true),
     ResolveSources = () => {
       const { sources } = configuration,
         enabledSources = sources?.filter((source) => source.isEnabled),
@@ -94,6 +96,15 @@ const Layout = (props) => {
       return StreamStatus;
     },
     streamStatus = ResolveSources();
+
+  useEffect(() => {
+    document.addEventListener("navigationEvent", setNavigatingTrue);
+    return () => document.removeEventListener("navigationEvent", setNavigatingTrue);
+  }, []);
+
+  useEffect(() => {
+    setNavigating(false);
+  }, [streamStatus.source.name]);
 
   return (
     <>
@@ -121,6 +132,7 @@ const Layout = (props) => {
             sx={PlayerBoxSx(theme, useFullChatMode)}
             className={"scrollbar-custom"}
           >
+            {isNavigating && <LinearProgress />}
             <Box sx={PlayerContainerSx}>
               <BigScreen streamStatus={streamStatus} {...props} />
             </Box>
