@@ -215,7 +215,7 @@ const ChatTextField = (props) => {
         onKeyUp={shouldCloseAutoComplete}
         onInput={changeInput}
         value={message}
-        disabled={isDisabled}
+        disabled={loading || isDisabled}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         inputRef={textFieldReference}
