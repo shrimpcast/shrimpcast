@@ -7,13 +7,15 @@ import Emotes from "./Emotes/Emotes";
 import AutoComplete from "./AutoComplete";
 import WiFiSignalStrength from "./WiFiSignalStrength";
 import ChatActionsManager from "../../managers/ChatActionsManager";
+import { grey } from "@mui/material/colors";
 
 const SendInputSx = {
     width: "100%",
     position: "relative",
   },
-  SendTextFieldSx = {
+  SendTextFieldSx = (isLoading) => ({
     input: {
+      ...(isLoading && { color: grey[700] }),
       "&::placeholder": {
         opacity: 1,
         color: "secondary.main",
@@ -22,10 +24,11 @@ const SendInputSx = {
     "& .MuiOutlinedInput-notchedOutline": {
       borderBottomRightRadius: "0px",
       borderBottomLeftRadius: "0px",
+      ...(isLoading && { borderColor: `${grey[700]} !important` }),
     },
     label: { color: "secondary.main" },
     zIndex: 2,
-  },
+  }),
   ScrollSx = (isChecked) => ({
     position: "absolute",
     top: "1px",
@@ -100,9 +103,8 @@ const ChatTextField = (props) => {
 
       setLoading(true);
       const response = await MessageManager.NewMessage(signalR, value);
-      setLoading(false);
       if (response) setMessage("");
-      setTimeout(() => textFieldReference.current.focus(), 250);
+      setTimeout(() => setLoading(false), 0);
     },
     handleKeys = async (e) => {
       if (e.key === "Enter") {
@@ -201,6 +203,7 @@ const ChatTextField = (props) => {
         }}
         inputProps={{
           maxLength: 500,
+          readOnly: loading,
         }}
         InputLabelProps={{
           shrink: focused || message.trim() !== "",
@@ -211,12 +214,12 @@ const ChatTextField = (props) => {
         placeholder={isDisabled ? "Chat temporarily disabled" : "Write a message.."}
         color="secondary"
         fullWidth
-        sx={SendTextFieldSx}
+        sx={SendTextFieldSx(loading)}
         onKeyDown={handleKeys}
         onKeyUp={shouldCloseAutoComplete}
         onInput={changeInput}
         value={message}
-        disabled={loading || isDisabled}
+        disabled={isDisabled}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         inputRef={textFieldReference}
