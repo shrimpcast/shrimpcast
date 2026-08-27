@@ -102,6 +102,7 @@ const ChatTextField = (props) => {
       const response = await MessageManager.NewMessage(signalR, value);
       setLoading(false);
       if (response) setMessage("");
+      setTimeout(() => textFieldReference.current.focus(), 250);
     },
     handleKeys = async (e) => {
       if (e.key === "Enter") {
