@@ -86,6 +86,7 @@ const ChatTextField = (props) => {
     [autoCompleteType, setAutoCompleteType] = useState(null),
     { signalR, configuration, isAdmin, connectionStatus } = props,
     changeInput = (e) => {
+      if (loading) return;
       const target = e.target,
         ne = e.nativeEvent;
       setMessage(ChatActionsManager.normalizeString(configuration.stripNonASCIIChars, target.value));
@@ -203,7 +204,6 @@ const ChatTextField = (props) => {
         }}
         inputProps={{
           maxLength: 500,
-          readOnly: loading,
         }}
         InputLabelProps={{
           shrink: focused || message.trim() !== "",
