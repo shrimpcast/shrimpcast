@@ -104,7 +104,7 @@ const Layout = (props) => {
 
   useEffect(() => {
     setNavigating(false);
-  }, [streamStatus.source.name]);
+  }, [sourceLocation]);
 
   return (
     <>
