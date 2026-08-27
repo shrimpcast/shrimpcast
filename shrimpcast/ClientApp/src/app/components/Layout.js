@@ -104,7 +104,7 @@ const Layout = (props) => {
 
   useEffect(() => {
     setNavigating(false);
-  }, [sourceLocation]);
+  }, [location]);
 
   return (
     <>
