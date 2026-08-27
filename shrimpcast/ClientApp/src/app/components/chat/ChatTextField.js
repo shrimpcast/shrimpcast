@@ -7,13 +7,15 @@ import Emotes from "./Emotes/Emotes";
 import AutoComplete from "./AutoComplete";
 import WiFiSignalStrength from "./WiFiSignalStrength";
 import ChatActionsManager from "../../managers/ChatActionsManager";
+import { grey } from "@mui/material/colors";
 
 const SendInputSx = {
     width: "100%",
     position: "relative",
   },
-  SendTextFieldSx = {
+  SendTextFieldSx = (isLoading) => ({
     input: {
+      ...(isLoading && { color: grey[700] }),
       "&::placeholder": {
         opacity: 1,
         color: "secondary.main",
@@ -22,10 +24,11 @@ const SendInputSx = {
     "& .MuiOutlinedInput-notchedOutline": {
       borderBottomRightRadius: "0px",
       borderBottomLeftRadius: "0px",
+      ...(isLoading && { borderColor: `${grey[700]} !important` }),
     },
     label: { color: "secondary.main" },
     zIndex: 2,
-  },
+  }),
   ScrollSx = (isChecked) => ({
     position: "absolute",
     top: "1px",
@@ -83,6 +86,7 @@ const ChatTextField = (props) => {
     [autoCompleteType, setAutoCompleteType] = useState(null),
     { signalR, configuration, isAdmin, connectionStatus } = props,
     changeInput = (e) => {
+      if (loading) return;
       const target = e.target,
         ne = e.nativeEvent;
       setMessage(ChatActionsManager.normalizeString(configuration.stripNonASCIIChars, target.value));
@@ -100,8 +104,8 @@ const ChatTextField = (props) => {
 
       setLoading(true);
       const response = await MessageManager.NewMessage(signalR, value);
-      setLoading(false);
       if (response) setMessage("");
+      setTimeout(() => setLoading(false), 0);
     },
     handleKeys = async (e) => {
       if (e.key === "Enter") {
@@ -210,7 +214,7 @@ const ChatTextField = (props) => {
         placeholder={isDisabled ? "Chat temporarily disabled" : "Write a message.."}
         color="secondary"
         fullWidth
-        sx={SendTextFieldSx}
+        sx={SendTextFieldSx(loading)}
         onKeyDown={handleKeys}
         onKeyUp={shouldCloseAutoComplete}
         onInput={changeInput}
