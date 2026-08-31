@@ -32,6 +32,8 @@ namespace shrimpcast.Entities
         public ConcurrentDictionary<IPAddress, DateTime> Viewers { get; set; } = [];
 
         public string? Playlist_CurrentlyPlaying { get; set; }
+
+        public bool Playlist_IsPlaylistOnEndEvent { get; set; }
     }
 }
 

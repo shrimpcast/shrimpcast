@@ -52,6 +52,8 @@
 
         public string? PlaylistPreset { get; set; }
 
+        public string? PlayOnEnd { get; set; }
+
         public MediaServerStream Clone() => (MediaServerStream) MemberwiseClone();
     }
 }

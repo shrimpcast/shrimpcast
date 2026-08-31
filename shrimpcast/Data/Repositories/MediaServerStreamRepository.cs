@@ -62,14 +62,18 @@ namespace shrimpcast.Data.Repositories.Interfaces
             }
 
             stream.PlaylistPreset = stream.PlaylistPreset?.ToLower().Trim();
-            var all = await GetAll(false);
+            var all = await GetAll();
             var playlistSources = stream.IngressUri.Split(",")
                                         .Select(source => source.ToLower().Trim())
                                         .ToArray();
 
+            var validateSource = (string sourceName, bool isPlaylist) =>
+                all.First(source => source.IsPlaylist == isPlaylist && source.Name == sourceName);
+
+
             if (string.IsNullOrEmpty(stream.PlaylistPreset))
             {
-                var matchingSources = all.Where(stream => playlistSources.Contains(stream.Name))
+                var matchingSources = all.Where(stream => !stream.IsPlaylist && playlistSources.Contains(stream.Name))
                                          .Count();
 
                 if (matchingSources != playlistSources.Distinct().Count())
@@ -79,8 +83,13 @@ namespace shrimpcast.Data.Repositories.Interfaces
             }
             else
             {
-                _ = all.First(source => source.Name == stream.PlaylistPreset);
+                validateSource(stream.PlaylistPreset, false);
                 playlistSources = [..playlistSources.Where(source => !string.IsNullOrEmpty(source))];
+            }
+
+            if (!string.IsNullOrEmpty(stream.PlayOnEnd))
+            {
+                validateSource(stream.PlayOnEnd, true);
             }
 
             stream.IngressUri = string.Join(",", playlistSources);

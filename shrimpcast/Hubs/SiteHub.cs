@@ -944,7 +944,7 @@ namespace shrimpcast.Hubs
         {
             await ShouldGrantAccess();
             var removed = await _mediaServerStreamRepository.Remove(MediaServerStreamId);
-            _ffmpegRepository.StopStreamProcess(removed, "removed");
+            _ffmpegRepository.StopStreamProcess(removed, "removed", true);
             _processes.All.TryRemove(removed, out var _);
             return true;
         }
@@ -953,7 +953,7 @@ namespace shrimpcast.Hubs
         {
             if (FireAndForgetToken != Constants.FIREANDFORGET_TOKEN) await ShouldGrantAccess();
             var edited = await _mediaServerStreamRepository.Edit(MediaServerStream);
-            _ffmpegRepository.StopStreamProcess(MediaServerStream.Name, FireAndForgetToken != null ? "scheduled-job" : "edited");
+            _ffmpegRepository.StopStreamProcess(MediaServerStream.Name, FireAndForgetToken != null ? "scheduled-job" : "edited", true);
             return edited;
         }
 

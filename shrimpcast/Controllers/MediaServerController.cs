@@ -63,7 +63,11 @@ namespace shrimpcast.Controllers
                     bitrate = p.Value.Bitrate,
                     cpuUsage = p.Value.ProcessorUsageComputed,
                     viewers = p.Value.Viewers.Count,
-                    playing = p.Value.Stream.IsPlaylist ? p.Value.Playlist_CurrentlyPlaying : null
+                    playing = p.Value.Stream.IsPlaylist 
+                        ? p.Value.Playlist_IsPlaylistOnEndEvent 
+                            ? $"{p.Value.Stream.PlayOnEnd} - {p.Value.Playlist_CurrentlyPlaying}" 
+                            : p.Value.Playlist_CurrentlyPlaying 
+                        : null
                 }
             });
         }
@@ -116,9 +120,8 @@ namespace shrimpcast.Controllers
             string? streamName = data["name"];
             string? auth = data["auth"];
             string? call = data["call"];
-            string? url = data["tcurl"];
 
-            if (streamName == null || auth == null || call == null || url == null) return UnprocessableEntity();
+            if (streamName == null || auth == null || call == null) return UnprocessableEntity();
 
             var endpoint = await _rtmpEndpointRepository.GetByName(streamName);
             if (endpoint!.PublishKey != auth) return Unauthorized();
@@ -133,13 +136,6 @@ namespace shrimpcast.Controllers
                 endpoint.Name,
                 status,
             });
-
-            if (!isConnected)
-            {
-                url = $"{url.Trim()}/{streamName}";
-                var targets = _processes.All.Values.Where(p => p.Stream.IngressUri == url).ToList();
-                targets.ForEach(target => _ffmpegRepository.StopStreamProcess(target.Stream.Name, "publish-done"));
-            }
 
             return Ok();
         }
