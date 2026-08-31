@@ -350,8 +350,10 @@ namespace shrimpcast.Hubs
                 var removedSessionName = await _sessionRepository.GetCurrentName(RemovedMessage.SessionId);
                 var logMessage = $"{Session.SessionNames.Last().Name} removed a post from {removedSessionName}";
                 await LogModAction(logMessage, $"{logMessage} [{RemovedMessage.Content}]");
+                var userConnections = ActiveConnections.Where(ac => ac.Value.Session.SessionId == RemovedMessage.SessionId).Select(ac => ac.Key);
+                await DispatchSystemMessage($"{Session.SessionNames.Last().Name} removed one of your posts", true, false, userConnections);
             }
-            
+
             return true;
         }
         #endregion
