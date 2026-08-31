@@ -233,8 +233,9 @@ const StreamStats = (props) => {
                     <Stack sx={StackCardSx}>
                       <Typography variant="overline" sx={StreamTitleSx}>
                         {stat.name}
+                        {stat.processStatus.endPlaylist ? " -> " + stat.processStatus.endPlaylist : null}
                         {stat.processStatus.playing
-                          ? " - " +
+                          ? " -> " +
                             (new URLSearchParams(stat.processStatus.playing).get("filename") ||
                               stat.processStatus.playing)
                           : null}

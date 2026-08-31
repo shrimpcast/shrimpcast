@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.WebUtilities;
 using shrimpcast.Data.Repositories.Interfaces;
 using shrimpcast.Entities;
 using shrimpcast.Entities.DTO;
@@ -63,11 +64,8 @@ namespace shrimpcast.Controllers
                     bitrate = p.Value.Bitrate,
                     cpuUsage = p.Value.ProcessorUsageComputed,
                     viewers = p.Value.Viewers.Count,
-                    playing = p.Value.Stream.IsPlaylist 
-                        ? p.Value.Playlist_IsPlaylistOnEndEvent 
-                            ? $"{p.Value.Stream.PlayOnEnd} - {p.Value.Playlist_CurrentlyPlaying}" 
-                            : p.Value.Playlist_CurrentlyPlaying 
-                        : null
+                    endPlaylist = p.Value.Playlist_IsPlaylistOnEndEvent ? p.Value.Stream.PlayOnEnd : null,
+                    playing = p.Value.Stream.IsPlaylist ? p.Value.Playlist_CurrentlyPlaying : null
                 }
             });
         }
@@ -101,9 +99,12 @@ namespace shrimpcast.Controllers
         public IActionResult Streams(string Name, string File)
         {
             var isPlaylist = File.EndsWith("m3u8");
-            if (!isPlaylist && !Constants.IsDevelopment()) return UnprocessableEntity();
-
+            var isPlaylistInfo = File.EndsWith("info");
+            
+            if (!isPlaylist && !isPlaylistInfo && !Constants.IsDevelopment()) return UnprocessableEntity();
             if (!_processes.All.TryGetValue(Name, out var streamInfo)) return NotFound();
+            if (isPlaylistInfo) return Content(GetCurrentlyPlayingFilename(streamInfo.Playlist_CurrentlyPlaying));
+
             streamInfo.Viewers.AddOrUpdate(HttpContext.Connection.RemoteIpAddress!, DateTime.UtcNow, (k, oldValue) => DateTime.UtcNow);
 
             var directory = _ffmpegRepository.GetStreamDirectory(Name);
@@ -111,6 +112,23 @@ namespace shrimpcast.Controllers
             var path = Path.Combine(directory, File.ToLower());
             if (!System.IO.File.Exists(path)) return NotFound();
             return PhysicalFile(path, contentType);
+        }
+
+        private string GetCurrentlyPlayingFilename(string? Playlist_CurrentlyPlaying)
+        {
+            if (Playlist_CurrentlyPlaying == null) return string.Empty;
+            try
+            {
+                var uri = new Uri(Playlist_CurrentlyPlaying);
+                var query = QueryHelpers.ParseQuery(uri.Query);
+                var filename = query["filename"].FirstOrDefault();
+                if (filename == null) return string.Empty;
+                return filename;
+            }
+            catch (Exception)
+            {
+                return string.Empty;
+            }
         }
 
         [HttpPost, Route("AuthenticatePublish")]

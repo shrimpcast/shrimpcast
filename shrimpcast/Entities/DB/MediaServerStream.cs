@@ -54,6 +54,8 @@
 
         public string? PlayOnEnd { get; set; }
 
+        public bool Randomize { get; set; }
+
         public MediaServerStream Clone() => (MediaServerStream) MemberwiseClone();
     }
 }

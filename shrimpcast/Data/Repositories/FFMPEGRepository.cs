@@ -235,7 +235,11 @@ namespace shrimpcast.Data.Repositories.Interfaces
                         playlistSources = GetPlaylistItemsArray(getEndPlaylist());
                     }
 
-                    if (currentlyPlayingIndex == -1 || hasPlaylistFinished)
+                    if (playlist.Randomize)
+                    {
+                        nextSourceName = playlistSources[new Random().Next(0, playlistSources.Length)]; 
+                    }
+                    else if (currentlyPlayingIndex == -1 || hasPlaylistFinished)
                     {
                         nextSourceName = playlistSources[0];
                     }

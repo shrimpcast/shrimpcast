@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import videojs from "video.js";
 import { Box, CircularProgress } from "@mui/material";
 import LocalStorageManager from "../../managers/LocalStorageManager";
+import MediaServerManager from "../../managers/MediaServerManager";
 
 const Loader = {
   width: "50px",
@@ -97,11 +98,20 @@ const VideoJSInstance = (props) => {
       player.pause();
       player.src(options.sources);
       player.play().catch((ex) => ex);
+      getCurrentlyPlayingTitle();
     },
     setMiscPlayerOptions = () => {
       const player = playerRef.current;
       player.el().style.color = theme.palette.secondary[500];
       setPlayerPoster();
+    },
+    getCurrentlyPlayingTitle = async () => {
+      const title = await MediaServerManager.GetCurrentlyPlaying(options.sources[0].src);
+      const player = playerRef.current;
+      player.titleBar.update({
+        title: title ? "Currently playing" : null,
+        description: title,
+      });
     },
     setPlayerPoster = () => {
       const player = playerRef.current;
