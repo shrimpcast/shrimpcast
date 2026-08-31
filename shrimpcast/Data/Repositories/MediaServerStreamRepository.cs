@@ -53,19 +53,15 @@ namespace shrimpcast.Data.Repositories.Interfaces
 
         private async Task Validate(MediaServerStream stream)
         {
-            if (stream.SnapshotInterval < 15 || stream.SegmentLength < 2 || stream.ListSize < 6)
-            {
-                throw new InvalidDataException();
-            }
-
             stream.Name = stream.Name.ToLower().Trim();
             stream.IngressUri = stream.IngressUri.Trim();
             if (!stream.IngressUri.StartsWith("http")) stream.ExitOnFail = true;
-
-            if (!stream.IsPlaylist) return;
+            if (!stream.IsPlaylist)
+            {
+                return;
+            }
 
             stream.PlaylistPreset = stream.PlaylistPreset?.ToLower().Trim();
-
             var all = await GetAll(false);
             var playlistSources = stream.IngressUri.Split(",")
                                         .Select(source => source.ToLower().Trim())

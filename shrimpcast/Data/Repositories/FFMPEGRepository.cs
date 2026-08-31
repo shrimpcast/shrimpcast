@@ -251,11 +251,8 @@ namespace shrimpcast.Data.Repositories.Interfaces
                     IngressUri = string.Empty,
                     IsEnabled = true,
                     IsPlaylist = false,
-                    ListSize = 0,
                     ExitOnFail = false,
                     Name = nextSourceName,
-                    SegmentLength = 0,
-                    SnapshotInterval = 0,
                     VideoEncodingPreset = string.Empty,
                     VideoStreamIndex = 0,
                 };
@@ -334,7 +331,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             var now = DateTime.UtcNow;
 
             var lastScreenshotTime = streamInfo.LastScreenshot;
-            if (lastScreenshotTime != null && (now - lastScreenshotTime).Value.TotalSeconds < stream.SnapshotInterval) return;
+            if (lastScreenshotTime != null && (now - lastScreenshotTime).Value.TotalSeconds < 60) return;
 
             string? screenshotCommand = BuildScreenshotCommand(stream.Name);
             if (screenshotCommand == null) return;
@@ -470,7 +467,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             else
             {
                 var bitrate = stream.VideoTranscodingBitrate;
-                var keyInt = stream.VideoTranscodingFramerate * stream.SegmentLength;
+                var keyInt = stream.VideoTranscodingFramerate * 6;
                 command += $" -codec:v libx264 -preset:v {stream.VideoTranscodingPreset} -b:v {bitrate}k -maxrate:v {bitrate}k -bufsize:v {bitrate}k -r {stream.VideoTranscodingFramerate} -sc_threshold 0 -pix_fmt yuv420p -g {keyInt} -keyint_min {keyInt} -fps_mode auto -tune:v zerolatency";
             }
 
@@ -490,7 +487,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             command += " -flags +low_delay";
 
             var dirInfo = Directory.CreateDirectory(GetStreamDirectory(streamName));
-            command += $" -f hls -hls_time {stream.SegmentLength} -hls_list_size {stream.ListSize} -hls_flags delete_segments+append_list+program_date_time+temp_file -hls_delete_threshold 4 -hls_segment_filename \"{Path.Combine(dirInfo.FullName, "live_%03d.ts")}\" {Path.Combine(dirInfo.FullName, "index.m3u8")}";
+            command += $" -f hls -hls_time 6 -hls_list_size 6 -hls_flags delete_segments+append_list+program_date_time+temp_file -hls_delete_threshold 4 -hls_segment_filename \"{Path.Combine(dirInfo.FullName, "live_%03d.ts")}\" {Path.Combine(dirInfo.FullName, "index.m3u8")}";
 
             return new StreamInfo
             {

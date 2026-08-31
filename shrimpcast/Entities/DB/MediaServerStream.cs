@@ -10,12 +10,6 @@
 
         public required string IngressUri { get; set; }
 
-        public required int SegmentLength { get; set; }
-
-        public required int ListSize { get; set; }
-
-        public required int SnapshotInterval { get; set; }
-
         public required bool ExitOnFail { get; set; }
 
         public string? CustomHeaders { get; set; }
