@@ -98,12 +98,13 @@ const VideoJSInstance = (props) => {
       player.pause();
       player.src(options.sources);
       player.play().catch((ex) => ex);
-      getCurrentlyPlayingTitle();
+      setMiscPlayerOptions();
     },
     setMiscPlayerOptions = () => {
       const player = playerRef.current;
       player.el().style.color = theme.palette.secondary[500];
       setPlayerPoster();
+      getCurrentlyPlayingTitle();
     },
     getCurrentlyPlayingTitle = async () => {
       const title = await MediaServerManager.GetCurrentlyPlaying(options.sources[0].src);
@@ -115,8 +116,12 @@ const VideoJSInstance = (props) => {
     },
     setPlayerPoster = () => {
       const player = playerRef.current;
+      const url = options.sources[0].src;
+      const realPoster = url.includes("/streams/")
+        ? url.substr(0, url.lastIndexOf(".")) + `.jpg?nocache=${Date.now()}`
+        : poster;
       player.poster(null);
-      player.poster(poster);
+      player.poster(realPoster);
       const posterImg = player.el().querySelector(".vjs-poster img");
       if (!posterImg) return;
       posterImg.style.visibility = "hidden";
