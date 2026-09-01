@@ -65,7 +65,8 @@ namespace shrimpcast.Data.Repositories.Interfaces
             var all = await GetAll();
             var playlistSources = stream.IngressUri.Split(",")
                                         .Select(source => source.ToLower().Trim())
-                                        .ToArray();
+                                        .ToArray()
+                                        .Distinct();
 
             var validateSource = (string sourceName, bool isPlaylist) =>
                 all.First(source => source.IsPlaylist == isPlaylist && source.Name == sourceName);
@@ -76,7 +77,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
                 var matchingSources = all.Where(stream => !stream.IsPlaylist && playlistSources.Contains(stream.Name))
                                          .Count();
 
-                if (matchingSources != playlistSources.Distinct().Count())
+                if (matchingSources != playlistSources.Count())
                 {
                     throw new InvalidOperationException();
                 }
