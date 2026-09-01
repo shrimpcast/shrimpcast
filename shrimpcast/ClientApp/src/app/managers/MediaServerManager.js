@@ -103,7 +103,7 @@ class MediaServerManager {
     }
   }
   static async GetCurrentlyPlaying(url) {
-    if (!url.include("/streams/")) return null;
+    if (!url.includes("/streams/")) return null;
     const response = await axios
       .get(url + ".info", {
         timeout: 10000,

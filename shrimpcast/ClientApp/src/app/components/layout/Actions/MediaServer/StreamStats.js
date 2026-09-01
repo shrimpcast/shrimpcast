@@ -58,7 +58,12 @@ const BoxSx = {
     fontSize: 18,
     fontWeight: 700,
     color: "text.primary",
-    mr: "5px",
+    mr: "7.5px",
+    whiteSpace: "nowrap",
+    overflowX: "auto",
+    overflowY: "hidden",
+    minWidth: "200px",
+    maxHeight: "48px",
   },
   JsonPreviewSX = {
     p: 2,
@@ -104,7 +109,12 @@ const BoxSx = {
     px: 2,
     py: 2,
     backgroundColor: dialogType === "json" ? theme.palette.grey[900] : theme.palette.background.paper,
-  });
+  }),
+  LogsButtonSx = {
+    marginLeft: "auto",
+    borderTopRightRadius: "0px",
+    borderBottomRightRadius: "0px",
+  };
 
 const StreamStats = (props) => {
   const [stats, setStats] = useState(null);
@@ -190,9 +200,11 @@ const StreamStats = (props) => {
       <Box sx={BoxSx} className="scrollbar-custom">
         <Box mb={1}>
           <Typography display="flex" width="100%" variant="subtitle1" fontWeight={600} gutterBottom>
-            Active stream processes
+            <Box mr="7.5px" alignSelf="center">
+              Active stream processes
+            </Box>
             <Button
-              sx={{ marginLeft: "auto", borderTopRightRadius: "0px", borderBottomRightRadius: "0px" }}
+              sx={LogsButtonSx}
               disabled={Boolean(logsLoading)}
               size="small"
               variant="outlined"
@@ -231,7 +243,7 @@ const StreamStats = (props) => {
                 <Card variant="outlined" sx={CardSx(theme)} className="scrollbar-custom">
                   <CardContent sx={CardContentSx}>
                     <Stack sx={StackCardSx}>
-                      <Typography variant="overline" sx={StreamTitleSx}>
+                      <Typography variant="overline" sx={StreamTitleSx} className="scrollbar-custom">
                         {stat.name}
                         {stat.processStatus.endPlaylist ? " -> " + stat.processStatus.endPlaylist : null}
                         {stat.processStatus.playing
@@ -296,7 +308,12 @@ const StreamStats = (props) => {
                         >
                           LOGS {logsLoading === stat.name && <CircularProgress sx={{ ml: "4px" }} size={12} />}
                         </Button>
-                        <Button size="small" variant="outlined" onClick={() => handleOpenDialog(stat, "json")}>
+                        <Button
+                          sx={{ mr: "5px !important" }}
+                          size="small"
+                          variant="outlined"
+                          onClick={() => handleOpenDialog(stat, "json")}
+                        >
                           JSON
                         </Button>
                       </Stack>
