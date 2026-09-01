@@ -781,7 +781,8 @@ namespace shrimpcast.Hubs
                     {
                         if (status) await DispatchSystemMessage($"[SYSTEM] Executing scheduled switch for {mediaServerStream.Name}. Playback will automatically begin shortly.", true, true);
                         mediaServerStream.IsEnabled = status;
-                        await EditMediaServerStream(mediaServerStream, Constants.FIREANDFORGET_TOKEN);
+                        await  _mediaServerStreamRepository.Edit(mediaServerStream);
+                        _ffmpegRepository.StopStreamProcess(mediaServerStream.Name, "scheduled-job", true);
                     }
                 }
 
@@ -949,14 +950,6 @@ namespace shrimpcast.Hubs
             _ffmpegRepository.StopStreamProcess(removed, "removed", true);
             _processes.All.TryRemove(removed, out var _);
             return true;
-        }
-
-        public async Task<bool> EditMediaServerStream([FromBody] MediaServerStream MediaServerStream, string? FireAndForgetToken = null)
-        {
-            if (FireAndForgetToken != Constants.FIREANDFORGET_TOKEN) await ShouldGrantAccess();
-            var edited = await _mediaServerStreamRepository.Edit(MediaServerStream);
-            _ffmpegRepository.StopStreamProcess(MediaServerStream.Name, FireAndForgetToken != null ? "scheduled-job" : "edited", true);
-            return edited;
         }
 
         public async Task<List<MediaServerStream>> GetAllMediaServerStreams(bool playlistsOnly)

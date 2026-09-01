@@ -11,9 +11,10 @@ using shrimpcast.Hubs.Dictionaries;
 namespace shrimpcast.Controllers
 {
     [ApiController, Route("api/[controller]")]
-    public class MediaServerController(IFFMPEGRepository ffmpegRepository, IRTMPEndpointRepository rtmpEndpointRepository, ISessionRepository sessionRepository, Processes<SiteHub> processes, MediaServerLogs<SiteHub> mediaServerLogs, LBMetrics<SiteHub> lbMetrics, IHubContext<SiteHub> hubContext, ConfigurationSingleton configurationSingleton) : ControllerBase
+    public class MediaServerController(IFFMPEGRepository ffmpegRepository, IMediaServerStreamRepository mediaServerStreamRepository, IRTMPEndpointRepository rtmpEndpointRepository, ISessionRepository sessionRepository, Processes<SiteHub> processes, MediaServerLogs<SiteHub> mediaServerLogs, LBMetrics<SiteHub> lbMetrics, IHubContext<SiteHub> hubContext, ConfigurationSingleton configurationSingleton) : ControllerBase
     {
         private readonly IFFMPEGRepository _ffmpegRepository = ffmpegRepository;
+        private readonly IMediaServerStreamRepository _mediaServerStreamRepository = mediaServerStreamRepository;
         private readonly IRTMPEndpointRepository _rtmpEndpointRepository = rtmpEndpointRepository;
         private readonly ISessionRepository _sessionRepository = sessionRepository;
         private readonly Processes<SiteHub> _processes = processes;
@@ -103,7 +104,7 @@ namespace shrimpcast.Controllers
             
             if (!isPlaylist && !isPlaylistInfo && !Constants.IsDevelopment()) return UnprocessableEntity();
             if (!_processes.All.TryGetValue(Name, out var streamInfo)) return NotFound();
-            if (isPlaylistInfo) return Content(GetCurrentlyPlayingFilename(streamInfo.Playlist_CurrentlyPlaying));
+            if (isPlaylistInfo) return Content(GetFilenameFromUrlQueryParams(streamInfo.Playlist_CurrentlyPlaying));
 
             streamInfo.Viewers.AddOrUpdate(HttpContext.Connection.RemoteIpAddress!, DateTime.UtcNow, (k, oldValue) => DateTime.UtcNow);
 
@@ -114,12 +115,12 @@ namespace shrimpcast.Controllers
             return PhysicalFile(path, contentType);
         }
 
-        private string GetCurrentlyPlayingFilename(string? Playlist_CurrentlyPlaying)
+        private string GetFilenameFromUrlQueryParams(string? url)
         {
-            if (Playlist_CurrentlyPlaying == null) return string.Empty;
+            if (url == null) return string.Empty;
             try
             {
-                var uri = new Uri(Playlist_CurrentlyPlaying);
+                var uri = new Uri(url);
                 var query = QueryHelpers.ParseQuery(uri.Query);
                 var filename = query["filename"].FirstOrDefault();
                 if (filename == null) return string.Empty;
@@ -176,6 +177,16 @@ namespace shrimpcast.Controllers
             var session = await _sessionRepository.GetExistingByTokenAsync(sessionToken);
             if (session == null || !session.IsAdmin) throw new Exception("Permission denied.");
             return _lbMetrics.All.TryRemove(key, out _);
+        }
+
+        [HttpPost, Route("EditStream")]
+        public async Task<bool> EditStream([FromBody] MediaServerStreamDTO mediaServerStreamDTO)
+        {
+            var session = await _sessionRepository.GetExistingByTokenAsync(mediaServerStreamDTO.SessionToken);
+            if (session == null || !session.IsAdmin) throw new Exception("Permission denied.");
+            var edited = await _mediaServerStreamRepository.Edit(mediaServerStreamDTO.MediaServerStream);
+            _ffmpegRepository.StopStreamProcess(mediaServerStreamDTO.MediaServerStream.Name, "edited", true);
+            return edited;
         }
     }
 }
