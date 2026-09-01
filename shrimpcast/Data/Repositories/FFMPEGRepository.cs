@@ -229,7 +229,10 @@ namespace shrimpcast.Data.Repositories.Interfaces
                     var currentlyPlayingIndex = Array.FindIndex(playlistSources, p => p == streamInfo.Playlist_CurrentlyPlaying);
                     var hasPlaylistFinished = currentlyPlayingIndex + 1 == playlistSources.Length;
                     
-                    if (!isPlaylistOnEndEvent && hasPlaylistFinished && !string.IsNullOrEmpty(playlist.PlayOnEnd))
+                    if (!isPlaylistOnEndEvent 
+                        && !playlist.Randomize 
+                        && hasPlaylistFinished 
+                        && !string.IsNullOrEmpty(playlist.PlayOnEnd))
                     {
                         isPlaylistOnEndEvent = true;
                         playlistSources = GetPlaylistItemsArray(getEndPlaylist());
