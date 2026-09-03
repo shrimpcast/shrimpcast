@@ -33,7 +33,7 @@ const Embed = () => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <VideoJSInstance options={videoJsOptions} theme={theme} />
+      <VideoJSInstance options={videoJsOptions} theme={theme} isEmbed={true} />
     </ThemeProvider>
   );
 };

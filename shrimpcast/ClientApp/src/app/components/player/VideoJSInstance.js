@@ -1,17 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import videojs from "video.js";
-import { Box, CircularProgress } from "@mui/material";
 import LocalStorageManager from "../../managers/LocalStorageManager";
 import MediaServerManager from "../../managers/MediaServerManager";
-
-const Loader = {
-  width: "50px",
-  top: "50%",
-  left: "50%",
-  position: "relative",
-  transform: "translate(-50%, -50%)",
-  webkitTransform: "translate(-50%, -50%);",
-};
+import CenteredSpinner from "../loaders/CenteredSpinner";
 
 const InitialPlayerState = {
   waiting: null,
@@ -20,7 +11,7 @@ const InitialPlayerState = {
 };
 
 const VideoJSInstance = (props) => {
-  const { options, theme, poster } = props,
+  const { options, theme, poster, isEmbed } = props,
     videoRef = useRef(null),
     playerRef = useRef(null),
     [cssLoaded, setCssLoaded] = useState(false),
@@ -215,9 +206,7 @@ const VideoJSInstance = (props) => {
   return (
     <>
       {!cssLoaded ? (
-        <Box sx={Loader}>
-          <CircularProgress size={50} color="secondary" />
-        </Box>
+        <CenteredSpinner loadingText={isEmbed ? "player" : "skip"} />
       ) : (
         <div data-vjs-player className="full-height">
           <div ref={videoRef} className="full-height" />

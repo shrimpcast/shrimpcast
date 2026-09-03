@@ -14,7 +14,7 @@ const CloudflareTurnstile = ({ config }) => {
         {
           done: () => setTurnstileLoaded(true),
           error: (ex) => console.log(ex),
-        }
+        },
       );
     } else {
       window.turnstile.render("#turnstile", {
@@ -32,7 +32,7 @@ const CloudflareTurnstile = ({ config }) => {
     <Box textAlign={"center"}>
       <div id="c-cf-turnstile-js"></div>
       {!turnstileLoaded ? (
-        <CenteredSpinner turnstail={true} />
+        <CenteredSpinner loadingText={"turnstile"} />
       ) : (
         <>
           {config.turnstileTitle && (
