@@ -121,6 +121,21 @@ class MediaServerManager {
       .catch((ex) => console.log(ex));
     return response?.data;
   }
+  static SanitizePlaylisteItems = (items, filenameOnly) => {
+    const parsedItems =
+      items
+        ?.split(",")
+        .map((item, index) => ({
+          itemId: index,
+          itemValue: filenameOnly ? new URLSearchParams(item?.split("?")[1]).get("filename") || item : item,
+        }))
+        .filter((item) => item.itemValue?.trim()) || [];
+
+    return {
+      totalItems: parsedItems.length,
+      items: parsedItems.map((item) => ({ ...item, itemValue: item.itemValue + "," })),
+    };
+  };
 }
 
 export default MediaServerManager;

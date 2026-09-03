@@ -2,6 +2,7 @@ import MediaServerManager from "../../../../managers/MediaServerManager";
 import GenericAddObjectTable from "../GenericAddObjectTable";
 import { useEffect, useState } from "react";
 import { Box, CircularProgress, Divider, Typography } from "@mui/material";
+import PlaylistItems from "./PlaylistItems";
 
 const Playlists = (props) => {
   const { signalR } = props,
@@ -23,6 +24,12 @@ const Playlists = (props) => {
           label: "Media sources",
           type: 3,
           color: "info",
+          probe: PlaylistItems,
+          enableProbeCondition: (value) => Boolean(value?.trim()),
+          probeSuccess: {
+            key: "_discardProbePlaylistItems",
+            value: undefined,
+          },
         },
         {
           name: "playlistPreset",

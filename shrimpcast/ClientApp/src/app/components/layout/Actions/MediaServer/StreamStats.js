@@ -248,7 +248,7 @@ const StreamStats = (props) => {
                         {stat.processStatus.endPlaylist ? " -> " + stat.processStatus.endPlaylist : null}
                         {stat.processStatus.playing
                           ? " -> " +
-                            (new URLSearchParams(stat.processStatus.playing).get("filename") ||
+                            (new URLSearchParams(stat.processStatus.playing.split("?")[1]).get("filename") ||
                               stat.processStatus.playing)
                           : null}
                       </Typography>
