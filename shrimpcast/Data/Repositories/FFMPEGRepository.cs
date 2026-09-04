@@ -47,13 +47,13 @@ namespace shrimpcast.Data.Repositories.Interfaces
             }
         }
 
-        private StreamInfo InitStreamProcess(MediaServerStream stream, MediaServerStream? playlist = null)
+        private StreamInfo InitStreamProcess(MediaServerStream stream, MediaServerStream? playlist = null, bool isPlaylistOnEndEvent = false)
         {
             try
             {
                 var streamName = playlist != null ? playlist.Name : stream.Name;
                 CleanStreamDirectory(streamName);
-                var streamInfo = BuildStreamCommand(stream, playlist);
+                var streamInfo = BuildStreamCommand(stream, playlist, isPlaylistOnEndEvent);
                 _processes.All.AddOrUpdate(streamName, streamInfo, (k, oldValue) => streamInfo);
 
                 streamInfo.Process.OutputDataReceived += (_, e) => LogFfmpeg(streamName, e?.Data);
@@ -74,13 +74,18 @@ namespace shrimpcast.Data.Repositories.Interfaces
             }
         }
 
-        public void StopStreamProcess(string stream, string reason)
+        public void StopStreamProcess(string stream, string reason, bool resetPlaylist)
         {
             _processes.All.TryGetValue(stream, out var processInfo);
             if (processInfo == null || ProcessLauncher.HasProcessExited(processInfo.Process)) return;
             MediaServerLog($"Stop called on process {stream}. Reason = {reason}");
             processInfo.Stream.IsEnabled = false;
-            processInfo.Playlist_CurrentlyPlaying = null;
+
+            if (resetPlaylist)
+            {
+                processInfo.Playlist_CurrentlyPlaying = null;
+                processInfo.Playlist_IsPlaylistOnEndEvent = false;
+            }
             
             try
             {
@@ -150,7 +155,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
                     // stream disabled and process still in memory or running
                     if (streamInfo != null && !stream.IsEnabled)
                     {
-                        StopStreamProcess(stream.Name, "disabled");
+                        StopStreamProcess(stream.Name, "disabled", true);
                         _processes.All.TryRemove(stream.Name, out var _);
                         continue;
                     }
@@ -165,8 +170,8 @@ namespace shrimpcast.Data.Repositories.Interfaces
                     {
                         if (stream.IsPlaylist)
                         {
-                            var nextSource = GetPlaylistSource(streamInfo, streams, stream);
-                            streamInfo = InitStreamProcess(nextSource, stream);
+                            var (nextStream, isPlaylistOnEndEvent) = GetPlaylistSource(streamInfo, streams, stream);
+                            streamInfo = InitStreamProcess(nextStream, stream, isPlaylistOnEndEvent);
                         }
                         else
                         {
@@ -179,14 +184,14 @@ namespace shrimpcast.Data.Repositories.Interfaces
                     // ------  check if process is stale  ------ //
                     if (Content != null && ((DateTime.UtcNow - AddedAt).TotalSeconds > 12))
                     {
-                        StopStreamProcess(stream.Name, "stale");
+                        StopStreamProcess(stream.Name, "stale", false);
                         continue;
                     }
 
                     // ------  check if process is corrupted  ------ //
                     if (Content != null && stream.ExitOnFail && Content.Contains(Constants.FFMPEG_INVALID_TS))
                     {
-                        StopStreamProcess(stream.Name, "corrupted");
+                        StopStreamProcess(stream.Name, "corrupted", false);
                         continue;
                     }
 
@@ -209,20 +214,35 @@ namespace shrimpcast.Data.Repositories.Interfaces
             }
         }
 
-        private MediaServerStream GetPlaylistSource(StreamInfo? streamInfo, List<MediaServerStream> streams, MediaServerStream playlist)
+        private (MediaServerStream nextStream, bool isPlaylistOnEndEvent) GetPlaylistSource(StreamInfo? streamInfo, List<MediaServerStream> streams, MediaServerStream playlist)
         {
             var nextSourceName = string.Empty;
+            var isPlaylistOnEndEvent = (streamInfo?.Playlist_IsPlaylistOnEndEvent).GetValueOrDefault();
+            var getEndPlaylist = () => playlist = streams.First(stream => stream.Name == playlist.PlayOnEnd);
+            
             try
             {
-                var playlistSources = playlist.IngressUri.Split(",")
-                                                         .Select(source => source.ToLower().Trim())
-                                                         .ToArray();
-
+                var playlistSources = GetPlaylistItemsArray(isPlaylistOnEndEvent ? getEndPlaylist() : playlist);
                 if (streamInfo == null) nextSourceName = playlistSources[0];
                 else
                 {
                     var currentlyPlayingIndex = Array.FindIndex(playlistSources, p => p == streamInfo.Playlist_CurrentlyPlaying);
-                    if (currentlyPlayingIndex == -1 || currentlyPlayingIndex + 1 >= playlistSources.Length)
+                    var hasPlaylistFinished = currentlyPlayingIndex + 1 == playlistSources.Length;
+                    
+                    if (!isPlaylistOnEndEvent 
+                        && !playlist.Randomize 
+                        && hasPlaylistFinished 
+                        && !string.IsNullOrEmpty(playlist.PlayOnEnd))
+                    {
+                        isPlaylistOnEndEvent = true;
+                        playlistSources = GetPlaylistItemsArray(getEndPlaylist());
+                    }
+
+                    if (playlist.Randomize)
+                    {
+                        nextSourceName = playlistSources[new Random().Next(0, playlistSources.Length)]; 
+                    }
+                    else if (currentlyPlayingIndex == -1 || hasPlaylistFinished)
                     {
                         nextSourceName = playlistSources[0];
                     }
@@ -230,37 +250,36 @@ namespace shrimpcast.Data.Repositories.Interfaces
                     {
                         nextSourceName = playlistSources[currentlyPlayingIndex + 1];
                     }
-
-                    streamInfo.Playlist_CurrentlyPlaying = nextSourceName;
                 }
 
                 var nextSource = streams.FirstOrDefault(stream => stream.Name == nextSourceName);
-                if (nextSource != null) return nextSource;
+                if (nextSource != null) return (nextSource, isPlaylistOnEndEvent);
 
                 var presetStream = streams.First(stream => stream.Name == playlist.PlaylistPreset).Clone();
                 presetStream.IngressUri = nextSourceName;
                 presetStream.Name = nextSourceName;
-                return presetStream;
+                return (presetStream, isPlaylistOnEndEvent);
             }
             catch (Exception ex)
             {
                 MediaServerLog($"Error on playlist [{playlist.Name}:{nextSourceName}] ({playlist.IngressUri}): {ex.Message}");
                 // Return a placeholder object which will immediatly crash so the playlist can continue cycling items
-                return new MediaServerStream
+                return (new MediaServerStream
                 {
                     IngressUri = string.Empty,
                     IsEnabled = true,
                     IsPlaylist = false,
-                    ListSize = 0,
                     ExitOnFail = false,
                     Name = nextSourceName,
-                    SegmentLength = 0,
-                    SnapshotInterval = 0,
                     VideoEncodingPreset = string.Empty,
                     VideoStreamIndex = 0,
-                };
+                }, false);
             }
         }
+
+        private string[] GetPlaylistItemsArray(MediaServerStream playlist) => playlist.IngressUri.Split(",")
+                                                 .Select(source => source.ToLower().Trim())
+                                                 .ToArray();
 
         private void CalculateCPUUsage(StreamInfo streamInfo)
         {
@@ -334,7 +353,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             var now = DateTime.UtcNow;
 
             var lastScreenshotTime = streamInfo.LastScreenshot;
-            if (lastScreenshotTime != null && (now - lastScreenshotTime).Value.TotalSeconds < stream.SnapshotInterval) return;
+            if (lastScreenshotTime != null && (now - lastScreenshotTime).Value.TotalSeconds < 60) return;
 
             string? screenshotCommand = BuildScreenshotCommand(stream.Name);
             if (screenshotCommand == null) return;
@@ -411,7 +430,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             return command;
         }
 
-        private StreamInfo BuildStreamCommand(MediaServerStream stream, MediaServerStream? playlist = null)
+        private StreamInfo BuildStreamCommand(MediaServerStream stream, MediaServerStream? playlist = null, bool isPlaylistOnEndEvent = false)
         {
             var audioIndexSource = string.IsNullOrEmpty(stream.AudioCustomSource) ? 0 : 1;
             var command = $"-loglevel info -y {(stream.ExitOnFail ? "-xerror " : "")}-fflags +genpts -thread_queue_size 512";
@@ -470,7 +489,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             else
             {
                 var bitrate = stream.VideoTranscodingBitrate;
-                var keyInt = stream.VideoTranscodingFramerate * stream.SegmentLength;
+                var keyInt = stream.VideoTranscodingFramerate * 6;
                 command += $" -codec:v libx264 -preset:v {stream.VideoTranscodingPreset} -b:v {bitrate}k -maxrate:v {bitrate}k -bufsize:v {bitrate}k -r {stream.VideoTranscodingFramerate} -sc_threshold 0 -pix_fmt yuv420p -g {keyInt} -keyint_min {keyInt} -fps_mode auto -tune:v zerolatency";
             }
 
@@ -490,7 +509,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             command += " -flags +low_delay";
 
             var dirInfo = Directory.CreateDirectory(GetStreamDirectory(streamName));
-            command += $" -f hls -hls_time {stream.SegmentLength} -hls_list_size {stream.ListSize} -hls_flags delete_segments+append_list+program_date_time+temp_file -hls_delete_threshold 4 -hls_segment_filename \"{Path.Combine(dirInfo.FullName, "live_%03d.ts")}\" {Path.Combine(dirInfo.FullName, "index.m3u8")}";
+            command += $" -f hls -hls_time 6 -hls_list_size 6 -hls_flags delete_segments+append_list+program_date_time+temp_file -hls_delete_threshold 4 -hls_segment_filename \"{Path.Combine(dirInfo.FullName, "live_%03d.ts")}\" {Path.Combine(dirInfo.FullName, "index.m3u8")}";
 
             return new StreamInfo
             {
@@ -501,6 +520,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
                 Process = ProcessLauncher.MakeProcess(FFMPEGProcess, command, true),
                 StartTime = DateTime.UtcNow,
                 Playlist_CurrentlyPlaying = stream.Name,
+                Playlist_IsPlaylistOnEndEvent = isPlaylistOnEndEvent
             };
         }
         #endregion

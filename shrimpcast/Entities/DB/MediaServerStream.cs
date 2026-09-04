@@ -10,12 +10,6 @@
 
         public required string IngressUri { get; set; }
 
-        public required int SegmentLength { get; set; }
-
-        public required int ListSize { get; set; }
-
-        public required int SnapshotInterval { get; set; }
-
         public required bool ExitOnFail { get; set; }
 
         public string? CustomHeaders { get; set; }
@@ -57,6 +51,10 @@
         public required bool IsPlaylist { get; set; }
 
         public string? PlaylistPreset { get; set; }
+
+        public string? PlayOnEnd { get; set; }
+
+        public bool Randomize { get; set; }
 
         public MediaServerStream Clone() => (MediaServerStream) MemberwiseClone();
     }

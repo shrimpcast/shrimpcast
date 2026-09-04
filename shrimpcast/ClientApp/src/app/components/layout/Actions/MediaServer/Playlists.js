@@ -2,6 +2,7 @@ import MediaServerManager from "../../../../managers/MediaServerManager";
 import GenericAddObjectTable from "../GenericAddObjectTable";
 import { useEffect, useState } from "react";
 import { Box, CircularProgress, Divider, Typography } from "@mui/material";
+import PlaylistItems from "./PlaylistItems";
 
 const Playlists = (props) => {
   const { signalR } = props,
@@ -23,6 +24,12 @@ const Playlists = (props) => {
           label: "Media sources",
           type: 3,
           color: "info",
+          probe: PlaylistItems,
+          enableProbeCondition: (value) => Boolean(value?.trim()),
+          probeSuccess: {
+            key: "_discardProbePlaylistItems",
+            value: undefined,
+          },
         },
         {
           name: "playlistPreset",
@@ -31,22 +38,25 @@ const Playlists = (props) => {
           color: "warning",
         },
         {
-          name: "snapshotInterval",
-          label: "Thumbnail interval",
-          type: 6,
-          color: "info",
+          name: "playOnEnd",
+          label: "Playlist on finish",
+          type: 3,
+          color: "success",
+        },
+        {
+          name: "randomize",
+          label: "Randomize",
+          type: 1,
+          color: "error",
         },
       ],
-      requiredFields: ["name", "ingressUri", "snapshotInterval"],
+      requiredFields: ["name", "ingressUri"],
       reservedWords: [],
       reservedWordField: "name",
       model: {
         isEnabled: false,
         name: "",
         ingressUri: "",
-        segmentLength: 2,
-        listSize: 6,
-        snapshotInterval: 60,
         exitOnFail: false,
         videoStreamIndex: -1,
         videoEncodingPreset: "NONE_PLAYLIST",
@@ -56,6 +66,8 @@ const Playlists = (props) => {
         audioTranscodingVolume: -1,
         isPlaylist: true,
         playlistPreset: null,
+        playOnEnd: null,
+        randomize: false,
       },
       identifier: "name",
       itemsKey: "playlists",

@@ -28,15 +28,12 @@ const Embed = () => {
         timeDivider: false,
       },
     },
-    theme = makeTheme(),
-    posterUrl = url?.includes("/streams/")
-      ? url.substr(0, url.lastIndexOf(".")) + `.jpg?nocache=${Date.now()}`
-      : undefined;
+    theme = makeTheme();
 
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <VideoJSInstance options={videoJsOptions} theme={theme} poster={posterUrl} />
+      <VideoJSInstance options={videoJsOptions} theme={theme} isEmbed={true} />
     </ThemeProvider>
   );
 };

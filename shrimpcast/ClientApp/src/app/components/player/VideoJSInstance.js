@@ -1,16 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import videojs from "video.js";
-import { Box, CircularProgress } from "@mui/material";
 import LocalStorageManager from "../../managers/LocalStorageManager";
-
-const Loader = {
-  width: "50px",
-  top: "50%",
-  left: "50%",
-  position: "relative",
-  transform: "translate(-50%, -50%)",
-  webkitTransform: "translate(-50%, -50%);",
-};
+import MediaServerManager from "../../managers/MediaServerManager";
+import CenteredSpinner from "../loaders/CenteredSpinner";
 
 const InitialPlayerState = {
   waiting: null,
@@ -19,7 +11,7 @@ const InitialPlayerState = {
 };
 
 const VideoJSInstance = (props) => {
-  const { options, theme, poster } = props,
+  const { options, theme, poster, isEmbed } = props,
     videoRef = useRef(null),
     playerRef = useRef(null),
     [cssLoaded, setCssLoaded] = useState(false),
@@ -97,16 +89,30 @@ const VideoJSInstance = (props) => {
       player.pause();
       player.src(options.sources);
       player.play().catch((ex) => ex);
+      setMiscPlayerOptions();
     },
     setMiscPlayerOptions = () => {
       const player = playerRef.current;
       player.el().style.color = theme.palette.secondary[500];
       setPlayerPoster();
+      getCurrentlyPlayingTitle();
+    },
+    getCurrentlyPlayingTitle = async () => {
+      const title = await MediaServerManager.GetCurrentlyPlaying(options.sources[0].src);
+      const player = playerRef.current;
+      player.titleBar.update({
+        title: title ? "Currently playing" : null,
+        description: title,
+      });
     },
     setPlayerPoster = () => {
       const player = playerRef.current;
+      const url = options.sources[0].src;
+      const realPoster = url.includes("/streams/")
+        ? url.substr(0, url.lastIndexOf(".")) + `.jpg?nocache=${Date.now()}`
+        : poster;
       player.poster(null);
-      player.poster(poster);
+      player.poster(realPoster);
       const posterImg = player.el().querySelector(".vjs-poster img");
       if (!posterImg) return;
       posterImg.style.visibility = "hidden";
@@ -200,9 +206,7 @@ const VideoJSInstance = (props) => {
   return (
     <>
       {!cssLoaded ? (
-        <Box sx={Loader}>
-          <CircularProgress size={50} color="secondary" />
-        </Box>
+        <CenteredSpinner loadingText={isEmbed ? "player" : "skip"} />
       ) : (
         <div data-vjs-player className="full-height">
           <div ref={videoRef} className="full-height" />

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using shrimpcast.Entities.DB;
 
@@ -51,40 +52,63 @@ namespace shrimpcast.Data.Repositories.Interfaces
             return await _context.SaveChangesAsync() > 0 ? mediaServerStream.Name : throw new Exception("Could not remove item.");
         }
 
+        public string GetFilenameFromUrlQueryParams(string? url)
+        {
+            if (url == null) return string.Empty;
+            try
+            {
+                var uri = new Uri(url);
+                var query = QueryHelpers.ParseQuery(uri.Query);
+                var filename = query["filename"].FirstOrDefault();
+                if (filename == null) return string.Empty;
+                return filename;
+            }
+            catch (Exception)
+            {
+                return string.Empty;
+            }
+        }
+
         private async Task Validate(MediaServerStream stream)
         {
-            if (stream.SnapshotInterval < 15 || stream.SegmentLength < 2 || stream.ListSize < 6)
-            {
-                throw new InvalidDataException();
-            }
-
             stream.Name = stream.Name.ToLower().Trim();
             stream.IngressUri = stream.IngressUri.Trim();
             if (!stream.IngressUri.StartsWith("http")) stream.ExitOnFail = true;
-
-            if (!stream.IsPlaylist) return;
+            if (!stream.IsPlaylist)
+            {
+                return;
+            }
 
             stream.PlaylistPreset = stream.PlaylistPreset?.ToLower().Trim();
-
-            var all = await GetAll(false);
+            var all = await GetAll();
             var playlistSources = stream.IngressUri.Split(",")
                                         .Select(source => source.ToLower().Trim())
-                                        .ToArray();
+                                        .ToArray()
+                                        .Distinct();
+
+            var validateSource = (string sourceName, bool isPlaylist) =>
+                all.First(source => source.IsPlaylist == isPlaylist && source.Name == sourceName);
+
 
             if (string.IsNullOrEmpty(stream.PlaylistPreset))
             {
-                var matchingSources = all.Where(stream => playlistSources.Contains(stream.Name))
+                var matchingSources = all.Where(stream => !stream.IsPlaylist && playlistSources.Contains(stream.Name))
                                          .Count();
 
-                if (matchingSources != playlistSources.Distinct().Count())
+                if (matchingSources != playlistSources.Count())
                 {
                     throw new InvalidOperationException();
                 }
             }
             else
             {
-                _ = all.First(source => source.Name == stream.PlaylistPreset);
+                validateSource(stream.PlaylistPreset, false);
                 playlistSources = [..playlistSources.Where(source => !string.IsNullOrEmpty(source))];
+            }
+
+            if (!string.IsNullOrEmpty(stream.PlayOnEnd))
+            {
+                validateSource(stream.PlayOnEnd, true);
             }
 
             stream.IngressUri = string.Join(",", playlistSources);

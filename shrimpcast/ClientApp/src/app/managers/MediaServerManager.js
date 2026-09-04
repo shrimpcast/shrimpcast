@@ -45,11 +45,21 @@ class MediaServerManager {
       .catch((ex) => console.log(ex));
     return response;
   }
+  // Use HTTP request instead of signalr to allow a larger payload size, as a playlist can contain thousands of items
   static async Edit(signalR, mediaServerStream, extraEditObjects) {
-    const response = await signalR
-      .invoke("EditMediaServerStream", { ...mediaServerStream, ...extraEditObjects }, null)
+    const response = await axios
+      .post(
+        `/api/mediaserver/EditStream`,
+        {
+          sessionToken: LocalStorageManager.getToken(),
+          MediaServerStream: { ...mediaServerStream, ...extraEditObjects },
+        },
+        {
+          timeout: 10000,
+        },
+      )
       .catch((ex) => console.log(ex));
-    return response;
+    return response?.data;
   }
   static async Probe(url, headers, forceHls) {
     let formData = new FormData();
@@ -102,6 +112,30 @@ class MediaServerManager {
       return false;
     }
   }
+  static async GetCurrentlyPlaying(url) {
+    if (!url.includes("/streams/")) return null;
+    const response = await axios
+      .get(url + ".info", {
+        timeout: 10000,
+      })
+      .catch((ex) => console.log(ex));
+    return response?.data;
+  }
+  static SanitizePlaylisteItems = (items, filenameOnly) => {
+    const parsedItems =
+      items
+        ?.split(",")
+        .map((item, index) => ({
+          itemId: index,
+          itemValue: filenameOnly ? new URLSearchParams(item?.split("?")[1]).get("filename") || item : item,
+        }))
+        .filter((item) => item.itemValue?.trim()) || [];
+
+    return {
+      totalItems: parsedItems.length,
+      items: parsedItems.map((item) => ({ ...item, itemValue: item.itemValue + "," })),
+    };
+  };
 }
 
 export default MediaServerManager;

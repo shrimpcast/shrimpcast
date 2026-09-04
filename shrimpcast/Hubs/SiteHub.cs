@@ -153,6 +153,7 @@ namespace shrimpcast.Hubs
             var Connection = GetCurrentConnection();
             if (Connection.QueryParams == source) return;
             Connection.QueryParams = source;
+            Connection.VoteSkip = null;
             await TriggerSourceViewerCountChange(false);
         }
         #endregion
@@ -350,8 +351,10 @@ namespace shrimpcast.Hubs
                 var removedSessionName = await _sessionRepository.GetCurrentName(RemovedMessage.SessionId);
                 var logMessage = $"{Session.SessionNames.Last().Name} removed a post from {removedSessionName}";
                 await LogModAction(logMessage, $"{logMessage} [{RemovedMessage.Content}]");
+                var userConnections = ActiveConnections.Where(ac => ac.Value.Session.SessionId == RemovedMessage.SessionId).Select(ac => ac.Key);
+                await DispatchSystemMessage($"{Session.SessionNames.Last().Name} removed one of your posts", true, false, userConnections);
             }
-            
+
             return true;
         }
         #endregion
@@ -779,7 +782,8 @@ namespace shrimpcast.Hubs
                     {
                         if (status) await DispatchSystemMessage($"[SYSTEM] Executing scheduled switch for {mediaServerStream.Name}. Playback will automatically begin shortly.", true, true);
                         mediaServerStream.IsEnabled = status;
-                        await EditMediaServerStream(mediaServerStream, Constants.FIREANDFORGET_TOKEN);
+                        await  _mediaServerStreamRepository.Edit(mediaServerStream);
+                        _ffmpegRepository.StopStreamProcess(mediaServerStream.Name, "scheduled-job", true);
                     }
                 }
 
@@ -944,17 +948,9 @@ namespace shrimpcast.Hubs
         {
             await ShouldGrantAccess();
             var removed = await _mediaServerStreamRepository.Remove(MediaServerStreamId);
-            _ffmpegRepository.StopStreamProcess(removed, "removed");
+            _ffmpegRepository.StopStreamProcess(removed, "removed", true);
             _processes.All.TryRemove(removed, out var _);
             return true;
-        }
-
-        public async Task<bool> EditMediaServerStream([FromBody] MediaServerStream MediaServerStream, string? FireAndForgetToken = null)
-        {
-            if (FireAndForgetToken != Constants.FIREANDFORGET_TOKEN) await ShouldGrantAccess();
-            var edited = await _mediaServerStreamRepository.Edit(MediaServerStream);
-            _ffmpegRepository.StopStreamProcess(MediaServerStream.Name, FireAndForgetToken != null ? "scheduled-job" : "edited");
-            return edited;
         }
 
         public async Task<List<MediaServerStream>> GetAllMediaServerStreams(bool playlistsOnly)
@@ -1267,6 +1263,13 @@ namespace shrimpcast.Hubs
 
         private async Task<bool> DispatchCommand(string message, SignalRConnection connection)
         {
+            switch(message)
+            {
+                case Constants.VOTE_SKIP:
+                    await VoteSkip(connection);
+                    return false;
+            }
+
             if (!connection.Session.IsAdmin) return false;
             try
             {
@@ -1302,6 +1305,71 @@ namespace shrimpcast.Hubs
                 await DispatchSystemMessage($"Could not dispatch command: {ex.Message}");
                 return true;
             }
+        }
+
+        private async Task VoteSkip(SignalRConnection connection)
+        {
+            async Task raiseException(string message)
+            {
+                await DispatchSystemMessage(message);
+                throw new Exception(message);
+            }
+
+            if (Configuration.VoteSkipPercentageThreshold == 0)
+            {
+                await raiseException($"{Constants.VOTE_SKIP} is disabled for the moment");
+            }
+
+            var userWatching = connection.QueryParams;
+            if (userWatching == null)
+            {
+                await raiseException("You need to be watching a channel in order to vote skip");
+            }
+
+            _processes.All.TryGetValue(userWatching!, out var streamInfo);
+            if (streamInfo == null || !streamInfo.Stream.IsPlaylist)
+            {
+                await raiseException("You can't vote skip this channel");
+            }
+
+            if (await CanUsePoll() is var notAllowedMessage && notAllowedMessage != null)
+            {
+                await raiseException(notAllowedMessage);
+            }
+
+            connection.VoteSkip = userWatching;
+
+            var minVotes = 2;
+            var amountUsersWatching = ActiveConnections.Where(ac => ac.Value.QueryParams == userWatching)
+                                                       .DistinctBy(ac => ac.Value.RemoteAdress)
+                                                       .Count();
+
+            var connectionsWithVotes = ActiveConnections.Where(ac => ac.Value.VoteSkip == userWatching);
+            float amountVotes = connectionsWithVotes.DistinctBy(ac => ac.Value.RemoteAdress)
+                                                    .Count();
+
+            var requiredVotes = (Configuration.VoteSkipPercentageThreshold * amountUsersWatching) / 100;
+
+            if (requiredVotes < minVotes) requiredVotes = minVotes;
+            if (Configuration.MaxRequiredVoteSkipVotes > 0
+                && requiredVotes >= Configuration.MaxRequiredVoteSkipVotes) requiredVotes = Configuration.MaxRequiredVoteSkipVotes;
+
+            var currentlyPlaying = _mediaServerStreamRepository.GetFilenameFromUrlQueryParams(streamInfo!.Playlist_CurrentlyPlaying);
+            var message = $"{connection.Session.SessionNames.Last().Name} " +
+                          $"has voted to skip {(currentlyPlaying != string.Empty ? $"[{currentlyPlaying}]" : $"the current item in {userWatching}")} " +
+                          $" [{amountVotes}/{requiredVotes}]";
+
+            await DispatchSystemMessage(message, true, true);
+
+            if (amountVotes < requiredVotes) return;
+
+            await DispatchSystemMessage($"!voteskip achieved. Skipping {(currentlyPlaying
+                != string.Empty ? $"[{currentlyPlaying}]" : "playlist item...")}", true, true);
+            foreach (var connectionWithVote in connectionsWithVotes)
+            {
+                connectionWithVote.Value.VoteSkip = null;
+            }
+            _ffmpegRepository.StopStreamProcess(userWatching!, "vote-skip", false);
         }
 
         private async Task SendPing(string message, SignalRConnection connection)
