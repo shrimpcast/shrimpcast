@@ -10,5 +10,6 @@ namespace shrimpcast.Data.Repositories.Interfaces
         Task<MediaServerStream?> GetByName(string Name);
         Task<string> Remove(int MediaServerStreamId);
         Task<bool> Edit(MediaServerStream mediaServerStream);
+        string GetFilenameFromUrlQueryParams(string? url);
     }
 }

@@ -30,6 +30,8 @@ namespace shrimpcast.Entities
 
         public const string SET_USER_LABEL = $"!userlabel";
 
+        public const string VOTE_SKIP = $"!voteskip";
+
         public const string FILTERS = "filters.json";
 
         public static readonly string FIREANDFORGET_TOKEN = SecureToken.GenerateTokenThreadSafe();
@@ -65,6 +67,11 @@ namespace shrimpcast.Entities
             DOCKER_RESTART, 
             TRUNCATE_LOGS,
             SET_USER_LABEL,
+            VOTE_SKIP
+        ];
+
+        public readonly static string[] USER_COMMANDS = [
+            VOTE_SKIP
         ];
 
         public static string SECONDS_TO_CRON(int Seconds) => $"*/{Seconds} * * * * *";

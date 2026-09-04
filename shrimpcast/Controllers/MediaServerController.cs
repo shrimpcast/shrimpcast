@@ -104,7 +104,7 @@ namespace shrimpcast.Controllers
             
             if (!isPlaylist && !isPlaylistInfo && !Constants.IsDevelopment()) return UnprocessableEntity();
             if (!_processes.All.TryGetValue(Name, out var streamInfo)) return NotFound();
-            if (isPlaylistInfo) return Content(GetFilenameFromUrlQueryParams(streamInfo.Playlist_CurrentlyPlaying));
+            if (isPlaylistInfo) return Content(_mediaServerStreamRepository.GetFilenameFromUrlQueryParams(streamInfo.Playlist_CurrentlyPlaying));
 
             streamInfo.Viewers.AddOrUpdate(HttpContext.Connection.RemoteIpAddress!, DateTime.UtcNow, (k, oldValue) => DateTime.UtcNow);
 
@@ -113,23 +113,6 @@ namespace shrimpcast.Controllers
             var path = Path.Combine(directory, File.ToLower());
             if (!System.IO.File.Exists(path)) return NotFound();
             return PhysicalFile(path, contentType);
-        }
-
-        private string GetFilenameFromUrlQueryParams(string? url)
-        {
-            if (url == null) return string.Empty;
-            try
-            {
-                var uri = new Uri(url);
-                var query = QueryHelpers.ParseQuery(uri.Query);
-                var filename = query["filename"].FirstOrDefault();
-                if (filename == null) return string.Empty;
-                return filename;
-            }
-            catch (Exception)
-            {
-                return string.Empty;
-            }
         }
 
         [HttpPost, Route("AuthenticatePublish")]

@@ -153,6 +153,7 @@ namespace shrimpcast.Hubs
             var Connection = GetCurrentConnection();
             if (Connection.QueryParams == source) return;
             Connection.QueryParams = source;
+            Connection.VoteSkip = null;
             await TriggerSourceViewerCountChange(false);
         }
         #endregion
@@ -1262,6 +1263,13 @@ namespace shrimpcast.Hubs
 
         private async Task<bool> DispatchCommand(string message, SignalRConnection connection)
         {
+            switch(message)
+            {
+                case Constants.VOTE_SKIP:
+                    await VoteSkip(connection);
+                    return false;
+            }
+
             if (!connection.Session.IsAdmin) return false;
             try
             {
@@ -1297,6 +1305,71 @@ namespace shrimpcast.Hubs
                 await DispatchSystemMessage($"Could not dispatch command: {ex.Message}");
                 return true;
             }
+        }
+
+        private async Task VoteSkip(SignalRConnection connection)
+        {
+            async Task raiseException(string message)
+            {
+                await DispatchSystemMessage(message);
+                throw new Exception(message);
+            }
+
+            if (Configuration.VoteSkipPercentageThreshold == 0)
+            {
+                await raiseException($"{Constants.VOTE_SKIP} is disabled for the moment");
+            }
+
+            var userWatching = connection.QueryParams;
+            if (userWatching == null)
+            {
+                await raiseException("You need to be watching a channel in order to vote skip");
+            }
+
+            _processes.All.TryGetValue(userWatching!, out var streamInfo);
+            if (streamInfo == null || !streamInfo.Stream.IsPlaylist)
+            {
+                await raiseException("You can't vote skip this channel");
+            }
+
+            if (await CanUsePoll() is var notAllowedMessage && notAllowedMessage != null)
+            {
+                await raiseException(notAllowedMessage);
+            }
+
+            connection.VoteSkip = userWatching;
+
+            var minVotes = 2;
+            var amountUsersWatching = ActiveConnections.Where(ac => ac.Value.QueryParams == userWatching)
+                                                       .DistinctBy(ac => ac.Value.RemoteAdress)
+                                                       .Count();
+
+            var connectionsWithVotes = ActiveConnections.Where(ac => ac.Value.VoteSkip == userWatching);
+            float amountVotes = connectionsWithVotes.DistinctBy(ac => ac.Value.RemoteAdress)
+                                                    .Count();
+
+            var requiredVotes = (Configuration.VoteSkipPercentageThreshold * amountUsersWatching) / 100;
+
+            if (requiredVotes < minVotes) requiredVotes = minVotes;
+            if (Configuration.MaxRequiredVoteSkipVotes > 0
+                && requiredVotes >= Configuration.MaxRequiredVoteSkipVotes) requiredVotes = Configuration.MaxRequiredVoteSkipVotes;
+
+            var currentlyPlaying = _mediaServerStreamRepository.GetFilenameFromUrlQueryParams(streamInfo!.Playlist_CurrentlyPlaying);
+            var message = $"{connection.Session.SessionNames.Last().Name} " +
+                          $"has voted to skip {(currentlyPlaying != string.Empty ? $"[{currentlyPlaying}]" : $"the current item in {userWatching}")} " +
+                          $" [{amountVotes}/{requiredVotes}]";
+
+            await DispatchSystemMessage(message, true, true);
+
+            if (amountVotes < requiredVotes) return;
+
+            await DispatchSystemMessage($"!voteskip achieved. Skipping {(currentlyPlaying
+                != string.Empty ? $"[{currentlyPlaying}]" : "playlist item...")}", true, true);
+            foreach (var connectionWithVote in connectionsWithVotes)
+            {
+                connectionWithVote.Value.VoteSkip = null;
+            }
+            _ffmpegRepository.StopStreamProcess(userWatching!, "vote-skip", false);
         }
 
         private async Task SendPing(string message, SignalRConnection connection)

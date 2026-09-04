@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using shrimpcast.Entities.DB;
 
@@ -49,6 +50,23 @@ namespace shrimpcast.Data.Repositories.Interfaces
             var mediaServerStream = await _context.MediaServerStreams.FirstAsync(m => m.MediaServerStreamId == MediaServerStreamId);
             _context.MediaServerStreams.Remove(mediaServerStream);
             return await _context.SaveChangesAsync() > 0 ? mediaServerStream.Name : throw new Exception("Could not remove item.");
+        }
+
+        public string GetFilenameFromUrlQueryParams(string? url)
+        {
+            if (url == null) return string.Empty;
+            try
+            {
+                var uri = new Uri(url);
+                var query = QueryHelpers.ParseQuery(uri.Query);
+                var filename = query["filename"].FirstOrDefault();
+                if (filename == null) return string.Empty;
+                return filename;
+            }
+            catch (Exception)
+            {
+                return string.Empty;
+            }
         }
 
         private async Task Validate(MediaServerStream stream)
