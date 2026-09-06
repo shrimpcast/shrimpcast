@@ -16,6 +16,8 @@ namespace shrimpcast.Entities
 
         public DateTime LastPing { get; set; } = DateTime.UtcNow;
 
+        public bool IsAFK { get; set; }
+
         public required Session Session { get; set; }
     }
 }

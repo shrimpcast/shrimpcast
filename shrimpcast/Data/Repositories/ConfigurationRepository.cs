@@ -42,7 +42,6 @@ namespace shrimpcast.Data.Repositories
             if (configuration.MaxConnectionsPerIP < 1) configuration.MaxConnectionsPerIP = 1;
             if (configuration.MaxMessagesToShow > 5500) configuration.MaxMessagesToShow = 5500;
             if (configuration.GoldenPassValue < 1) configuration.GoldenPassValue = 1;
-            if (configuration.VoteSkipPercentageThreshold > 100) configuration.VoteSkipPercentageThreshold = 100;
 
             _context.Entry(config).CurrentValues.SetValues(configuration);
             var updated = await _context.SaveChangesAsync();

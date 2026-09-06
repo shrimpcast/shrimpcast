@@ -11,5 +11,6 @@ namespace shrimpcast.Data.Repositories.Interfaces
         void StopStreamProcess(string stream, string reason, bool resetPlaylist);
         string GetStreamDirectory(string Name);
         Process[] GetActiveFFMPEGProcesses();
+        void CleanExistingVotes(string streamName);
     }
 }

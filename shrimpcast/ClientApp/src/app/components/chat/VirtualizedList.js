@@ -49,12 +49,13 @@ const ComplexRow = (index, value) => {
   const values = value.split("~"),
     ip = values[0],
     ua = values[1],
-    connectionId = values[2];
+    connectionId = values[2],
+    idle = values[3] === "True" ? " afk" : "";
 
   return (
     <ListItem key={index}>
       <Typography component="span" variant="overline" lineHeight="initial">
-        [{connectionId}] <Divider />
+        [{connectionId}]{idle} <Divider />
         IP = <RemoteAddressLink value={ip} /> <br />
         UA = {ua ? <RemoteAddressLink value={ua} isUA={true} /> : "Empty user-agent"}
       </Typography>

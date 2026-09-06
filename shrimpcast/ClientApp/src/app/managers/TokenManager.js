@@ -37,6 +37,11 @@ class TokenManager {
     return response;
   }
 
+  static async SetIdleStatus(signalR, status) {
+    const response = await signalR.invoke("SetIdleStatus", status).catch((ex) => console.log(ex));
+    return response;
+  }
+
   static async Import(accessToken) {
     const response = await axios.get(`/api/session/ImportToken?accessToken=${accessToken}`).catch((ex) => ({
       message: `Error: ${ex.message}`,

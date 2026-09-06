@@ -9,12 +9,12 @@ using System.Text.Json.Nodes;
 
 namespace shrimpcast.Data.Repositories.Interfaces
 {
-    public class FFMPEGRepository(IMediaServerStreamRepository mediaServerStreamRepository, Processes<SiteHub> processes, MediaServerLogs<SiteHub> mediaServerLogs) : IFFMPEGRepository
+    public class FFMPEGRepository(IMediaServerStreamRepository mediaServerStreamRepository, Processes<SiteHub> processes, MediaServerLogs<SiteHub> mediaServerLogs, Connections<SiteHub> activeConnections) : IFFMPEGRepository
     {
         private readonly IMediaServerStreamRepository _mediaServerStreamRepository = mediaServerStreamRepository;
         private readonly Processes<SiteHub> _processes = processes;
         private readonly MediaServerLogs<SiteHub> _mediaServerLogs = mediaServerLogs;
-        
+        private readonly Connections<SiteHub> _activeConnections = activeConnections;
         private const string FFMPEGProcess = "ffmpeg";
         private const string FFProbeProcess = "ffprobe";
         private const string StreamsPath = "streams";
@@ -65,6 +65,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
                 streamInfo.Process.BeginErrorReadLine();
 
                 MediaServerLog($"Started process {streamName}{(playlist != null ? $". [PLAYLIST] Playing: {stream.Name}" : null )}");
+                CleanExistingVotes(streamName);
                 return streamInfo;
             }
             catch (Exception ex)
@@ -386,6 +387,15 @@ namespace shrimpcast.Data.Repositories.Interfaces
         {
             foreach (var process in GetActiveFFMPEGProcesses()) process.Kill();
             CleanStreamDirectory(CleanRoot: true);
+        }
+
+        public void CleanExistingVotes(string streamName)
+        {
+            var connectionsWithVotes = _activeConnections.All.Where(ac => ac.Value.VoteSkip == streamName);
+            foreach (var connectionWithVote in connectionsWithVotes)
+            {
+                connectionWithVote.Value.VoteSkip = null;
+            }
         }
         #endregion
 

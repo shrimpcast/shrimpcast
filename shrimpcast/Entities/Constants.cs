@@ -30,7 +30,11 @@ namespace shrimpcast.Entities
 
         public const string SET_USER_LABEL = $"!userlabel";
 
-        public const string VOTE_SKIP = $"!voteskip";
+        public const string VOTE_COMMAND = "!vote";
+
+        public const string VOTE_SKIP = $"{VOTE_COMMAND}skip";
+
+        public const string VOTE_KEEP = $"{VOTE_COMMAND}keep";
 
         public const string FILTERS = "filters.json";
 
@@ -67,11 +71,13 @@ namespace shrimpcast.Entities
             DOCKER_RESTART, 
             TRUNCATE_LOGS,
             SET_USER_LABEL,
-            VOTE_SKIP
+            VOTE_SKIP,
+            VOTE_KEEP
         ];
 
         public readonly static string[] USER_COMMANDS = [
-            VOTE_SKIP
+            VOTE_SKIP,
+            VOTE_KEEP
         ];
 
         public static string SECONDS_TO_CRON(int Seconds) => $"*/{Seconds} * * * * *";

@@ -9,6 +9,8 @@ import ShowSnow from "./others/ShowSnow";
 import ShowPing from "./others/ShowPing";
 import { useLocation } from "react-router-dom";
 import BigScreen from "./player/BigScreen";
+import { useIdle } from "./others/useIdle";
+import TokenManager from "../managers/TokenManager";
 
 const MainGridSx = {
     overflow: "hidden",
@@ -63,7 +65,7 @@ const MainGridSx = {
 
 const Layout = (props) => {
   const theme = useTheme(),
-    { configuration, name } = props,
+    { configuration, name, signalR } = props,
     [chatName, setChatName] = useState(name),
     location = useLocation(),
     sourceLocation = location.pathname?.replace("/", ""),
@@ -95,7 +97,8 @@ const Layout = (props) => {
 
       return StreamStatus;
     },
-    streamStatus = ResolveSources();
+    streamStatus = ResolveSources(),
+    idle = useIdle(600000); // 10 minutes
 
   useEffect(() => {
     document.addEventListener("navigationEvent", setNavigatingTrue);
@@ -105,6 +108,11 @@ const Layout = (props) => {
   useEffect(() => {
     setNavigating(false);
   }, [location]);
+
+  useEffect(() => {
+    TokenManager.SetIdleStatus(signalR, idle);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idle]);
 
   return (
     <>
