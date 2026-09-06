@@ -230,6 +230,13 @@ namespace shrimpcast.Hubs
                 return 0;
             }
 
+            var postIsToken = await _sessionRepository.GetExistingByTokenAsync(message);
+            if (postIsToken != null)
+            {
+                await DispatchSystemMessage("Your post contains a session token. Do not share it.");
+                return -1;
+            }
+
             if (await DispatchCommand(message, CurrentConnection)) return 1;
 
             var session = CurrentConnection.Session;
