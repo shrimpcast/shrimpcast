@@ -1367,7 +1367,7 @@ namespace shrimpcast.Hubs
                                                        .DistinctBy(ac => ac.Value.RemoteAdress)
                                                        .Count();
 
-            var amountVotes = ActiveConnections.Where(ac => ac.Value.VoteSkip == userWatching)
+            var amountVotes = ActiveConnections.Where(ac => ac.Value.VoteSkip == userWatching && !ac.Value.IsAFK)
                                                .DistinctBy(ac => ac.Value.RemoteAdress)
                                                .Count();
 
