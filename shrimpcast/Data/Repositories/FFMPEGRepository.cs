@@ -369,7 +369,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
                 }
                 else
                 {
-                    MediaServerLog(captured);
+                    MediaServerLog($"Could not capture snapshot for {stream.Name} (ffmpeg fail)");
                 }
             }
             catch (Exception ex)
@@ -446,11 +446,12 @@ namespace shrimpcast.Data.Repositories.Interfaces
             var command = $"-loglevel info -y {(stream.ExitOnFail ? "-xerror " : "")}-fflags +genpts -thread_queue_size 512";
             var shouldSeek = stream.StartAt != null && stream.StartAt.Value.ToString() != "00:00:00" ? $"-ss {stream.StartAt.Value} " : string.Empty;
             var streamName = playlist != null ? playlist.Name : stream.Name;
+            var httpReconnect = stream.IngressUri.StartsWith("http") ? "-reconnect 1 -reconnect_on_network_error 1 -reconnect_delay_max 10 " : string.Empty;
 
             if (stream.CustomHeaders != "\r\n") command += $" -headers \"{stream.CustomHeaders}\"";
             if (stream.VideoStreamProbeForceHLS) command += $" -f hls";
 
-            command += $" -re -rw_timeout 5000000 {shouldSeek}-i \"{stream.IngressUri}\"{(!string.IsNullOrEmpty(shouldSeek) ? " -copyts" : "")}";
+            command += $" -re -rw_timeout 5000000 {httpReconnect}{shouldSeek}-i \"{stream.IngressUri}\"{(!string.IsNullOrEmpty(shouldSeek) ? " -copyts" : "")}";
 
             var isPassthrough = stream.VideoEncodingPreset == "PASSTHROUGH";
             var hasWatermark = !isPassthrough && !string.IsNullOrEmpty(stream.Watermark);
