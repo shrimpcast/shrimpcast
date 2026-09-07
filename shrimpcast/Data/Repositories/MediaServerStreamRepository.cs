@@ -72,7 +72,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
         private async Task Validate(MediaServerStream stream)
         {
             stream.Name = stream.Name.ToLower().Trim();
-            stream.IngressUri = stream.IngressUri.Trim();
+            stream.IngressUri = stream.IngressUri.ToLower().Trim();
             if (!stream.IngressUri.StartsWith("http")) stream.ExitOnFail = true;
             if (!stream.IsPlaylist)
             {

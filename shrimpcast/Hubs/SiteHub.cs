@@ -250,7 +250,7 @@ namespace shrimpcast.Hubs
             addedMessage.UserColorDisplay = session.UserColorDisplay;
             addedMessage.UserLabel = session.UserLabel;
             await NotifyNewMessage(addedMessage);
-            await DispatchPostSentCommand(message, CurrentConnection);
+            await DispatchUserCommand(message, CurrentConnection, false);
 
             var shouldBan = await _autoModFilterRepository.Contains(addedMessage.Content, true);
             if (shouldBan) BackgroundJob.Enqueue(() => PerformBackgroundBan(addedMessage.Content, addedMessage.SentBy, addedMessage.SessionId, Constants.FIREANDFORGET_TOKEN));
@@ -286,7 +286,7 @@ namespace shrimpcast.Hubs
             else
             {
                 activeSessions = ActiveConnections.Where(ac => ac.Value.Session.SessionId == SessionId)
-                                                  .Select(ac => $"{ac.Value.RemoteAdress}~{ac.Value.UserAgent}~{ac.Key}~{ac.Value.IsAFK}")
+                                                  .Select(ac => $"{ac.Value.RemoteAdress}~{ac.Value.UserAgent}~{ac.Key}")
                                                   .ToList();
             }
 
@@ -365,9 +365,6 @@ namespace shrimpcast.Hubs
 
             return true;
         }
-
-        public void SetIdleStatus(bool IsAFK) => 
-            GetCurrentConnection().IsAFK = IsAFK;
         #endregion
 
         #region Bans
@@ -1272,30 +1269,24 @@ namespace shrimpcast.Hubs
         private async Task ForceDisconnect(IEnumerable<string> connectionsToRemove, object Message) =>
             await _hubContext.Clients.Clients(connectionsToRemove).SendAsync("ForceDisconnect", Message);
 
-        private async Task DispatchPostSentCommand(string message, SignalRConnection connection)
+        private async Task DispatchUserCommand(string message, SignalRConnection connection, bool validationStatus)
         {
-            try
+            switch (message)
             {
-                switch (message)
-                {
-                    case Constants.VOTE_SKIP:
-                        await VoteSkip(connection);
-                        break;
-                    case Constants.VOTE_KEEP:
-                        await VoteKeep(connection);
-                        break;
-                    default:
-                        break;
-                }
-            }
-            catch (Exception ex)
-            {
-                await DispatchSystemMessage($"Could not dispatch command: {ex.Message}");
+                case Constants.VOTE_SKIP:
+                    await VoteSkip(connection, validationStatus);
+                    break;
+                case Constants.VOTE_KEEP:
+                    await VoteKeep(connection, validationStatus);
+                    break;
+                default:
+                    break;
             }
         }
 
         private async Task<bool> DispatchCommand(string message, SignalRConnection connection)
         {
+            await DispatchUserCommand(message, connection, true);
             if (!connection.Session.IsAdmin) return false;
             try
             {
@@ -1333,41 +1324,49 @@ namespace shrimpcast.Hubs
             }
         }
 
-        private async Task VoteSkip(SignalRConnection connection)
+        private async Task RaiseExceptionWithMessage(string Message)
         {
-            if (!Configuration.EnableVoteSkip)
+            await DispatchSystemMessage(Message);
+            throw new Exception(Message);
+        }
+
+        private async Task VoteSkip(SignalRConnection connection, bool isValidationStage)
+        {
+            if (isValidationStage && !Configuration.EnableVoteSkip)
             {
-                await DispatchSystemMessage($"{Constants.VOTE_SKIP} is disabled for the moment");
-                return;
+                await RaiseExceptionWithMessage($"{Constants.VOTE_SKIP} is disabled for the moment");
             }
 
             var userWatching = connection.QueryParams;
-            if (userWatching == null)
+            if (isValidationStage && userWatching == null)
             {
-                await DispatchSystemMessage("You need to be watching a channel in order to vote skip");
-                return;
+                await RaiseExceptionWithMessage("You need to be watching a channel in order to vote skip");
             }
 
             _processes.All.TryGetValue(userWatching!, out var streamInfo);
-            if (streamInfo == null || !streamInfo.Stream.IsPlaylist)
+            if (isValidationStage && (streamInfo == null || !streamInfo.Stream.IsPlaylist))
             {
-                await DispatchSystemMessage("You can't vote skip this channel");
-                return;
+                await RaiseExceptionWithMessage("You can't vote skip this channel");
             }
 
-            if (await CanUsePoll(SkipActionAllowedVerification: true) is var notAllowedMessage && notAllowedMessage != null)
+            if (isValidationStage
+                && await CanUsePoll(SkipActionAllowedVerification: true) is var notAllowedMessage
+                && notAllowedMessage != null)
             {
-                await DispatchSystemMessage(notAllowedMessage);
-                return;
+                await RaiseExceptionWithMessage(notAllowedMessage);
             }
+
+            if (isValidationStage) return;
 
             connection.VoteSkip = userWatching;
 
-            var amountUsersWatching = ActiveConnections.Where(ac => ac.Value.QueryParams == userWatching && !ac.Value.IsAFK)
+            var recentChatInteractions = await _messageRepository.GetRecentInteractionCount();
+            var amountUsersWatching = ActiveConnections.Where(ac => ac.Value.QueryParams == userWatching
+                                                                    && recentChatInteractions.Contains(ac.Value.Session.SessionId))
                                                        .DistinctBy(ac => ac.Value.RemoteAdress)
                                                        .Count();
 
-            var amountVotes = ActiveConnections.Where(ac => ac.Value.VoteSkip == userWatching && !ac.Value.IsAFK)
+            var amountVotes = ActiveConnections.Where(ac => ac.Value.VoteSkip == userWatching)
                                                .DistinctBy(ac => ac.Value.RemoteAdress)
                                                .Count();
 
@@ -1390,22 +1389,23 @@ namespace shrimpcast.Hubs
             _ffmpegRepository.StopStreamProcess(userWatching!, "vote-skip", false);
         }
 
-        private async Task VoteKeep(SignalRConnection connection)
+        private async Task VoteKeep(SignalRConnection connection, bool isValidationStage)
         {
-            if (!Configuration.EnableVoteSkip)
+            if (isValidationStage && !Configuration.EnableVoteSkip)
             {
-                await DispatchSystemMessage($"{Constants.VOTE_KEEP} is disabled for the moment");
-                return;
+                await RaiseExceptionWithMessage($"{Constants.VOTE_KEEP} is disabled for the moment");
             }
 
-            if (connection.VoteSkip == null)
+            if (isValidationStage && connection.VoteSkip == null)
             {
-                await DispatchSystemMessage($"You don't have an active vote");
-                return;
+                await RaiseExceptionWithMessage($"You don't have an active vote");
             }
+
+            if (isValidationStage) return;
 
             connection.VoteSkip = null;
-            await DispatchSystemMessage($"Successfully removed your active vote");
+            var message = $"{connection.Session.SessionNames.Last().Name} removed their !voteskip";
+            await DispatchSystemMessage(message, true, true);
         }
 
         private async Task SendPing(string message, SignalRConnection connection)
