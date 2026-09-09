@@ -274,7 +274,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
                     Name = nextSourceName,
                     VideoEncodingPreset = string.Empty,
                     VideoStreamIndex = 0,
-                }, false);
+                }, isPlaylistOnEndEvent);
             }
         }
 
@@ -446,7 +446,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             var command = $"-loglevel info -y {(stream.ExitOnFail ? "-xerror " : "")}-fflags +genpts -thread_queue_size 512";
             var shouldSeek = stream.StartAt != null && stream.StartAt.Value.ToString() != "00:00:00" ? $"-ss {stream.StartAt.Value} " : string.Empty;
             var streamName = playlist != null ? playlist.Name : stream.Name;
-            var httpReconnect = stream.IngressUri.StartsWith("http") ? "-reconnect 1 -reconnect_on_network_error 1 -reconnect_delay_max 10 " : string.Empty;
+            var httpReconnect = stream.IngressUri.StartsWith("http") ? "-reconnect 1 -reconnect_on_network_error 1 -reconnect_at_eof 1 -reconnect_delay_max 10 " : string.Empty;
 
             if (stream.CustomHeaders != "\r\n") command += $" -headers \"{stream.CustomHeaders}\"";
             if (stream.VideoStreamProbeForceHLS) command += $" -f hls";
