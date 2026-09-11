@@ -1,5 +1,5 @@
-import { Box, Button, CircularProgress } from "@mui/material";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Box, Button } from "@mui/material";
+import { useEffect, useMemo, useRef, useState } from "react";
 import SystemMessage from "./MessageTypes/SystemMessage";
 import MessageManager from "../../managers/MessageManager";
 import UserMessage from "./MessageTypes/UserMessage";
@@ -7,6 +7,7 @@ import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import SignalRManager from "../../managers/SignalRManager";
 import LocalStorageManager from "../../managers/LocalStorageManager";
 import ChatActionsManager from "../../managers/ChatActionsManager";
+import CenteredSpinner from "../loaders/CenteredSpinner";
 
 const ChatMessagesSx = (activePoll, activeBingo, bingoButtonExpanded, showGoldenPassButton) => ({
     width: "100%",
@@ -15,14 +16,6 @@ const ChatMessagesSx = (activePoll, activeBingo, bingoButtonExpanded, showGolden
     }${showGoldenPassButton ? " - 20px" : ""})`,
     overflowY: "scroll",
   }),
-  Loader = {
-    width: "50px",
-    top: "50%",
-    left: "50%",
-    position: "relative",
-    transform: "translate(-50%, -50%)",
-    webkitTransform: "translate(-50%, -50%);",
-  },
   NewMessagesToastSx = {
     borderRadius: "2.5px",
     position: "sticky",
@@ -192,11 +185,7 @@ const RenderChatMessages = (props) => {
         !isAdmin && !isGolden && configuration.showGoldenPassButton && goldenPassExpanded,
       )}
     >
-      {loading && (
-        <Box sx={Loader}>
-          <CircularProgress size={50} color="secondary" />
-        </Box>
-      )}
+      {loading && <CenteredSpinner loadingText={"skip"} />}
       {messages.map(
         (message) =>
           !message.hidden &&

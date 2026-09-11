@@ -10,9 +10,10 @@ using shrimpcast.Hubs.Dictionaries;
 namespace shrimpcast.Controllers
 {
     [ApiController, Route("api/[controller]")]
-    public class MediaServerController(IFFMPEGRepository ffmpegRepository, IRTMPEndpointRepository rtmpEndpointRepository, ISessionRepository sessionRepository, Processes<SiteHub> processes, MediaServerLogs<SiteHub> mediaServerLogs, LBMetrics<SiteHub> lbMetrics, IHubContext<SiteHub> hubContext, ConfigurationSingleton configurationSingleton) : ControllerBase
+    public class MediaServerController(IFFMPEGRepository ffmpegRepository, IMediaServerStreamRepository mediaServerStreamRepository, IRTMPEndpointRepository rtmpEndpointRepository, ISessionRepository sessionRepository, Processes<SiteHub> processes, MediaServerLogs<SiteHub> mediaServerLogs, LBMetrics<SiteHub> lbMetrics, IHubContext<SiteHub> hubContext, ConfigurationSingleton configurationSingleton) : ControllerBase
     {
         private readonly IFFMPEGRepository _ffmpegRepository = ffmpegRepository;
+        private readonly IMediaServerStreamRepository _mediaServerStreamRepository = mediaServerStreamRepository;
         private readonly IRTMPEndpointRepository _rtmpEndpointRepository = rtmpEndpointRepository;
         private readonly ISessionRepository _sessionRepository = sessionRepository;
         private readonly Processes<SiteHub> _processes = processes;
@@ -56,13 +57,13 @@ namespace shrimpcast.Controllers
                 processStatus = new
                 {
                     runningStatus = !p.Value.Stream.IsEnabled ? "Stopping"
-                                     : ProcessLauncher.HasProcessExited(p.Value.Process)
-                                        ? "Starting"
-                                        : System.IO.File.Exists(p.Value.FullStreamPath) ? "Connected" : "Connecting",
+                                    : ProcessLauncher.HasProcessExited(p.Value.Process) ? "Starting"
+                                    : p.Value.Stream_IsDownloading ?? (System.IO.File.Exists(p.Value.FullStreamPath) ? "Connected" : "Connecting"),
                     runningTime = TimeSpan.FromSeconds((int)(DateTime.UtcNow - p.Value.StartTime).TotalSeconds),
                     bitrate = p.Value.Bitrate,
                     cpuUsage = p.Value.ProcessorUsageComputed,
                     viewers = p.Value.Viewers.Count,
+                    endPlaylist = p.Value.Playlist_IsPlaylistOnEndEvent ? p.Value.Stream.PlayOnEnd : null,
                     playing = p.Value.Stream.IsPlaylist ? p.Value.Playlist_CurrentlyPlaying : null
                 }
             });
@@ -76,8 +77,9 @@ namespace shrimpcast.Controllers
             if (Name == null)
             {
                 var activeFfmpegProcessCount = $"Active FFMPEG processes: {_ffmpegRepository.GetActiveFFMPEGProcesses().Length}";
+                var activeDownloadCount = $"Active downloads: {_ffmpegRepository.GetActiveDownloads().Length}";
                 var mediaLogs = _mediaServerLogs.Logs.Select(l => $"{l.AddedAt}Z: {l.Content}");
-                return mediaLogs.Prepend(activeFfmpegProcessCount);
+                return mediaLogs.Prepend(activeFfmpegProcessCount).Prepend(activeDownloadCount);
             }
             _processes.All.TryGetValue(Name, out var streamInfo);
             if (streamInfo == null) return [];
@@ -97,17 +99,37 @@ namespace shrimpcast.Controllers
         public IActionResult Streams(string Name, string File)
         {
             var isPlaylist = File.EndsWith("m3u8");
-            if (!isPlaylist && !Constants.IsDevelopment()) return UnprocessableEntity();
-
-            if (!_processes.All.TryGetValue(Name, out var streamInfo)) return NotFound();
+            var isPlaylistInfo = File.EndsWith("info");
+            if (!isPlaylist && !isPlaylistInfo && !Constants.IsDevelopment()) return UnprocessableEntity();
+           
+            _processes.All.TryGetValue(Name, out var streamInfo);
+            if (isPlaylistInfo) return ReturnPlaylistInfo(streamInfo);
+            else if (streamInfo == null) return NotFound();
+            
             streamInfo.Viewers.AddOrUpdate(HttpContext.Connection.RemoteIpAddress!, DateTime.UtcNow, (k, oldValue) => DateTime.UtcNow);
-
             var directory = _ffmpegRepository.GetStreamDirectory(Name);
             var contentType = isPlaylist ? "application/vnd.apple.mpegurl" : "video/mp2t";
             var path = Path.Combine(directory, File.ToLower());
             if (!System.IO.File.Exists(path)) return NotFound();
             return PhysicalFile(path, contentType);
         }
+
+        private IActionResult ReturnPlaylistInfo(StreamInfo? streamInfo)
+        {
+            var isDownloading = streamInfo?.Stream_IsDownloading;
+            var isStarting = !System.IO.File.Exists(streamInfo?.FullStreamPath);
+            var title = _mediaServerStreamRepository.GetFilenameFromUrlQueryParams(
+                streamInfo?.Playlist_CurrentlyPlaying, isDownloading);
+
+            return Ok(new
+            {
+                title,
+                status = streamInfo == null ? Constants.StreamStatus.StreamOffline
+                       : isDownloading != null ? Constants.StreamStatus.StreamDownloading
+                       : isStarting ? Constants.StreamStatus.StreamStarting : Constants.StreamStatus.StreamPlaying
+            });
+        }
+
 
         [HttpPost, Route("AuthenticatePublish")]
         public async Task<IActionResult> AuthenticatePublish()
@@ -116,9 +138,8 @@ namespace shrimpcast.Controllers
             string? streamName = data["name"];
             string? auth = data["auth"];
             string? call = data["call"];
-            string? url = data["tcurl"];
 
-            if (streamName == null || auth == null || call == null || url == null) return UnprocessableEntity();
+            if (streamName == null || auth == null || call == null) return UnprocessableEntity();
 
             var endpoint = await _rtmpEndpointRepository.GetByName(streamName);
             if (endpoint!.PublishKey != auth) return Unauthorized();
@@ -133,13 +154,6 @@ namespace shrimpcast.Controllers
                 endpoint.Name,
                 status,
             });
-
-            if (!isConnected)
-            {
-                url = $"{url.Trim()}/{streamName}";
-                var targets = _processes.All.Values.Where(p => p.Stream.IngressUri == url).ToList();
-                targets.ForEach(target => _ffmpegRepository.StopStreamProcess(target.Stream.Name, "publish-done"));
-            }
 
             return Ok();
         }
@@ -162,6 +176,16 @@ namespace shrimpcast.Controllers
             var session = await _sessionRepository.GetExistingByTokenAsync(sessionToken);
             if (session == null || !session.IsAdmin) throw new Exception("Permission denied.");
             return _lbMetrics.All.TryRemove(key, out _);
+        }
+
+        [HttpPost, Route("EditStream")]
+        public async Task<bool> EditStream([FromBody] MediaServerStreamDTO mediaServerStreamDTO)
+        {
+            var session = await _sessionRepository.GetExistingByTokenAsync(mediaServerStreamDTO.SessionToken);
+            if (session == null || !session.IsAdmin) throw new Exception("Permission denied.");
+            var edited = await _mediaServerStreamRepository.Edit(mediaServerStreamDTO.MediaServerStream);
+            _ffmpegRepository.StopStreamProcess(mediaServerStreamDTO.MediaServerStream.Name, "edited", true);
+            return edited;
         }
     }
 }

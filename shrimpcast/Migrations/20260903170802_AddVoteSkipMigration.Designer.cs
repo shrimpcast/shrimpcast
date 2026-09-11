@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using shrimpcast.Data;
@@ -11,9 +12,11 @@ using shrimpcast.Data;
 namespace shrimpcast.Migrations
 {
     [DbContext(typeof(APPContext))]
-    partial class APPContextModelSnapshot : ModelSnapshot
+    [Migration("20260903170802_AddVoteSkipMigration")]
+    partial class AddVoteSkipMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -175,9 +178,6 @@ namespace shrimpcast.Migrations
                     b.Property<bool>("EnableVerifiedMode")
                         .HasColumnType("boolean");
 
-                    b.Property<bool>("EnableVoteSkip")
-                        .HasColumnType("boolean");
-
                     b.Property<bool>("ForceLatestVersion")
                         .HasColumnType("boolean");
 
@@ -218,6 +218,9 @@ namespace shrimpcast.Migrations
                         .HasColumnType("integer");
 
                     b.Property<int>("MaxMessagesToShow")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MaxRequiredVoteSkipVotes")
                         .HasColumnType("integer");
 
                     b.Property<int>("MessageDelayTime")
@@ -363,6 +366,9 @@ namespace shrimpcast.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("VoteSkipPercentageThreshold")
+                        .HasColumnType("integer");
+
                     b.HasKey("ConfigurationId");
 
                     b.ToTable("Configuration", (string)null);
@@ -427,9 +433,6 @@ namespace shrimpcast.Migrations
 
                     b.Property<string>("CustomHeaders")
                         .HasColumnType("text");
-
-                    b.Property<bool>("DownloadBeforePlay")
-                        .HasColumnType("boolean");
 
                     b.Property<bool>("ExitOnFail")
                         .HasColumnType("boolean");

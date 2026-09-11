@@ -56,5 +56,18 @@ namespace shrimpcast.Helpers
                 return true;
             }
         }
+
+        public static int GetExitCode(Process process)
+        {
+            try
+            {
+                return process.ExitCode;
+            }
+            // Linux
+            catch (Exception)
+            {
+                return int.MinValue;
+            }
+        }
     }
 }

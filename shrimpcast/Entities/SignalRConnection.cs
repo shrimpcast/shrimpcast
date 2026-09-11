@@ -12,6 +12,8 @@ namespace shrimpcast.Entities
 
         public string? QueryParams { get; set; }
 
+        public string? VoteSkip { get; set; }
+
         public DateTime LastPing { get; set; } = DateTime.UtcNow;
 
         public required Session Session { get; set; }
