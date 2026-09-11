@@ -57,9 +57,8 @@ namespace shrimpcast.Controllers
                 processStatus = new
                 {
                     runningStatus = !p.Value.Stream.IsEnabled ? "Stopping"
-                                     : ProcessLauncher.HasProcessExited(p.Value.Process)
-                                        ? "Starting"
-                                        : System.IO.File.Exists(p.Value.FullStreamPath) ? "Connected" : "Connecting",
+                                    : ProcessLauncher.HasProcessExited(p.Value.Process) ? "Starting"
+                                    : p.Value.Stream_IsDownloading ?? (System.IO.File.Exists(p.Value.FullStreamPath) ? "Connected" : "Connecting"),
                     runningTime = TimeSpan.FromSeconds((int)(DateTime.UtcNow - p.Value.StartTime).TotalSeconds),
                     bitrate = p.Value.Bitrate,
                     cpuUsage = p.Value.ProcessorUsageComputed,
@@ -78,8 +77,9 @@ namespace shrimpcast.Controllers
             if (Name == null)
             {
                 var activeFfmpegProcessCount = $"Active FFMPEG processes: {_ffmpegRepository.GetActiveFFMPEGProcesses().Length}";
+                var activeDownloadCount = $"Active downloads: {_ffmpegRepository.GetActiveDownloads().Length}";
                 var mediaLogs = _mediaServerLogs.Logs.Select(l => $"{l.AddedAt}Z: {l.Content}");
-                return mediaLogs.Prepend(activeFfmpegProcessCount);
+                return mediaLogs.Prepend(activeFfmpegProcessCount).Prepend(activeDownloadCount);
             }
             _processes.All.TryGetValue(Name, out var streamInfo);
             if (streamInfo == null) return [];
@@ -100,19 +100,36 @@ namespace shrimpcast.Controllers
         {
             var isPlaylist = File.EndsWith("m3u8");
             var isPlaylistInfo = File.EndsWith("info");
-            
             if (!isPlaylist && !isPlaylistInfo && !Constants.IsDevelopment()) return UnprocessableEntity();
-            if (!_processes.All.TryGetValue(Name, out var streamInfo)) return NotFound();
-            if (isPlaylistInfo) return Content(_mediaServerStreamRepository.GetFilenameFromUrlQueryParams(streamInfo.Playlist_CurrentlyPlaying));
-
+           
+            _processes.All.TryGetValue(Name, out var streamInfo);
+            if (isPlaylistInfo) return ReturnPlaylistInfo(streamInfo);
+            else if (streamInfo == null) return NotFound();
+            
             streamInfo.Viewers.AddOrUpdate(HttpContext.Connection.RemoteIpAddress!, DateTime.UtcNow, (k, oldValue) => DateTime.UtcNow);
-
             var directory = _ffmpegRepository.GetStreamDirectory(Name);
             var contentType = isPlaylist ? "application/vnd.apple.mpegurl" : "video/mp2t";
             var path = Path.Combine(directory, File.ToLower());
             if (!System.IO.File.Exists(path)) return NotFound();
             return PhysicalFile(path, contentType);
         }
+
+        private IActionResult ReturnPlaylistInfo(StreamInfo? streamInfo)
+        {
+            var isDownloading = streamInfo?.Stream_IsDownloading;
+            var isStarting = !System.IO.File.Exists(streamInfo?.FullStreamPath);
+            var title = _mediaServerStreamRepository.GetFilenameFromUrlQueryParams(
+                streamInfo?.Playlist_CurrentlyPlaying, isDownloading);
+
+            return Ok(new
+            {
+                title,
+                status = streamInfo == null ? Constants.StreamStatus.StreamOffline
+                       : isDownloading != null ? Constants.StreamStatus.StreamDownloading
+                       : isStarting ? Constants.StreamStatus.StreamStarting : Constants.StreamStatus.StreamPlaying
+            });
+        }
+
 
         [HttpPost, Route("AuthenticatePublish")]
         public async Task<IActionResult> AuthenticatePublish()

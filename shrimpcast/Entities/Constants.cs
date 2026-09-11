@@ -60,6 +60,10 @@ namespace shrimpcast.Entities
 
         public const string FFMPEG_INVALID_TS = "invalid dropping";
 
+        public const string WGET_FINISHED_DOWNLOAD = "[WGET]: Finished download.";
+
+        public static string DOWNLOADING_STATUS_FORMAT (int progress = 0) => $"Downloading {progress}%";
+
         public readonly static string[] ALL_COMMANDS = [
             PLAY_MAIN_COMMAND,
             PLAY_KINO_COMMAND,
@@ -93,6 +97,14 @@ namespace shrimpcast.Entities
             image = 4,
             date = 5,
             numeric = 6,
+        }
+
+        public enum StreamStatus
+        {
+            StreamOffline = 0,
+            StreamDownloading = 1,
+            StreamStarting = 2,
+            StreamPlaying = 3,
         }
 
         public static string EMOTE_GET (string name) => $"/api/emote/get/{name}";

@@ -56,6 +56,8 @@
 
         public bool Randomize { get; set; }
 
+        public bool DownloadBeforePlay { get; set; }
+
         public MediaServerStream Clone() => (MediaServerStream) MemberwiseClone();
     }
 }

@@ -34,6 +34,8 @@ namespace shrimpcast.Entities
         public string? Playlist_CurrentlyPlaying { get; set; }
 
         public bool Playlist_IsPlaylistOnEndEvent { get; set; }
+
+        public string? Stream_IsDownloading { get; set; }
     }
 }
 

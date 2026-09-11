@@ -5,10 +5,15 @@ import MediaServerManager from "../../managers/MediaServerManager";
 import CenteredSpinner from "../loaders/CenteredSpinner";
 
 const InitialPlayerState = {
-  waiting: null,
-  requireRestart: false,
-  paused: false,
-};
+    waiting: null,
+    requireRestart: false,
+    paused: false,
+  },
+  streamInitStatus = {
+    0: `/media/stream_offline.mp4?v=${process.env.REACT_APP_CSS_CACHE_BUST}`,
+    1: `/media/stream_downloading.mp4?v=${process.env.REACT_APP_CSS_CACHE_BUST}`,
+    2: `/media/stream_starting.mp4?v=${process.env.REACT_APP_CSS_CACHE_BUST}`,
+  };
 
 const VideoJSInstance = (props) => {
   const { options, theme, poster, isEmbed } = props,
@@ -19,6 +24,12 @@ const VideoJSInstance = (props) => {
     [shouldSetOptions, setShouldSetOptions] = useState(false),
     [, setPlayerErrorState] = useState(InitialPlayerState);
 
+  const PlayerInitMode = () => {
+    const player = playerRef.current;
+    const initStatus = streamInitStatus[player.titleBar.state.status];
+    return initStatus;
+  };
+
   const onVolumeChange = () => {
       const player = playerRef.current;
       const currentVolume = player.volume();
@@ -26,6 +37,16 @@ const VideoJSInstance = (props) => {
     },
     onRequireRestart = () =>
       setPlayerErrorState((playerErrorState) => ({ ...InitialPlayerState, requireRestart: true })),
+    onTimeUpdate = () => {
+      if (!PlayerInitMode()) return;
+      const player = playerRef.current;
+      const currentTime = player.currentTime();
+      const duration = player.duration();
+      if (!duration || isNaN(duration) || currentTime < duration - 0.5) return;
+      player.currentTime(0);
+      player.play();
+      setTimeout(onRequireRestart, 0);
+    },
     onWaiting = () => setPlayerErrorState((playerErrorState) => ({ ...InitialPlayerState, waiting: Date.now() })),
     onPause = () => {
       const player = playerRef.current;
@@ -67,6 +88,7 @@ const VideoJSInstance = (props) => {
       const player = playerRef.current;
       player.on("error", onRequireRestart);
       player.on("ended", onRequireRestart);
+      player.on("timeupdate", onTimeUpdate);
       player.on("waiting", onWaiting);
       player.on("volumechange", onVolumeChange);
       player.on("pause", onPause);
@@ -77,6 +99,7 @@ const VideoJSInstance = (props) => {
       const player = playerRef.current;
       player.off("error", onRequireRestart);
       player.off("ended", onRequireRestart);
+      player.off("timeupdate", onTimeUpdate);
       player.off("waiting", onWaiting);
       player.off("volumechange", onVolumeChange);
       player.off("pause", onPause);
@@ -84,26 +107,39 @@ const VideoJSInstance = (props) => {
       clearInterval(window[playerInitialized]);
       delete window[playerInitialized];
     },
-    setPlayerOptions = () => {
+    setPlayerOptions = async () => {
+      await getCurrentlyPlayingTitle();
       const player = playerRef.current;
+      if (player.isDisposed()) return;
+      const initStatus = PlayerInitMode();
+      const streamOverride = initStatus
+        ? {
+            src: initStatus,
+            type: "video/mp4",
+          }
+        : null;
+      if (player.src() === initStatus) return;
       player.pause();
-      player.src(options.sources);
+      player.src(streamOverride || options.sources);
       player.play().catch((ex) => ex);
-      setMiscPlayerOptions();
+      setPlayerPoster();
     },
     setMiscPlayerOptions = () => {
       const player = playerRef.current;
       player.el().style.color = theme.palette.secondary[500];
       setPlayerPoster();
-      getCurrentlyPlayingTitle();
     },
     getCurrentlyPlayingTitle = async () => {
-      const title = await MediaServerManager.GetCurrentlyPlaying(options.sources[0].src);
+      const infoResponse = await MediaServerManager.GetCurrentlyPlaying(options.sources[0].src);
+      const title = infoResponse?.title;
       const player = playerRef.current;
-      player.titleBar.update({
+      const titleBar = player.titleBar;
+      titleBar.update({
         title: title ? "Currently playing" : null,
-        description: title,
+        description: title?.toUpperCase(),
+        status: infoResponse?.status,
       });
+      title && player.userActive(true);
     },
     setPlayerPoster = () => {
       const player = playerRef.current;
@@ -143,6 +179,8 @@ const VideoJSInstance = (props) => {
         player.volume(LocalStorageManager.getPlayerVolume());
         if (options.autoplay) {
           doAutoplay();
+        } else {
+          getCurrentlyPlayingTitle();
         }
 
         setPlayerInitialized(playerId);

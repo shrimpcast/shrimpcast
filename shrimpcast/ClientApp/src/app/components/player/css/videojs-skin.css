@@ -91,7 +91,9 @@
   height: 1.3em;
   position: absolute;
   top: -1.3em;
-  transition: height 0.3s, top 0.3s;
+  transition:
+    height 0.3s,
+    top 0.3s;
 }
 
 .video-js.skin_slate.vjs-live .vjs-time-control {
@@ -174,4 +176,8 @@
     height: 50px !important;
     font-size: 2.1rem !important;
   }
+}
+
+.vjs-title-bar-description {
+  font-weight: bold;
 }

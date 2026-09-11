@@ -282,7 +282,8 @@ const StreamStats = (props) => {
                               ? "error"
                               : stat.processStatus.runningStatus === "Connected"
                                 ? "success"
-                                : stat.processStatus.runningStatus === "Connecting"
+                                : stat.processStatus.runningStatus === "Connecting" ||
+                                    stat.processStatus.runningStatus.includes("Downloading")
                                   ? "info"
                                   : "warning"
                           }

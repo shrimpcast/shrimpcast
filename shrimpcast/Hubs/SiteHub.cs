@@ -1373,7 +1373,7 @@ namespace shrimpcast.Hubs
             var threshold = 75;
             var requiredVotes = Math.Ceiling((float)(threshold * amountUsersWatching) / 100);
 
-            var currentlyPlaying = _mediaServerStreamRepository.GetFilenameFromUrlQueryParams(streamInfo!.Playlist_CurrentlyPlaying);
+            var currentlyPlaying = _mediaServerStreamRepository.GetFilenameFromUrlQueryParams(streamInfo!.Playlist_CurrentlyPlaying, null);
             var message = $"{connection.Session.SessionNames.Last().Name} " +
                           $"has voted to skip {(currentlyPlaying != string.Empty ? $"[{currentlyPlaying}]" : $"the current item in {userWatching}")} " +
                           $" [{amountVotes}/{requiredVotes}]";

@@ -52,7 +52,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             return await _context.SaveChangesAsync() > 0 ? mediaServerStream.Name : throw new Exception("Could not remove item.");
         }
 
-        public string GetFilenameFromUrlQueryParams(string? url)
+        public string GetFilenameFromUrlQueryParams(string? url, string? downloadingStatus)
         {
             if (url == null) return string.Empty;
             try
@@ -60,20 +60,31 @@ namespace shrimpcast.Data.Repositories.Interfaces
                 var uri = new Uri(url);
                 var query = QueryHelpers.ParseQuery(uri.Query);
                 var filename = query["filename"].FirstOrDefault();
-                if (filename == null) return string.Empty;
-                return filename;
+                if (string.IsNullOrEmpty(filename)) return string.Empty;
+                return downloadingStatus == null ? filename : $"{filename} - {downloadingStatus}";
             }
             catch (Exception)
             {
-                return string.Empty;
+                return downloadingStatus ?? string.Empty;
             }
         }
 
         private async Task Validate(MediaServerStream stream)
         {
             stream.Name = stream.Name.ToLower().Trim();
-            stream.IngressUri = stream.IngressUri.ToLower().Trim();
-            if (!stream.IngressUri.StartsWith("http")) stream.ExitOnFail = true;
+            stream.IngressUri = stream.IngressUri.Trim();
+
+            if (!stream.IngressUri.StartsWith("http"))
+            {
+                stream.ExitOnFail = true;
+                stream.DownloadBeforePlay = false;
+            }
+            else if (stream.DownloadBeforePlay && stream.IngressUri.EndsWith("m3u8"))
+            {
+                stream.DownloadBeforePlay = false;
+            }
+
+
             if (!stream.IsPlaylist)
             {
                 return;

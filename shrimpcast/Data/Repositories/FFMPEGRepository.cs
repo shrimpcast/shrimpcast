@@ -16,8 +16,11 @@ namespace shrimpcast.Data.Repositories.Interfaces
         private readonly MediaServerLogs<SiteHub> _mediaServerLogs = mediaServerLogs;
         private readonly Connections<SiteHub> _activeConnections = activeConnections;
         private const string FFMPEGProcess = "ffmpeg";
+        private const string WGETProcess = "wget";
         private const string FFProbeProcess = "ffprobe";
         private const string StreamsPath = "streams";
+        private static string ShellProcess = OperatingSystem.IsWindows() ? "cmd.exe" : "/bin/sh";
+        private static string ShellCommandOption = OperatingSystem.IsWindows() ? "/c" : "-c";
         private static bool Initialized = false;
 
         #region General init
@@ -90,7 +93,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             
             try
             {
-                processInfo.Process.Kill();
+                processInfo.Process.Kill(true);
                 CleanStreamDirectory(stream);
                 MediaServerLog($"Stopped process {stream}");
             }
@@ -107,6 +110,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
         {
             _processes.All.TryGetValue(stream, out var streamInfo);
             if (streamInfo == null || log == null) return;
+            if (log.Trim() == Constants.WGET_FINISHED_DOWNLOAD) streamInfo.Stream_IsDownloading = null;
             if (streamInfo.Logs.Count >= 200) streamInfo.Logs.TryDequeue(out _);
             streamInfo.Logs.Enqueue((DateTime.UtcNow, log.Trim()));
         }
@@ -122,6 +126,8 @@ namespace shrimpcast.Data.Repositories.Interfaces
                 if (streamInfo.Stream.IsPlaylist && streamInfo.Playlist_CurrentlyPlaying != null) MediaServerLog($"Playlist item: {streamInfo.Playlist_CurrentlyPlaying}");
                 MediaServerLog($"Duration: {TimeSpan.FromSeconds((int)(DateTime.UtcNow - streamInfo.StartTime).TotalSeconds)}");
                 MediaServerLog($"Last 5 logs: [{string.Join(",", streamInfo.Logs.TakeLast(5).Select(l => (l.AddedAt, l.Content.Trim())))}]");
+                var exitCode = ProcessLauncher.GetExitCode(streamInfo.Process);
+                if (exitCode != int.MinValue) MediaServerLog($"Exit code: {exitCode}");
             }
             MediaServerLog($"=============== END EXIT REPORT ===============");
         }
@@ -194,6 +200,12 @@ namespace shrimpcast.Data.Repositories.Interfaces
                     {
                         StopStreamProcess(stream.Name, "corrupted", false);
                         continue;
+                    }
+
+                    // ------  set process download progress ------ //
+                    if (Content != null && streamInfo.Stream_IsDownloading != null)
+                    {
+                        CalculateDownloadPercentage(streamInfo, Content);
                     }
 
                     // ------ calculate process CPU usage ------ //
@@ -281,6 +293,15 @@ namespace shrimpcast.Data.Repositories.Interfaces
         private string[] GetPlaylistItemsArray(MediaServerStream playlist) => playlist.IngressUri.Split(",")
                                                  .Select(source => source.ToLower().Trim())
                                                  .ToArray();
+
+        private void CalculateDownloadPercentage(StreamInfo streamInfo, string logContent)
+        {
+            try
+            {
+                var percentage = int.Parse(logContent.Substring(logContent.LastIndexOf('%') - 3, 3).Trim());
+                streamInfo.Stream_IsDownloading = Constants.DOWNLOADING_STATUS_FORMAT(percentage);
+            } catch (Exception) { }
+        }
 
         private void CalculateCPUUsage(StreamInfo streamInfo)
         {
@@ -380,12 +401,16 @@ namespace shrimpcast.Data.Repositories.Interfaces
         #endregion
 
         #region Process management
-        public Process[] GetActiveFFMPEGProcesses() =>
-            Process.GetProcessesByName(FFMPEGProcess);
+        private static Process[] GetActiveProcesses(string processName) => Process.GetProcessesByName(processName);
+
+        public Process[] GetActiveFFMPEGProcesses() => GetActiveProcesses(FFMPEGProcess);
+
+        public Process[] GetActiveDownloads() => GetActiveProcesses(WGETProcess);
 
         private void KillAllProcesses()
         {
-            foreach (var process in GetActiveFFMPEGProcesses()) process.Kill();
+            var processes = GetActiveFFMPEGProcesses().Concat(GetActiveDownloads());
+            foreach (var process in processes) process.Kill(true);
             CleanStreamDirectory(CleanRoot: true);
         }
 
@@ -440,18 +465,22 @@ namespace shrimpcast.Data.Repositories.Interfaces
             return command;
         }
 
+        private string BuildDownloadCommand(string path, string fileUrl) =>
+             $"wget -O {path} \"{fileUrl}\"";
+
         private StreamInfo BuildStreamCommand(MediaServerStream stream, MediaServerStream? playlist = null, bool isPlaylistOnEndEvent = false)
         {
-            var audioIndexSource = string.IsNullOrEmpty(stream.AudioCustomSource) ? 0 : 1;
+            var audioIndexSource = stream.DownloadBeforePlay || string.IsNullOrEmpty(stream.AudioCustomSource) ? 0 : 1;
             var command = $"-loglevel info -y {(stream.ExitOnFail ? "-xerror " : "")}-fflags +genpts -thread_queue_size 512";
             var shouldSeek = stream.StartAt != null && stream.StartAt.Value.ToString() != "00:00:00" ? $"-ss {stream.StartAt.Value} " : string.Empty;
             var streamName = playlist != null ? playlist.Name : stream.Name;
-            var httpReconnect = stream.IngressUri.StartsWith("http") ? "-reconnect 1 -reconnect_on_network_error 1 -reconnect_at_eof 1 -reconnect_delay_max 10 " : string.Empty;
+            var dirInfo = Directory.CreateDirectory(GetStreamDirectory(streamName));
+            var ingressUri = stream.DownloadBeforePlay ? Path.Combine(dirInfo.FullName, "downloadedMedia") : stream.IngressUri;
 
             if (stream.CustomHeaders != "\r\n") command += $" -headers \"{stream.CustomHeaders}\"";
             if (stream.VideoStreamProbeForceHLS) command += $" -f hls";
 
-            command += $" -re -rw_timeout 5000000 {httpReconnect}{shouldSeek}-i \"{stream.IngressUri}\"{(!string.IsNullOrEmpty(shouldSeek) ? " -copyts" : "")}";
+            command += $" -re -rw_timeout 5000000 {shouldSeek}-i \"{ingressUri}\"{(!string.IsNullOrEmpty(shouldSeek) ? " -copyts" : "")}";
 
             var isPassthrough = stream.VideoEncodingPreset == "PASSTHROUGH";
             var hasWatermark = !isPassthrough && !string.IsNullOrEmpty(stream.Watermark);
@@ -517,21 +546,26 @@ namespace shrimpcast.Data.Repositories.Interfaces
             }
             else command += " -an";
 
-            command += " -flags +low_delay";
+            command += $" -flags +low_delay -f hls -hls_time 6 -hls_list_size 6 -hls_flags delete_segments+append_list+program_date_time+temp_file -hls_delete_threshold 4 -hls_segment_filename \"{Path.Combine(dirInfo.FullName, "live_%03d.ts")}\" {Path.Combine(dirInfo.FullName, "index.m3u8")}";
 
-            var dirInfo = Directory.CreateDirectory(GetStreamDirectory(streamName));
-            command += $" -f hls -hls_time 6 -hls_list_size 6 -hls_flags delete_segments+append_list+program_date_time+temp_file -hls_delete_threshold 4 -hls_segment_filename \"{Path.Combine(dirInfo.FullName, "live_%03d.ts")}\" {Path.Combine(dirInfo.FullName, "index.m3u8")}";
+            if (stream.DownloadBeforePlay)
+            {
+                command = $"{ShellCommandOption} {BuildDownloadCommand(ingressUri, stream.IngressUri)} && " +
+                    $"echo {Constants.WGET_FINISHED_DOWNLOAD} && " +
+                    $"{FFMPEGProcess} {command}";
+            }
 
             return new StreamInfo
             {
-                LaunchCommand = $"{FFMPEGProcess} {command}",
+                LaunchCommand = stream.DownloadBeforePlay ? command : $"{FFMPEGProcess} {command}",
                 StreamPath = GetWebStreamPath(streamName),
                 FullStreamPath = Path.Combine(dirInfo.FullName, "index.m3u8"),
-                Stream = playlist != null ? playlist : stream,
-                Process = ProcessLauncher.MakeProcess(FFMPEGProcess, command, true),
+                Stream = playlist ?? stream,
+                Process = ProcessLauncher.MakeProcess(stream.DownloadBeforePlay ? ShellProcess : FFMPEGProcess, command, true),
                 StartTime = DateTime.UtcNow,
                 Playlist_CurrentlyPlaying = stream.Name,
-                Playlist_IsPlaylistOnEndEvent = isPlaylistOnEndEvent
+                Playlist_IsPlaylistOnEndEvent = isPlaylistOnEndEvent,
+                Stream_IsDownloading = stream.DownloadBeforePlay ? Constants.DOWNLOADING_STATUS_FORMAT() : null,
             };
         }
         #endregion

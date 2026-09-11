@@ -116,7 +116,7 @@ class MediaServerManager {
     if (!url.includes("/streams/")) return null;
     const response = await axios
       .get(url + ".info", {
-        timeout: 10000,
+        timeout: 5000,
       })
       .catch((ex) => console.log(ex));
     return response?.data;
