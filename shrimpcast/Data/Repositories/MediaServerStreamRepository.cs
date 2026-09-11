@@ -84,7 +84,6 @@ namespace shrimpcast.Data.Repositories.Interfaces
                 stream.DownloadBeforePlay = false;
             }
 
-
             if (!stream.IsPlaylist)
             {
                 return;
