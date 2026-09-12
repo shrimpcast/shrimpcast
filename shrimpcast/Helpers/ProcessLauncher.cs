@@ -6,7 +6,7 @@ namespace shrimpcast.Helpers
     {
         public async static Task<string> LaunchProcess(string FileName, string Arguments, string SuccessMessage = "", bool ReturnOutput = true, double? OperationTimeout = null)
         {
-            using var process = MakeProcess(FileName, Arguments, false);
+            using var process = MakeProcess(FileName, Arguments, false, null);
             process.Start();
 
             var outputTask = process.StandardOutput.ReadToEndAsync();
@@ -29,8 +29,9 @@ namespace shrimpcast.Helpers
             else return $"Error output: {await errorTask}";
         }
 
-        public static Process MakeProcess(string FileName, string Arguments, bool RaisingEvents) =>
-            new()
+        public static Process MakeProcess(string FileName, string Arguments, bool RaisingEvents, string? ShellCommand)
+        {
+            var processInfo = new Process()
             {
                 StartInfo = new ProcessStartInfo
                 {
@@ -39,10 +40,23 @@ namespace shrimpcast.Helpers
                     UseShellExecute = false,
                     CreateNoWindow = true,
                     FileName = FileName,
-                    Arguments = Arguments,
                 },
                 EnableRaisingEvents = RaisingEvents
             };
+
+            if (OperatingSystem.IsWindows() || ShellCommand == null)
+            {
+                if (ShellCommand != null) Arguments = $"{ShellCommand} {Arguments}";
+                processInfo.StartInfo.Arguments = Arguments;
+            }
+            else
+            {
+                processInfo.StartInfo.ArgumentList.Add(ShellCommand);
+                processInfo.StartInfo.ArgumentList.Add(Arguments);
+            }
+
+            return processInfo;
+        }
 
         public static bool HasProcessExited(Process process)
         {

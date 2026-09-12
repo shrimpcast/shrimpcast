@@ -550,7 +550,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
 
             if (stream.DownloadBeforePlay)
             {
-                command = $"{ShellCommandOption} {BuildDownloadCommand(ingressUri, stream.IngressUri)} && " +
+                command = $"{BuildDownloadCommand(ingressUri, stream.IngressUri)} && " +
                     $"echo {Constants.WGET_FINISHED_DOWNLOAD} && " +
                     $"{FFMPEGProcess} {command}";
             }
@@ -561,7 +561,10 @@ namespace shrimpcast.Data.Repositories.Interfaces
                 StreamPath = GetWebStreamPath(streamName),
                 FullStreamPath = Path.Combine(dirInfo.FullName, "index.m3u8"),
                 Stream = playlist ?? stream,
-                Process = ProcessLauncher.MakeProcess(stream.DownloadBeforePlay ? ShellProcess : FFMPEGProcess, command, true),
+                Process = ProcessLauncher.MakeProcess(stream.DownloadBeforePlay ? ShellProcess : FFMPEGProcess,
+                                                      command,
+                                                      true,
+                                                      stream.DownloadBeforePlay ? ShellCommandOption : null),
                 StartTime = DateTime.UtcNow,
                 Playlist_CurrentlyPlaying = stream.Name,
                 Playlist_IsPlaylistOnEndEvent = isPlaylistOnEndEvent,
