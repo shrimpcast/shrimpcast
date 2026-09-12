@@ -44,8 +44,7 @@ const VideoJSInstance = (props) => {
       const duration = player.duration();
       if (!duration || isNaN(duration) || currentTime < duration - 0.5) return;
       player.currentTime(0);
-      player.play();
-      setTimeout(onRequireRestart, 0);
+      setPlayerOptions();
     },
     onWaiting = () => setPlayerErrorState((playerErrorState) => ({ ...InitialPlayerState, waiting: Date.now() })),
     onPause = () => {
@@ -118,8 +117,7 @@ const VideoJSInstance = (props) => {
             type: "video/mp4",
           }
         : null;
-      if (player.src() === initStatus) return;
-      player.pause();
+      if (player.src().includes(initStatus)) return;
       player.src(streamOverride || options.sources);
       player.play().catch((ex) => ex);
       setPlayerPoster();
@@ -171,18 +169,27 @@ const VideoJSInstance = (props) => {
 
   const initPlayerInstance = (playerId) => {
       const videoElement = document.createElement("video-js");
+      let optionsOverride = null;
       videoElement.classList.add("vjs-big-play-centered");
       videoElement.classList.add("skin_slate");
       videoRef.current.appendChild(videoElement);
 
-      const player = (playerRef.current = videojs(videoElement, options, () => {
-        player.volume(LocalStorageManager.getPlayerVolume());
-        if (options.autoplay) {
-          doAutoplay();
-        } else {
-          getCurrentlyPlayingTitle();
-        }
+      if (streamInitStatus[shouldSetOptions?.status]) {
+        optionsOverride = {
+          ...options,
+          sources: [
+            {
+              src: streamInitStatus[shouldSetOptions.status],
+              type: "video/mp4",
+            },
+          ],
+        };
+      }
 
+      const player = (playerRef.current = videojs(videoElement, optionsOverride || options, () => {
+        player.volume(LocalStorageManager.getPlayerVolume());
+        getCurrentlyPlayingTitle();
+        setShouldSetOptions(false);
         setPlayerInitialized(playerId);
         console.log(`Player initialized [${playerId}]`);
       }));
@@ -202,6 +209,7 @@ const VideoJSInstance = (props) => {
       try {
         await import("video.js/dist/video-js.css");
         await import("./css/videojs-skin.css");
+        setShouldSetOptions(await MediaServerManager.GetCurrentlyPlaying(options.sources[0].src));
       } catch (e) {
         console.log(e);
         setTimeout(() => importCSS(abortSignal), 1000);
@@ -228,8 +236,11 @@ const VideoJSInstance = (props) => {
   useEffect(() => {
     if (!playerInitialized) return;
     addPlayerHandlers();
-    if (options.autoplay || shouldSetOptions) setPlayerOptions();
-    else setShouldSetOptions(true);
+    if (shouldSetOptions) setPlayerOptions();
+    else {
+      setShouldSetOptions(true);
+      options.autoplay && doAutoplay();
+    }
     return () => removePlayerHandlers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playerInitialized, options]);
