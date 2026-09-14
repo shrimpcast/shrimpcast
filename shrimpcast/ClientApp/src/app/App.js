@@ -65,35 +65,35 @@ const App = () => {
       setConnectionDataState((state) => ({
         ...state,
         configuration,
-      }))
+      })),
     );
 
     connection.on(SignalRManager.events.modStatusUpdate, (isMod) =>
       setConnectionDataState((state) => ({
         ...state,
         isMod,
-      }))
+      })),
     );
 
     connection.on(SignalRManager.events.goldStatusUpdate, (isGolden) =>
       setConnectionDataState((state) => ({
         ...state,
         isGolden,
-      }))
+      })),
     );
 
     connection.on(SignalRManager.events.emoteAdded, (emote) =>
       setConnectionDataState((state) => ({
         ...state,
         emotes: state.emotes.concat(emote),
-      }))
+      })),
     );
 
     connection.on(SignalRManager.events.emoteRemoved, (emoteId) =>
       setConnectionDataState((state) => ({
         ...state,
         emotes: state.emotes.filter((emote) => emote.emoteId !== emoteId),
-      }))
+      })),
     );
 
     updateConnectionStatus();
@@ -171,7 +171,7 @@ const App = () => {
         </Helmet>
       </HelmetProvider>
       {loading ? (
-        <CenteredSpinner />
+        <CenteredSpinner loadingText={"profile"} />
       ) : signalR.errorAtLoad || disconnectMessage ? (
         <ErrorAlert config={connectionDataState?.configuration} disconnectMessage={disconnectMessage} />
       ) : (

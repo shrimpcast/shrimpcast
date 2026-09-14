@@ -8,8 +8,10 @@ namespace shrimpcast.Data.Repositories.Interfaces
         void Initialize();
         void MediaServerLog(string logContent);
         Task<JsonNode?> ProbeStreamProcess(string? Headers, string URL, bool ForceHLS);
-        void StopStreamProcess(string stream, string reason);
+        void StopStreamProcess(string stream, string reason, bool resetPlaylist);
         string GetStreamDirectory(string Name);
         Process[] GetActiveFFMPEGProcesses();
+        Process[] GetActiveDownloads();
+        void CleanExistingVotes(string streamName);
     }
 }

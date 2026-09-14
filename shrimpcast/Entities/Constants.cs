@@ -4,7 +4,7 @@ namespace shrimpcast.Entities
 {
     public class Constants
     {
-        public const string BACKEND_VERSION = "2.1.9";
+        public const string BACKEND_VERSION = "2.2.0";
 
         public const string PING_COMMAND = "!ping";
 
@@ -30,6 +30,12 @@ namespace shrimpcast.Entities
 
         public const string SET_USER_LABEL = $"!userlabel";
 
+        public const string VOTE_COMMAND = "!vote";
+
+        public const string VOTE_SKIP = $"{VOTE_COMMAND}skip";
+
+        public const string VOTE_KEEP = $"{VOTE_COMMAND}keep";
+
         public const string FILTERS = "filters.json";
 
         public static readonly string FIREANDFORGET_TOKEN = SecureToken.GenerateTokenThreadSafe();
@@ -54,6 +60,10 @@ namespace shrimpcast.Entities
 
         public const string FFMPEG_INVALID_TS = "invalid dropping";
 
+        public const string WGET_FINISHED_DOWNLOAD = "[WGET]: Finished download.";
+
+        public static string DOWNLOADING_STATUS_FORMAT (int progress = 0) => $"Downloading {progress}%";
+
         public readonly static string[] ALL_COMMANDS = [
             PLAY_MAIN_COMMAND,
             PLAY_KINO_COMMAND,
@@ -65,6 +75,13 @@ namespace shrimpcast.Entities
             DOCKER_RESTART, 
             TRUNCATE_LOGS,
             SET_USER_LABEL,
+            VOTE_SKIP,
+            VOTE_KEEP
+        ];
+
+        public readonly static string[] USER_COMMANDS = [
+            VOTE_SKIP,
+            VOTE_KEEP
         ];
 
         public static string SECONDS_TO_CRON(int Seconds) => $"*/{Seconds} * * * * *";
@@ -80,6 +97,14 @@ namespace shrimpcast.Entities
             image = 4,
             date = 5,
             numeric = 6,
+        }
+
+        public enum StreamStatus
+        {
+            StreamOffline = 0,
+            StreamDownloading = 1,
+            StreamStarting = 2,
+            StreamPlaying = 3,
         }
 
         public static string EMOTE_GET (string name) => $"/api/emote/get/{name}";

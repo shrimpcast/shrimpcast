@@ -134,6 +134,16 @@ namespace shrimpcast.Data.Repositories
                                             .CountAsync();
             return ActualCount == RequiredCount;
         }
+
+        public async Task<int[]> GetRecentInteractionCount()
+        {
+            var ts = DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(25));
+            var query = _context.Messages.AsNoTracking()
+                                         .Where(m => m.CreatedAt > ts)
+                                         .Select(m => m.SessionId)
+                                         .Distinct();
+            return await query.ToArrayAsync();
+        }
     }
 }
 

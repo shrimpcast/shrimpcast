@@ -146,7 +146,7 @@ const GoldenPassDialog = (props) => {
             <Typography variant="body2" sx={GoldenPassGlow(colour)}>
               - <WorkspacePremiumIcon sx={{ fontSize: "13px", position: "relative", top: "1px" }} /> Glowie username
             </Typography>
-            <Typography variant="body2">- No cooldown between messages</Typography>
+            <Typography variant="body2">- No chat restrictions</Typography>
             <Typography variant="body2">- Unlimited duration </Typography>
             {enableBTCServer && <Typography variant="body2">- 100% anonymous via crypto</Typography>}
             <Typography variant="body2">- All payments are processed automatically</Typography>

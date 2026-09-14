@@ -56,6 +56,8 @@ namespace shrimpcast.Entities.DB
 
         public required bool ShowVotes { get; set; }
 
+        public required bool EnableVoteSkip { get; set; }
+
         public required string PollTitle { get; set; }
 
         public required int MinSentToParticipate { get; set; }
@@ -317,6 +319,7 @@ namespace shrimpcast.Entities.DB
                         new { name = nameof(config.AcceptNewOptions).ToLower(), label = "Accept new options", value = config.AcceptNewOptions },
                         new { name = nameof(config.AcceptNewVotes).ToLower(), label = "Accept new votes", value = config.AcceptNewVotes },
                         new { name = nameof(config.ShowVotes).ToLower(), label = "Make votes public", value = config.ShowVotes },
+                        new { name = nameof(config.EnableVoteSkip).ToLower(), label = "Enable vote skip", value = config.EnableVoteSkip },
                         new { name = nameof(config.MinSentToParticipate).ToLower(), label = "Minimum sent to participate", value = config.MinSentToParticipate },
                         new { name = nameof(config.PollTitle).ToLower(), label = "Poll title", value = config.PollTitle },
                     }

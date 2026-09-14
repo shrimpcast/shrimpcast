@@ -35,9 +35,6 @@ const BigScreen = (props) => {
       // eslint-disable-next-line react-hooks/exhaustive-deps
       [source.name, source.streamOverride, source.lbSettings],
     ),
-    posterUrl = url.includes("/streams/")
-      ? url.substr(0, url.lastIndexOf(".")) + `.jpg?nocache=${Date.now()}`
-      : thumbnail,
     navigate = useNavigate(),
     showCountdown = (startsAt) => startsAt && new Date(startsAt).getTime() - Date.now() > 0,
     showMultistream = streamEnabled && isMultistreaming && !mustPickStream;
@@ -94,7 +91,7 @@ const BigScreen = (props) => {
           {showCountdown(startsAt) ? (
             <SourceCountdown startsAt={startsAt} />
           ) : (
-            <VideoJSInstance options={videoJsOptions} theme={theme} poster={posterUrl} />
+            <VideoJSInstance options={videoJsOptions} theme={theme} poster={thumbnail} />
           )}
         </Box>
         {showMultistream && (
