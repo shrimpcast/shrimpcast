@@ -1365,7 +1365,7 @@ namespace shrimpcast.Hubs
             var VoteSkipMaxTimeMinutes = Configuration.VoteSkipMaxTimeMinutes;
             if (isValidationStage && !isMasterSkip && VoteSkipMaxTimeMinutes > 0 && runningTimeInMinutes >= VoteSkipMaxTimeMinutes)
             {
-                await RaiseExceptionWithMessage($"Unable to vote skip after {Configuration.VoteSkipMaxTimeMinutes} minute" +
+                await RaiseExceptionWithMessage($"Vote skipping is disabled after {Configuration.VoteSkipMaxTimeMinutes} minute" +
                     $"{(VoteSkipMaxTimeMinutes == 1 ? "" : "s")}");
             }
 
@@ -1377,7 +1377,7 @@ namespace shrimpcast.Hubs
             if (isValidationStage && isMasterSkip && !connection.MasterSkipConfirmed)
             {
                 connection.MasterSkipConfirmed = true;
-                await RaiseExceptionWithMessage("Are you sure you want to skip this item? DO NOT abuse this feature. Send again to confirm.");
+                await RaiseExceptionWithMessage("Are you sure you want to skip this item? DO NOT abuse this feature. Send it again to confirm.");
             }
 
             if (isValidationStage) return;

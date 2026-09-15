@@ -15,7 +15,7 @@ namespace shrimpcast.Helpers
         {
             _hardwareInfo.RefreshCPUList();
             var cpu = _hardwareInfo.CpuList[0];
-            return (cpu.PercentProcessorTime, cpu.NumberOfLogicalProcessors);
+            return (cpu.PercentProcessorTime, (uint)Environment.ProcessorCount);
         }
 
         private float GetMemoryUsagePercentage()

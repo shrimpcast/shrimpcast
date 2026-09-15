@@ -32,7 +32,7 @@ const SystemStats = ({ selfInstanceOnly }) => {
       const response = await MediaServerManager.GetSystemStats(abortControllerSignal, selfInstanceOnly);
       if (abortControllerSignal?.aborted) return;
       setStats(response || defaultModel);
-      setTimeout(() => fetchStats(abortControllerSignal), 1000);
+      setTimeout(() => fetchStats(abortControllerSignal), 2250);
     };
 
     const abortController = new AbortController();
