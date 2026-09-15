@@ -113,7 +113,9 @@ namespace shrimpcast.Controllers
             var poll = await _pollRepository.GetExistingOrNew(false);
             var canAddVote = await _pollRepository.CanAddVote(remoteAddress, ensureCreated.SessionId);
             var colours = await _nameColourRepository.GetAll();
-            var commands = isAdmin ? Constants.ALL_COMMANDS : Constants.USER_COMMANDS;
+            var commands = isAdmin ? Constants.ALL_COMMANDS 
+                : ensureCreated.IsMod ? Constants.MOD_COMMANDS 
+                : Constants.USER_COMMANDS;
 
             return new
             {
