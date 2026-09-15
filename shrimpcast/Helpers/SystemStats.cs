@@ -8,7 +8,7 @@ namespace shrimpcast.Helpers
 
         public SystemStats()
         {
-            _hardwareInfo = new HardwareInfo();
+            _hardwareInfo = new HardwareInfo(TimeSpan.FromSeconds(5));
         }
 
         private (float, uint) GetCpuUsage()
