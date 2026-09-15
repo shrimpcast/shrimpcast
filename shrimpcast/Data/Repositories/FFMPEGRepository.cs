@@ -236,7 +236,11 @@ namespace shrimpcast.Data.Repositories.Interfaces
             try
             {
                 var playlistSources = GetPlaylistItemsArray(isPlaylistOnEndEvent ? getEndPlaylist() : playlist);
-                if (streamInfo == null) nextSourceName = playlistSources[0];
+                if (streamInfo == null)
+                {
+                    var playlistIndex = playlist.Randomize ? new Random().Next(0, playlistSources.Length) : 0;
+                    nextSourceName = playlistSources[playlistIndex];
+                }
                 else
                 {
                     var currentlyPlayingIndex = Array.FindIndex(playlistSources, p => p == streamInfo.Playlist_CurrentlyPlaying);
