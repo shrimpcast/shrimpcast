@@ -1374,6 +1374,11 @@ namespace shrimpcast.Hubs
                 await RaiseExceptionWithMessage($"{Constants.MASTER_SKIP} is temporarily disabled");
             }
 
+            if (isValidationStage && isMasterSkip && runningTimeInMinutes < 1)
+            {
+                await RaiseExceptionWithMessage($"Item has to run for a minute before it can be master skipped.");
+            }
+
             if (isValidationStage && isMasterSkip && !connection.MasterSkipConfirmed)
             {
                 connection.MasterSkipConfirmed = true;
@@ -1411,7 +1416,9 @@ namespace shrimpcast.Hubs
 
             await DispatchSystemMessage(skipMessage, true, true);
             _ffmpegRepository.CleanExistingVotes(userWatching!);
-            _ffmpegRepository.StopStreamProcess(userWatching!, "vote-skip", false);
+            _ffmpegRepository.StopStreamProcess(userWatching!,
+                                                hasMasterSkipped ? $"master-skip (invoked by {connection.Session.SessionNames.Last().Name})" : "vote-skip",
+                                                false);
         }
 
         private async Task VoteKeep(SignalRConnection connection, bool isValidationStage)
