@@ -1,7 +1,6 @@
 import { Box, Typography, LinearProgress, Stack, Divider, IconButton, Zoom, Tooltip } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import MediaServerManager from "../../../../managers/MediaServerManager";
-import { useState } from "react";
 
 const HealthStatusSx = (status) => ({
     padding: 1,
@@ -15,14 +14,13 @@ const HealthStatusSx = (status) => ({
     overflow: "hidden",
   };
 
-const ResourceUsageWidget = ({ stats, title, mt, status, instanceKey }) => {
-  const [isRemoved, setIsRemoved] = useState(false),
-    removeInstance = async () => {
-      const removed = await MediaServerManager.RemoveInstanceMetrics(instanceKey);
-      removed && setIsRemoved(true);
-    };
+const ResourceUsageWidget = ({ stats, title, mt, status, instanceKey, removeCallback }) => {
+  const removeInstance = async () => {
+    const removed = await MediaServerManager.RemoveInstanceMetrics(instanceKey);
+    removed && removeCallback(instanceKey);
+  };
 
-  return isRemoved ? null : (
+  return (
     <Zoom in={true}>
       <Box>
         <Typography variant="subtitle1" gutterBottom sx={{ display: "flex" }}>

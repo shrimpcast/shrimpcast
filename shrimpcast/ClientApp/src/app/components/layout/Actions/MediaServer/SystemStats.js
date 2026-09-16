@@ -25,7 +25,14 @@ const SystemStats = ({ selfInstanceOnly }) => {
       selfInstanceName: null,
       instances: [],
     },
-    [stats, setStats] = useState(defaultModel);
+    [stats, setStats] = useState(defaultModel),
+    removeInstance = (instanceKey) =>
+      setStats((stats) => ({
+        ...stats,
+        instances: stats.instances.filter(
+          (instance) => `${instance.stats.remoteAddress}-${instance.stats.instanceName}` !== instanceKey,
+        ),
+      }));
 
   useEffect(() => {
     const fetchStats = async (abortControllerSignal) => {
@@ -68,6 +75,7 @@ const SystemStats = ({ selfInstanceOnly }) => {
                 instanceKey={`${instance.stats.remoteAddress}-${instance.stats.instanceName}`}
                 status={instance.isHealthy}
                 mt={instance.stats.instanceName !== stats.selfInstanceName}
+                removeCallback={removeInstance}
               />
             </Grid>
           ))}
