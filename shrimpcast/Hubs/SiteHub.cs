@@ -95,7 +95,7 @@ namespace shrimpcast.Hubs
         #region Connection
         public override async Task OnConnectedAsync()
         {
-            var RemoteAddress = (Context.Features.Get<IHttpConnectionFeature>()?.RemoteIpAddress?.ToString()) ?? throw new Exception("IP can't be null.");
+            var RemoteAddress = (Context.GetHttpContext()?.Connection.RemoteIpAddress?.ToString()) ?? throw new Exception("RemoteAddress can't be null.");
             var accessToken = (Context.GetHttpContext()?.Request.Query["accessToken"].ToString()) ?? throw new Exception("AccessToken can't be null.");
             var userAgent = Context.GetHttpContext()?.Request.Headers.UserAgent.ToString();
             var Session = await _sessionRepository.GetExistingAsync(accessToken, RemoteAddress);
