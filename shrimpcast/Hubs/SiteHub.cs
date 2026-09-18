@@ -1369,6 +1369,15 @@ namespace shrimpcast.Hubs
                     $"{(VoteSkipMaxTimeMinutes == 1 ? "" : "s")}");
             }
 
+            if (isValidationStage
+                && !isMasterSkip
+                && _mediaServerStreamRepository.GetFilenameFromUrlQueryParams(streamInfo!.Playlist_CurrentlyPlaying,
+                                                                              null,
+                                                                              true) == Constants.VIP_MOVIE)
+            {
+                await RaiseExceptionWithMessage($"This movie can't be skipped.");
+            }
+
             if (isValidationStage && isMasterSkip && !connection.Session.IsAdmin && VoteSkipMaxTimeMinutes == 0)
             {
                 await RaiseExceptionWithMessage($"{Constants.MASTER_SKIP} is temporarily disabled");

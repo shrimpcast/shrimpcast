@@ -66,6 +66,8 @@ namespace shrimpcast.Entities
 
         public const string SELF_INSTANCE_LB_NAME = "Resource usage - system";
 
+        public const string VIP_MOVIE = "vip";
+
         public static string DOWNLOADING_STATUS_FORMAT (int progress = 0) => $"Downloading {progress}%";
 
         public readonly static string[] USER_COMMANDS = [

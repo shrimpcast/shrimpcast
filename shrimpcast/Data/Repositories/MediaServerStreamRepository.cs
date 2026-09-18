@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
+using shrimpcast.Entities;
 using shrimpcast.Entities.DB;
 
 namespace shrimpcast.Data.Repositories.Interfaces
@@ -52,15 +53,16 @@ namespace shrimpcast.Data.Repositories.Interfaces
             return await _context.SaveChangesAsync() > 0 ? mediaServerStream.Name : throw new Exception("Could not remove item.");
         }
 
-        public string GetFilenameFromUrlQueryParams(string? url, string? downloadingStatus)
+        public string GetFilenameFromUrlQueryParams(string? url, string? downloadingStatus, bool getVipStatus = false)
         {
             if (url == null) return string.Empty;
             try
             {
                 var uri = new Uri(url);
                 var query = QueryHelpers.ParseQuery(uri.Query);
-                var filename = query["filename"].FirstOrDefault();
+                var filename = query[getVipStatus ? Constants.VIP_MOVIE : "filename"].FirstOrDefault();
                 if (string.IsNullOrEmpty(filename)) return string.Empty;
+                if (getVipStatus && bool.Parse(filename)) return Constants.VIP_MOVIE;
                 return downloadingStatus == null ? filename : $"{filename} - {downloadingStatus}";
             }
             catch (Exception)
