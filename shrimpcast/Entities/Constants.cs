@@ -4,7 +4,7 @@ namespace shrimpcast.Entities
 {
     public class Constants
     {
-        public const string BACKEND_VERSION = "2.2.0";
+        public const string BACKEND_VERSION = "2.2.1";
 
         public const string PING_COMMAND = "!ping";
 
@@ -36,6 +36,8 @@ namespace shrimpcast.Entities
 
         public const string VOTE_KEEP = $"{VOTE_COMMAND}keep";
 
+        public const string MASTER_SKIP = "!masterskip";
+
         public const string FILTERS = "filters.json";
 
         public static readonly string FIREANDFORGET_TOKEN = SecureToken.GenerateTokenThreadSafe();
@@ -62,7 +64,21 @@ namespace shrimpcast.Entities
 
         public const string WGET_FINISHED_DOWNLOAD = "[WGET]: Finished download.";
 
+        public const string SELF_INSTANCE_LB_NAME = "Resource usage - system";
+
+        public const string VIP_MOVIE = "vip";
+
         public static string DOWNLOADING_STATUS_FORMAT (int progress = 0) => $"Downloading {progress}%";
+
+        public readonly static string[] USER_COMMANDS = [
+            VOTE_SKIP,
+            VOTE_KEEP
+        ];
+
+        public readonly static string[] MOD_COMMANDS = [
+            ..USER_COMMANDS,
+            MASTER_SKIP
+        ];
 
         public readonly static string[] ALL_COMMANDS = [
             PLAY_MAIN_COMMAND,
@@ -75,13 +91,7 @@ namespace shrimpcast.Entities
             DOCKER_RESTART, 
             TRUNCATE_LOGS,
             SET_USER_LABEL,
-            VOTE_SKIP,
-            VOTE_KEEP
-        ];
-
-        public readonly static string[] USER_COMMANDS = [
-            VOTE_SKIP,
-            VOTE_KEEP
+            ..MOD_COMMANDS,
         ];
 
         public static string SECONDS_TO_CRON(int Seconds) => $"*/{Seconds} * * * * *";

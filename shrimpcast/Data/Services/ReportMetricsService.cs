@@ -26,7 +26,7 @@ namespace shrimpcast.Data.Services.Interfaces
             Initialized = true;
         }
 
-        [DisableConcurrentExecution(timeoutInSeconds: 3)]
+        [DisableConcurrentExecution(timeoutInSeconds: 10)]
         public async Task ReportSelfMetrics()
         {
             try
@@ -34,7 +34,7 @@ namespace shrimpcast.Data.Services.Interfaces
                 var totalViewerCount = _processes.All.Values.Sum(p => p.Viewers.Count);
                 var metrics = new LBMetric
                 {
-                    InstanceName = "Resource usage - system",
+                    InstanceName = Constants.SELF_INSTANCE_LB_NAME,
                     Metrics = await new SystemStats().GetStats(totalViewerCount),
                 };
 

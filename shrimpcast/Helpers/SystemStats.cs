@@ -8,14 +8,14 @@ namespace shrimpcast.Helpers
 
         public SystemStats()
         {
-            _hardwareInfo = new HardwareInfo();
+            _hardwareInfo = new HardwareInfo(TimeSpan.FromSeconds(5));
         }
 
         private (float, uint) GetCpuUsage()
         {
             _hardwareInfo.RefreshCPUList();
             var cpu = _hardwareInfo.CpuList[0];
-            return (cpu.PercentProcessorTime, cpu.NumberOfLogicalProcessors);
+            return (cpu.PercentProcessorTime, (uint)Environment.ProcessorCount);
         }
 
         private float GetMemoryUsagePercentage()

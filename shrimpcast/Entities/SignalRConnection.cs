@@ -14,6 +14,8 @@ namespace shrimpcast.Entities
 
         public string? VoteSkip { get; set; }
 
+        public bool MasterSkipConfirmed { get; set; }
+
         public DateTime LastPing { get; set; } = DateTime.UtcNow;
 
         public required Session Session { get; set; }

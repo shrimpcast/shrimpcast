@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import MediaServerManager from "../../../../managers/MediaServerManager";
 import ResourceUsageWidget from "./ResourceUsageWidget";
 import { Box, CircularProgress } from "@mui/material";
+import Grid from "@mui/material/Unstable_Grid2";
 
 const BoxSx = {
     mt: 1,
@@ -19,19 +20,26 @@ const BoxSx = {
     mt: 8,
   };
 
-const SystemStats = () => {
+const SystemStats = ({ selfInstanceOnly }) => {
   const defaultModel = {
       selfInstanceName: null,
       instances: [],
     },
-    [stats, setStats] = useState(defaultModel);
+    [stats, setStats] = useState(defaultModel),
+    removeInstance = (instanceKey) =>
+      setStats((stats) => ({
+        ...stats,
+        instances: stats.instances.filter(
+          (instance) => `${instance.stats.remoteAddress}-${instance.stats.instanceName}` !== instanceKey,
+        ),
+      }));
 
   useEffect(() => {
     const fetchStats = async (abortControllerSignal) => {
-      const response = await MediaServerManager.GetSystemStats(abortControllerSignal);
+      const response = await MediaServerManager.GetSystemStats(abortControllerSignal, selfInstanceOnly);
       if (abortControllerSignal?.aborted) return;
       setStats(response || defaultModel);
-      setTimeout(() => fetchStats(abortControllerSignal), 750);
+      setTimeout(() => fetchStats(abortControllerSignal), 2250);
     };
 
     const abortController = new AbortController();
@@ -40,8 +48,8 @@ const SystemStats = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return (
-    <Box sx={BoxSx}>
+  return !selfInstanceOnly && !stats.instances.length ? null : (
+    <Grid container sx={BoxSx} spacing={selfInstanceOnly ? 0 : 1}>
       {!stats.selfInstanceName ? (
         <Box sx={LoaderSx}>
           <CircularProgress color="secondary" />
@@ -49,22 +57,31 @@ const SystemStats = () => {
       ) : stats.instances.length ? (
         <>
           {stats.instances.map((instance) => (
-            <ResourceUsageWidget
-              stats={instance.stats.metrics}
-              title={
-                instance.stats.instanceName === stats.selfInstanceName
-                  ? stats.selfInstanceName
-                  : `${instance.stats.remoteAddress} - ${instance.stats.instanceName}`
-              }
-              instanceKey={`${instance.stats.remoteAddress}-${instance.stats.instanceName}`}
-              key={instance.stats.remoteAddress}
-              status={instance.isHealthy}
-              mt={instance.stats.instanceName !== stats.selfInstanceName}
-            />
+            <Grid
+              xs={12}
+              sm={selfInstanceOnly ? 12 : 6}
+              md={selfInstanceOnly ? 12 : 4}
+              lg={selfInstanceOnly ? 12 : 3}
+              key={`${instance.stats.remoteAddress}-${instance.stats.instanceName}`}
+              sx={{ flexGrow: "1 !important" }}
+            >
+              <ResourceUsageWidget
+                stats={instance.stats.metrics}
+                title={
+                  instance.stats.instanceName === stats.selfInstanceName
+                    ? stats.selfInstanceName
+                    : `LB node: [${instance.stats.instanceName} - ${instance.stats.remoteAddress}]`
+                }
+                instanceKey={`${instance.stats.remoteAddress}-${instance.stats.instanceName}`}
+                status={instance.isHealthy}
+                mt={instance.stats.instanceName !== stats.selfInstanceName}
+                removeCallback={removeInstance}
+              />
+            </Grid>
           ))}
         </>
       ) : null}
-    </Box>
+    </Grid>
   );
 };
 

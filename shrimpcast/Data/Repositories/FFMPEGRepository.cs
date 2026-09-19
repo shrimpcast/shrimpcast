@@ -236,7 +236,11 @@ namespace shrimpcast.Data.Repositories.Interfaces
             try
             {
                 var playlistSources = GetPlaylistItemsArray(isPlaylistOnEndEvent ? getEndPlaylist() : playlist);
-                if (streamInfo == null) nextSourceName = playlistSources[0];
+                if (streamInfo == null)
+                {
+                    var playlistIndex = playlist.Randomize ? new Random().Next(0, playlistSources.Length) : 0;
+                    nextSourceName = playlistSources[playlistIndex];
+                }
                 else
                 {
                     var currentlyPlayingIndex = Array.FindIndex(playlistSources, p => p == streamInfo.Playlist_CurrentlyPlaying);
@@ -409,17 +413,18 @@ namespace shrimpcast.Data.Repositories.Interfaces
 
         private void KillAllProcesses()
         {
-            var processes = GetActiveFFMPEGProcesses().Concat(GetActiveDownloads());
+            Process[] processes = [..GetActiveFFMPEGProcesses(), ..GetActiveDownloads()];
             foreach (var process in processes) process.Kill(true);
             CleanStreamDirectory(CleanRoot: true);
         }
 
         public void CleanExistingVotes(string streamName)
         {
-            var connectionsWithVotes = _activeConnections.All.Where(ac => ac.Value.VoteSkip == streamName);
+            var connectionsWithVotes = _activeConnections.All.Where(ac => ac.Value.VoteSkip == streamName || ac.Value.MasterSkipConfirmed);
             foreach (var connectionWithVote in connectionsWithVotes)
             {
                 connectionWithVote.Value.VoteSkip = null;
+                connectionWithVote.Value.MasterSkipConfirmed = false;
             }
         }
         #endregion

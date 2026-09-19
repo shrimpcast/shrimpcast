@@ -95,7 +95,7 @@ namespace shrimpcast.Hubs
         #region Connection
         public override async Task OnConnectedAsync()
         {
-            var RemoteAddress = (Context.Features.Get<IHttpConnectionFeature>()?.RemoteIpAddress?.ToString()) ?? throw new Exception("IP can't be null.");
+            var RemoteAddress = (Context.GetHttpContext()?.Connection.RemoteIpAddress?.ToString()) ?? throw new Exception("RemoteAddress can't be null.");
             var accessToken = (Context.GetHttpContext()?.Request.Query["accessToken"].ToString()) ?? throw new Exception("AccessToken can't be null.");
             var userAgent = Context.GetHttpContext()?.Request.Headers.UserAgent.ToString();
             var Session = await _sessionRepository.GetExistingAsync(accessToken, RemoteAddress);
@@ -154,6 +154,7 @@ namespace shrimpcast.Hubs
             if (Connection.QueryParams == source) return;
             Connection.QueryParams = source;
             Connection.VoteSkip = null;
+            Connection.MasterSkipConfirmed = false;
             await TriggerSourceViewerCountChange(false);
         }
         #endregion
@@ -1274,10 +1275,14 @@ namespace shrimpcast.Hubs
             switch (message)
             {
                 case Constants.VOTE_SKIP:
-                    await VoteSkip(connection, validationStatus);
+                    await VoteSkip(connection, validationStatus, false);
                     break;
                 case Constants.VOTE_KEEP:
                     await VoteKeep(connection, validationStatus);
+                    break;
+                case string _message when (connection.Session.IsMod
+                    || connection.Session.IsAdmin) && _message == Constants.MASTER_SKIP:
+                    await VoteSkip(connection, validationStatus, true);
                     break;
                 default:
                     break;
@@ -1330,7 +1335,7 @@ namespace shrimpcast.Hubs
             throw new Exception(Message);
         }
 
-        private async Task VoteSkip(SignalRConnection connection, bool isValidationStage)
+        private async Task VoteSkip(SignalRConnection connection, bool isValidationStage, bool isMasterSkip)
         {
             if (isValidationStage && !Configuration.EnableVoteSkip)
             {
@@ -1356,37 +1361,73 @@ namespace shrimpcast.Hubs
                 await RaiseExceptionWithMessage(notAllowedMessage);
             }
 
+            var runningTimeInMinutes = (int)(DateTime.UtcNow - streamInfo!.StartTime).TotalMinutes;
+            var VoteSkipMaxTimeMinutes = Configuration.VoteSkipMaxTimeMinutes;
+            if (isValidationStage && !isMasterSkip && VoteSkipMaxTimeMinutes > 0 && runningTimeInMinutes >= VoteSkipMaxTimeMinutes)
+            {
+                await RaiseExceptionWithMessage($"Vote skipping is disabled after {Configuration.VoteSkipMaxTimeMinutes} minute" +
+                    $"{(VoteSkipMaxTimeMinutes == 1 ? "" : "s")}");
+            }
+
+            if (isValidationStage
+                && !isMasterSkip
+                && _mediaServerStreamRepository.GetFilenameFromUrlQueryParams(streamInfo!.Playlist_CurrentlyPlaying,
+                                                                              null,
+                                                                              true) == Constants.VIP_MOVIE)
+            {
+                await RaiseExceptionWithMessage($"This movie can't be skipped.");
+            }
+
+            if (isValidationStage && isMasterSkip && !connection.Session.IsAdmin && VoteSkipMaxTimeMinutes == 0)
+            {
+                await RaiseExceptionWithMessage($"{Constants.MASTER_SKIP} is temporarily disabled");
+            }
+
+            if (isValidationStage && isMasterSkip && runningTimeInMinutes < 1)
+            {
+                await RaiseExceptionWithMessage($"Item has to run for a minute before it can be master skipped.");
+            }
+
+            if (isValidationStage && isMasterSkip && !connection.MasterSkipConfirmed)
+            {
+                connection.MasterSkipConfirmed = true;
+                await RaiseExceptionWithMessage("Are you sure you want to skip this item? DO NOT abuse this feature. Send it again to confirm.");
+            }
+
             if (isValidationStage) return;
 
-            connection.VoteSkip = userWatching;
-
-            var recentChatInteractions = await _messageRepository.GetRecentInteractionCount();
-            var amountUsersWatching = ActiveConnections.Where(ac => ac.Value.QueryParams == userWatching
-                                                                    && recentChatInteractions.Contains(ac.Value.Session.SessionId))
-                                                       .DistinctBy(ac => ac.Value.RemoteAdress)
-                                                       .Count();
-
-            var amountVotes = ActiveConnections.Where(ac => ac.Value.VoteSkip == userWatching)
-                                               .DistinctBy(ac => ac.Value.RemoteAdress)
-                                               .Count();
-
-            var threshold = 75;
-            var requiredVotes = Math.Ceiling((float)(threshold * amountUsersWatching) / 100);
-
             var currentlyPlaying = _mediaServerStreamRepository.GetFilenameFromUrlQueryParams(streamInfo!.Playlist_CurrentlyPlaying, null);
-            var message = $"{connection.Session.SessionNames.Last().Name} " +
-                          $"has voted to skip {(currentlyPlaying != string.Empty ? $"[{currentlyPlaying}]" : $"the current item in {userWatching}")} " +
-                          $" [{amountVotes}/{requiredVotes}]";
+            var playlistItem = currentlyPlaying != string.Empty ? $"[{currentlyPlaying}]" : $"the current item in {userWatching}";
+            var hasMasterSkipped = isMasterSkip && connection.MasterSkipConfirmed;
+            var skipMessage = hasMasterSkipped ? $"{connection.Session.SessionNames.Last().Name} has master skipped {playlistItem}"
+                                               : $"!voteskip achieved. Skipping {playlistItem}";
 
-            await DispatchSystemMessage(message, true, true);
+            if (!hasMasterSkipped)
+            {
+                connection.VoteSkip = userWatching;
+                var recentChatInteractions = await _messageRepository.GetRecentInteractionCount();
 
-            if (amountVotes < requiredVotes) return;
+                var amountUsersWatching = ActiveConnections.Where(ac => ac.Value.QueryParams == userWatching
+                                                                        && recentChatInteractions.Contains(ac.Value.Session.SessionId))
+                                                           .DistinctBy(ac => ac.Value.RemoteAdress)
+                                                           .Count();
 
-            await DispatchSystemMessage($"!voteskip achieved. Skipping {(currentlyPlaying
-                != string.Empty ? $"[{currentlyPlaying}]" : "playlist item...")}", true, true);
+                var amountVotes = ActiveConnections.Where(ac => ac.Value.VoteSkip == userWatching)
+                                                   .DistinctBy(ac => ac.Value.RemoteAdress)
+                                                   .Count();
 
+                var requiredVotes = Math.Ceiling((float)(75 * amountUsersWatching) / 100);
+                
+                var message = $"{connection.Session.SessionNames.Last().Name} has voted to skip {playlistItem} [{amountVotes}/{requiredVotes}]";
+                await DispatchSystemMessage(message, true, true);
+                if (amountVotes < requiredVotes) return;
+            }
+
+            await DispatchSystemMessage(skipMessage, true, true);
             _ffmpegRepository.CleanExistingVotes(userWatching!);
-            _ffmpegRepository.StopStreamProcess(userWatching!, "vote-skip", false);
+            _ffmpegRepository.StopStreamProcess(userWatching!,
+                                                hasMasterSkipped ? $"master-skip (invoked by {connection.Session.SessionNames.Last().Name})" : "vote-skip",
+                                                false);
         }
 
         private async Task VoteKeep(SignalRConnection connection, bool isValidationStage)

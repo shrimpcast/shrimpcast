@@ -23,15 +23,18 @@ namespace shrimpcast.Controllers
         private readonly ConfigurationSingleton _configurationSingleton = configurationSingleton;
 
         [HttpGet, Route("GetSystemStats")]
-        public async Task<object> GetSystemStats(string sessionToken)
+        public async Task<object> GetSystemStats(string sessionToken, bool selfInstanceOnly)
         {
             var session = await _sessionRepository.GetExistingByTokenAsync(sessionToken);
             if (session == null || !session.IsAdmin) throw new Exception("Permission denied.");
 
+            var selfInstanceName = Constants.SELF_INSTANCE_LB_NAME;
             return new
             {
-                selfInstanceName = "Resource usage - system",
-                instances = _lbMetrics.All.Values.OrderByDescending(instance => instance.InstanceName)
+                selfInstanceName,
+                instances = _lbMetrics.All.Values.Where(instance => selfInstanceOnly ? instance.InstanceName == selfInstanceName 
+                                                                                     : instance.InstanceName != selfInstanceName)
+                                                 .OrderByDescending(instance => instance.InstanceName)
                                                  .Select(instance => new
                                                  {
                                                      stats = instance,

@@ -2,12 +2,15 @@ import axios from "axios";
 import LocalStorageManager from "./LocalStorageManager";
 
 class MediaServerManager {
-  static async GetSystemStats(abortControllerSignal) {
+  static async GetSystemStats(abortControllerSignal, selfInstanceOnly) {
     const response = await axios
-      .get(`/api/mediaserver/GetSystemStats?sessionToken=${LocalStorageManager.getToken()}`, {
-        signal: abortControllerSignal,
-        timeout: 10000,
-      })
+      .get(
+        `/api/mediaserver/GetSystemStats?sessionToken=${LocalStorageManager.getToken()}&selfInstanceOnly=${selfInstanceOnly}`,
+        {
+          signal: abortControllerSignal,
+          timeout: 10000,
+        },
+      )
       .catch((ex) => console.log(ex));
     return response?.data;
   }

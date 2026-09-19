@@ -1,30 +1,36 @@
-import { Box, Typography, LinearProgress, Stack, Divider, IconButton, Zoom } from "@mui/material";
+import { Box, Typography, LinearProgress, Stack, Divider, IconButton, Zoom, Tooltip } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import MediaServerManager from "../../../../managers/MediaServerManager";
-import { useState } from "react";
 
 const HealthStatusSx = (status) => ({
-  padding: 1,
-  bgcolor: status ? "success.dark" : "error.dark",
-  borderRadius: 2,
-});
+    padding: 1,
+    bgcolor: status ? "success.dark" : "error.dark",
+    borderRadius: 2,
+  }),
+  TitleSx = {
+    whiteSpace: "nowrap",
+    fontWeight: 600,
+    textOverflow: "ellipsis",
+    overflow: "hidden",
+  };
 
-const ResourceUsageWidget = ({ stats, title, mt, status, instanceKey }) => {
-  const [isRemoved, setIsRemoved] = useState(false),
-    removeInstance = async () => {
-      const removed = await MediaServerManager.RemoveInstanceMetrics(instanceKey);
-      removed && setIsRemoved(true);
-    };
+const ResourceUsageWidget = ({ stats, title, mt, status, instanceKey, removeCallback }) => {
+  const removeInstance = async () => {
+    const removed = await MediaServerManager.RemoveInstanceMetrics(instanceKey);
+    removed && removeCallback(instanceKey);
+  };
 
-  return isRemoved ? null : (
+  return (
     <Zoom in={true}>
       <Box>
-        <Typography variant="subtitle1" fontWeight={600} mt={mt ? 1 : 0} gutterBottom>
-          {title}
+        <Typography variant="subtitle1" gutterBottom sx={{ display: "flex" }}>
+          <Typography sx={TitleSx}>{title}</Typography>
           {mt && (
-            <IconButton type="button" size="small" ml="auto" onClick={removeInstance}>
-              <CloseIcon sx={{ fontSize: "16px" }} />
-            </IconButton>
+            <Tooltip title="Remove node">
+              <IconButton type="button" size="small" ml="auto" onClick={removeInstance}>
+                <CloseIcon sx={{ fontSize: "16px" }} />
+              </IconButton>
+            </Tooltip>
           )}
           <Divider />
         </Typography>

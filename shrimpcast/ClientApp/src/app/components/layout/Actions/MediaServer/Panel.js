@@ -34,9 +34,10 @@ const Panel = (props) => {
           <StreamStats {...props} />
         </Box>
         <Box sx={SystemSx(theme)}>
-          <SystemStats />
+          <SystemStats selfInstanceOnly={true} />
         </Box>
       </Box>
+      <SystemStats selfInstanceOnly={false} />
       <RTMPEndpoints {...props} />
       <Playlists {...props} />
       <Typography variant="overline">
