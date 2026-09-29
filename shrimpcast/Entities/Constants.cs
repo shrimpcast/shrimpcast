@@ -40,7 +40,7 @@ namespace shrimpcast.Entities
 
         public const string FILTERS = "filters.json";
 
-        public static readonly string FIREANDFORGET_TOKEN = SecureToken.GenerateTokenThreadSafe();
+        public static readonly string FIREANDFORGET_TOKEN = SecureToken.GenerateTokenThreadSafe().Plain;
 
         public const string BANNED_MESSAGE = "You are banned.";
 

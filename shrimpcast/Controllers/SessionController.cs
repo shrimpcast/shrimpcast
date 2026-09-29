@@ -31,7 +31,8 @@ namespace shrimpcast.Controllers
         public async Task<object> GetNewOrExisting([FromQuery] string accessToken, [FromQuery] string? version, [FromQuery] string? turnstileToken)
         {
             var remoteAddress = (HttpContext.Connection.RemoteIpAddress?.ToString()) ?? throw new Exception("RemoteAddress can't be null");
-            var ensureCreated = await _sessionRepository.GetNewOrExistingAsync(accessToken, remoteAddress);
+            var account = await _sessionRepository.GetNewOrExistingAsync(accessToken, remoteAddress);
+            var ensureCreated = account.Session;
             var isAdmin = ensureCreated.IsAdmin;
             var configuration = _configurationSingleton.Configuration;
 
@@ -119,7 +120,6 @@ namespace shrimpcast.Controllers
 
             return new
             {
-                version = Constants.BACKEND_VERSION,
                 configuration,
                 emotes,
                 poll,
@@ -131,8 +131,9 @@ namespace shrimpcast.Controllers
                 ensureCreated.IsGolden,
                 ensureCreated.SessionId,
                 ensureCreated.SessionNames.Last().Name,
-                ensureCreated.SessionToken,
                 ensureCreated.UserColorDisplay,
+                version = Constants.BACKEND_VERSION,
+                sessionToken = account.ReturnSessionToken,
             };
         }
 

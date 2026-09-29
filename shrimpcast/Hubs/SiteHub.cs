@@ -105,7 +105,7 @@ namespace shrimpcast.Hubs
                                   && !(Session?.IsAdmin).GetValueOrDefault() && !(Session?.IsMod).GetValueOrDefault() && !(Session?.IsGolden).GetValueOrDefault();
 
             var reachedMaxConnectionsPerAddress = !(Session?.IsAdmin).GetValueOrDefault() &&
-                ActiveConnections.Where(ac => ac.Value.RemoteAdress == RemoteAddress || ac.Value.Session.SessionToken == accessToken).Count()
+                ActiveConnections.Where(ac => ac.Value.RemoteAdress == RemoteAddress || ac.Value.Session.SessionId == Session?.SessionId).Count()
                 >= Configuration.MaxConnectionsPerIP;
 
             var mustPassTurnstail = await NeedsPassTurnstail(Session);
@@ -183,7 +183,7 @@ namespace shrimpcast.Hubs
             }
 
             var addedName = await _sessionRepository.ChangeName(Session.SessionId, newName);
-            foreach (var connection in ActiveConnections.Where(ac => ac.Value.Session.SessionToken == Session.SessionToken))
+            foreach (var connection in ActiveConnections.Where(ac => ac.Value.Session.SessionId == Session.SessionId))
             {
                 connection.Value.Session.SessionNames.Add(addedName);
             }
@@ -280,7 +280,7 @@ namespace shrimpcast.Hubs
             if (messageInfo != null)
             {
                 activeSessions = ActiveConnections.Where(ac => ac.Value.RemoteAdress == messageInfo.RemoteAddress)
-                                                  .DistinctBy(ac => ac.Value.Session.SessionToken)
+                                                  .DistinctBy(ac => ac.Value.Session.SessionId)
                                                   .Select(ac => ac.Value.Session.SessionNames.Last().Name)
                                                   .ToList();
             }
