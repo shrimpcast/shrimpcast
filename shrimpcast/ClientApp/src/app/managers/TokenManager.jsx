@@ -38,13 +38,15 @@ class TokenManager {
   }
 
   static async Import(accessToken) {
-    const response = await axios.get(`/api/session/ImportToken?accessToken=${accessToken}`).catch((ex) => ({
-      message: `Error: ${ex.message}`,
-    }));
+    const response = await axios
+      .get(`/api/session/ImportToken?accessToken=${accessToken}`, { timeout: 5000 })
+      .catch((ex) => ({
+        message: `Error: ${ex.message}`,
+      }));
 
     if (response.data === false) response.message = "Error: invalid token.";
     else if (response.data) {
-      TokenManager.SaveData(accessToken, null);
+      TokenManager.SaveData(accessToken);
       setTimeout(() => window.location.reload(), 100);
     }
     return response;
