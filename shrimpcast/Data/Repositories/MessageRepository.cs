@@ -105,10 +105,10 @@ namespace shrimpcast.Data.Repositories
 
                 return result > 0 ? Message : throw new Exception("Could not add message.");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 await transaction.RollbackAsync();
-                throw new Exception(ex.Message);
+                throw;
             }
         }
 

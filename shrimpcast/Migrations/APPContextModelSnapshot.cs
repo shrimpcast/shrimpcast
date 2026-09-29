@@ -714,6 +714,10 @@ namespace shrimpcast.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("HashedSessionToken")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<bool>("IsAdmin")
                         .HasColumnType("boolean");
 
@@ -735,9 +739,10 @@ namespace shrimpcast.Migrations
                     b.Property<bool>("PassedTurnstile")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("SessionToken")
+                    b.Property<string>("SessionTokenLookupKey")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
 
                     b.Property<string>("UserColorDisplay")
                         .IsRequired()
@@ -749,9 +754,15 @@ namespace shrimpcast.Migrations
 
                     b.HasKey("SessionId");
 
+                    b.HasIndex("HashedSessionToken")
+                        .IsUnique();
+
                     b.HasIndex("MutedBySessionId");
 
                     b.HasIndex("SessionId");
+
+                    b.HasIndex("SessionTokenLookupKey")
+                        .IsUnique();
 
                     b.ToTable("Session", (string)null);
                 });

@@ -16,7 +16,7 @@ namespace shrimpcast.Migrations
                 table: "Configuration",
                 type: "text",
                 nullable: true,
-                defaultValue: SecureToken.GenerateTokenThreadSafe());
+                defaultValue: SecureToken.GenerateTokenThreadSafe().Plain);
 
             migrationBuilder.AddColumn<bool>(
                 name: "LbSendInstanceMetrics",
