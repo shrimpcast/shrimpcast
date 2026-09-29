@@ -144,6 +144,7 @@ const UserMessage = React.memo((props) => {
     openConfirmPrompt = () => setShowPromptDialog(true),
     closeConfirmPrompt = () => setShowPromptDialog(false),
     [externalOpenUserDialog, setExternalOpenUserDialog] = useState(false),
+    [isLoading, setLoading] = useState(false),
     openExternalUserDialog = () => setExternalOpenUserDialog(true),
     closeExternalUserDialog = () => setExternalOpenUserDialog(false),
     {
@@ -160,8 +161,10 @@ const UserMessage = React.memo((props) => {
       userLabel,
     } = props,
     removeMessage = async () => {
+      setLoading(true);
       const response = await ChatActionsManager.RemoveMessage(props.signalR, props.messageId);
       if (response) closeConfirmPrompt();
+      setLoading(false);
     },
     [isMiniminized, setMinimized] = useState(!isAdmin),
     openMinimized = () => setMinimized(false),
@@ -227,6 +230,7 @@ const UserMessage = React.memo((props) => {
                   title="Are you sure you want to delete this post?"
                   confirm={removeMessage}
                   cancel={closeConfirmPrompt}
+                  isLoading={isLoading}
                 />
               )}
             </>
@@ -277,7 +281,7 @@ const UserMessage = React.memo((props) => {
             getEmote(match.toLowerCase()) ? (
               <EmoteWithFallback key={i} alt={match.toLowerCase()} src={getEmote(match.toLowerCase()).url} />
             ) : match.toLowerCase().match(urlRegex) ? (
-              <DefaultLink key={i} href={match} target="_blank">
+              <DefaultLink key={i} href={match} target="_blank" rel="noopener noreferrer">
                 {match}
               </DefaultLink>
             ) : getSource(match.trim().toLowerCase()) ? (
