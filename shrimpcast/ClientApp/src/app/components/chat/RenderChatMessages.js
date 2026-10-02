@@ -75,7 +75,9 @@ const RenderChatMessages = (props) => {
           let messageList = existingMessages;
           if (message.messageType === "MessageRemoved") {
             let index = messageList.findIndex((m) => m.messageId === message.messageId);
-            messageList.splice(index, 1);
+            if (index !== -1) {
+              messageList.splice(index, 1);
+            }
           }
 
           const isBannedType = message.messageType === "UserBanned",

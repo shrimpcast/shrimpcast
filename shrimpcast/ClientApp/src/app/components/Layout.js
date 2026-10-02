@@ -33,21 +33,6 @@ const MainGridSx = {
       height: poppedOutChat ? "calc(100% - 35px)" : "60%",
     },
   }),
-  HalloweenAnimSx = {
-    "&::after": {
-      content: '""',
-      position: "absolute",
-      bottom: "0px",
-      right: "0px",
-      height: "160px",
-      width: "160px",
-      filter: "opacity(0.6)",
-      backgroundRepeat: "no-repeat",
-      backgroundSize: "100%",
-      backgroundImage: 'url("../images/halloween-anim.gif")',
-      pointerEvents: "none",
-    },
-  },
   PlayerContainerSx = (theme) => ({
     height: "100%",
     margin: "0 auto",
@@ -144,7 +129,7 @@ const Layout = (props) => {
           md={poppedOutChat ? 12 : 4}
           lg={poppedOutChat ? 12 : 3}
           xl={poppedOutChat ? 12 : 2}
-          sx={[ChatBoxSx(theme, useFullChatMode, poppedOutChat), configuration.enableHalloweenTheme && HalloweenAnimSx]}
+          sx={ChatBoxSx(theme, useFullChatMode, poppedOutChat)}
         >
           <Chat {...props} enabledSources={streamStatus.sources} chatName={chatName} />
         </Grid>
