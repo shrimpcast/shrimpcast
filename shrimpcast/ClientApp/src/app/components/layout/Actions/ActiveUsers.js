@@ -49,8 +49,8 @@ const ActiveUsers = (props) => {
       nameChange = ({ sessionId, newName }) =>
         setUsers((users) =>
           users.map((existingUser) =>
-            existingUser.sessionId !== sessionId ? existingUser : { ...existingUser, name: newName }
-          )
+            existingUser.sessionId !== sessionId ? existingUser : { ...existingUser, name: newName },
+          ),
         );
 
     const getUsers = async () => {
@@ -90,7 +90,7 @@ const ActiveUsers = (props) => {
             </Box>
             <Divider />
           </DialogTitle>
-          <DialogContent>
+          <DialogContent className="scrollbar-custom">
             {!users ? (
               <Box width="40px" ml="auto" mr="auto">
                 <CircularProgress color="secondary" />

@@ -16,6 +16,7 @@ const BingoOptions = (props) => {
       gad_description="Bingo option content"
       gad_title="Add bingo option"
       gad_handleSubmit={BingoManager.NewOption}
+      showScroll={true}
       {...props}
     />
   );
