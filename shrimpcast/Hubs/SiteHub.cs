@@ -1,6 +1,5 @@
 using Hangfire;
 using Hangfire.Storage;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
@@ -148,10 +147,17 @@ namespace shrimpcast.Hubs
 
         public async Task GetSourceViewerCount() => await TriggerSourceViewerCountChange(true);
 
-        public async void SetQueryParams([FromBody] string? source)
+        public async Task SetQueryParams([FromBody] string? source)
         {
             var Connection = GetCurrentConnection();
-            if (Connection.QueryParams == source) return;
+            source = source?.ToLower();
+            
+            if (Connection.QueryParams == source || (!string.IsNullOrEmpty(source)
+                                                     && !await _sourceRepository.ExistsByName(source)))
+            {
+                return;
+            }
+
             Connection.QueryParams = source;
             Connection.VoteSkip = null;
             Connection.MasterSkipConfirmed = false;
@@ -241,7 +247,10 @@ namespace shrimpcast.Hubs
             if (await DispatchCommand(message, CurrentConnection)) return 1;
 
             var session = CurrentConnection.Session;
-            var addedMessage = await _messageRepository.Add(!session.IsAdmin && !session.IsGolden && !session.IsMod, session.SessionId, RemoteAddress, CurrentConnection.UserAgent, message, "UserMessage");
+            var addedMessage = await _messageRepository.Add(!session.IsAdmin && !session.IsGolden && !session.IsMod,
+                                                            session.SessionId, RemoteAddress,
+                                                            CurrentConnection.UserAgent, message, "UserMessage",
+                                                            CurrentConnection.QueryParams);
             addedMessage.SentBy = session.SessionNames.Last().Name;
             addedMessage.IsAdmin = session.IsAdmin;
             addedMessage.IsMod = session.IsMod;
