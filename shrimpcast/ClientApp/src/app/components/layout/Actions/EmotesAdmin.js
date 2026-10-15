@@ -73,7 +73,7 @@ const EmotesAdmin = (props) => {
             </Box>
             <Divider />
           </DialogTitle>
-          <DialogContent>
+          <DialogContent className="scrollbar-custom">
             <List sx={{ width: "100%", bgcolor: "background.paper", borderRadius: 1 }}>
               {emotes.map((emote, index) => (
                 <ListItem

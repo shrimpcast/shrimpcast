@@ -523,6 +523,9 @@ namespace shrimpcast.Migrations
                     b.Property<string>("UserAgent")
                         .HasColumnType("text");
 
+                    b.Property<string>("Watching")
+                        .HasColumnType("text");
+
                     b.HasKey("MessageId");
 
                     b.HasIndex("CreatedAt")

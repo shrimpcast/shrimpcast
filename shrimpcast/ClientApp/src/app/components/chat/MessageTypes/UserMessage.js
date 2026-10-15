@@ -159,6 +159,7 @@ const UserMessage = React.memo((props) => {
       chatRegex,
       showUserLabels,
       userLabel,
+      watching,
     } = props,
     removeMessage = async () => {
       setLoading(true);
@@ -237,11 +238,22 @@ const UserMessage = React.memo((props) => {
           )}
         </Box>
         {showUserLabels && (
-          <UserLabel
-            color={isAdmin ? "#b23c17" : isMod ? "#66ccff" : userColorDisplay}
-            label={userLabel}
-            isNormalUser={!isGolden && !isAdmin && !isMod}
-          />
+          <Box display={"flex"}>
+            <UserLabel
+              color={isAdmin ? "#b23c17" : isMod ? "#66ccff" : userColorDisplay}
+              label={userLabel}
+              isNormalUser={!isGolden && !isAdmin && !isMod}
+            />
+            {watching && enabledSources.length > 1 && (
+              <Box ml={userLabel ? "5px" : null} title={`This message was sent from /${watching}`}>
+                <UserLabel
+                  color={isAdmin ? "#b23c17" : isMod ? "#66ccff" : userColorDisplay}
+                  label={watching}
+                  isNormalUser={!isGolden && !isAdmin && !isMod}
+                />
+              </Box>
+            )}
+          </Box>
         )}
         <Box display="inline-block">
           <Typography

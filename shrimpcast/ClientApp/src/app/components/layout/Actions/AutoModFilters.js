@@ -50,6 +50,7 @@ const AutoModFilters = (props) => {
       getItems={AutoModFiltersManager.GetAll}
       icon={PrecisionManufacturingIcon}
       tableModel={tableModel}
+      showScroll={true}
       {...props}
     />
   );
