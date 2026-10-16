@@ -8,7 +8,9 @@ namespace shrimpcast.Entities.DB
     {
         public int SessionId { get; set; }
 
-        public required string SessionToken { get; set; }
+        public required string HashedSessionToken { get; set; }
+
+        public required string SessionTokenLookupKey { get; set; }
 
         public required DateTime CreatedAt { get; set; }
 

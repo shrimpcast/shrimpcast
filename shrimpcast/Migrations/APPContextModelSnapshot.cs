@@ -698,6 +698,10 @@ namespace shrimpcast.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("HashedSessionToken")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<bool>("IsAdmin")
                         .HasColumnType("boolean");
 
@@ -719,7 +723,7 @@ namespace shrimpcast.Migrations
                     b.Property<bool>("PassedTurnstile")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("SessionToken")
+                    b.Property<string>("SessionTokenLookupKey")
                         .IsRequired()
                         .HasColumnType("text");
 
