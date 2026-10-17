@@ -38,6 +38,9 @@ namespace shrimpcast.Data.Repositories
             configuration.StripeWebhookSecret = configuration.StripeWebhookSecretNotMapped;
             configuration.TurnstileSecretKey = configuration.TurnstileSecretKeyNotMapped;
             configuration.LbAuthToken = configuration.LbAuthTokenNotMapped;
+            configuration.GithubToken = configuration.GithubTokenNotMapped;
+            configuration.GithubReleaseId = configuration.GithubReleaseIdNotMapped;
+            configuration.GithubRepositoryName = configuration.GithubRepositoryNameNotMapped;
 
             if (configuration.MaxConnectionsPerIP < 1) configuration.MaxConnectionsPerIP = 1;
             if (configuration.MaxMessagesToShow > 5500) configuration.MaxMessagesToShow = 5500;
@@ -45,6 +48,7 @@ namespace shrimpcast.Data.Repositories
 
             _context.Entry(config).CurrentValues.SetValues(configuration);
             var updated = await _context.SaveChangesAsync();
+
             configuration.OBSHostNotMapped = null;
             configuration.OBSPasswordtNotMapped = null;
             configuration.VAPIDPrivateKeyNotMapped = null;
@@ -56,6 +60,10 @@ namespace shrimpcast.Data.Repositories
             configuration.StripeWebhookSecretNotMapped = null;
             configuration.TurnstileSecretKeyNotMapped = null;
             configuration.LbAuthTokenNotMapped = null;
+            configuration.GithubTokenNotMapped = null;
+            configuration.GithubReleaseIdNotMapped = null;
+            configuration.GithubRepositoryNameNotMapped = null;
+
             var updatedSources = await _sourceRepository.Save(configuration.Sources);
             if (updatedSources) configuration.Sources = await _sourceRepository.GetAll();
             return updated > 0 || updatedSources ? (true, updatedSources) : throw new Exception("Could not update record.");

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using shrimpcast.Data;
 using shrimpcast.Data.Repositories;
 using shrimpcast.Data.Repositories.Interfaces;
+using shrimpcast.Data.Services;
 using shrimpcast.Data.Services.Interfaces;
 using shrimpcast.Entities;
 using shrimpcast.Hubs;
@@ -71,6 +72,7 @@ builder.Services.AddScoped<IMediaServerStreamRepository, MediaServerStreamReposi
 builder.Services.AddScoped<IFFMPEGRepository, FFMPEGRepository>();
 builder.Services.AddScoped<IRTMPEndpointRepository, RTMPEndpointRepository>();
 builder.Services.AddScoped<IReportMetricsService, ReportMetricsService>();
+builder.Services.AddScoped<IDatabaseBackupService, DatabaseBackupService>();
 
 builder.Services.AddHangfire(configuration => configuration
                 .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
@@ -107,6 +109,9 @@ using (var scope = app.Services.CreateScope())
 
     var metrics = services.GetRequiredService<IReportMetricsService>();
     metrics.Initialize();
+
+    var databaseBackupService = services.GetRequiredService<IDatabaseBackupService>();
+    databaseBackupService.Initialize();
 }
 
 app.UseHttpsRedirection();

@@ -839,6 +839,10 @@ namespace shrimpcast.Hubs
             unorderedConfig.StripeWebhookSecretNotMapped = unorderedConfig.StripeWebhookSecret;
             unorderedConfig.TurnstileSecretKeyNotMapped = unorderedConfig.TurnstileSecretKey;
             unorderedConfig.LbAuthTokenNotMapped = unorderedConfig.LbAuthToken;
+            unorderedConfig.GithubTokenNotMapped = unorderedConfig.GithubToken;
+            unorderedConfig.GithubReleaseIdNotMapped = unorderedConfig.GithubReleaseId;
+            unorderedConfig.GithubRepositoryNameNotMapped = unorderedConfig.GithubRepositoryName;
+
             return new
             {
                 OrderedConfig = Configuration.BuildJSONConfiguration(),
