@@ -227,6 +227,29 @@ namespace shrimpcast.Entities.DB
         [NotMapped]
         public string? LbAuthTokenNotMapped { get; set; }
 
+        public bool EnableDatabaseBackup { get; set; }
+
+        [JsonIgnore]
+        public string? GithubToken { get; set; } = string.Empty;
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [NotMapped]
+        public string? GithubTokenNotMapped { get; set; }
+
+        [JsonIgnore]
+        public long? GithubReleaseId { get; set; } = null;
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [NotMapped]
+        public long? GithubReleaseIdNotMapped { get; set; }
+
+        [JsonIgnore]
+        public string? GithubRepositoryName { get; set; } = string.Empty;
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [NotMapped]
+        public string? GithubRepositoryNameNotMapped { get; set; }
+
         public object Clone() => MemberwiseClone();
     }
 
@@ -421,8 +444,7 @@ namespace shrimpcast.Entities.DB
                         new { name = nameof(config.TurnstilePublicKey).ToLower(), label = "Turnstile public key", value = config.TurnstilePublicKey },
                         new { name = nameof(config.TurnstileSecretKeyNotMapped).ToLower(), label = "Turnstile private key", value = config.TurnstileSecretKey },
                     }
-                }
-                ,
+                },
                 new
                 {
                     name = "Load balancing",
@@ -431,6 +453,17 @@ namespace shrimpcast.Entities.DB
                         new { name = nameof(config.LbSendInstanceMetrics).ToLower(), label = "Send metrics", value = config.LbSendInstanceMetrics },
                         new { name = nameof(config.LbTargetDomain).ToLower(), label = "Master instance domain", value = config.LbTargetDomain },
                         new { name = nameof(config.LbAuthTokenNotMapped).ToLower(), label = "Auth token", value = config.LbAuthToken },
+                    }
+                },
+                new
+                {
+                    name = "Backup",
+                    values = new object[]
+                    {
+                        new { name = nameof(config.EnableDatabaseBackup).ToLower(), label = "Enable database backups", value = config.EnableDatabaseBackup },
+                        new { name = nameof(config.GithubTokenNotMapped).ToLower(), label = "GitHub personal token", value = config.GithubToken },
+                        new { name = nameof(config.GithubRepositoryNameNotMapped).ToLower(), label = "GitHub repository name", value = config.GithubRepositoryName },
+                        new { name = nameof(config.GithubReleaseIdNotMapped).ToLower(), label = "GitHub release id", value = config.GithubReleaseId },
                     }
                 }
             };
