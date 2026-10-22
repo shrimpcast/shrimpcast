@@ -157,6 +157,9 @@ namespace shrimpcast.Migrations
                     b.Property<bool>("EnableChristmasTheme")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("EnableDatabaseBackup")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("EnableFireworks")
                         .HasColumnType("boolean");
 
@@ -180,6 +183,15 @@ namespace shrimpcast.Migrations
 
                     b.Property<bool>("ForceLatestVersion")
                         .HasColumnType("boolean");
+
+                    b.Property<long?>("GithubReleaseId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("GithubRepositoryName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("GithubToken")
+                        .HasColumnType("text");
 
                     b.Property<string>("GoldenPassTitle")
                         .IsRequired()

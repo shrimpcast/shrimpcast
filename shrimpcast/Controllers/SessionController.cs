@@ -34,6 +34,7 @@ namespace shrimpcast.Controllers
             var ensureCreated = await _sessionRepository.GetNewOrExistingAsync(accessToken, remoteAddress);
             var isAdmin = ensureCreated.IsAdmin;
             var configuration = _configurationSingleton.Configuration;
+            var underMaintenance = MaintenanceMode.IsUnderMaintenance();
 
             if (!isAdmin)
             {
@@ -89,6 +90,11 @@ namespace shrimpcast.Controllers
                         {
                             message = Constants.FRONTEND_OUTDATED;
                         }
+
+                        if (underMaintenance)
+                        {
+                            message = Constants.UNDER_MAINTENANCE;
+                        }
                     }
                 }
 
@@ -127,6 +133,7 @@ namespace shrimpcast.Controllers
                 colours,
                 isAdmin,
                 commands,
+                underMaintenance,
                 ensureCreated.IsMod,
                 ensureCreated.IsGolden,
                 ensureCreated.SessionId,
