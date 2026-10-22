@@ -6,14 +6,16 @@ using shrimpcast.Helpers;
 using System.IO.Compression;
 using System.Net.Http.Headers;
 using System.Text.Json;
+using System.Data.Common;
 using File = System.IO.File;
 
 namespace shrimpcast.Data.Services
 {
-    public class DatabaseBackupService(IFFMPEGRepository fFMPEGRepository, ConfigurationSingleton configurationSingleton) : IDatabaseBackupService
+    public class DatabaseBackupService(IFFMPEGRepository fFMPEGRepository, ConfigurationSingleton configurationSingleton, IConfiguration configuration) : IDatabaseBackupService
     {
         private readonly IFFMPEGRepository _fFMPEGRepository = fFMPEGRepository;
         private readonly ConfigurationSingleton _configurationSingleton = configurationSingleton;
+        private readonly IConfiguration _configuration = configuration;
         private static bool Initialized = false;
         private static HttpClient? _httpClient;
 
@@ -71,30 +73,46 @@ namespace shrimpcast.Data.Services
             var baseName = $"backup-{DateTime.UtcNow:yyyyMMdd-HHmmss}";
             var sqlDumpFile = $"{baseName}.sql";
             TryDelete(sqlDumpFile);
-            var processArguments = $"-h localhost -p 5432 -U postgres -d shrimpcast -f {sqlDumpFile}";
+
+            var connectionString = new DbConnectionStringBuilder
+            {
+                ConnectionString = _configuration.GetConnectionString("DefaultConnection")
+            };
+            var processArguments = $"-h localhost -p 5432 -U postgres -d {connectionString["Database"]} -f {sqlDumpFile}";
             var databaseDump = await ProcessLauncher.LaunchProcess("pg_dump",
                                                                    processArguments,
                                                                    "Success",
                                                                    false,
                                                                    null,
-                                                                   new KeyValuePair<string, string>("PGPASSWORD", "$hrimpca$t"));
+                                                                   new KeyValuePair<string, string?>("PGPASSWORD", connectionString["PWD"].ToString()));
 
             if (databaseDump != "Success" || !File.Exists(sqlDumpFile))
             {
-                throw new Exception("Could not create database dump");
+                throw new Exception($"Could not create database dump {sqlDumpFile}");
             }
 
             var zipFile = $"{baseName}.zip";
-            TryDelete(zipFile);
-            using var zip = ZipFile.Open(zipFile, ZipArchiveMode.Create);
-            zip.CreateEntryFromFile(sqlDumpFile, Path.GetFileName(sqlDumpFile));
+
+            try
+            {
+                TryDelete(zipFile);
+                using var zip = ZipFile.Open(zipFile, ZipArchiveMode.Create);
+                zip.CreateEntryFromFile(sqlDumpFile, Path.GetFileName(sqlDumpFile));
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            finally
+            {
+                TryDelete(sqlDumpFile);
+            }
 
             if (!File.Exists(zipFile))
             {
-                throw new Exception("Could not create database dump");
+                throw new Exception($"Could not zip {sqlDumpFile}");
             }
 
-            TryDelete(sqlDumpFile);
             return zipFile;
         }
 
@@ -139,7 +157,7 @@ namespace shrimpcast.Data.Services
             var size = uploadedAsset.RootElement.GetProperty("size").GetInt64();
             if (state != "uploaded")
             {
-                throw new Exception($"Upload not verified (state={state}, size={size}).");
+                throw new Exception($"Upload not verified (state={state}, size={size})");
             }
 
             return uploadedAsset.RootElement.GetProperty("browser_download_url").GetString()!;

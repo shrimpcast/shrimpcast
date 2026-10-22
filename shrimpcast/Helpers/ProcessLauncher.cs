@@ -4,7 +4,7 @@ namespace shrimpcast.Helpers
 {
     public class ProcessLauncher
     {
-        public async static Task<string> LaunchProcess(string FileName, string Arguments, string SuccessMessage = "", bool ReturnOutput = true, double? OperationTimeout = null, KeyValuePair<string, string>? EnvironmentVariable = null)
+        public async static Task<string> LaunchProcess(string FileName, string Arguments, string SuccessMessage = "", bool ReturnOutput = true, double? OperationTimeout = null, KeyValuePair<string, string?>? EnvironmentVariable = null)
         {
             using var process = MakeProcess(FileName, Arguments, false, null);
             if (EnvironmentVariable != null)
