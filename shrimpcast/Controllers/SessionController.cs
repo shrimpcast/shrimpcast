@@ -133,6 +133,7 @@ namespace shrimpcast.Controllers
                 colours,
                 isAdmin,
                 commands,
+                underMaintenance,
                 ensureCreated.IsMod,
                 ensureCreated.IsGolden,
                 ensureCreated.SessionId,

@@ -8,14 +8,13 @@ namespace shrimpcast.Helpers
 
         private readonly static string FlagPath = IsWindows ?
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "shrimpcast") 
-            : "/var/lib/shrimpcast";
+            : "/root";
 
         private readonly static string FlagFile = "maintenance.flag";
 
         public static bool IsUnderMaintenance()
         {
-            var directory = Directory.CreateDirectory(FlagPath);
-            var filePath = Path.Combine(directory.FullName, FlagFile);
+            var filePath = Path.Combine(FlagPath, FlagFile);
             return File.Exists(filePath);
         }
     }
