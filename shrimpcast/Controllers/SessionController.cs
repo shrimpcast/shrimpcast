@@ -34,6 +34,7 @@ namespace shrimpcast.Controllers
             var ensureCreated = await _sessionRepository.GetNewOrExistingAsync(accessToken, remoteAddress);
             var isAdmin = ensureCreated.IsAdmin;
             var configuration = _configurationSingleton.Configuration;
+            var underMaintenance = MaintenanceMode.IsUnderMaintenance();
 
             if (!isAdmin)
             {
@@ -88,6 +89,11 @@ namespace shrimpcast.Controllers
                         if (configuration.ForceLatestVersion && version != Constants.BACKEND_VERSION)
                         {
                             message = Constants.FRONTEND_OUTDATED;
+                        }
+
+                        if (underMaintenance)
+                        {
+                            message = Constants.UNDER_MAINTENANCE;
                         }
                     }
                 }

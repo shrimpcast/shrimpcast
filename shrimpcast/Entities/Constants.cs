@@ -56,6 +56,8 @@ namespace shrimpcast.Entities
 
         public const string FRONTEND_OUTDATED = "Outdated frontend, please reload.";
 
+        public const string UNDER_MAINTENANCE = "Site is under maintenance. Please try again shortly.";
+
         public const string RATE_LIMITED = "Too many invocations";
 
         public readonly static string[] SOURCE_RESERVERD_WORDS = ["chat", "live", "api", "embed", "invalid", "dropping"];
