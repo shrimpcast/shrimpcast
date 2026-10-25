@@ -99,7 +99,8 @@ namespace shrimpcast.Hubs
             var userAgent = Context.GetHttpContext()?.Request.Headers.UserAgent.ToString();
             var Session = await _sessionRepository.GetExistingAsync(accessToken, RemoteAddress);
             var isClosed = !(Session?.IsAdmin).GetValueOrDefault() && Configuration.OpenAt > DateTime.UtcNow;
-            
+            var underMaintenance = !(Session?.IsAdmin).GetValueOrDefault() && MaintenanceMode.IsUnderMaintenance();
+
             var reachedMaxUsers = Configuration.MaxConnectedUsers != 0 && ActiveConnections.Count >= Configuration.MaxConnectedUsers
                                   && !(Session?.IsAdmin).GetValueOrDefault() && !(Session?.IsMod).GetValueOrDefault() && !(Session?.IsGolden).GetValueOrDefault();
 
@@ -109,12 +110,13 @@ namespace shrimpcast.Hubs
 
             var mustPassTurnstail = await NeedsPassTurnstail(Session);
 
-            if (Session == null || isClosed || reachedMaxUsers || reachedMaxConnectionsPerAddress || mustPassTurnstail)
+            if (Session == null || isClosed || reachedMaxUsers || reachedMaxConnectionsPerAddress || mustPassTurnstail || underMaintenance)
             {
                 if (isClosed) await ForceDisconnect([Context.ConnectionId], Configuration.OpenAt);
                 if (reachedMaxUsers) await ForceDisconnect([Context.ConnectionId], Constants.MAX_USERS_REACHED);
                 if (reachedMaxConnectionsPerAddress) await ForceDisconnect([Context.ConnectionId], Constants.MAX_IP_USER_REACHED);
                 if (mustPassTurnstail) await ForceDisconnect([Context.ConnectionId], Constants.TURNSTILE_REQUIRED);
+                if (underMaintenance) await ForceDisconnect([Context.ConnectionId], Constants.UNDER_MAINTENANCE);
                 Context.Abort();
                 return;
             }
@@ -839,6 +841,10 @@ namespace shrimpcast.Hubs
             unorderedConfig.StripeWebhookSecretNotMapped = unorderedConfig.StripeWebhookSecret;
             unorderedConfig.TurnstileSecretKeyNotMapped = unorderedConfig.TurnstileSecretKey;
             unorderedConfig.LbAuthTokenNotMapped = unorderedConfig.LbAuthToken;
+            unorderedConfig.GithubTokenNotMapped = unorderedConfig.GithubToken;
+            unorderedConfig.GithubReleaseIdNotMapped = unorderedConfig.GithubReleaseId;
+            unorderedConfig.GithubRepositoryNameNotMapped = unorderedConfig.GithubRepositoryName;
+
             return new
             {
                 OrderedConfig = Configuration.BuildJSONConfiguration(),

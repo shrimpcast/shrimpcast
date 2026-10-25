@@ -4,7 +4,7 @@ namespace shrimpcast.Entities
 {
     public class Constants
     {
-        public const string BACKEND_VERSION = "2.2.2";
+        public const string BACKEND_VERSION = "2.2.3";
 
         public const string PING_COMMAND = "!ping";
 
@@ -55,6 +55,8 @@ namespace shrimpcast.Entities
         public const string TURNSTILE_REQUIRED = "TURNSTILE_VERIFICATION_REQUIRED";
 
         public const string FRONTEND_OUTDATED = "Outdated frontend, please reload.";
+
+        public const string UNDER_MAINTENANCE = "Site is under maintenance. Please try again shortly.";
 
         public const string RATE_LIMITED = "Too many invocations";
 

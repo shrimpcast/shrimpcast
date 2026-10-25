@@ -5,7 +5,7 @@ import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 import { ThemeProvider } from "@emotion/react";
-import { Alert, Snackbar } from "@mui/material";
+import { Alert, LinearProgress, Snackbar } from "@mui/material";
 import { useState } from "react";
 import SignalRManager from "./managers/SignalRManager";
 import { useEffect } from "react";
@@ -176,6 +176,7 @@ const App = () => {
         <ErrorAlert config={connectionDataState?.configuration} disconnectMessage={disconnectMessage} />
       ) : (
         <ErrorBoundary fallbackRender={FallbackError}>
+          {connectionDataState?.isAdmin && connectionDataState?.underMaintenance && <LinearProgress color="error" />}
           <Layout signalR={signalR} {...connectionDataState} />
         </ErrorBoundary>
       )}
