@@ -72,13 +72,13 @@ const MediaServer = (props) => {
       },
       {
         name: "showStats",
-        label: "Show VOD stats",
+        label: "Show VOD info",
         type: 1,
         color: "info",
         requires: {
           field: "videoEncodingPreset",
           value: "H264",
-          disabledTitle: "Enable H264 transcoding to show VOD stats",
+          disabledTitle: "Enable H264 transcoding to show VOD info",
         },
       },
     ],
