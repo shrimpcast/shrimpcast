@@ -472,6 +472,9 @@ namespace shrimpcast.Migrations
                     b.Property<bool>("Randomize")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("ShowStats")
+                        .HasColumnType("boolean");
+
                     b.Property<TimeSpan?>("StartAt")
                         .HasColumnType("interval");
 

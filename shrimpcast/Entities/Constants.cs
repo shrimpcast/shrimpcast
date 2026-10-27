@@ -66,6 +66,8 @@ namespace shrimpcast.Entities
 
         public const string WGET_FINISHED_DOWNLOAD = "[WGET]: Finished download.";
 
+        public const string VOD_TOTAL_DURATION = "Duration: ";
+
         public const string SELF_INSTANCE_LB_NAME = "Resource usage - system";
 
         public const string VIP_MOVIE = "vip";

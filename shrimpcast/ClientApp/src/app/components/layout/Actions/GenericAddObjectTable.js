@@ -93,12 +93,19 @@ const types = {
 const dateToISO = (value) => (value ? new Date(value).toISOString() : null);
 
 const Toggle = ({ item, field, updateConfig, itemsKey, identifier, onChange }) => {
+    const isDisabled = field.requires && item[field.requires.field] !== field.requires.value;
+
     return (
-      <Switch
-        checked={item[field.name]}
-        onChange={onChange || ((e) => updateConfig(e.target.checked, item, field.name, itemsKey, identifier))}
-        color={field.color}
-      />
+      <Tooltip title={isDisabled ? field.requires.disabledTitle : ""}>
+        <span>
+          <Switch
+            checked={item[field.name]}
+            onChange={onChange || ((e) => updateConfig(e.target.checked, item, field.name, itemsKey, identifier))}
+            color={field.color}
+            disabled={isDisabled}
+          />
+        </span>
+      </Tooltip>
     );
   },
   Text = ({ item, field }) => {
@@ -122,7 +129,7 @@ const Toggle = ({ item, field, updateConfig, itemsKey, identifier, onChange }) =
                 identifier,
                 itemsKey,
                 field.type,
-                field
+                field,
               )
             }
             variant="outlined"
@@ -160,7 +167,7 @@ const Toggle = ({ item, field, updateConfig, itemsKey, identifier, onChange }) =
                 identifier,
                 itemsKey,
                 field.type,
-                field
+                field,
               )
             }
             sx={styles.editThumbnailButton}
@@ -278,7 +285,7 @@ const GenericAddObjectTable = ({
       identifier,
       itemsKey,
       type,
-      wholeField
+      wholeField,
     ) => {
       setEditOpen(true);
       setEditContent({
@@ -532,7 +539,7 @@ const GenericAddObjectTable = ({
               editContent.identifier,
               false,
               false,
-              probeReturnData
+              probeReturnData,
             )
           }
           probe={editContent.wholeField.probe && editContent.wholeField}

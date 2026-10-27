@@ -1,4 +1,5 @@
 using Hangfire;
+using Microsoft.EntityFrameworkCore;
 using shrimpcast.Entities;
 using shrimpcast.Entities.DB;
 using shrimpcast.Helpers;
@@ -110,9 +111,30 @@ namespace shrimpcast.Data.Repositories.Interfaces
         {
             _processes.All.TryGetValue(stream, out var streamInfo);
             if (streamInfo == null || log == null) return;
-            if (log.Trim() == Constants.WGET_FINISHED_DOWNLOAD) streamInfo.Stream_IsDownloading = null;
+            log = log.Trim();
+
+            if (log == Constants.WGET_FINISHED_DOWNLOAD) streamInfo.Stream_IsDownloading = null;
+
+            if (streamInfo.Stream_ShowStats && log.StartsWith(Constants.VOD_TOTAL_DURATION))
+            {
+                try
+                {
+                    var parsedLog = log[Constants.VOD_TOTAL_DURATION.Length..].Trim().Split(",")[0];
+                    if (TimeSpan.TryParse(parsedLog, out var parsedTimespan))
+                    {
+                        var durationFile = Path.Combine(GetStreamDirectory(stream), "totalDuration.txt");
+                        var currentTimeFormat = "%{eif:floor(t/3600):d:2}:%{eif:floor(mod(t,3600)/60):d:2}:%{eif:floor(mod(t,60)):d:2}";
+                        File.WriteAllText(durationFile, $"{currentTimeFormat} / {parsedTimespan:hh\\:mm\\:ss}");
+                    }
+                }
+                catch (Exception)
+                {
+                    MediaServerLog($"Warning: malformed duration: [{log}]");
+                }
+            }
+
             if (streamInfo.Logs.Count >= 200) streamInfo.Logs.TryDequeue(out _);
-            streamInfo.Logs.Enqueue((DateTime.UtcNow, log.Trim()));
+            streamInfo.Logs.Enqueue((DateTime.UtcNow, log));
         }
 
         private void LogProcessCrash(string streamName)
@@ -490,6 +512,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             var isPassthrough = stream.VideoEncodingPreset == "PASSTHROUGH";
             var hasWatermark = !isPassthrough && !string.IsNullOrEmpty(stream.Watermark);
             var hasSubtitles = !isPassthrough && !string.IsNullOrEmpty(stream.Subtitles);
+            var hasStats = !isPassthrough && stream.ShowStats;
 
             if (hasWatermark)
             {
@@ -507,7 +530,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
 
             var videoMap = $"0:{stream.VideoStreamIndex}";
 
-            if (hasWatermark || hasSubtitles)
+            if (hasWatermark || hasSubtitles || hasStats)
             {
                 var subs = string.Empty;
                 if (hasSubtitles)
@@ -515,15 +538,35 @@ namespace shrimpcast.Data.Repositories.Interfaces
                     subs = $"subtitles='{stream.Subtitles!.Replace(@"\", "/").Replace(":", @"\:")}'";
                 }
 
-                command += $" -filter_complex ";
-                if (hasWatermark && hasSubtitles)
+                var drawText = string.Empty;
+                if (hasStats)
                 {
-                    command += $"\"[{videoMap}][1:v]overlay=W-w-10:10[vw];[vw]{subs}[v]\"";
+                    var durationFile = Path.Combine(dirInfo.FullName, "totalDuration.txt");
+                    File.WriteAllText(durationFile, string.Empty);
+
+                    drawText = hasSubtitles ? "," : "";
+
+                    var filename = _mediaServerStreamRepository.GetFilenameFromUrlQueryParams(stream.IngressUri, null);
+                    var currentTimeHeightOffset = 10;
+                    if (filename != string.Empty)
+                    {
+                        drawText += $@"drawtext=text='{filename.ToUpper()}':fontcolor=white:fontsize=24:box=1:boxcolor=black@0.5:boxborderw=6:x=10:y=10,";
+                        currentTimeHeightOffset += 35;
+                    }
+
+                    var escDurationFile = durationFile!.Replace(@"\", "/").Replace(":", @"\:");
+                    drawText += $@"drawtext=textfile='{escDurationFile}':reload=1:fontcolor=white:fontsize=20:box=1:boxcolor=black@0.5:boxborderw=6:x=10:y={currentTimeHeightOffset}";
+                }
+
+                command += $" -filter_complex ";
+                if (hasWatermark && (hasSubtitles || hasStats))
+                {
+                    command += $"\"[{videoMap}][1:v]overlay=W-w-10:10[vw];[vw]{subs}{drawText}[v]\"";
                 }
                 else
                 {
                     if (hasWatermark) command += $"\"[{videoMap}][1:v]overlay=W-w-10:10[v]\"";
-                    if (hasSubtitles) command += $"\"[{videoMap}]{subs}[v]\"";
+                    if (hasSubtitles || hasStats) command += $"\"[{videoMap}]{subs}{drawText}[v]\"";
                 }
 
                 command += " -map \"[v]\"";
@@ -574,6 +617,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
                 Playlist_CurrentlyPlaying = stream.Name,
                 Playlist_IsPlaylistOnEndEvent = isPlaylistOnEndEvent,
                 Stream_IsDownloading = stream.DownloadBeforePlay ? Constants.DOWNLOADING_STATUS_FORMAT() : null,
+                Stream_ShowStats = hasStats,
             };
         }
         #endregion
