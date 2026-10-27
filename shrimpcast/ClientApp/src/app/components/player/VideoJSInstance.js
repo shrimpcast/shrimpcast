@@ -38,12 +38,13 @@ const VideoJSInstance = (props) => {
     onRequireRestart = () =>
       setPlayerErrorState((playerErrorState) => ({ ...InitialPlayerState, requireRestart: true })),
     onTimeUpdate = () => {
-      if (!PlayerInitMode()) return;
       const player = playerRef.current;
+      player.loop(false);
+      if (!PlayerInitMode()) return;
       const currentTime = player.currentTime();
       const duration = player.duration();
-      if (!duration || isNaN(duration) || currentTime < duration - 0.5) return;
-      player.currentTime(0);
+      if (!duration || isNaN(duration) || currentTime < duration - 0.3) return;
+      player.loop(true);
       setPlayerOptions();
     },
     onWaiting = () => setPlayerErrorState((playerErrorState) => ({ ...InitialPlayerState, waiting: Date.now() })),
@@ -117,7 +118,7 @@ const VideoJSInstance = (props) => {
             type: "video/mp4",
           }
         : null;
-      if (player.src().includes(initStatus)) return;
+      if (player.src().includes(initStatus) && !player.paused() && player.readyState() >= 2) return;
       player.src(streamOverride || options.sources);
       player.play().catch((ex) => ex);
       setPlayerPoster();

@@ -79,7 +79,7 @@ const styles = {
       gap: 1,
     },
   },
-  DEFAULT_THUMBNAIL = "/images/video_thumbnail.png";
+  DEFAULT_THUMBNAIL = "/images/video-thumbnail.png";
 
 const types = {
   boolean: 1,
