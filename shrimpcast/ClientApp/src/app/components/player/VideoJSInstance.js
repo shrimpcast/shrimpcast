@@ -118,7 +118,7 @@ const VideoJSInstance = (props) => {
             type: "video/mp4",
           }
         : null;
-      if (player.src().includes(initStatus) && !player.paused() && player.readyState() >= 2) return;
+      if (player.src().includes(initStatus) && !player.error() && player.readyState() > 2) return;
       player.src(streamOverride || options.sources);
       player.play().catch((ex) => ex);
       setPlayerPoster();

@@ -550,12 +550,12 @@ namespace shrimpcast.Data.Repositories.Interfaces
                     var currentTimeHeightOffset = 10;
                     if (filename != string.Empty)
                     {
-                        drawText += $@"drawtext=text='{filename.ToUpper()}':fontcolor=white:fontsize=24:box=1:boxcolor=black@0.5:boxborderw=6:x=10:y=10,";
+                        drawText += $@"drawtext=text='{filename.ToUpper()}':fontcolor=white:fontsize=24:box=1:boxcolor=black@0.5:boxborderw=6:x=17:y=10,";
                         currentTimeHeightOffset += 35;
                     }
 
                     var escDurationFile = durationFile!.Replace(@"\", "/").Replace(":", @"\:");
-                    drawText += $@"drawtext=textfile='{escDurationFile}':reload=1:fontcolor=white:fontsize=20:box=1:boxcolor=black@0.5:boxborderw=6:x=10:y={currentTimeHeightOffset}";
+                    drawText += $@"drawtext=textfile='{escDurationFile}':reload=1:fontcolor=white:fontsize=20:box=1:boxcolor=black@0.5:boxborderw=6:x=17:y={currentTimeHeightOffset}";
                 }
 
                 command += $" -filter_complex ";
