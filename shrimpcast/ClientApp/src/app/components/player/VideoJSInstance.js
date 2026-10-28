@@ -38,13 +38,12 @@ const VideoJSInstance = (props) => {
     onRequireRestart = () =>
       setPlayerErrorState((playerErrorState) => ({ ...InitialPlayerState, requireRestart: true })),
     onTimeUpdate = () => {
-      const player = playerRef.current;
-      player.loop(false);
       if (!PlayerInitMode()) return;
+      const player = playerRef.current;
       const currentTime = player.currentTime();
       const duration = player.duration();
-      if (!duration || isNaN(duration) || currentTime < duration - 0.3) return;
-      player.loop(true);
+      if (!duration || isNaN(duration) || currentTime < duration - 0.5) return;
+      player.currentTime(0);
       setPlayerOptions();
     },
     onWaiting = () => setPlayerErrorState((playerErrorState) => ({ ...InitialPlayerState, waiting: Date.now() })),
