@@ -21,7 +21,6 @@ namespace shrimpcast.Data.Repositories
             config.Sources = await _sourceRepository.GetAll();
             return config;
         }
-            
 
         public async Task<(bool updated, bool updatedSources)> SaveAsync(Configuration configuration)
         {

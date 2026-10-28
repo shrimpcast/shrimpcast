@@ -7,7 +7,7 @@ namespace shrimpcast.Entities.DB
         public int RTMPEndpointId { get; set; }
 
         public required string Name { get; set; }
-        
+
         public required string PublishKey { get; set; }
 
         public required string PublishStatus { get; set; }

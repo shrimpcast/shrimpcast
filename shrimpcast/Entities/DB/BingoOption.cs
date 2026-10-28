@@ -4,7 +4,7 @@ namespace shrimpcast.Entities.DB
     {
         public int BingoOptionId { get; set; }
 
-        public bool IsChecked { get; set; } 
+        public bool IsChecked { get; set; }
 
         public DateTime CreatedAt { get; set; }
 

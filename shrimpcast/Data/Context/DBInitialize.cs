@@ -30,7 +30,7 @@ namespace shrimpcast.Data
 
             List<string> types = ["ConfigurationId", "ChatEnabled", "MaxConnectionsPerIP", "DefaultName", "MaxMessagesToShow", "PrimaryStreamUrl", "SecondaryStreamUrl", "StreamEnabled", "StreamTitle", "StreamDescription", "MessageDelayTime", "RequiredTokenTimeInMinutes", "OffsetDateTimeInMinutes", "ShowPoll", "AcceptNewOptions", "AcceptNewVotes", "PollTitle", "MinSentToParticipate", "UseLegacyPlayer", "UsePrimarySource", "UseRTCEmbed", "MuteLenghtInMinutes", "EnableFireworks", "EnableChristmasTheme", "SnowflakeCount", "BlockTORConnections", "OBSMainScene", "OBSMainSource", "OBSKinoSource", "OBSMusicSource", "OpenAt", "MinABTimeInMs", "MaxABTimeInMs", "VAPIDPublicKey", "VAPIDPrivateKey", "VAPIDMail"];
             List<object?> values = [];
-            var RemovedTypes = new Dictionary<string, object> 
+            var RemovedTypes = new Dictionary<string, object>
             {
                 { "BlockTORConnections", false },
                 { "PrimaryStreamUrl", string.Empty },
@@ -47,7 +47,8 @@ namespace shrimpcast.Data
                 {
                     values.Add(RemovedTypes[type]);
                     continue;
-                };
+                }
+
                 Type propType = property.PropertyType;
                 if (typeof(string) == propType) values.Add(string.Empty);
                 else values.Add(Activator.CreateInstance(propType));
@@ -94,7 +95,7 @@ namespace shrimpcast.Data
                { "#ff9800"},
             });
 
-            var parsedEmotes = JsonConvert.DeserializeObject <Emote[]>(File.ReadAllText("setup/emotes.json"));
+            var parsedEmotes = JsonConvert.DeserializeObject<Emote[]>(File.ReadAllText("setup/emotes.json"));
             var emotes = new object[parsedEmotes!.Length, 3];
             for (int i = 0; i < parsedEmotes.Length; i++)
             {

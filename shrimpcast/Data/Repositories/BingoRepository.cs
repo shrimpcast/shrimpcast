@@ -35,7 +35,6 @@ namespace shrimpcast.Data.Repositories
             var options = await _context.BingoOptions.AsNoTracking().ToListAsync();
             return [.. options.OrderBy(o => o.CreatedAt)];
         }
-            
 
         public async Task<bool> ToggleOptionStatus(int BingoOptionId)
         {
@@ -59,7 +58,7 @@ namespace shrimpcast.Data.Repositories
             return result > 0 ? true : throw new Exception("Could not update record.");
         }
 
-        public async Task<BingoOption?> ExistsById (int Id) => 
+        public async Task<BingoOption?> ExistsById(int Id) =>
             await _context.BingoOptions.AsNoTracking().FirstOrDefaultAsync(bo => bo.BingoOptionId == Id);
 
         public async Task<bool> IsBingo() =>

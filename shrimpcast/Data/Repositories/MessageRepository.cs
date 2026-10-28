@@ -50,7 +50,7 @@ namespace shrimpcast.Data.Repositories
         public async Task<Message> GetById(int MessageId)
         {
             var message = await _context.Messages.Where(message => message.MessageId == MessageId)
-                                                 .AsNoTracking() 
+                                                 .AsNoTracking()
                                                  .FirstAsync();
             return message;
         }
@@ -62,13 +62,13 @@ namespace shrimpcast.Data.Repositories
             var lastSent = message?.CreatedAt;
             var secondsDifference = DateTime.UtcNow.Subtract(lastSent.GetValueOrDefault()).TotalSeconds;
             var requiredTime = _configurationSingleton.Configuration.MessageDelayTime;
-            
+
             if (secondsDifference < requiredTime)
             {
                 var diff = Math.Ceiling(requiredTime - secondsDifference);
                 return $"You need to wait {diff} more {(diff == 1 ? "second" : "seconds")}.";
             }
-            
+
             return null;
         }
 

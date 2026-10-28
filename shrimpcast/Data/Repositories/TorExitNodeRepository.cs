@@ -1,7 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using shrimpcast.Data.Repositories.Interfaces;
 using System.Net;
 
-namespace shrimpcast.Data.Repositories.Interfaces
+namespace shrimpcast.Data.Repositories
 {
     public class TorExitNodeRepository(APPContext context) : ITorExitNodeRepository
     {

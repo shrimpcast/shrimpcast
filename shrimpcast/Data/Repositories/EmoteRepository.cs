@@ -1,8 +1,9 @@
 using Microsoft.EntityFrameworkCore;
+using shrimpcast.Data.Repositories.Interfaces;
 using shrimpcast.Entities;
 using shrimpcast.Entities.DB;
 
-namespace shrimpcast.Data.Repositories.Interfaces
+namespace shrimpcast.Data.Repositories
 {
     public class EmoteRepository(APPContext context) : IEmoteRepository
     {
@@ -64,7 +65,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             return result > 0 ? true : throw new Exception("Could not remove emote.");
         }
 
-        private async Task<bool> ExistsByName (string name) =>
+        private async Task<bool> ExistsByName(string name) =>
              await _context.Emotes.AsNoTracking().AnyAsync(emote => emote.Name == name);
     }
 }

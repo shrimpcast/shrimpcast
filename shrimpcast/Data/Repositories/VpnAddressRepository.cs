@@ -1,12 +1,13 @@
 using Hangfire;
 using Microsoft.EntityFrameworkCore;
+using shrimpcast.Data.Repositories.Interfaces;
 using shrimpcast.Entities;
 using shrimpcast.Entities.DB;
 using System.Net;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
-namespace shrimpcast.Data.Repositories.Interfaces
+namespace shrimpcast.Data.Repositories
 {
     public class VpnAddressRepository(APPContext context, ConfigurationSingleton configurationSingleton) : IVpnAddressRepository
     {
@@ -38,7 +39,8 @@ namespace shrimpcast.Data.Repositories.Interfaces
             {
                 await _context.AddAsync(VPNAddress);
                 await _context.SaveChangesAsync();
-            } catch (Exception) {}
+            }
+            catch (Exception) { }
         }
 
         public async Task<string> InvokeVerificationService(string RemoteAddress)
@@ -69,7 +71,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
                 var responseContent = await InvokeVerificationService(RemoteAddress);
                 var matchCriteria = _configurationSingleton.Configuration.VPNDetectionMatchCriteria;
                 var matches = new Regex(@"(?<=\[)[^]]+(?=\])").Matches(matchCriteria);
-                
+
                 using var document = JsonDocument.Parse(responseContent);
                 foreach (var match in matches)
                 {
@@ -82,7 +84,8 @@ namespace shrimpcast.Data.Repositories.Interfaces
                 }
 
                 return 0;
-            } catch (Exception) {}
+            }
+            catch (Exception) { }
             // If the service is unavailable, return -1 and temporarily allow the IP.
             return -1;
         }

@@ -1,10 +1,11 @@
 using Microsoft.EntityFrameworkCore;
+using shrimpcast.Data.Repositories.Interfaces;
 using shrimpcast.Entities;
 using shrimpcast.Entities.DB;
 using System.Collections.Concurrent;
 using WebPush;
 
-namespace shrimpcast.Data.Repositories.Interfaces
+namespace shrimpcast.Data.Repositories
 {
     public class NotificationRepository(APPContext context, ConfigurationSingleton configurationSingleton) : INotificationRepository
     {
@@ -13,7 +14,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
 
         public async Task<bool> Add(int SessionId, string Endpoint, string P256, string Auth)
         {
-            var Notification = new Notification 
+            var Notification = new Notification
             {
                 SessionId = SessionId,
                 Endpoint = Endpoint,

@@ -1,9 +1,10 @@
 using Newtonsoft.Json;
+using shrimpcast.Data.Repositories.Interfaces;
 using shrimpcast.Entities;
 using shrimpcast.Entities.DTO;
 using System.Text.Json;
 
-namespace shrimpcast.Data.Repositories.Interfaces
+namespace shrimpcast.Data.Repositories
 {
     public class BTCServerRepository(ConfigurationSingleton configurationSingleton) : IBTCServerRepository
     {
@@ -55,7 +56,8 @@ namespace shrimpcast.Data.Repositories.Interfaces
                 var responseContent = await response.Content.ReadAsStringAsync();
                 var invoices = JsonConvert.DeserializeObject<List<InvoiceDTO>>(responseContent);
                 return invoices;
-            } catch (Exception) { return null; }
+            }
+            catch (Exception) { return null; }
         }
 
         private HttpRequestMessage GetRequest(string path, bool usePost = false)

@@ -1,9 +1,10 @@
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
+using shrimpcast.Data.Repositories.Interfaces;
 using shrimpcast.Entities;
 using shrimpcast.Entities.DB;
 
-namespace shrimpcast.Data.Repositories.Interfaces
+namespace shrimpcast.Data.Repositories
 {
     public class MediaServerStreamRepository(APPContext context) : IMediaServerStreamRepository
     {
@@ -115,7 +116,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             else
             {
                 validateSource(stream.PlaylistPreset, false);
-                playlistSources = [..playlistSources.Where(source => !string.IsNullOrEmpty(source))];
+                playlistSources = [.. playlistSources.Where(source => !string.IsNullOrEmpty(source))];
             }
 
             if (!string.IsNullOrEmpty(stream.PlayOnEnd))

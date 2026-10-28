@@ -1,8 +1,9 @@
+using shrimpcast.Data.Repositories.Interfaces;
 using shrimpcast.Entities;
 using Stripe;
 using Stripe.Checkout;
 
-namespace shrimpcast.Data.Repositories.Interfaces
+namespace shrimpcast.Data.Repositories
 {
     public class StripeRepository(ConfigurationSingleton configurationSingleton) : IStripeRepository
     {
@@ -39,7 +40,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
                                 }
                             },
                             Quantity = 1
-                        } 
+                        }
                     ],
                     Mode = "payment",
                     SuccessUrl = $"https://{successUrl}",

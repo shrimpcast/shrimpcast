@@ -32,7 +32,7 @@ namespace shrimpcast.Controllers
             return new
             {
                 selfInstanceName,
-                instances = _lbMetrics.All.Values.Where(instance => selfInstanceOnly ? instance.InstanceName == selfInstanceName 
+                instances = _lbMetrics.All.Values.Where(instance => selfInstanceOnly ? instance.InstanceName == selfInstanceName
                                                                                      : instance.InstanceName != selfInstanceName)
                                                  .OrderByDescending(instance => instance.InstanceName)
                                                  .Select(instance => new
@@ -104,11 +104,11 @@ namespace shrimpcast.Controllers
             var isPlaylist = File.EndsWith("m3u8");
             var isPlaylistInfo = File.EndsWith("info");
             if (!isPlaylist && !isPlaylistInfo && !Constants.IsDevelopment()) return UnprocessableEntity();
-           
+
             _processes.All.TryGetValue(Name, out var streamInfo);
             if (isPlaylistInfo) return ReturnPlaylistInfo(streamInfo);
             else if (streamInfo == null) return NotFound();
-            
+
             streamInfo.Viewers.AddOrUpdate(HttpContext.Connection.RemoteIpAddress!, DateTime.UtcNow, (k, oldValue) => DateTime.UtcNow);
             var directory = _ffmpegRepository.GetStreamDirectory(Name);
             var contentType = isPlaylist ? "application/vnd.apple.mpegurl" : "video/mp2t";
@@ -148,7 +148,7 @@ namespace shrimpcast.Controllers
             if (endpoint!.PublishKey != auth) return Unauthorized();
 
             var isConnected = call == "publish";
-            var status =  isConnected ? "CONNECTED" : "DISCONNECTED";
+            var status = isConnected ? "CONNECTED" : "DISCONNECTED";
             endpoint.PublishStatus = status;
 
             await _rtmpEndpointRepository.Edit(endpoint);
