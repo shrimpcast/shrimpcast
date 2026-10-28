@@ -36,13 +36,13 @@ namespace shrimpcast.Data.Repositories
                            where poptions.IsActive
                            select new PollOption
                            {
-                             CreatedAt = poptions.CreatedAt,
-                             Value = poptions.Value,
-                             IsActive = poptions.IsActive,
-                             PollId = poptions.PollId,
-                             PollOptionId = poptions.PollOptionId,
-                             SessionId = poptions.SessionId,
-                             VoteCount = (from pvotes in _context.PollVotes where pvotes.PollOptionId == poptions.PollOptionId select pvotes.PollVoteId).Count(),
+                               CreatedAt = poptions.CreatedAt,
+                               Value = poptions.Value,
+                               IsActive = poptions.IsActive,
+                               PollId = poptions.PollId,
+                               PollOptionId = poptions.PollOptionId,
+                               SessionId = poptions.SessionId,
+                               VoteCount = (from pvotes in _context.PollVotes where pvotes.PollOptionId == poptions.PollOptionId select pvotes.PollVoteId).Count(),
                            });
             return await options.ToListAsync();
         }
@@ -57,7 +57,7 @@ namespace shrimpcast.Data.Repositories
                     Poll.Options = await GetOptions(Poll.PollId);
                 }
                 return Poll;
-            } 
+            }
 
             Poll = new Poll
             {
@@ -117,7 +117,7 @@ namespace shrimpcast.Data.Repositories
         public async Task<bool> UpdateVote(int PollVoteId, int PollOptionId, int SessionId, string RemoteAddress)
         {
             var vote = await _context.PollVotes.Where(pv => pv.PollVoteId == PollVoteId).FirstAsync();
-            if (vote.PollOptionId ==  PollOptionId)
+            if (vote.PollOptionId == PollOptionId)
             {
                 _context.PollVotes.Remove(vote);
             }

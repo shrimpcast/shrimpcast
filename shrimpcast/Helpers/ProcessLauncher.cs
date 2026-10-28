@@ -20,8 +20,8 @@ namespace shrimpcast.Helpers
             try
             {
                 await process.WaitForExitAsync()
-                             .WaitAsync(OperationTimeout != null 
-                             ? TimeSpan.FromSeconds(OperationTimeout.Value) 
+                             .WaitAsync(OperationTimeout != null
+                             ? TimeSpan.FromSeconds(OperationTimeout.Value)
                              : Timeout.InfiniteTimeSpan);
             }
             catch (Exception)

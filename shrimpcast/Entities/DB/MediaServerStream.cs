@@ -60,6 +60,6 @@
 
         public bool ShowStats { get; set; }
 
-        public MediaServerStream Clone() => (MediaServerStream) MemberwiseClone();
+        public MediaServerStream Clone() => (MediaServerStream)MemberwiseClone();
     }
 }

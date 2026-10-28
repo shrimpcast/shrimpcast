@@ -1,5 +1,6 @@
 using Hangfire;
 using Microsoft.EntityFrameworkCore;
+using shrimpcast.Data.Repositories.Interfaces;
 using shrimpcast.Entities;
 using shrimpcast.Entities.DB;
 using shrimpcast.Helpers;
@@ -8,7 +9,7 @@ using shrimpcast.Hubs.Dictionaries;
 using System.Diagnostics;
 using System.Text.Json.Nodes;
 
-namespace shrimpcast.Data.Repositories.Interfaces
+namespace shrimpcast.Data.Repositories
 {
     public class FFMPEGRepository(IMediaServerStreamRepository mediaServerStreamRepository, Processes<SiteHub> processes, MediaServerLogs<SiteHub> mediaServerLogs, Connections<SiteHub> activeConnections) : IFFMPEGRepository
     {
@@ -68,7 +69,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
                 streamInfo.Process.BeginOutputReadLine();
                 streamInfo.Process.BeginErrorReadLine();
 
-                MediaServerLog($"Started process {streamName}{(playlist != null ? $". [PLAYLIST] Playing: {stream.Name}" : null )}");
+                MediaServerLog($"Started process {streamName}{(playlist != null ? $". [PLAYLIST] Playing: {stream.Name}" : null)}");
                 CleanExistingVotes(streamName);
                 return streamInfo;
             }
@@ -91,7 +92,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
                 processInfo.Playlist_CurrentlyPlaying = null;
                 processInfo.Playlist_IsPlaylistOnEndEvent = false;
             }
-            
+
             try
             {
                 processInfo.Process.Kill(true);
@@ -177,8 +178,8 @@ namespace shrimpcast.Data.Repositories.Interfaces
 
                     // stream disabled and process not in memory or running
                     if (streamInfo == null && !stream.IsEnabled)
-                    { 
-                        continue; 
+                    {
+                        continue;
                     }
 
                     // stream disabled and process still in memory or running
@@ -254,7 +255,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
             var nextSourceName = string.Empty;
             var isPlaylistOnEndEvent = (streamInfo?.Playlist_IsPlaylistOnEndEvent).GetValueOrDefault();
             var getEndPlaylist = () => playlist = streams.First(stream => stream.Name == playlist.PlayOnEnd);
-            
+
             try
             {
                 var playlistSources = GetPlaylistItemsArray(isPlaylistOnEndEvent ? getEndPlaylist() : playlist);
@@ -267,10 +268,10 @@ namespace shrimpcast.Data.Repositories.Interfaces
                 {
                     var currentlyPlayingIndex = Array.FindIndex(playlistSources, p => p == streamInfo.Playlist_CurrentlyPlaying);
                     var hasPlaylistFinished = currentlyPlayingIndex + 1 == playlistSources.Length;
-                    
-                    if (!isPlaylistOnEndEvent 
-                        && !playlist.Randomize 
-                        && hasPlaylistFinished 
+
+                    if (!isPlaylistOnEndEvent
+                        && !playlist.Randomize
+                        && hasPlaylistFinished
                         && !string.IsNullOrEmpty(playlist.PlayOnEnd))
                     {
                         isPlaylistOnEndEvent = true;
@@ -279,7 +280,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
 
                     if (playlist.Randomize)
                     {
-                        nextSourceName = playlistSources[new Random().Next(0, playlistSources.Length)]; 
+                        nextSourceName = playlistSources[new Random().Next(0, playlistSources.Length)];
                     }
                     else if (currentlyPlayingIndex == -1 || hasPlaylistFinished)
                     {
@@ -326,7 +327,8 @@ namespace shrimpcast.Data.Repositories.Interfaces
             {
                 var percentage = int.Parse(logContent.Substring(logContent.LastIndexOf('%') - 3, 3).Trim());
                 streamInfo.Stream_IsDownloading = Constants.DOWNLOADING_STATUS_FORMAT(percentage);
-            } catch (Exception) { }
+            }
+            catch (Exception) { }
         }
 
         private void CalculateCPUUsage(StreamInfo streamInfo)
@@ -435,7 +437,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
 
         private void KillAllProcesses()
         {
-            Process[] processes = [..GetActiveFFMPEGProcesses(), ..GetActiveDownloads()];
+            Process[] processes = [.. GetActiveFFMPEGProcesses(), .. GetActiveDownloads()];
             foreach (var process in processes) process.Kill(true);
             CleanStreamDirectory(CleanRoot: true);
         }

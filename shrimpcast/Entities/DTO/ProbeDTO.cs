@@ -1,6 +1,4 @@
-﻿using shrimpcast.Entities.DB;
-
-namespace shrimpcast.Entities.DTO
+﻿namespace shrimpcast.Entities.DTO
 {
     public class ProbeDTO
     {

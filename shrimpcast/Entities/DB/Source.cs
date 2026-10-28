@@ -22,9 +22,9 @@ namespace shrimpcast.Entities.DB
         [JsonIgnore]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        public DateTime? StartsAt {  get; set; }
+        public DateTime? StartsAt { get; set; }
 
-        public DateTime? EndsAt {  get; set; }
+        public DateTime? EndsAt { get; set; }
 
         public required bool ResetOnScheduledSwitch { get; set; }
 

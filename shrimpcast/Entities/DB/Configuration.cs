@@ -12,8 +12,8 @@ namespace shrimpcast.Entities.DB
 
         public required bool ShowUserLabels { get; set; }
 
-        public required bool EnableVerifiedMode { get;set; }
-        
+        public required bool EnableVerifiedMode { get; set; }
+
         public required int MaxConnectionsPerIP { get; set; }
 
         public required int MaxConnectedUsers { get; set; }
@@ -28,7 +28,7 @@ namespace shrimpcast.Entities.DB
 
         public required string StreamTitle { get; set; }
 
-        public required string StreamDescription  { get; set; }
+        public required string StreamDescription { get; set; }
 
         public required int MessageDelayTime { get; set; }
 

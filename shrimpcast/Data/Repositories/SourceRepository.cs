@@ -29,24 +29,24 @@ namespace shrimpcast.Data.Repositories
             var model = Source.GetModel(true);
 
             // CUD
-            foreach (var newSource in newSources) 
+            foreach (var newSource in newSources)
             {
                 // Create
                 var existingSource = existingSources.FirstOrDefault(es => es.Name == newSource.Name);
-                if (existingSource == null) 
+                if (existingSource == null)
                 {
                     if (!Constants.SOURCE_RESERVERD_WORDS.Contains(newSource.Name.ToLower()))
                     {
                         ValidateLBSettings(newSource.LbSettings);
                         await _context.AddAsync(newSource);
                     }
-                } 
+                }
                 // Update
                 else if (JsonConvert.SerializeObject(newSource) != JsonConvert.SerializeObject(existingSource))
                 {
                     var entity = await _context.Sources.FirstAsync(s => s.Name == existingSource.Name);
                     var existingType = entity.GetType();
-                    var newType  = newSource.GetType();
+                    var newType = newSource.GetType();
                     foreach (var field in model)
                     {
                         var newValue = newType.GetProperty(field.Key)!.GetValue(newSource);

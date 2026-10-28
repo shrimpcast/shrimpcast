@@ -1,7 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using shrimpcast.Data.Repositories.Interfaces;
 using shrimpcast.Entities.DB;
 
-namespace shrimpcast.Data.Repositories.Interfaces
+namespace shrimpcast.Data.Repositories
 {
     public class RTMPEndpointRepository(APPContext context) : IRTMPEndpointRepository
     {
@@ -49,7 +50,8 @@ namespace shrimpcast.Data.Repositories.Interfaces
             {
                 using var client = new HttpClient();
                 publicIP = await client.GetStringAsync("https://api.ipify.org");
-            } catch (Exception) { }
+            }
+            catch (Exception) { }
             return publicIP;
         }
 

@@ -1,13 +1,11 @@
-﻿using Hardware.Info;
-
-namespace shrimpcast.Helpers
+﻿namespace shrimpcast.Helpers
 {
     public class MaintenanceMode
     {
         private readonly static bool IsWindows = OperatingSystem.IsWindows();
 
         private readonly static string FlagPath = IsWindows ?
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "shrimpcast") 
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "shrimpcast")
             : "/root";
 
         private readonly static string FlagFile = "maintenance.flag";
