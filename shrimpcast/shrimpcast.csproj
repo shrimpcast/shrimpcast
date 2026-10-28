@@ -36,7 +36,7 @@
     <EmbeddedResource Remove="streams\**" />
     <None Remove="$(SpaRoot)**" />
     <None Remove="streams\**" />
-    <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
+    <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**;$(SpaRoot)dist\**" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Migrations\" />
