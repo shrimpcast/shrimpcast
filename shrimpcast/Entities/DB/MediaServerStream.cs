@@ -58,6 +58,8 @@
 
         public bool DownloadBeforePlay { get; set; }
 
+        public bool ShowStats { get; set; }
+
         public MediaServerStream Clone() => (MediaServerStream) MemberwiseClone();
     }
 }

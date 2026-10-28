@@ -4,7 +4,7 @@ namespace shrimpcast.Entities
 {
     public class Constants
     {
-        public const string BACKEND_VERSION = "2.2.3";
+        public const string BACKEND_VERSION = "2.2.4";
 
         public const string PING_COMMAND = "!ping";
 
@@ -65,6 +65,8 @@ namespace shrimpcast.Entities
         public const string FFMPEG_INVALID_TS = "invalid dropping";
 
         public const string WGET_FINISHED_DOWNLOAD = "[WGET]: Finished download.";
+
+        public const string VOD_TOTAL_DURATION = "Duration: ";
 
         public const string SELF_INSTANCE_LB_NAME = "Resource usage - system";
 

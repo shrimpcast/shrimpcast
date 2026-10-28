@@ -1,6 +1,8 @@
 import { Box, Typography, LinearProgress, Stack, Divider, IconButton, Zoom, Tooltip } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import MediaServerManager from "../../../../managers/MediaServerManager";
+import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
+import UploadRoundedIcon from "@mui/icons-material/UploadRounded";
 
 const HealthStatusSx = (status) => ({
     padding: 1,
@@ -12,6 +14,22 @@ const HealthStatusSx = (status) => ({
     fontWeight: 600,
     textOverflow: "ellipsis",
     overflow: "hidden",
+  },
+  NStatusCSx = {
+    display: "flex",
+    gap: 1,
+    flexWrap: "wrap",
+  },
+  NetworkItemSx = {
+    display: "flex",
+    alignItems: "center",
+    gap: 1,
+    px: 1.5,
+    py: 1,
+    borderRadius: 2,
+    bgcolor: "action.hover",
+    flex: "1 1 140px",
+    minWidth: 0,
   };
 
 const ResourceUsageWidget = ({ stats, title, mt, status, instanceKey, removeCallback }) => {
@@ -71,12 +89,6 @@ const ResourceUsageWidget = ({ stats, title, mt, status, instanceKey, removeCall
             />
           </Box>
 
-          <Box>
-            <Typography variant="body2" color="text.secondary">
-              Network upload: {stats.network._string}
-            </Typography>
-          </Box>
-
           {stats.totalViewers !== -1 ? (
             <Box>
               <Typography variant="body2" color="text.secondary">
@@ -84,6 +96,32 @@ const ResourceUsageWidget = ({ stats, title, mt, status, instanceKey, removeCall
               </Typography>
             </Box>
           ) : null}
+
+          <Box sx={NStatusCSx}>
+            <Box sx={NetworkItemSx}>
+              <DownloadRoundedIcon sx={{ color: "success.main", fontSize: 20 }} />
+              <Box sx={{ minWidth: 0 }}>
+                <Typography variant="caption" color="text.secondary" display="block">
+                  Download
+                </Typography>
+                <Typography variant="body2" fontWeight={600} noWrap>
+                  {stats.networkDownload?._string}
+                </Typography>
+              </Box>
+            </Box>
+
+            <Box sx={NetworkItemSx}>
+              <UploadRoundedIcon sx={{ color: "info.main", fontSize: 20 }} />
+              <Box sx={{ minWidth: 0 }}>
+                <Typography variant="caption" color="text.secondary" display="block">
+                  Upload
+                </Typography>
+                <Typography variant="body2" fontWeight={600} noWrap>
+                  {stats.networkUpload?._string}
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
         </Stack>
       </Box>
     </Zoom>

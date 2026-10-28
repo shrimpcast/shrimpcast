@@ -9,7 +9,7 @@ import LoadBalancingManager from "../../../../managers/LoadBalancingManager";
 import CountdownTimer from "../../../others/CountdownTimer";
 import TimerIcon from "@mui/icons-material/Timer";
 
-const DEFAULT_THUMBNAIL = "/images/video_thumbnail.png",
+const DEFAULT_THUMBNAIL = "/images/video-thumbnail.png",
   ContainerSx = {
     height: "100%",
     width: "100%",
