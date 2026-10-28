@@ -35,19 +35,19 @@ const target = env.ASPNETCORE_HTTPS_PORT
     ? env.ASPNETCORE_URLS.split(";")[0]
     : "https://localhost:5001";
 
-const proxyOptions = (ws) => ({
+const proxyOptions = {
   target,
   secure: false,
-  ws,
+  ws: true,
   proxyTimeout: 10000,
-});
+};
 
 export default defineConfig({
   plugins: [plugin()],
   server: {
     proxy: {
-      "/api": proxyOptions(false),
-      "/hubs": proxyOptions(true),
+      "/api": proxyOptions,
+      "/hubs": proxyOptions,
     },
     port: parseInt(env.DEV_SERVER_PORT || "44421"),
     https: {
