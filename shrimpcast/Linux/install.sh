@@ -113,7 +113,7 @@ rm -rf /root/nginx_tmp
 
 # Install dotnet
 if [ "$SKIP_DOTNET" = false ]; then
-   apt-get install -y aspnetcore-runtime-10.0
+   apt-get install -y dotnet-sdk-10.0
 fi
 
 dotnet dev-certs https
