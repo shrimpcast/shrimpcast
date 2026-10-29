@@ -56,6 +56,6 @@ export default defineConfig({
     },
   },
   build: {
-    target: "chrome86",
+    target: ["chrome67", "safari12", "ios12", "firefox67"],
   },
 });
