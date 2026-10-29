@@ -48,7 +48,8 @@ const MainGridSx = {
 
 const Layout = (props) => {
   const theme = useTheme(),
-    { configuration, name } = props,
+    { configuration, name, isAdmin, underMaintenance } = props,
+    isUnderMaintenance = underMaintenance && isAdmin,
     [chatName, setChatName] = useState(name),
     location = useLocation(),
     sourceLocation = location.pathname?.replace("/", ""),
@@ -117,7 +118,9 @@ const Layout = (props) => {
             sx={PlayerBoxSx(theme, useFullChatMode)}
             className={"scrollbar-custom"}
           >
-            {isNavigating && <LinearProgress />}
+            {(isNavigating || isUnderMaintenance) && (
+              <LinearProgress color={isUnderMaintenance ? "error" : "primary"} />
+            )}
             <Box sx={PlayerContainerSx}>
               <BigScreen streamStatus={streamStatus} {...props} />
             </Box>
