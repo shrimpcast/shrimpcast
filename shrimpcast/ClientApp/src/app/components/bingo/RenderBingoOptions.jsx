@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import Grid from "@mui/material/Unstable_Grid2";
 import SignalRManager from "../../managers/SignalRManager";
 import BingoOption from "./BingoOption";
@@ -13,7 +13,7 @@ const RenderBingoOptions = (props) => {
           // Trigger render update
           existingOptions = existingOptions.concat({});
           return existingOptions;
-        })
+        }),
       );
 
       signalR.on(SignalRManager.events.bingoReset, () =>
@@ -23,15 +23,15 @@ const RenderBingoOptions = (props) => {
             isChecked: false,
           }));
           return newOptions;
-        })
+        }),
       );
 
       signalR.on(SignalRManager.events.bingoOptionAdded, (option) =>
-        setOptions((existingOptions) => existingOptions.concat(option))
+        setOptions((existingOptions) => existingOptions.concat(option)),
       );
 
       signalR.on(SignalRManager.events.bingoOptionRemoved, (optionId) =>
-        setOptions((existingOptions) => existingOptions.filter((eo) => eo.bingoOptionId !== optionId))
+        setOptions((existingOptions) => existingOptions.filter((eo) => eo.bingoOptionId !== optionId)),
       );
     },
     removeEventHandlers = () => {

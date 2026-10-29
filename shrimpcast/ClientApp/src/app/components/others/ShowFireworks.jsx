@@ -1,5 +1,5 @@
 import { Fireworks } from "@fireworks-js/react";
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 const ShowFireworks = (props) => {
   const ref = useRef(null),
@@ -24,7 +24,7 @@ const ShowFireworks = (props) => {
             height: "100%",
             position: "fixed",
             zIndex: 2,
-            pointerEvents:'none',
+            pointerEvents: "none",
           }}
         />
       )}
