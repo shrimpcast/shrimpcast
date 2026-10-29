@@ -55,4 +55,7 @@ export default defineConfig({
       cert: fs.readFileSync(certFilePath),
     },
   },
+  build: {
+    target: "chrome86",
+  },
 });
