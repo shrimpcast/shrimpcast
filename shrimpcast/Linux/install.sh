@@ -10,6 +10,14 @@ APPLICATION=""
 NGINX=""
 SKIP_DOTNET=false
 
+# Check ubuntu version
+source /etc/os-release
+if [ "$ID" != "ubuntu" ] || [ "$VERSION_ID" != "24.04" ]; then
+  echo "This script requires Ubuntu 24.04"
+  exit 1
+fi
+
+# Check root 
 if [ "$(id -u)" -ne 0 ]; then
     echo "This script requires root privileges. Please run this script as root (sudo -i)."
     exit 1
@@ -103,32 +111,14 @@ chmod +x /root/shrimpcast/shrimpcast || handle_error "Failed to set execution pe
 # Clean up temporary files
 rm -rf /root/nginx_tmp
 
-# Get Ubuntu version
-declare repo_version=$(if command -v lsb_release &> /dev/null; then lsb_release -r -s; else grep -oP '(?<=^VERSION_ID=).+' /etc/os-release | tr -d '"'; fi)
-
+# Install dotnet
 if [ "$SKIP_DOTNET" = false ]; then
-    # Download Microsoft signing key and repository
-    wget https://packages.microsoft.com/config/ubuntu/$repo_version/packages-microsoft-prod.deb -O /root/packages-microsoft-prod.deb || handle_error "Failed to download Microsoft signing key and repository"
-    
-    # Install Microsoft signing key and repository
-    dpkg -i /root/packages-microsoft-prod.deb || handle_error "Failed to install Microsoft signing key and repository"
-    
-    # Clean up
-    rm /root/packages-microsoft-prod.deb || handle_error "Failed to remove packages-microsoft-prod.deb"
-    
-    # Update packages
-    apt update || handle_error "Failed to update packages"
-    
-    # Install .NET SDK 8.0
-    apt-get update && \
-      apt-get install -y dotnet-sdk-8.0 || handle_error "Failed to install .NET SDK 8.0"
+   apt-get install -y aspnetcore-runtime-10.0
 fi
 
 dotnet dev-certs https
 
 # Install ffmpeg
-sudo add-apt-repository -y ppa:ubuntuhandbook1/ffmpeg6
-sudo apt-get update
 sudo apt-get install -y ffmpeg
 
 # Create systemd service file
