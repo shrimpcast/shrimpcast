@@ -17,7 +17,7 @@ if [ "$ID" != "ubuntu" ] || [ "$VERSION_ID" != "24.04" ]; then
   exit 1
 fi
 
-# Check root 
+# Check root
 if [ "$(id -u)" -ne 0 ]; then
     echo "This script requires root privileges. Please run this script as root (sudo -i)."
     exit 1
@@ -111,9 +111,8 @@ chmod +x /root/shrimpcast/shrimpcast || handle_error "Failed to set execution pe
 # Clean up temporary files
 rm -rf /root/nginx_tmp
 
-# Install dotnet
 if [ "$SKIP_DOTNET" = false ]; then
-   apt-get install -y dotnet-sdk-10.0
+    apt-get install -y dotnet-sdk-10.0 || handle_error "Failed to install .NET SDK 8.0"
 fi
 
 dotnet dev-certs https
@@ -189,6 +188,11 @@ sudo ufw allow 1935
 
 # Enable UFW with the configured rules
 sudo ufw --force enable
+
+# Set stream permissions
+sudo chown -R root:www-data /root/shrimpcast
+sudo chmod -R 750 /root/shrimpcast
+sudo chmod 711 /root
 
 # Set file descriptor limit
 NOFILE_LIMIT=524288

@@ -11,7 +11,7 @@ if [ "$ID" != "ubuntu" ] || [ "$VERSION_ID" != "24.04" ]; then
   exit 1
 fi
 
-# Check root 
+# Check root
 if [ "$(id -u)" -ne 0 ]; then
     echo "This script requires root privileges. Please run this script as root (sudo -i)."
     exit 1
@@ -81,4 +81,3 @@ restart_shrimpcast
 
 echo "Files extracted successfully to $DEST_FOLDER folder."
 echo "shrimpcast service restarted."
-
