@@ -112,7 +112,7 @@ chmod +x /root/shrimpcast/shrimpcast || handle_error "Failed to set execution pe
 rm -rf /root/nginx_tmp
 
 if [ "$SKIP_DOTNET" = false ]; then
-    apt-get install -y dotnet-sdk-10.0 || handle_error "Failed to install .NET SDK 8.0"
+    apt-get install -y dotnet-sdk-10.0 || handle_error "Failed to install .NET SDK 10.0"
 fi
 
 dotnet dev-certs https
