@@ -73,7 +73,7 @@ To install Shrimpcast, follow these steps:
 > You need a valid domain to run this script, with properly configured DNS records.
 
 > [!NOTE]
-> Recommended OS: Ubuntu x64 22.04 LTS
+> Required OS: Ubuntu x64 24.04 LTS
 
 > [!NOTE]
 > While the exact hardware requirements depend on your workload, a minimum of 2 vCPUs and 4 GB of RAM is recommended.
@@ -114,15 +114,6 @@ Or at the end of step 1.
 
 ## Troubleshooting
 
-- .NET SDK installed but not found: run <br>
-  ```bash
-  sudo snap remove dotnet-sdk &&
-  sudo apt remove -y 'dotnet*' 'aspnetcore*' 'netstandard*' &&
-  sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list /etc/apt/sources.list.d/microsoft-prod.list.save &&
-  sudo apt update &&
-  sudo apt install -y dotnet8
-  ```
-  then add the `--skipdotnet` flag to the install script and re-run it: `./install.sh [...] --skipdotnet`
 - Certbot fails: <br>
   Ensure that port 80 on your VPS is publicly accessible and that your domain’s DNS is correctly configured. Then run:
   ```bash
@@ -145,8 +136,8 @@ speedtest
 
 To build and debug the project, you will need:
 
-- An IDE: **Visual Studio**, **VS Code**, or **Rider**
-- **.NET 8 SDK and runtime**
+- An IDE: **Visual Studio 2026**, **VS Code**, or **Rider**
+- **.NET 10 SDK**
 - **PostgreSQL**
 - **FFmpeg 6 or later**  
   *(On Windows, ensure FFmpeg is available on your system `PATH`)*
@@ -156,6 +147,7 @@ To build and debug the project, you will need:
 - Git
 - Add Git’s `bin` directory to your system `PATH`  
   *(typically `C:\Program Files\Git\usr\bin`), as the project relies on several Bash utilities*
+- Wget for windows, also on your system `PATH`
 
 ## Usage
 
