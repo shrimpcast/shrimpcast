@@ -457,7 +457,7 @@ namespace shrimpcast.Entities.DB
                 },
                 new
                 {
-                    name = "Backup",
+                    name = "Backups",
                     values = new object[]
                     {
                         new { name = nameof(config.EnableDatabaseBackup).ToLower(), label = "Enable database backups", value = config.EnableDatabaseBackup },
