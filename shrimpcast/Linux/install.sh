@@ -62,6 +62,72 @@ then
     sudo ufw disable
 fi
 
+# Stop and mask automatic APT scheduling.
+systemctl disable --now apt-daily.timer apt-daily-upgrade.timer unattended-upgrades.service 2>/dev/null || true
+systemctl mask apt-daily.timer apt-daily-upgrade.timer apt-daily.service apt-daily-upgrade.service
+
+# Remove unattended upgrades.
+apt-get purge -y unattended-upgrades || {
+    echo "ERROR: Failed to purge unattended-upgrades."
+    exit 1
+}
+
+# Disable APT periodic activity and automatic reboot settings.
+rm -f /etc/apt/apt.conf.d/20auto-upgrades
+rm -f /etc/apt/apt.conf.d/50unattended-upgrades
+rm -rf /etc/apt/apt.conf.d/50unattended-upgrades.d
+printf 'APT::Periodic::Update-Package-Lists "0";\nAPT::Periodic::Unattended-Upgrade "0";\n' \
+    > /etc/apt/apt.conf.d/99-disable-automatic-updates
+
+# Prevent needrestart from automatically restarting services.
+mkdir -p /etc/needrestart/conf.d
+printf "\$nrconf{restart} = 'l';\n" \
+    > /etc/needrestart/conf.d/99-no-auto-restart.conf
+
+# Remove unattended-upgrades state and logs.
+rm -rf /var/log/unattended-upgrades /var/lib/unattended-upgrades
+
+systemctl daemon-reload
+
+# Verify package removal.
+if dpkg-query -W -f='${db:Status-Status}' unattended-upgrades 2>/dev/null | grep -qx installed; then
+    echo "ERROR: unattended-upgrades is still installed."
+    exit 1
+fi
+
+# Verify APT timers and services are masked.
+for unit in apt-daily.timer apt-daily-upgrade.timer apt-daily.service apt-daily-upgrade.service; do
+    if [[ "$(systemctl is-enabled "$unit" 2>/dev/null)" != masked ]]; then
+        echo "ERROR: $unit is not masked."
+        exit 1
+    fi
+done
+
+# Verify automatic update settings.
+if ! apt-config dump | grep -q 'APT::Periodic::Update-Package-Lists "0"'; then
+    echo "ERROR: Automatic package-list updates are not disabled."
+    exit 1
+fi
+
+if ! apt-config dump | grep -q 'APT::Periodic::Unattended-Upgrade "0"'; then
+    echo "ERROR: Automatic package upgrades are not disabled."
+    exit 1
+fi
+
+# Verify needrestart configuration.
+if ! grep -Fqx "\$nrconf{restart} = 'l';" /etc/needrestart/conf.d/99-no-auto-restart.conf; then
+    echo "ERROR: needrestart auto-restart prevention is not configured."
+    exit 1
+fi
+
+# Verify no unattended-upgrade process remains.
+if pgrep -af '[u]nattended-upgrade'; then
+    echo "ERROR: An unattended-upgrade process is still running."
+    exit 1
+fi
+
+echo "Automatic APT updates disabled; needrestart configured not to restart services automatically."
+
 # Install unzip package
 apt-get update && apt-get install unzip -y || handle_error "Failed to install unzip"
 
