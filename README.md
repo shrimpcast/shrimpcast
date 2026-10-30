@@ -126,10 +126,11 @@ Or at the end of step 1.
 ## Throughput estimation
 Accurately measure your server's actual upload speed:
 ```bash
-sudo apt-get install curl
-curl -s https://packagecloud.io/install/repositories/ookla/speedtest-cli/script.deb.sh | sudo bash
-sudo apt-get install speedtest
-speedtest
+cd /tmp
+curl -sSL https://install.speedtest.net/app/cli/ookla-speedtest-1.2.0-linux-x86_64.tgz -o speedtest.tgz
+tar -xzf speedtest.tgz
+sudo mv speedtest /usr/local/bin/
+speedtest --accept-license --accept-gdpr
 ```
 
 ## Development
