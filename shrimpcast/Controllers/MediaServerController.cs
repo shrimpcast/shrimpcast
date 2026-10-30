@@ -81,8 +81,9 @@ namespace shrimpcast.Controllers
             {
                 var activeFfmpegProcessCount = $"Active FFMPEG processes: {_ffmpegRepository.GetActiveFFMPEGProcesses().Length}";
                 var activeDownloadCount = $"Active downloads: {_ffmpegRepository.GetActiveDownloads().Length}";
+                var systemTime = $"Uptime: {DateTime.UtcNow - _configurationSingleton.StartTime:dd\\:hh\\:mm\\:ss}";
                 var mediaLogs = _mediaServerLogs.Logs.Select(l => $"{l.AddedAt}Z: {l.Content}");
-                return mediaLogs.Prepend(activeFfmpegProcessCount).Prepend(activeDownloadCount);
+                return mediaLogs.Prepend(systemTime).Prepend(activeFfmpegProcessCount).Prepend(activeDownloadCount);
             }
             _processes.All.TryGetValue(Name, out var streamInfo);
             if (streamInfo == null) return [];

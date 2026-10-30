@@ -3,6 +3,15 @@
 # Define the URL and destination folder
 DEST_FOLDER=~/shrimpcast
 URL=""
+
+# Check ubuntu version
+source /etc/os-release
+if [ "$ID" != "ubuntu" ] || [ "$VERSION_ID" != "24.04" ]; then
+  echo "This script requires Ubuntu 24.04"
+  exit 1
+fi
+
+# Check root
 if [ "$(id -u)" -ne 0 ]; then
     echo "This script requires root privileges. Please run this script as root (sudo -i)."
     exit 1
@@ -72,4 +81,3 @@ restart_shrimpcast
 
 echo "Files extracted successfully to $DEST_FOLDER folder."
 echo "shrimpcast service restarted."
-
