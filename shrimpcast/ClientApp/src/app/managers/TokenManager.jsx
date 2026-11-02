@@ -1,0 +1,68 @@
+import axios from "axios";
+import LocalStorageManager from "./LocalStorageManager";
+
+class TokenManager {
+  static async EnsureTokenExists(abortSignal, location) {
+    let url = `/api/session/GetNewOrExisting?accessToken=${LocalStorageManager.getToken()}&version=${
+      import.meta.env.VITE_APP_VERSION
+    }`;
+    const params = new URLSearchParams(location.search);
+    const turnstileToken = params.get("TT");
+    if (turnstileToken) {
+      url += "&turnstileToken=" + turnstileToken;
+      console.log("TT: " + turnstileToken);
+    }
+    let response = await axios.get(url, { signal: abortSignal, timeout: 10000 }).catch((ex) => {
+      if (!abortSignal?.aborted) {
+        if (ex.message.includes("Request failed with status code 403")) {
+          ex.message = "likely a CDN-related issue. Please try a hard refresh (Ctrl + F5)";
+          setTimeout(() => window.location.reload(true), 1000);
+        }
+        return { data: { message: `Could not load the site: ${ex.message}. Refresh to try again.` } };
+      }
+    });
+    this.SaveData(response?.data?.sessionToken);
+    return response?.data;
+  }
+
+  static async ManagedChallengeNeeded() {
+    const response = await axios.get("/api/session/CloudflareChallengeNeeded").catch((ex) => ({
+      message: "TURNSTILE_VERIFICATION_REQUIRED",
+    }));
+    return response?.message;
+  }
+
+  static async ChangeName(signalR, name) {
+    const response = await signalR.invoke("ChangeName", name).catch((ex) => console.log(ex));
+    return response;
+  }
+
+  static async Import(accessToken) {
+    const response = await axios.get(`/api/session/ImportToken?accessToken=${accessToken}`).catch((ex) => ({
+      message: `Error: ${ex.message}`,
+    }));
+
+    if (response.data === false) response.message = "Error: invalid token.";
+    else if (response.data) {
+      TokenManager.SaveData(accessToken, null);
+      setTimeout(() => window.location.reload(), 100);
+    }
+    return response;
+  }
+
+  static async BeginGoldenPassPurchase(signalR, isCrypto, amount) {
+    const response = await signalR.invoke("BeginPurchase", isCrypto, amount).catch((ex) => console.log(ex));
+    return response;
+  }
+
+  static async GetSessionInvoices(signalR) {
+    const response = await signalR.invoke("GetSessionInvoices").catch((ex) => console.log(ex));
+    return response || [];
+  }
+
+  static async SaveData(token) {
+    token && LocalStorageManager.saveToken(token);
+  }
+}
+
+export default TokenManager;

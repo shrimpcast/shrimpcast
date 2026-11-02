@@ -41,7 +41,7 @@ namespace shrimpcast.Controllers
                 var isBanned = await _banRepository.IsBanned(remoteAddress, ensureCreated.SessionId);
                 object? message = null;
                 if (isBanned) message = Constants.BANNED_MESSAGE;
-                else 
+                else
                 {
                     if (configuration.OpenAt > DateTime.UtcNow)
                     {
@@ -49,7 +49,7 @@ namespace shrimpcast.Controllers
                     }
                     else
                     {
-                        if (configuration.EnableTurnstileMode 
+                        if (configuration.EnableTurnstileMode
                             && !configuration.TurnstileManagedMode
                             && !ensureCreated.PassedTurnstile
                             && !ensureCreated.IsVerified
@@ -63,7 +63,7 @@ namespace shrimpcast.Controllers
                                 if (isTokenValid) await _sessionRepository.SetTurnstilePassed(ensureCreated.SessionId);
                             }
 
-                            if (!isTokenValid 
+                            if (!isTokenValid
                                 && !await _messageRepository.HasEnoughCountBySessionId(ensureCreated.SessionId, (int)configuration.TurnstileSkipThreshold))
                             {
                                 message = Constants.TURNSTILE_REQUIRED;
@@ -119,8 +119,8 @@ namespace shrimpcast.Controllers
             var poll = await _pollRepository.GetExistingOrNew(false);
             var canAddVote = await _pollRepository.CanAddVote(remoteAddress, ensureCreated.SessionId);
             var colours = await _nameColourRepository.GetAll();
-            var commands = isAdmin ? Constants.ALL_COMMANDS 
-                : ensureCreated.IsMod ? Constants.MOD_COMMANDS 
+            var commands = isAdmin ? Constants.ALL_COMMANDS
+                : ensureCreated.IsMod ? Constants.MOD_COMMANDS
                 : Constants.USER_COMMANDS;
 
             return new

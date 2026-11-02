@@ -1,0 +1,268 @@
+import { useState, useEffect, useRef } from "react";
+import videojs from "video.js";
+import LocalStorageManager from "../../managers/LocalStorageManager";
+import MediaServerManager from "../../managers/MediaServerManager";
+import CenteredSpinner from "../loaders/CenteredSpinner";
+
+const InitialPlayerState = {
+    waiting: null,
+    requireRestart: false,
+    paused: false,
+  },
+  streamInitStatus = {
+    0: `/media/stream_offline.mp4?v=${import.meta.env.VITE_APP_CSS_CACHE_BUST}`,
+    1: `/media/stream_downloading.mp4?v=${import.meta.env.VITE_APP_CSS_CACHE_BUST}`,
+    2: `/media/stream_starting.mp4?v=${import.meta.env.VITE_APP_CSS_CACHE_BUST}`,
+  };
+
+const VideoJSInstance = (props) => {
+  const { options, theme, poster, isEmbed } = props,
+    videoRef = useRef(null),
+    playerRef = useRef(null),
+    [cssLoaded, setCssLoaded] = useState(false),
+    [playerInitialized, setPlayerInitialized] = useState(false),
+    [shouldSetOptions, setShouldSetOptions] = useState(false),
+    [, setPlayerErrorState] = useState(InitialPlayerState);
+
+  const PlayerInitMode = () => {
+    const player = playerRef.current;
+    const initStatus = streamInitStatus[player.titleBar.state.status];
+    return initStatus;
+  };
+
+  const onVolumeChange = () => {
+      const player = playerRef.current;
+      const currentVolume = player.volume();
+      LocalStorageManager.setPlayerVolume(currentVolume);
+    },
+    onRequireRestart = () =>
+      setPlayerErrorState((playerErrorState) => ({ ...InitialPlayerState, requireRestart: true })),
+    onTimeUpdate = () => {
+      if (!PlayerInitMode()) return;
+      const player = playerRef.current;
+      const currentTime = player.currentTime();
+      const duration = player.duration();
+      if (!duration || isNaN(duration) || currentTime < duration - 0.5) return;
+      player.currentTime(0);
+      setPlayerOptions();
+    },
+    onWaiting = () => setPlayerErrorState((playerErrorState) => ({ ...InitialPlayerState, waiting: Date.now() })),
+    onPause = () => {
+      const player = playerRef.current;
+      player.removeClass("vjs-waiting");
+      player.removeClass("vjs-seeking");
+      setPlayerErrorState((playerErrorState) => ({ ...playerErrorState, paused: true }));
+    },
+    onPlay = () => setPlayerErrorState((playerErrorState) => ({ ...playerErrorState, paused: false }));
+
+  const watchForPlayerEvents = () =>
+    setPlayerErrorState((playerErrorState) => {
+      if (playerErrorState.requireRestart) {
+        console.log(`[${playerInitialized}] playback error. Attempting restart.`);
+        setPlayerOptions();
+        return InitialPlayerState;
+      }
+
+      if (playerErrorState.waiting) {
+        const elapsedSeconds = (Date.now() - playerErrorState.waiting) / 1000;
+        if (elapsedSeconds < 4.2) return playerErrorState;
+
+        const player = playerRef.current;
+        if (player.readyState() <= 2) {
+          console.log(
+            `[${playerInitialized}] elapsed ${elapsedSeconds} seconds of waiting. ${!playerErrorState.paused ? "Atempting restart..." : ""} `,
+          );
+
+          if (!playerErrorState.paused) {
+            setPlayerOptions();
+          }
+        }
+        return InitialPlayerState;
+      }
+
+      return playerErrorState;
+    });
+
+  const addPlayerHandlers = () => {
+      const player = playerRef.current;
+      player.on("error", onRequireRestart);
+      player.on("ended", onRequireRestart);
+      player.on("timeupdate", onTimeUpdate);
+      player.on("waiting", onWaiting);
+      player.on("volumechange", onVolumeChange);
+      player.on("pause", onPause);
+      player.on("play", onPlay);
+      window[playerInitialized] = setInterval(watchForPlayerEvents, 1700);
+    },
+    removePlayerHandlers = () => {
+      const player = playerRef.current;
+      player.off("error", onRequireRestart);
+      player.off("ended", onRequireRestart);
+      player.off("timeupdate", onTimeUpdate);
+      player.off("waiting", onWaiting);
+      player.off("volumechange", onVolumeChange);
+      player.off("pause", onPause);
+      player.off("play", onPlay);
+      clearInterval(window[playerInitialized]);
+      delete window[playerInitialized];
+    },
+    setPlayerOptions = async () => {
+      await getCurrentlyPlayingTitle();
+      const player = playerRef.current;
+      if (player.isDisposed()) return;
+      const initStatus = PlayerInitMode();
+      const streamOverride = initStatus
+        ? {
+            src: initStatus,
+            type: "video/mp4",
+          }
+        : null;
+      if (player.src().includes(initStatus) && !player.error() && player.readyState() > 2) return;
+      player.src(streamOverride || options.sources);
+      player.play().catch((ex) => ex);
+      setPlayerPoster();
+    },
+    setMiscPlayerOptions = () => {
+      const player = playerRef.current;
+      player.el().style.color = theme.palette.secondary[500];
+      setPlayerPoster();
+    },
+    getCurrentlyPlayingTitle = async () => {
+      const infoResponse = await MediaServerManager.GetCurrentlyPlaying(options.sources[0].src);
+      const title = infoResponse?.title;
+      const player = playerRef.current;
+      const titleBar = player.titleBar;
+      titleBar.update({
+        title: title ? "Currently playing" : null,
+        description: title?.toUpperCase(),
+        status: infoResponse?.status,
+      });
+      title && player.userActive(true);
+    },
+    setPlayerPoster = () => {
+      const player = playerRef.current;
+      const url = options.sources[0].src;
+      const realPoster = url.includes("/streams/")
+        ? url.substr(0, url.lastIndexOf(".")) + `.jpg?nocache=${Date.now()}`
+        : poster;
+      player.poster(null);
+      player.poster(realPoster);
+      const posterImg = player.el().querySelector(".vjs-poster img");
+      if (!posterImg) return;
+      posterImg.style.visibility = "hidden";
+      posterImg.onload = () => (posterImg.style.visibility = "visible");
+      if (posterImg.complete && posterImg.naturalWidth > 0) {
+        posterImg.style.visibility = "visible";
+      }
+    };
+
+  const doAutoplay = () => {
+    const player = playerRef.current;
+    console.log("Attempting to autoplay..");
+    player.muted(false);
+    player.play().catch((ex) => {
+      if (player.isDisposed()) return;
+      player.muted(true);
+      player.play().catch((ex) => console.log(ex));
+    });
+  };
+
+  const initPlayerInstance = (playerId) => {
+      const videoElement = document.createElement("video-js");
+      let optionsOverride = null;
+      videoElement.classList.add("vjs-big-play-centered");
+      videoElement.classList.add("skin_slate");
+      videoRef.current.appendChild(videoElement);
+
+      if (streamInitStatus[shouldSetOptions?.status]) {
+        optionsOverride = {
+          ...options,
+          sources: [
+            {
+              src: streamInitStatus[shouldSetOptions.status],
+              type: "video/mp4",
+            },
+          ],
+        };
+      }
+
+      const player = (playerRef.current = videojs(videoElement, optionsOverride || options, () => {
+        player.volume(LocalStorageManager.getPlayerVolume());
+        getCurrentlyPlayingTitle();
+        setShouldSetOptions(false);
+        setPlayerInitialized(playerId);
+        console.log(`Player initialized [${playerId}]`);
+      }));
+    },
+    disposePlayerInstance = (playerId) => {
+      playerRef.current.dispose();
+      setShouldSetOptions(false);
+      setPlayerInitialized(false);
+      setPlayerErrorState(InitialPlayerState);
+      console.log(`Player disposed [${playerId}]`);
+    };
+
+  // Initial load
+  useEffect(() => {
+    const importCSS = async (abortSignal) => {
+      if (cssLoaded || abortSignal.aborted) return;
+      try {
+        await import("video.js/dist/video-js.css");
+        await import("./css/videojs-skin.css");
+        setShouldSetOptions(await MediaServerManager.GetCurrentlyPlaying(options.sources[0].src));
+      } catch (e) {
+        console.log(e);
+        setTimeout(() => importCSS(abortSignal), 1000);
+        return;
+      }
+      setCssLoaded(true);
+    };
+    const abortController = new AbortController();
+    importCSS(abortController.signal);
+    return () => abortController.abort();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Player initialization
+  useEffect(() => {
+    if (!cssLoaded) return;
+    const playerId = `__vjs_player_${Date.now()}`;
+    initPlayerInstance(playerId);
+    return () => disposePlayerInstance(playerId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cssLoaded]);
+
+  // Listen for changes in options that require a player restart
+  useEffect(() => {
+    if (!playerInitialized) return;
+    addPlayerHandlers();
+    if (shouldSetOptions) setPlayerOptions();
+    else {
+      setShouldSetOptions(true);
+      options.autoplay && doAutoplay();
+    }
+    return () => removePlayerHandlers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playerInitialized, options]);
+
+  // Listen for changes in options that do not require a player restart
+  useEffect(() => {
+    if (!playerInitialized) return;
+    setMiscPlayerOptions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playerInitialized, poster, theme.palette.secondary]);
+
+  return (
+    <>
+      {!cssLoaded ? (
+        <CenteredSpinner loadingText={isEmbed ? "player" : "skip"} />
+      ) : (
+        <div data-vjs-player className="full-height">
+          <div ref={videoRef} className="full-height" />
+        </div>
+      )}
+    </>
+  );
+};
+
+export default VideoJSInstance;

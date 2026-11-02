@@ -2,6 +2,6 @@
 {
     public class TurnstileDTO
     {
-        public bool Success { get; set; }  
+        public bool Success { get; set; }
     }
 }

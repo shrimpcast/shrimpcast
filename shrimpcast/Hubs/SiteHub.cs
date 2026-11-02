@@ -141,7 +141,7 @@ namespace shrimpcast.Hubs
                 var SessionId = GetCurrentConnection().Session.SessionId;
                 await DoDisconnectCleanup(Context.ConnectionId, SessionId);
                 await base.OnDisconnectedAsync(exception);
-            } 
+            }
             catch (Exception) { } // Session already disconnected. OnDisconnected isn't 100% reliable and can sometimes be fired twice or not at all. This is a SignalR issue.
         }
 
@@ -153,7 +153,7 @@ namespace shrimpcast.Hubs
         {
             var Connection = GetCurrentConnection();
             source = source?.ToLower();
-            
+
             if (Connection.QueryParams == source || (!string.IsNullOrEmpty(source)
                                                      && !await _sourceRepository.ExistsByName(source)))
             {
@@ -345,7 +345,7 @@ namespace shrimpcast.Hubs
         {
             await ShouldGrantAccess(true);
             var Session = GetCurrentConnection().Session;
-            Message RemovedMessage; 
+            Message RemovedMessage;
 
             try
             {
@@ -716,9 +716,9 @@ namespace shrimpcast.Hubs
                 var autoMarkingThreshold = Configuration.AutoMarkingUserCountThreshold;
                 var shouldPreAddVote = CanVote(Connection.RemoteAdress, existingOption.BingoOptionId) ? 1 : 0;
                 var remainingVotes = Configuration.EnableAutoBingoMarking && autoMarkingThreshold > 1
-                                     ? $" ({bingoOptionVotesCount + shouldPreAddVote}/{autoMarkingThreshold})" 
-                                     : string.Empty; 
-                
+                                     ? $" ({bingoOptionVotesCount + shouldPreAddVote}/{autoMarkingThreshold})"
+                                     : string.Empty;
+
                 if (existingOption.IsChecked ||
                    await NewMessage($"[BINGO]: I suggest marking [{existingOption.Content}]{remainingVotes}.") == -1) return true;
                 var ShouldTriggerAutoMarking = ShouldTriggerBingoAutoMarking(Connection.RemoteAdress, existingOption.BingoOptionId);
@@ -766,7 +766,7 @@ namespace shrimpcast.Hubs
                 if (source.StartsAt > UtcNow)
                 {
                     RecurringJob.AddOrUpdate(
-                        $"{source.Name}-enable", 
+                        $"{source.Name}-enable",
                         () => ChangeSourceStatusBackground(Constants.FIREANDFORGET_TOKEN, source.Name, true, source.ResetOnScheduledSwitch)
                         , dateToCron(source.StartsAt.Value));
                 }
@@ -775,8 +775,8 @@ namespace shrimpcast.Hubs
                 if (source.EndsAt > UtcNow)
                 {
                     RecurringJob.AddOrUpdate(
-                        $"{source.Name}-disable", 
-                        () => ChangeSourceStatusBackground(Constants.FIREANDFORGET_TOKEN, source.Name, false, source.ResetOnScheduledSwitch), 
+                        $"{source.Name}-disable",
+                        () => ChangeSourceStatusBackground(Constants.FIREANDFORGET_TOKEN, source.Name, false, source.ResetOnScheduledSwitch),
                         dateToCron(source.EndsAt.Value));
                 }
                 else RecurringJob.RemoveIfExists($"{source.Name}-disable");
@@ -790,7 +790,8 @@ namespace shrimpcast.Hubs
             try
             {
                 sourceUpdated = await _sourceRepository.ChangeSourceStatus(sourceName, status);
-            } catch (Exception) { }
+            }
+            catch (Exception) { }
 
             if (sourceUpdated)
             {
@@ -802,7 +803,7 @@ namespace shrimpcast.Hubs
                     {
                         if (status) await DispatchSystemMessage($"[SYSTEM] Executing scheduled switch for {mediaServerStream.Name}. Playback will automatically begin shortly.", true, true);
                         mediaServerStream.IsEnabled = status;
-                        await  _mediaServerStreamRepository.Edit(mediaServerStream);
+                        await _mediaServerStreamRepository.Edit(mediaServerStream);
                         _ffmpegRepository.StopStreamProcess(mediaServerStream.Name, "scheduled-job", true);
                     }
                 }
@@ -822,7 +823,7 @@ namespace shrimpcast.Hubs
             return recurringJobs.Select((rj, i) => new
             {
                 id = rj.Id,
-                content = $"{i+1}. Name: [{rj.Id}]. Executes on: [{rj.NextExecution} UTC].",
+                content = $"{i + 1}. Name: [{rj.Id}]. Executes on: [{rj.NextExecution} UTC].",
             });
         }
 
@@ -850,7 +851,7 @@ namespace shrimpcast.Hubs
                 OrderedConfig = Configuration.BuildJSONConfiguration(),
                 UnorderedConfig = unorderedConfig,
                 OpenKey = nameof(unorderedConfig.OpenAt).ToLower(),
-                TableKeys = new string[] 
+                TableKeys = new string[]
                 {
                     nameof(unorderedConfig.Sources).ToLower(),
                 },
@@ -1069,7 +1070,7 @@ namespace shrimpcast.Hubs
                 session.SessionNames.Last().Name,
                 session.IsAdmin,
             } : sessionId;
-            
+
             if (Configuration.ShowConnectedUsers) await _hubContext.Clients.All.SendAsync(eventType, value);
             else await _hubContext.Clients.Clients(admins).SendAsync(eventType, value);
         }
@@ -1138,7 +1139,7 @@ namespace shrimpcast.Hubs
 
             var linkMatches = URLRegex().Matches(Post.ToLower()).Count;
             if (linkMatches == 0) return null;
-            
+
             int requiredSessionTimeForLinks = Configuration.RequiredTimeToPostLinksMinutes;
             if (minutesDifference < requiredSessionTimeForLinks)
             {
@@ -1195,7 +1196,7 @@ namespace shrimpcast.Hubs
         private bool CanVote(string RemoteAddress, int BingoSuggestionId) =>
             !_bingoSuggestions.All.Any(bS => bS.Value.RemoteAddress == RemoteAddress && bS.Value.BingoSuggestionId == BingoSuggestionId);
 
-        private bool ShouldTriggerBingoAutoMarking (string RemoteAddress, int BingoSuggestionId)
+        private bool ShouldTriggerBingoAutoMarking(string RemoteAddress, int BingoSuggestionId)
         {
             if (!Configuration.EnableAutoBingoMarking) return false;
             if (CanVote(RemoteAddress, BingoSuggestionId))
@@ -1268,7 +1269,7 @@ namespace shrimpcast.Hubs
             var IsTorAndBlocked = !IsVerified && Configuration.SiteBlockTORConnections && await _torExitNodeRepository.IsTorExitNode(Connection.RemoteAdress);
             var NeedsTurnstile = await NeedsPassTurnstail(Connection.Session);
             string? message = null;
-            
+
             if (IsBanned) message = Constants.BANNED_MESSAGE;
             else if (IsVpnAndBlocked) message = Constants.VPN_DISABLED_MESSAGE;
             else if (IsTorAndBlocked) message = Constants.TOR_DISABLED_MESSAGE;
@@ -1432,7 +1433,7 @@ namespace shrimpcast.Hubs
                                                    .Count();
 
                 var requiredVotes = Math.Ceiling((float)(75 * amountUsersWatching) / 100);
-                
+
                 var message = $"{connection.Session.SessionNames.Last().Name} has voted to skip {playlistItem} [{amountVotes}/{requiredVotes}]";
                 await DispatchSystemMessage(message, true, true);
                 if (amountVotes < requiredVotes) return;
@@ -1564,8 +1565,8 @@ namespace shrimpcast.Hubs
                 var isToValid = await _sourceRepository.ExistsByName(to);
                 if (!isFromValid || !isToValid)
                 {
-                    await DispatchSystemMessage($"One or more sources are invalid [{from}] [{to}]"); 
-                    return;  
+                    await DispatchSystemMessage($"One or more sources are invalid [{from}] [{to}]");
+                    return;
                 }
 
                 await Clients.All.SendAsync("RedirectSource", new
@@ -1644,19 +1645,19 @@ namespace shrimpcast.Hubs
 
         private async Task<bool> NeedsPassTurnstail(Session? session)
         {
-           return Configuration.EnableTurnstileMode 
-                && !Configuration.TurnstileManagedMode
-                && session != null
-                && !session.PassedTurnstile
-                && !session.IsVerified
-                && !session.IsMod
-                && !session.IsAdmin
-                && !session.IsGolden
-                && !await _messageRepository.HasEnoughCountBySessionId(session.SessionId, (int)Configuration.TurnstileSkipThreshold);
+            return Configuration.EnableTurnstileMode
+                 && !Configuration.TurnstileManagedMode
+                 && session != null
+                 && !session.PassedTurnstile
+                 && !session.IsVerified
+                 && !session.IsMod
+                 && !session.IsAdmin
+                 && !session.IsGolden
+                 && !await _messageRepository.HasEnoughCountBySessionId(session.SessionId, (int)Configuration.TurnstileSkipThreshold);
         }
 
         private string NormalizeString(string input) =>
-            Configuration.StripNonASCIIChars 
+            Configuration.StripNonASCIIChars
             ? ASCIIRegex().Replace(input.Trim().Normalize(NormalizationForm.FormKD).Normalize(NormalizationForm.FormC), "")
             : input.Trim();
 

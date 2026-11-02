@@ -10,6 +10,14 @@ APPLICATION=""
 NGINX=""
 SKIP_DOTNET=false
 
+# Check ubuntu version
+source /etc/os-release
+if [ "$ID" != "ubuntu" ] || [ "$VERSION_ID" != "24.04" ]; then
+  echo "This script requires Ubuntu 24.04"
+  exit 1
+fi
+
+# Check root
 if [ "$(id -u)" -ne 0 ]; then
     echo "This script requires root privileges. Please run this script as root (sudo -i)."
     exit 1
@@ -53,6 +61,72 @@ then
     # Disable UFW for DNS auth
     sudo ufw disable
 fi
+
+# Stop and mask automatic APT scheduling.
+systemctl disable --now apt-daily.timer apt-daily-upgrade.timer unattended-upgrades.service 2>/dev/null || true
+systemctl mask apt-daily.timer apt-daily-upgrade.timer apt-daily.service apt-daily-upgrade.service
+
+# Remove unattended upgrades.
+apt-get purge -y unattended-upgrades || {
+    echo "ERROR: Failed to purge unattended-upgrades."
+    exit 1
+}
+
+# Disable APT periodic activity and automatic reboot settings.
+rm -f /etc/apt/apt.conf.d/20auto-upgrades
+rm -f /etc/apt/apt.conf.d/50unattended-upgrades
+rm -rf /etc/apt/apt.conf.d/50unattended-upgrades.d
+printf 'APT::Periodic::Update-Package-Lists "0";\nAPT::Periodic::Unattended-Upgrade "0";\n' \
+    > /etc/apt/apt.conf.d/99-disable-automatic-updates
+
+# Prevent needrestart from automatically restarting services.
+mkdir -p /etc/needrestart/conf.d
+printf "\$nrconf{restart} = 'l';\n" \
+    > /etc/needrestart/conf.d/99-no-auto-restart.conf
+
+# Remove unattended-upgrades state and logs.
+rm -rf /var/log/unattended-upgrades /var/lib/unattended-upgrades
+
+systemctl daemon-reload
+
+# Verify package removal.
+if dpkg-query -W -f='${db:Status-Status}' unattended-upgrades 2>/dev/null | grep -qx installed; then
+    echo "ERROR: unattended-upgrades is still installed."
+    exit 1
+fi
+
+# Verify APT timers and services are masked.
+for unit in apt-daily.timer apt-daily-upgrade.timer apt-daily.service apt-daily-upgrade.service; do
+    if [[ "$(systemctl is-enabled "$unit" 2>/dev/null)" != masked ]]; then
+        echo "ERROR: $unit is not masked."
+        exit 1
+    fi
+done
+
+# Verify automatic update settings.
+if ! apt-config dump | grep -q 'APT::Periodic::Update-Package-Lists "0"'; then
+    echo "ERROR: Automatic package-list updates are not disabled."
+    exit 1
+fi
+
+if ! apt-config dump | grep -q 'APT::Periodic::Unattended-Upgrade "0"'; then
+    echo "ERROR: Automatic package upgrades are not disabled."
+    exit 1
+fi
+
+# Verify needrestart configuration.
+if ! grep -Fqx "\$nrconf{restart} = 'l';" /etc/needrestart/conf.d/99-no-auto-restart.conf; then
+    echo "ERROR: needrestart auto-restart prevention is not configured."
+    exit 1
+fi
+
+# Verify no unattended-upgrade process remains.
+if pgrep -af '[u]nattended-upgrade'; then
+    echo "ERROR: An unattended-upgrade process is still running."
+    exit 1
+fi
+
+echo "Automatic APT updates disabled; needrestart configured not to restart services automatically."
 
 # Install unzip package
 apt-get update && apt-get install unzip -y || handle_error "Failed to install unzip"
@@ -103,32 +177,13 @@ chmod +x /root/shrimpcast/shrimpcast || handle_error "Failed to set execution pe
 # Clean up temporary files
 rm -rf /root/nginx_tmp
 
-# Get Ubuntu version
-declare repo_version=$(if command -v lsb_release &> /dev/null; then lsb_release -r -s; else grep -oP '(?<=^VERSION_ID=).+' /etc/os-release | tr -d '"'; fi)
-
 if [ "$SKIP_DOTNET" = false ]; then
-    # Download Microsoft signing key and repository
-    wget https://packages.microsoft.com/config/ubuntu/$repo_version/packages-microsoft-prod.deb -O /root/packages-microsoft-prod.deb || handle_error "Failed to download Microsoft signing key and repository"
-    
-    # Install Microsoft signing key and repository
-    dpkg -i /root/packages-microsoft-prod.deb || handle_error "Failed to install Microsoft signing key and repository"
-    
-    # Clean up
-    rm /root/packages-microsoft-prod.deb || handle_error "Failed to remove packages-microsoft-prod.deb"
-    
-    # Update packages
-    apt update || handle_error "Failed to update packages"
-    
-    # Install .NET SDK 8.0
-    apt-get update && \
-      apt-get install -y dotnet-sdk-8.0 || handle_error "Failed to install .NET SDK 8.0"
+    apt-get install -y dotnet-sdk-10.0 || handle_error "Failed to install .NET SDK 10.0"
 fi
 
 dotnet dev-certs https
 
 # Install ffmpeg
-sudo add-apt-repository -y ppa:ubuntuhandbook1/ffmpeg6
-sudo apt-get update
 sudo apt-get install -y ffmpeg
 
 # Create systemd service file
@@ -199,6 +254,11 @@ sudo ufw allow 1935
 
 # Enable UFW with the configured rules
 sudo ufw --force enable
+
+# Set stream permissions
+sudo chown -R root:www-data /root/shrimpcast
+sudo chmod -R 750 /root/shrimpcast
+sudo chmod 711 /root
 
 # Set file descriptor limit
 NOFILE_LIMIT=524288

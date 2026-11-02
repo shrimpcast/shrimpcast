@@ -1,13 +1,14 @@
 ﻿using Hangfire;
 using Newtonsoft.Json;
 using shrimpcast.Data.Repositories.Interfaces;
+using shrimpcast.Data.Services.Interfaces;
 using shrimpcast.Entities;
 using shrimpcast.Helpers;
 using shrimpcast.Hubs;
 using shrimpcast.Hubs.Dictionaries;
 using System.Text;
 
-namespace shrimpcast.Data.Services.Interfaces
+namespace shrimpcast.Data.Services
 {
     public class ReportMetricsService(IFFMPEGRepository fFMPEGRepository, ConfigurationSingleton configurationSingleton, Processes<SiteHub> processes, LBMetrics<SiteHub> lbMetrics) : IReportMetricsService
     {

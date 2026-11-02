@@ -18,7 +18,7 @@ namespace shrimpcast.Data.Repositories
             {
                 SessionId = sessionId,
                 BannedBy = bannedBy,
-                CreatedAt =  DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow,
             };
 
             var existingBan = await _context.Bans.Where(ban => ban.SessionId == sessionId).FirstOrDefaultAsync();
@@ -45,8 +45,8 @@ namespace shrimpcast.Data.Repositories
                         select new Ban
                         {
                             BanId = ban.BanId,
-                            SessionId = ban.SessionId, 
-                            SessionName = (ban.BannedBy == -1 ? "[A] " : "[M] ") 
+                            SessionId = ban.SessionId,
+                            SessionName = (ban.BannedBy == -1 ? "[A] " : "[M] ")
                                         + (from sn in _context.SessionNames where sn.SessionId == ban.SessionId orderby sn.CreatedAt select sn.Name).Last()
                                         + $" ({ban.CreatedAt.ToUniversalTime()} UTC) \n"
                                         + $" [{string.Join(", ", from sip in _context.SessionIPs where sip.SessionId == ban.SessionId select sip.RemoteAddress)}]",

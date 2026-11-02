@@ -26,19 +26,21 @@ namespace shrimpcast.Helpers
             return (float)(used * 100.0 / memory.TotalPhysical);
         }
 
-        private double GetNetworkUsage()
+        private (double uploadUsageMbps, double downloadUsageMbps) GetNetworkUsage()
         {
             _hardwareInfo.RefreshNetworkAdapterList();
             double totalUploadMbps = 0;
+            double totalDownloadMbps = 0;
 
             foreach (var adapter in _hardwareInfo.NetworkAdapterList)
             {
                 // Skip virtual adapters to avoid duplicates on linux
                 if (adapter.Name.StartsWith("veth") || adapter.Name.StartsWith("lo")) continue;
                 totalUploadMbps += adapter.BytesSentPersec * 8.0 / 1_000_000.0;
+                totalDownloadMbps += adapter.BytesReceivedPersec * 8.0 / 1_000_000.0;
             }
 
-            return totalUploadMbps;
+            return (totalUploadMbps, totalDownloadMbps);
         }
 
         private async Task<int> GetDiskUsage()
@@ -52,14 +54,15 @@ namespace shrimpcast.Helpers
         {
             (var cpuUsage, var noCores) = GetCpuUsage();
             var memoryUsage = GetMemoryUsagePercentage();
-            var networkUsage = GetNetworkUsage();
+            var (uploadUsageMbps, downloadUsageMbps) = GetNetworkUsage();
             var diskUsage = await GetDiskUsage();
 
             return new
             {
                 cpu = new { numeric = cpuUsage, _string = $"{cpuUsage:F2}% - {noCores} core{(noCores > 1 ? "s" : null)}" },
                 memory = new { numeric = memoryUsage, _string = $"{memoryUsage:F2}%" },
-                network = new { numeric = networkUsage, _string = $"{networkUsage:F2}mbps" },
+                networkUpload = new { numeric = uploadUsageMbps, _string = $"{uploadUsageMbps:F2}mbps" },
+                networkDownload = new { numeric = downloadUsageMbps, _string = $"{downloadUsageMbps:F2}mbps" },
                 disk = new { numeric = diskUsage, _string = $"{diskUsage}%" },
                 totalViewers,
             };

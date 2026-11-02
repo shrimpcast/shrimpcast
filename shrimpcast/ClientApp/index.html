@@ -1,0 +1,41 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="initial-scale=1, width=device-width, interactive-widget=resizes-content, user-scalable=no"
+    />
+    <meta name="theme-color" content="#000000" />
+    <base href="%BASE_URL%" />
+    <link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="stylesheet" href="/css/loader-default.css?cacheBurst=%VITE_APP_CSS_CACHE_BUST%" />
+    <link rel="stylesheet" href="/css/defaults.css?cacheBurst=%VITE_APP_CSS_CACHE_BUST%" />
+  </head>
+  <body>
+    <noscript>
+      <style>
+        #root {
+          display: none;
+        }
+      </style>
+      You need to enable JavaScript to run this app.
+    </noscript>
+    <div id="root">
+      <div id="loading-screen">
+        <div class="loading-spinner-cont">
+          <span class="loading-spinner" role="progressbar" style="width: 50px; height: 50px">
+            <svg viewBox="22 22 44 44">
+              <circle cx="44" cy="44" r="20.2" fill="none" stroke-width="3.6"></circle>
+            </svg>
+          </span>
+          <span class="text-p">LOADING RESOURCES</span>
+          <span class="text-s">POWERED BY SHRIMPCAST %VITE_APP_VERSION%</span>
+        </div>
+      </div>
+    </div>
+    <script src="/scripts/browserSupport.js?cacheBurst=%VITE_APP_CSS_CACHE_BUST%"></script>
+    <script type="module" src="/src/index.jsx"></script>
+  </body>
+</html>

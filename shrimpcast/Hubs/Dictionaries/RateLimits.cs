@@ -7,7 +7,7 @@ namespace shrimpcast.Hubs.Dictionaries
     public class RateLimits<T> where T : Hub
     {
         public ConcurrentDictionary<string, RateLimit> All { get; } = new();
-        public readonly int periodSeconds = 10; 
+        public readonly int periodSeconds = 10;
 
         public int MaxSocketReqsPer10secs(int maxConnectionsPerIp)
         {

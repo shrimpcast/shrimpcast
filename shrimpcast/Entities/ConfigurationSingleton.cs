@@ -20,6 +20,8 @@ namespace shrimpcast.Entities
 
         public int AppInitialized = 0;
 
+        public readonly DateTime StartTime = DateTime.UtcNow;
+
         public async Task Initialize()
         {
             using var scope = _serviceScopeFactory.CreateScope();

@@ -251,7 +251,7 @@ namespace shrimpcast.Data.Repositories
             var utcNow = DateTime.UtcNow;
             var activeMuteByRemoteAddressQuery = from Session in _context.Sessions
                                                  join sip in _context.SessionIPs on Session.SessionId equals sip.SessionId
-                                                 where Session.MutedUntil > utcNow && (sip.RemoteAddress == RemoteAddress || Session.SessionId  == SessionId) 
+                                                 where Session.MutedUntil > utcNow && (sip.RemoteAddress == RemoteAddress || Session.SessionId == SessionId)
                                                  select Session;
 
             var activeMuteByRemoteAddress = await activeMuteByRemoteAddressQuery.AsNoTracking()

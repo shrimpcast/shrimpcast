@@ -7,9 +7,9 @@ namespace shrimpcast.Entities.DB
     {
         public int PollOptionId { get; set; }
 
-        public int PollId { get; set; } 
+        public int PollId { get; set; }
 
-        public int SessionId { get; set; } 
+        public int SessionId { get; set; }
 
         public required string Value { get; set; }
 

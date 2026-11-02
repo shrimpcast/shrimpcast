@@ -1,15 +1,16 @@
+using shrimpcast.Data.Repositories.Interfaces;
 using shrimpcast.Entities;
 using System.Net.WebSockets;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 
-namespace shrimpcast.Data.Repositories.Interfaces
+namespace shrimpcast.Data.Repositories
 {
     public class OBSCommandsRepository(ConfigurationSingleton configurationSingleton) : IOBSCommandsRepository
     {
         private readonly ConfigurationSingleton _configurationSingleton = configurationSingleton;
-        
+
         private string HashEncode(string input) =>
             Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(input)));
 
@@ -47,7 +48,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
                 var secret = HashEncode(password + saltValue);
                 var authResponse = HashEncode(secret + challengeValue);
                 var payload = Constants.OBS_AUTH_JSON(authResponse);
-             
+
                 //Send payload
                 await WriteWS(ws, payload);
                 var result = await ReadWS(ws);

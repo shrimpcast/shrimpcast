@@ -1,7 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using shrimpcast.Data.Repositories.Interfaces;
 using shrimpcast.Entities.DB;
 
-namespace shrimpcast.Data.Repositories.Interfaces
+namespace shrimpcast.Data.Repositories
 {
     public class AutoModFilterRepository(APPContext context) : IAutoModFilterRepository
     {
@@ -16,7 +17,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
         }
 
         public async Task<List<AutoModFilter>> GetAll() =>
-            await _context.AutoModFilters.AsNoTracking() 
+            await _context.AutoModFilters.AsNoTracking()
                                          .OrderByDescending(filter => filter.AutoBan)
                                          .ThenBy(filter => filter.AutoModFilterId)
                                          .ToListAsync();
