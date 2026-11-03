@@ -836,6 +836,8 @@ namespace shrimpcast.Hubs
             unorderedConfig.VAPIDPrivateKeyNotMapped = unorderedConfig.VAPIDPrivateKey;
             unorderedConfig.VAPIDMailNotMapped = unorderedConfig.VAPIDMail;
             unorderedConfig.IPServiceApiKeyNotMapped = unorderedConfig.IPServiceApiKey;
+            unorderedConfig.IPServiceApiURLNotMapped = unorderedConfig.IPServiceApiURL;
+            unorderedConfig.VPNDetectionMatchCriteriaNotMapped = unorderedConfig.VPNDetectionMatchCriteria;
             unorderedConfig.BTCServerApiKeyNotMapped = unorderedConfig.BTCServerApiKey;
             unorderedConfig.BTCServerWebhookSecretNotMapped = unorderedConfig.BTCServerWebhookSecret;
             unorderedConfig.StripeSecretKeyNotMapped = unorderedConfig.StripeSecretKey;

@@ -31,6 +31,8 @@ namespace shrimpcast.Data.Repositories
             configuration.VAPIDPrivateKey = configuration.VAPIDPrivateKeyNotMapped;
             configuration.VAPIDMail = configuration.VAPIDMailNotMapped;
             configuration.IPServiceApiKey = configuration.IPServiceApiKeyNotMapped;
+            configuration.IPServiceApiURL = configuration.IPServiceApiURLNotMapped;
+            configuration.VPNDetectionMatchCriteria = configuration.VPNDetectionMatchCriteriaNotMapped;
             configuration.BTCServerApiKey = configuration.BTCServerApiKeyNotMapped;
             configuration.BTCServerWebhookSecret = configuration.BTCServerWebhookSecretNotMapped;
             configuration.StripeSecretKey = configuration.StripeSecretKeyNotMapped;
@@ -53,6 +55,8 @@ namespace shrimpcast.Data.Repositories
             configuration.VAPIDPrivateKeyNotMapped = null;
             configuration.VAPIDMailNotMapped = null;
             configuration.IPServiceApiKeyNotMapped = null;
+            configuration.IPServiceApiURLNotMapped = null;
+            configuration.VPNDetectionMatchCriteriaNotMapped = null;
             configuration.BTCServerApiKeyNotMapped = null;
             configuration.BTCServerWebhookSecretNotMapped = null;
             configuration.StripeSecretKeyNotMapped = null;
