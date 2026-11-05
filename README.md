@@ -1,12 +1,6 @@
-<h1 align="center">
-  Shrimpcast
-</h1>
+# Shrimpcast
 
-<p align="center">
-  <img src="https://github.com/shrimpcast/shrimpcast/assets/167498236/d3159e68-60dd-4e8f-a8ca-be0a99a759a1" alt="Logo">
-</p>
-
-<img width="2535" height="1341" alt="showcase" src="https://github.com/user-attachments/assets/8ce6f90d-6627-47c0-b930-5245fd8c106e" />
+<img width="2571" height="1389" alt="Web-Showcase-Project-Presentation" src="https://github.com/user-attachments/assets/bb186d08-7db6-4a66-801b-c34fcd412fc1" />
 
 ## Introduction
 
@@ -197,7 +191,7 @@ Field types:
  - <img src="https://img.shields.io/badge/private-green" align="absmiddle"> : only admins can access the content of the field. Contains sensitive data. 
 
 #### Site
-<img width="1119" height="783" alt="iamge" src="https://github.com/user-attachments/assets/0532774e-53a0-4fb3-95af-fd955664fe3e" />
+<img width="1119" height="783" alt="image" src="https://github.com/user-attachments/assets/0532774e-53a0-4fb3-95af-fd955664fe3e" />
 
 - <img src="https://img.shields.io/badge/public-red" align="absmiddle"> **Enable PWA**: Toggles [Progressive Web App (PWA)](https://en.wikipedia.org/wiki/Progressive_web_app) support on or off. Must be turned on to allow push notifications.
 - <img src="https://img.shields.io/badge/public-red" align="absmiddle"> **Force latest version**: Forces all clients to be on the latest frontend version.
