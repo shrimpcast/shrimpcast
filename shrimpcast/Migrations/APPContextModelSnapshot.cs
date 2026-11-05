@@ -17,7 +17,7 @@ namespace shrimpcast.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.23")
+                .HasAnnotation("ProductVersion", "10.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -204,7 +204,6 @@ namespace shrimpcast.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("IPServiceApiURL")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("LbAuthToken")
@@ -372,7 +371,6 @@ namespace shrimpcast.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("VPNDetectionMatchCriteria")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("VoteSkipMaxTimeMinutes")

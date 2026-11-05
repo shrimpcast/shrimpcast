@@ -47,7 +47,7 @@ namespace shrimpcast.Data.Repositories
         {
             var client = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
             var configuration = _configurationSingleton.Configuration;
-            var baseURL = configuration.IPServiceApiURL;
+            var baseURL = configuration.IPServiceApiURL!;
             if (baseURL.Contains("{IP}")) baseURL = baseURL.Replace("{IP}", RemoteAddress);
             else baseURL = $"{configuration.IPServiceApiURL}{RemoteAddress}";
             var request = new HttpRequestMessage(HttpMethod.Get, baseURL);
@@ -70,7 +70,7 @@ namespace shrimpcast.Data.Repositories
             {
                 var responseContent = await InvokeVerificationService(RemoteAddress);
                 var matchCriteria = _configurationSingleton.Configuration.VPNDetectionMatchCriteria;
-                var matches = new Regex(@"(?<=\[)[^]]+(?=\])").Matches(matchCriteria);
+                var matches = new Regex(@"(?<=\[)[^]]+(?=\])").Matches(matchCriteria!);
 
                 using var document = JsonDocument.Parse(responseContent);
                 foreach (var match in matches)
@@ -79,7 +79,17 @@ namespace shrimpcast.Data.Repositories
                     if (items == null || items.Length != 2) continue;
                     document.RootElement.TryGetProperty(items[0], out var element);
                     if (element.ValueKind == JsonValueKind.Undefined) continue;
-                    var value = element.GetRawText().Replace("\"", string.Empty);
+                    JsonElement? subElement = null;
+
+                    if (items[1].Contains('~'))
+                    {
+                        var itemValues = items[1].Split("~");
+                        element.TryGetProperty(itemValues[0], out var jsonElement);
+                        subElement = jsonElement;
+                        items[1] = itemValues[1];
+                    }
+
+                    var value = (subElement ?? element).GetRawText().Replace("\"", string.Empty);
                     if (value == items[1]) return 1;
                 }
 
