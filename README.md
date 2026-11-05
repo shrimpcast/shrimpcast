@@ -388,7 +388,6 @@ Go to the [media server](#media-server) and set up a stream: <br>
 - **Enabled:** Specifies whether the stream is enabled.
 - **Name:** The name of the stream.
 - **Ingress URL:** The input media URL. Can be any supported media type, including VOD. To read from RTMP (for example if you'd like to use OBS), you must first set up an RTMP endpoint (see [RTMP endpoints](#rtmp-endpoints)).
-- **Thumbnail interval:** Specifies how often a thumbnail is generated, in seconds. Minimum is 15 seconds.
 - **Watermark URL:** A watermark that is hard-burned into the top-right of the stream. Requires transcoding to be enabled.
 - **Subtitles URL:** Subtitles that are hard-burned into the stream. Requires transcoding to be enabled.
 - **Start time:** The timestamp at which media playback starts. Useful for VOD.
