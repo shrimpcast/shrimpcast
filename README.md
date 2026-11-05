@@ -508,7 +508,10 @@ Retrieve the SessionId from the [Message and User Management](#message-and-user-
 - `!resetallsavedvpnrecords` — Clears all saved VPN-related IP records.
 - `!tryipservice [IP?]` — Tests the IP service. If no IP is provided, it defaults to the requester’s IP.
 - `!redirectsource [FROM] [TO]` — Redirects users watching source `FROM` to source `TO`.
-
+- `!runrestartdocker` — Restarts docker if installed.
+- `!runtruncatelogs` — Truncates existing logs to save disk space.
+- `!userlabel [SessionId] [Content]` — Sets user label for target session.
+  
 ## Update
 If you want to update to the latest version of shrimpcast, you can do so by running
    ```bash
