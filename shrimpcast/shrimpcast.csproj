@@ -33,6 +33,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="SkiaSharp" Version="4.154.0" />
     <PackageReference Include="Stripe.net" Version="53.0.0" />
     <PackageReference Include="WebPush" Version="1.0.13" />
   </ItemGroup>
