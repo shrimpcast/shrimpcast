@@ -10,7 +10,6 @@ using shrimpcast.Entities.DB;
 using shrimpcast.Entities.DTO;
 using shrimpcast.Helpers;
 using shrimpcast.Hubs.Dictionaries;
-using SkiaSharp;
 using System.Collections.Concurrent;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -1660,18 +1659,22 @@ namespace shrimpcast.Hubs
                     MaxResponseContentBufferSize = 10_000_000,
                     Timeout = TimeSpan.FromSeconds(10)
                 };
-
                 client.DefaultRequestHeaders.Add("User-Agent", $"shrimpcast/{Constants.BACKEND_VERSION}");
                 var downloadBytes = await client.GetByteArrayAsync(strings[2].Trim());
-                using var codec = SKCodec.Create(SKData.CreateCopy(downloadBytes)) ?? throw new Exception("Image is invalid.");
+
+                var imageType = ImageDetection.GetImageFormat(downloadBytes).ToString().ToLower();
+                var imageName = $"{strings[1].Trim()}.{imageType}".ToLower();
                 using var ms = new MemoryStream(downloadBytes);
-                var format = codec.EncodedFormat.ToString().ToLower();
                 var formFile = new FormFile(ms, 0, ms.Length, string.Empty, string.Empty)
                 {
                     Headers = new HeaderDictionary(),
-                    ContentType = $"image/{format}" 
+                    ContentType = $"image/{imageType}" 
                 };
-                dynamic upload = await _emoteRepository.Add(formFile, $"{strings[1]}.{format}", false);
+
+                var imageExists = await _emoteRepository.Get(imageName);
+                if (imageExists != null) await _emoteRepository.Remove(imageExists.EmoteId);
+                dynamic upload = await _emoteRepository.Add(formFile, imageName, false);
+
                 await DispatchSystemMessage($"Uploaded image: {upload.url}");
             }
             catch (Exception ex)
