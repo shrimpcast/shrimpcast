@@ -38,6 +38,8 @@ namespace shrimpcast.Entities
 
         public const string MASTER_SKIP = "!masterskip";
 
+        public const string FETCH_IMAGE = "!fetchimage";
+
         public const string FILTERS = "filters.json";
 
         public static readonly string FIREANDFORGET_TOKEN = SecureToken.GenerateTokenThreadSafe();
@@ -95,6 +97,7 @@ namespace shrimpcast.Entities
             DOCKER_RESTART,
             TRUNCATE_LOGS,
             SET_USER_LABEL,
+            FETCH_IMAGE,
             ..MOD_COMMANDS,
         ];
 
