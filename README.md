@@ -510,6 +510,7 @@ Retrieve the SessionId from the [Message and User Management](#message-and-user-
 - `!runrestartdocker` — Restarts docker if installed.
 - `!runtruncatelogs` — Truncates existing logs to save disk space.
 - `!userlabel [SessionId] [Content]` — Sets user label for target session.
+- `!fetchimage [name] [url]` — Fetch a remote image and save it as `[name]` - useful for thumbnails
   
 ## Update
 If you want to update to the latest version of shrimpcast, you can do so by running
