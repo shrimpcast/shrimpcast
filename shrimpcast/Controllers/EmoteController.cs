@@ -19,7 +19,7 @@ namespace shrimpcast.Controllers
         {
             var session = await _sessionRepository.GetExistingByTokenAsync(emoteDTO.AccessToken);
             if (session == null || !session.IsAdmin) throw new Exception("Permission denied.");
-            var result = await _emoteRepository.Add(emoteDTO.Emote, emoteDTO.Name.ToLower());
+            var result = await _emoteRepository.Add(emoteDTO.Emote, emoteDTO.Name, true);
             await _hubContext.Clients.All.SendAsync("EmoteAdded", result);
             return result;
         }

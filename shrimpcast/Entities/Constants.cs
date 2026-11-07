@@ -4,7 +4,7 @@ namespace shrimpcast.Entities
 {
     public class Constants
     {
-        public const string BACKEND_VERSION = "2.2.5";
+        public const string BACKEND_VERSION = "2.2.6";
 
         public const string PING_COMMAND = "!ping";
 
@@ -37,6 +37,8 @@ namespace shrimpcast.Entities
         public const string VOTE_KEEP = $"{VOTE_COMMAND}keep";
 
         public const string MASTER_SKIP = "!masterskip";
+
+        public const string FETCH_IMAGE = "!fetchimage";
 
         public const string FILTERS = "filters.json";
 
@@ -95,6 +97,7 @@ namespace shrimpcast.Entities
             DOCKER_RESTART,
             TRUNCATE_LOGS,
             SET_USER_LABEL,
+            FETCH_IMAGE,
             ..MOD_COMMANDS,
         ];
 

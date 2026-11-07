@@ -9,5 +9,7 @@
         public required string ContentType { get; set; }
 
         public required byte[] Content { get; set; }
+
+        public required bool IsManualUpload { get; set; }
     }
 }

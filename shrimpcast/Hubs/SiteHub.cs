@@ -1336,6 +1336,9 @@ namespace shrimpcast.Hubs
                     case string _message when _message.StartsWith(Constants.SET_USER_LABEL):
                         await SetUserLabel(_message);
                         return true;
+                    case string _message when _message.StartsWith(Constants.FETCH_IMAGE):
+                        await FetchImage(_message);
+                        return true;
                     default:
                         return false;
                 }
@@ -1638,6 +1641,41 @@ namespace shrimpcast.Hubs
                 });
 
                 await DispatchSystemMessage($"Successfully executed {Constants.SET_USER_LABEL}");
+            }
+            catch (Exception ex)
+            {
+                await DispatchSystemMessage(ex.Message);
+            }
+        }
+
+        private async Task FetchImage(string message)
+        {
+            await DispatchSystemMessage($"Executing {Constants.FETCH_IMAGE} command...");
+            try
+            {
+                var strings = message.Split(" ");
+                using HttpClient client = new()
+                {
+                    MaxResponseContentBufferSize = 10_000_000,
+                    Timeout = TimeSpan.FromSeconds(10)
+                };
+                client.DefaultRequestHeaders.Add("User-Agent", $"shrimpcast/{Constants.BACKEND_VERSION}");
+                var downloadBytes = await client.GetByteArrayAsync(strings[2].Trim());
+
+                var imageType = ImageDetection.GetImageFormat(downloadBytes).ToString().ToLower();
+                var imageName = $"{strings[1].Trim()}.{imageType}".ToLower();
+                using var ms = new MemoryStream(downloadBytes);
+                var formFile = new FormFile(ms, 0, ms.Length, string.Empty, string.Empty)
+                {
+                    Headers = new HeaderDictionary(),
+                    ContentType = $"image/{imageType}" 
+                };
+
+                var imageExists = await _emoteRepository.Get(imageName);
+                if (imageExists != null) await _emoteRepository.Remove(imageExists.EmoteId);
+                dynamic upload = await _emoteRepository.Add(formFile, imageName, false);
+
+                await DispatchSystemMessage($"Uploaded image: {upload.url}");
             }
             catch (Exception ex)
             {
