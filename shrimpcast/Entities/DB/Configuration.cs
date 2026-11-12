@@ -1,272 +1,26 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
+﻿using System.Runtime.CompilerServices;
 
 namespace shrimpcast.Entities.DB
 {
-    public class Configuration : ICloneable
+    public class Configuration : PrivateConfiguration
     {
-        [JsonIgnore]
         public int ConfigurationId { get; set; }
-
-        public required bool ChatEnabled { get; set; }
-
-        public required bool ShowUserLabels { get; set; }
-
-        public required bool EnableVerifiedMode { get; set; }
-
-        public required int MaxConnectionsPerIP { get; set; }
-
-        public required int MaxConnectedUsers { get; set; }
-
-        public required string DefaultName { get; set; }
-
-        public required int MaxMessagesToShow { get; set; }
-
-        public required bool StreamEnabled { get; set; }
-
-        public List<Source> Sources { get; set; } = [];
-
-        public required string StreamTitle { get; set; }
-
-        public required string StreamDescription { get; set; }
-
-        public required int MessageDelayTime { get; set; }
-
-        public required int RequiredTokenTimeInMinutes { get; set; }
-
-        public required int MaxLengthTruncation { get; set; }
-
-        public required int OffsetDateTimeInMinutes { get; set; }
-
-        public required bool ShowBingo { get; set; }
-
-        public required string BingoTitle { get; set; }
-
-        public required bool EnableAutoBingoMarking { get; set; }
-
-        public required int AutoMarkingUserCountThreshold { get; set; }
-
-        public required int AutoMarkingSecondsThreshold { get; set; }
-
-        public required bool ShowPoll { get; set; }
-
-        public required bool AcceptNewOptions { get; set; }
-
-        public required bool AcceptNewVotes { get; set; }
-
-        public required bool ShowVotes { get; set; }
-
-        public required bool EnableVoteSkip { get; set; }
-
-        public required ushort VoteSkipMaxTimeMinutes { get; set; }
-
-        public required string PollTitle { get; set; }
-
-        public required int MinSentToParticipate { get; set; }
-
-        public required int MuteLenghtInMinutes { get; set; }
-
-        public required bool EnableFireworks { get; set; }
-
-        public required bool EnableChristmasTheme { get; set; }
-
-        public required int SnowflakeCount { get; set; }
-
-        public required bool SiteBlockTORConnections { get; set; }
-
-        public required bool ChatBlockTORConnections { get; set; }
-
-        public required bool SiteBlockVPNConnections { get; set; }
-
-        public required bool ChatBlockVPNConnections { get; set; }
-
-        [JsonIgnore]
-        public string? IPServiceApiURL { get; set; } = string.Empty;
-
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [NotMapped]
-        public string? IPServiceApiURLNotMapped { get; set; }
-
-        [JsonIgnore]
-        public string? IPServiceApiKey { get; set; } = string.Empty;
-
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [NotMapped]
-        public string? IPServiceApiKeyNotMapped { get; set; }
-
-        public required string OptionalApiKeyHeader { get; set; }
-
-        [JsonIgnore]
-        public string? VPNDetectionMatchCriteria { get; set; } = string.Empty;
-
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [NotMapped]
-        public string? VPNDetectionMatchCriteriaNotMapped { get; set; }
-
-        [JsonIgnore]
-        public string? OBSHost { get; set; } = string.Empty;
-
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [NotMapped]
-        public string? OBSHostNotMapped { get; set; }
-
-        [JsonIgnore]
-        public string? OBSPassword { get; set; } = string.Empty;
-
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [NotMapped]
-        public string? OBSPasswordtNotMapped { get; set; }
-
-        public required string OBSMainScene { get; set; }
-
-        public required string OBSMainSource { get; set; }
-
-        public required string OBSKinoSource { get; set; }
-
-        public required string OBSMusicSource { get; set; }
-
-        public required DateTime OpenAt { get; set; }
-
-        public required int MinABTimeInMs { get; set; }
-
-        public required int MaxABTimeInMs { get; set; }
-
-        public string? VAPIDPublicKey { get; set; }
-
-        [JsonIgnore]
-        public string? VAPIDPrivateKey { get; set; } = string.Empty;
-
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [NotMapped]
-        public string? VAPIDPrivateKeyNotMapped { get; set; }
-
-        [JsonIgnore]
-        public string? VAPIDMail { get; set; } = string.Empty;
-
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [NotMapped]
-        public string? VAPIDMailNotMapped { get; set; }
-
-        public required bool ShowGoldenPassButton { get; set; }
-
-        public required int GoldenPassValue { get; set; }
-
-        public required string GoldenPassTitle { get; set; }
-
-        public required string BTCServerInstanceURL { get; set; }
-
-        public required string BTCServerStoreId { get; set; }
-
-        [JsonIgnore]
-        public string? BTCServerWebhookSecret { get; set; } = string.Empty;
-
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [NotMapped]
-        public string? BTCServerWebhookSecretNotMapped { get; set; }
-
-        [JsonIgnore]
-        public string? BTCServerApiKey { get; set; } = string.Empty;
-
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [NotMapped]
-        public string? BTCServerApiKeyNotMapped { get; set; }
-
-        public required string PalettePrimary { get; set; }
-
-        public required string PaletteSecondary { get; set; }
-
-        public required bool UseDarkTheme { get; set; }
-
-        public required bool EnableHalloweenTheme { get; set; }
-
-        public required bool EnableStripe { get; set; }
-
-        public required bool EnableBTCServer { get; set; }
-
-        [JsonIgnore]
-        public string? StripeSecretKey { get; set; } = string.Empty;
-
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [NotMapped]
-        public string? StripeSecretKeyNotMapped { get; set; }
-
-        [JsonIgnore]
-        public string? StripeWebhookSecret { get; set; } = string.Empty;
-
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [NotMapped]
-        public string? StripeWebhookSecretNotMapped { get; set; }
-
-        public required bool EnableTurnstileMode { get; set; }
-
-        public string? TurnstileTitle { get; set; }
-
-        public string? TurnstilePublicKey { get; set; }
-
-        [JsonIgnore]
-        public string? TurnstileSecretKey { get; set; } = string.Empty;
-
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [NotMapped]
-        public string? TurnstileSecretKeyNotMapped { get; set; }
-
-        public required bool EnablePWA { get; set; }
-
-        public required bool ShowConnectedUsers { get; set; }
-
-        public required bool ForceLatestVersion { get; set; }
-
-        public required bool ShowViewerCountPerStream { get; set; }
-
-        public required int RequiredTimeToPostLinksMinutes { get; set; }
-
-        public required bool TurnstileManagedMode { get; set; }
-
-        public required uint TurnstileSkipThreshold { get; set; }
-
-        public required bool StripNonASCIIChars { get; set; }
-
-        public required bool LbSendInstanceMetrics { get; set; }
-
-        public required string LbTargetDomain { get; set; }
-
-        [JsonIgnore]
-        public string? LbAuthToken { get; set; } = string.Empty;
-
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [NotMapped]
-        public string? LbAuthTokenNotMapped { get; set; }
-
-        public bool EnableDatabaseBackup { get; set; }
-
-        [JsonIgnore]
-        public string? GithubToken { get; set; } = string.Empty;
-
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [NotMapped]
-        public string? GithubTokenNotMapped { get; set; }
-
-        [JsonIgnore]
-        public long? GithubReleaseId { get; set; } = null;
-
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [NotMapped]
-        public long? GithubReleaseIdNotMapped { get; set; }
-
-        [JsonIgnore]
-        public string? GithubRepositoryName { get; set; } = string.Empty;
-
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [NotMapped]
-        public string? GithubRepositoryNameNotMapped { get; set; }
-
-        public object Clone() => MemberwiseClone();
     }
 
     public static class ConfigurationExtensions
     {
         public static string NormalizeToJavascript(this string value) =>
             char.ToLowerInvariant(value[0]) + value[1..];
+
+        public static PublicConfiguration ToPublicConfiguration (this Configuration config)
+        {
+            var publicConfiguration = (PublicConfiguration)RuntimeHelpers.GetUninitializedObject(typeof(PublicConfiguration));
+            foreach (var p in typeof(PublicConfiguration).GetProperties())
+            {
+                p.SetValue(publicConfiguration, p.GetValue(config));
+            }
+            return publicConfiguration;
+        }
 
         public static object BuildJSONConfiguration(this Configuration config) => new object[]
             {
@@ -369,10 +123,10 @@ namespace shrimpcast.Entities.DB
                         new { name = nameof(config.ChatBlockTORConnections).ToLower(), label = "Block TOR connections for chat only", value = config.ChatBlockTORConnections },
                         new { name = nameof(config.SiteBlockVPNConnections).ToLower(), label = "Block VPN connections site-wide", value = config.SiteBlockVPNConnections },
                         new { name = nameof(config.ChatBlockVPNConnections).ToLower(), label = "Block VPN connections for chat only", value = config.ChatBlockVPNConnections },
-                        new { name = nameof(config.IPServiceApiURLNotMapped).ToLower(), label = "API URL for the IP detection service", value = config.IPServiceApiURL },
-                        new { name = nameof(config.IPServiceApiKeyNotMapped).ToLower(), label = "API key for the VPN Detection Service", value = config.IPServiceApiKey },
+                        new { name = nameof(config.IPServiceApiURL).ToLower(), label = "API URL for the IP detection service", value = config.IPServiceApiURL },
+                        new { name = nameof(config.IPServiceApiKey).ToLower(), label = "API key for the VPN Detection Service", value = config.IPServiceApiKey },
                         new { name = nameof(config.OptionalApiKeyHeader).ToLower(), label = "Optional header to send the API key", value = config.OptionalApiKeyHeader },
-                        new { name = nameof(config.VPNDetectionMatchCriteriaNotMapped).ToLower(), label = "VPN detection match criteria", value = config.VPNDetectionMatchCriteria },
+                        new { name = nameof(config.VPNDetectionMatchCriteria).ToLower(), label = "VPN detection match criteria", value = config.VPNDetectionMatchCriteria },
                     }
                 },
                 new
@@ -392,8 +146,8 @@ namespace shrimpcast.Entities.DB
                     name = "OBS",
                     values = new object[]
                     {
-                        new { name = nameof(config.OBSHostNotMapped).ToLower(), label = "Host", value = config.OBSHost },
-                        new { name = nameof(config.OBSPasswordtNotMapped).ToLower(), label = "Password", value = config.OBSPassword },
+                        new { name = nameof(config.OBSHost).ToLower(), label = "Host", value = config.OBSHost },
+                        new { name = nameof(config.OBSPassword).ToLower(), label = "Password", value = config.OBSPassword },
                         new { name = nameof(config.OBSMainScene).ToLower(), label = "Main scene", value = config.OBSMainScene },
                         new { name = nameof(config.OBSMainSource).ToLower(), label = "Main source", value = config.OBSMainSource },
                         new { name = nameof(config.OBSKinoSource).ToLower(), label = "Kino source", value = config.OBSKinoSource },
@@ -420,8 +174,8 @@ namespace shrimpcast.Entities.DB
                     values = new object[]
                     {
                         new { name = nameof(config.VAPIDPublicKey).ToLower(), label = "VAPID Public key", value = config.VAPIDPublicKey },
-                        new { name = nameof(config.VAPIDPrivateKeyNotMapped).ToLower(), label = "VAPID Private key", value = config.VAPIDPrivateKey },
-                        new { name = nameof(config.VAPIDMailNotMapped).ToLower(), label = "VAPID Mail", value = config.VAPIDMail },
+                        new { name = nameof(config.VAPIDPrivateKey).ToLower(), label = "VAPID Private key", value = config.VAPIDPrivateKey },
+                        new { name = nameof(config.VAPIDMail).ToLower(), label = "VAPID Mail", value = config.VAPIDMail },
                     }
                 },
                 new
@@ -436,10 +190,10 @@ namespace shrimpcast.Entities.DB
                         new { name = nameof(config.GoldenPassTitle).ToLower(), label = "Golden pass title", value = config.GoldenPassTitle },
                         new { name = nameof(config.BTCServerInstanceURL).ToLower(), label = "BTCServer instance URL", value = config.BTCServerInstanceURL },
                         new { name = nameof(config.BTCServerStoreId).ToLower(), label = "BTCServer store ID", value = config.BTCServerStoreId },
-                        new { name = nameof(config.BTCServerApiKeyNotMapped).ToLower(), label = "BTCServer API key", value = config.BTCServerApiKey },
-                        new { name = nameof(config.BTCServerWebhookSecretNotMapped).ToLower(), label = "BTCServer webhook secret", value = config.BTCServerWebhookSecret },
-                        new { name = nameof(config.StripeSecretKeyNotMapped).ToLower(), label = "Stripe secret key", value = config.StripeSecretKey },
-                        new { name = nameof(config.StripeWebhookSecretNotMapped).ToLower(), label = "Stripe webhook secret", value = config.StripeWebhookSecret },
+                        new { name = nameof(config.BTCServerApiKey).ToLower(), label = "BTCServer API key", value = config.BTCServerApiKey },
+                        new { name = nameof(config.BTCServerWebhookSecret).ToLower(), label = "BTCServer webhook secret", value = config.BTCServerWebhookSecret },
+                        new { name = nameof(config.StripeSecretKey).ToLower(), label = "Stripe secret key", value = config.StripeSecretKey },
+                        new { name = nameof(config.StripeWebhookSecret).ToLower(), label = "Stripe webhook secret", value = config.StripeWebhookSecret },
                     }
                 },
                 new
@@ -452,7 +206,7 @@ namespace shrimpcast.Entities.DB
                         new { name = nameof(config.TurnstileSkipThreshold).ToLower(), label = "Messages sent skip threshold", value = config.TurnstileSkipThreshold },
                         new { name = nameof(config.TurnstileTitle).ToLower(), label = "Turnstile title ", value = config.TurnstileTitle },
                         new { name = nameof(config.TurnstilePublicKey).ToLower(), label = "Turnstile public key", value = config.TurnstilePublicKey },
-                        new { name = nameof(config.TurnstileSecretKeyNotMapped).ToLower(), label = "Turnstile private key", value = config.TurnstileSecretKey },
+                        new { name = nameof(config.TurnstileSecretKey).ToLower(), label = "Turnstile private key", value = config.TurnstileSecretKey },
                     }
                 },
                 new
@@ -462,7 +216,7 @@ namespace shrimpcast.Entities.DB
                     {
                         new { name = nameof(config.LbSendInstanceMetrics).ToLower(), label = "Send metrics", value = config.LbSendInstanceMetrics },
                         new { name = nameof(config.LbTargetDomain).ToLower(), label = "Master instance domain", value = config.LbTargetDomain },
-                        new { name = nameof(config.LbAuthTokenNotMapped).ToLower(), label = "Auth token", value = config.LbAuthToken },
+                        new { name = nameof(config.LbAuthToken).ToLower(), label = "Auth token", value = config.LbAuthToken },
                     }
                 },
                 new
@@ -471,9 +225,9 @@ namespace shrimpcast.Entities.DB
                     values = new object[]
                     {
                         new { name = nameof(config.EnableDatabaseBackup).ToLower(), label = "Enable database backups", value = config.EnableDatabaseBackup },
-                        new { name = nameof(config.GithubTokenNotMapped).ToLower(), label = "GitHub personal token", value = config.GithubToken },
-                        new { name = nameof(config.GithubRepositoryNameNotMapped).ToLower(), label = "GitHub repository name", value = config.GithubRepositoryName },
-                        new { name = nameof(config.GithubReleaseIdNotMapped).ToLower(), label = "GitHub release id", value = config.GithubReleaseId },
+                        new { name = nameof(config.GithubToken).ToLower(), label = "GitHub personal token", value = config.GithubToken },
+                        new { name = nameof(config.GithubRepositoryName).ToLower(), label = "GitHub repository name", value = config.GithubRepositoryName },
+                        new { name = nameof(config.GithubReleaseId).ToLower(), label = "GitHub release id", value = config.GithubReleaseId },
                     }
                 }
             };
