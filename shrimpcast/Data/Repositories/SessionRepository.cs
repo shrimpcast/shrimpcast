@@ -276,6 +276,15 @@ namespace shrimpcast.Data.Repositories
             return await _context.SaveChangesAsync() > 0 ? Session.UserLabel : throw new Exception("Could not update record.");
         }
 
+        public async Task VerifyAdmin(string sessionToken)
+        {
+            var session = await GetExistingByTokenAsync(sessionToken);
+            if (session == null || !session.IsAdmin)
+            {
+                Constants.THROW_UNAUTHORIZED_ACCESS();
+            }
+        }
+
         private static string? BuildMutedStringMinutes(DateTime MutedUntil)
         {
             var utcNow = DateTime.UtcNow;
