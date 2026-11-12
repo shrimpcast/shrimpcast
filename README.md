@@ -365,7 +365,10 @@ This service allows you to automatically backup your database every 10 minutes a
 <img width="1522" height="855" alt="localhost_44421_ (3)" src="https://github.com/user-attachments/assets/db7e427f-cad6-4134-8b53-f02c0570c517" />
 
 ### RTMP Endpoints
-Defines RTMP ingress and egress points. For example, you can configure an RTMP endpoint to receive a stream directly from **OBS**.
+Defines RTMP ingress and egress points. For example, you can configure an RTMP endpoint to receive a stream directly from **OBS**. <br />
+If you're using OBS, these are the settings for optimal performance:
+
+<img width="983" height="762" alt="image" src="https://github.com/user-attachments/assets/fb34f457-f50a-41fd-bd8c-918f469c9d5e" />
 
 ### Outputs
 Generates high-performance **HLS** streams. Accepts a wide range of input formats including HLS sources, RTMP/SRT egress endpoints, **VOD**, and **FLV** - essentially any video-compatible source.  
