@@ -647,8 +647,8 @@ namespace shrimpcast.Hubs
 
             if (!Session.IsAdmin && !Configuration.ShowVotes)
             {
-                await DispatchSystemMessage("Permission denied.");
-                throw new Exception("Access denied.");
+                await DispatchSystemMessage(Constants.UNAUTORHIZED_ACCESS);
+                Constants.THROW_UNAUTHORIZED_ACCESS();
             }
 
             var votes = await _pollRepository.GetOptionVotes(pollOptionId);
@@ -785,7 +785,7 @@ namespace shrimpcast.Hubs
 
         public async Task ChangeSourceStatusBackground(string VerificationToken, string sourceName, bool status, bool resetOnScheduledSwitch)
         {
-            if (VerificationToken != Constants.FIREANDFORGET_TOKEN) throw new Exception("Permission denied");
+            if (VerificationToken != Constants.FIREANDFORGET_TOKEN) Constants.THROW_UNAUTHORIZED_ACCESS();
             var sourceUpdated = false;
             try
             {
@@ -999,8 +999,8 @@ namespace shrimpcast.Hubs
             var session = GetCurrentConnection().Session;
             if (!session.IsAdmin && (!session.IsMod || !modActionAllowed))
             {
-                await DispatchSystemMessage("Permission denied.");
-                throw new Exception("Access denied.");
+                await DispatchSystemMessage(Constants.UNAUTORHIZED_ACCESS);
+                Constants.THROW_UNAUTHORIZED_ACCESS();
             }
 
             return true;

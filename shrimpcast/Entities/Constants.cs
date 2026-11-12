@@ -74,6 +74,10 @@ namespace shrimpcast.Entities
 
         public const string VIP_MOVIE = "vip";
 
+        public const string UNAUTORHIZED_ACCESS = "Unauthorized access, permission denied";
+
+        public static void THROW_UNAUTHORIZED_ACCESS () => throw new Exception(UNAUTORHIZED_ACCESS);
+
         public static string DOWNLOADING_STATUS_FORMAT(int progress = 0) => $"Downloading {progress}%";
 
         public readonly static string[] USER_COMMANDS = [

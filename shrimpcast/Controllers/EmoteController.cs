@@ -17,8 +17,7 @@ namespace shrimpcast.Controllers
         [HttpPost, Route("Add")]
         public async Task<object?> Add([FromForm] AddEmoteDTO emoteDTO)
         {
-            var session = await _sessionRepository.GetExistingByTokenAsync(emoteDTO.AccessToken);
-            if (session == null || !session.IsAdmin) throw new Exception("Permission denied.");
+            await _sessionRepository.VerifyAdmin(emoteDTO.AccessToken);
             var result = await _emoteRepository.Add(emoteDTO.Emote, emoteDTO.Name, true);
             await _hubContext.Clients.All.SendAsync("EmoteAdded", result);
             return result;
