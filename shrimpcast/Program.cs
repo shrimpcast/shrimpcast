@@ -2,7 +2,7 @@ using Hangfire;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using shrimpcast.Data;
+using shrimpcast.Data.Context;
 using shrimpcast.Data.Repositories;
 using shrimpcast.Data.Repositories.Interfaces;
 using shrimpcast.Data.Services;

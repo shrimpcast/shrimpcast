@@ -95,7 +95,7 @@
         public long? GithubReleaseId { get; set; } = null;
 
         public string? GithubRepositoryName { get; set; } = string.Empty;
-        
+
         public required DateTime OpenAt { get; set; }
     }
 }
