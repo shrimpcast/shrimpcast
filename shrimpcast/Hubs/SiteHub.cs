@@ -647,8 +647,8 @@ namespace shrimpcast.Hubs
 
             if (!Session.IsAdmin && !Configuration.ShowVotes)
             {
-                await DispatchSystemMessage("Permission denied.");
-                throw new Exception("Access denied.");
+                await DispatchSystemMessage(Constants.UNAUTORHIZED_ACCESS);
+                Constants.THROW_UNAUTHORIZED_ACCESS();
             }
 
             var votes = await _pollRepository.GetOptionVotes(pollOptionId);
@@ -751,7 +751,7 @@ namespace shrimpcast.Hubs
             await ShouldGrantAccess();
             var (updated, updatedSources) = await _configurationRepository.SaveAsync(updatedConfiguration);
             _configurationSingleton.Configuration = updatedConfiguration;
-            await _hubContext.Clients.All.SendAsync("ConfigUpdated", updatedConfiguration);
+            await _hubContext.Clients.All.SendAsync("ConfigUpdated", Configuration.ToPublicConfiguration());
             if (updatedSources) ScheduleBackgroundJobs();
             return updated;
         }
@@ -785,7 +785,7 @@ namespace shrimpcast.Hubs
 
         public async Task ChangeSourceStatusBackground(string VerificationToken, string sourceName, bool status, bool resetOnScheduledSwitch)
         {
-            if (VerificationToken != Constants.FIREANDFORGET_TOKEN) throw new Exception("Permission denied");
+            if (VerificationToken != Constants.FIREANDFORGET_TOKEN) Constants.THROW_UNAUTHORIZED_ACCESS();
             var sourceUpdated = false;
             try
             {
@@ -830,37 +830,19 @@ namespace shrimpcast.Hubs
         public async Task<object> GetOrderedConfig()
         {
             await ShouldGrantAccess();
-            var unorderedConfig = (Configuration)Configuration.Clone();
-            unorderedConfig.OBSPasswordtNotMapped = unorderedConfig.OBSPassword;
-            unorderedConfig.OBSHostNotMapped = unorderedConfig.OBSHost;
-            unorderedConfig.VAPIDPrivateKeyNotMapped = unorderedConfig.VAPIDPrivateKey;
-            unorderedConfig.VAPIDMailNotMapped = unorderedConfig.VAPIDMail;
-            unorderedConfig.IPServiceApiKeyNotMapped = unorderedConfig.IPServiceApiKey;
-            unorderedConfig.IPServiceApiURLNotMapped = unorderedConfig.IPServiceApiURL;
-            unorderedConfig.VPNDetectionMatchCriteriaNotMapped = unorderedConfig.VPNDetectionMatchCriteria;
-            unorderedConfig.BTCServerApiKeyNotMapped = unorderedConfig.BTCServerApiKey;
-            unorderedConfig.BTCServerWebhookSecretNotMapped = unorderedConfig.BTCServerWebhookSecret;
-            unorderedConfig.StripeSecretKeyNotMapped = unorderedConfig.StripeSecretKey;
-            unorderedConfig.StripeWebhookSecretNotMapped = unorderedConfig.StripeWebhookSecret;
-            unorderedConfig.TurnstileSecretKeyNotMapped = unorderedConfig.TurnstileSecretKey;
-            unorderedConfig.LbAuthTokenNotMapped = unorderedConfig.LbAuthToken;
-            unorderedConfig.GithubTokenNotMapped = unorderedConfig.GithubToken;
-            unorderedConfig.GithubReleaseIdNotMapped = unorderedConfig.GithubReleaseId;
-            unorderedConfig.GithubRepositoryNameNotMapped = unorderedConfig.GithubRepositoryName;
-
             return new
             {
                 OrderedConfig = Configuration.BuildJSONConfiguration(),
-                UnorderedConfig = unorderedConfig,
-                OpenKey = nameof(unorderedConfig.OpenAt).ToLower(),
+                UnorderedConfig = Configuration,
+                OpenKey = nameof(Configuration.OpenAt).ToLower(),
                 TableKeys = new string[]
                 {
-                    nameof(unorderedConfig.Sources).ToLower(),
+                    nameof(Configuration.Sources).ToLower(),
                 },
                 ColorPickerKeys = new string[]
                 {
-                    nameof(unorderedConfig.PalettePrimary).ToLower(),
-                    nameof(unorderedConfig.PaletteSecondary).ToLower()
+                    nameof(Configuration.PalettePrimary).ToLower(),
+                    nameof(Configuration.PaletteSecondary).ToLower()
                 }
             };
         }
@@ -1017,8 +999,8 @@ namespace shrimpcast.Hubs
             var session = GetCurrentConnection().Session;
             if (!session.IsAdmin && (!session.IsMod || !modActionAllowed))
             {
-                await DispatchSystemMessage("Permission denied.");
-                throw new Exception("Access denied.");
+                await DispatchSystemMessage(Constants.UNAUTORHIZED_ACCESS);
+                Constants.THROW_UNAUTHORIZED_ACCESS();
             }
 
             return true;
@@ -1336,6 +1318,9 @@ namespace shrimpcast.Hubs
                     case string _message when _message.StartsWith(Constants.SET_USER_LABEL):
                         await SetUserLabel(_message);
                         return true;
+                    case string _message when _message.StartsWith(Constants.FETCH_IMAGE):
+                        await FetchImage(_message);
+                        return true;
                     default:
                         return false;
                 }
@@ -1638,6 +1623,41 @@ namespace shrimpcast.Hubs
                 });
 
                 await DispatchSystemMessage($"Successfully executed {Constants.SET_USER_LABEL}");
+            }
+            catch (Exception ex)
+            {
+                await DispatchSystemMessage(ex.Message);
+            }
+        }
+
+        private async Task FetchImage(string message)
+        {
+            await DispatchSystemMessage($"Executing {Constants.FETCH_IMAGE} command...");
+            try
+            {
+                var strings = message.Split(" ");
+                using HttpClient client = new()
+                {
+                    MaxResponseContentBufferSize = 10_000_000,
+                    Timeout = TimeSpan.FromSeconds(10)
+                };
+                client.DefaultRequestHeaders.Add("User-Agent", $"shrimpcast/{Constants.BACKEND_VERSION}");
+                var downloadBytes = await client.GetByteArrayAsync(strings[2].Trim());
+
+                var imageType = ImageDetection.GetImageFormat(downloadBytes).ToString().ToLower();
+                var imageName = $"{strings[1].Trim()}.{imageType}".ToLower();
+                using var ms = new MemoryStream(downloadBytes);
+                var formFile = new FormFile(ms, 0, ms.Length, string.Empty, string.Empty)
+                {
+                    Headers = new HeaderDictionary(),
+                    ContentType = $"image/{imageType}"
+                };
+
+                var imageExists = await _emoteRepository.Get(imageName);
+                if (imageExists != null) await _emoteRepository.Remove(imageExists.EmoteId);
+                dynamic upload = await _emoteRepository.Add(formFile, imageName, false);
+
+                await DispatchSystemMessage($"Uploaded image: {upload.url}");
             }
             catch (Exception ex)
             {

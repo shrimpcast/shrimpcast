@@ -10,9 +10,8 @@ using shrimpcast.Hubs.Dictionaries;
 namespace shrimpcast.Controllers
 {
     [ApiController, Route("api/[controller]")]
-    public class SessionController(ILogger<SessionController> logger, ISessionRepository sessionRepository, IMessageRepository messageRepository, IBanRepository banRepository, IPollRepository pollRepository, INameColourRepository nameColourRepository, ITorExitNodeRepository torExitNodeRepository, IVpnAddressRepository vpnAddressRepository, INotificationRepository notificationRepository, IEmoteRepository emoteRepository, IHubContext<SiteHub> hubContext, ConfigurationSingleton configurationSingleton, Connections<SiteHub> activeConnections) : ControllerBase
+    public class SessionController(ISessionRepository sessionRepository, IMessageRepository messageRepository, IBanRepository banRepository, IPollRepository pollRepository, INameColourRepository nameColourRepository, ITorExitNodeRepository torExitNodeRepository, IVpnAddressRepository vpnAddressRepository, IEmoteRepository emoteRepository, IHubContext<SiteHub> hubContext, ConfigurationSingleton configurationSingleton, Connections<SiteHub> activeConnections) : ControllerBase
     {
-        private readonly ILogger<SessionController> _logger = logger;
         private readonly ISessionRepository _sessionRepository = sessionRepository;
         private readonly IMessageRepository _messageRepository = messageRepository;
         private readonly IBanRepository _banRepository = banRepository;
@@ -20,7 +19,6 @@ namespace shrimpcast.Controllers
         private readonly INameColourRepository _nameColourRepository = nameColourRepository;
         private readonly ITorExitNodeRepository _torExitNodeRepository = torExitNodeRepository;
         private readonly IVpnAddressRepository _vpnAddressRepository = vpnAddressRepository;
-        private readonly INotificationRepository _notificationRepository = notificationRepository;
         private readonly IEmoteRepository _emoteRepository = emoteRepository;
         private readonly IHubContext<SiteHub> _hubContext = hubContext;
         private readonly ConfigurationSingleton _configurationSingleton = configurationSingleton;
@@ -126,7 +124,7 @@ namespace shrimpcast.Controllers
             return new
             {
                 version = Constants.BACKEND_VERSION,
-                configuration,
+                configuration = configuration.ToPublicConfiguration(),
                 emotes,
                 poll,
                 canAddVote?.PollOptionId,

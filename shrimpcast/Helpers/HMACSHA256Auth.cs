@@ -1,4 +1,5 @@
-﻿using Stripe;
+﻿using shrimpcast.Entities;
+using Stripe;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
@@ -22,7 +23,7 @@ namespace shrimpcast.Helpers
 
             if (computedSignature != receivedSignature.Replace("sha256=", string.Empty))
             {
-                throw new ProtocolViolationException("Permission denied");
+                Constants.THROW_UNAUTHORIZED_ACCESS();
             }
 
             return ParsePayload(requestBody);

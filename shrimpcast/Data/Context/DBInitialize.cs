@@ -5,7 +5,7 @@ using shrimpcast.Entities.DB;
 using shrimpcast.Helpers;
 using WebPush;
 
-namespace shrimpcast.Data
+namespace shrimpcast.Data.Context
 {
     public static class DBInitialize
     {
