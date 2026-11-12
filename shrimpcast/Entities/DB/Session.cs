@@ -4,11 +4,16 @@ using System.ComponentModel.DataAnnotations;
 namespace shrimpcast.Entities.DB
 {
     [Index(nameof(SessionId))]
+    [Index(nameof(HashedSessionToken), IsUnique = true)]
+    [Index(nameof(SessionTokenLookupKey), IsUnique = true)]
     public class Session
     {
         public int SessionId { get; set; }
 
-        public required string SessionToken { get; set; }
+        public required string HashedSessionToken { get; set; }
+
+        [MaxLength(16)]
+        public required string SessionTokenLookupKey { get; set; }
 
         public required DateTime CreatedAt { get; set; }
 
