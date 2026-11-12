@@ -751,7 +751,7 @@ namespace shrimpcast.Hubs
             await ShouldGrantAccess();
             var (updated, updatedSources) = await _configurationRepository.SaveAsync(updatedConfiguration);
             _configurationSingleton.Configuration = updatedConfiguration;
-            await _hubContext.Clients.All.SendAsync("ConfigUpdated", updatedConfiguration);
+            await _hubContext.Clients.All.SendAsync("ConfigUpdated", Configuration.ToPublicConfiguration());
             if (updatedSources) ScheduleBackgroundJobs();
             return updated;
         }
@@ -830,37 +830,19 @@ namespace shrimpcast.Hubs
         public async Task<object> GetOrderedConfig()
         {
             await ShouldGrantAccess();
-            var unorderedConfig = (Configuration)Configuration.Clone();
-            unorderedConfig.OBSPasswordtNotMapped = unorderedConfig.OBSPassword;
-            unorderedConfig.OBSHostNotMapped = unorderedConfig.OBSHost;
-            unorderedConfig.VAPIDPrivateKeyNotMapped = unorderedConfig.VAPIDPrivateKey;
-            unorderedConfig.VAPIDMailNotMapped = unorderedConfig.VAPIDMail;
-            unorderedConfig.IPServiceApiKeyNotMapped = unorderedConfig.IPServiceApiKey;
-            unorderedConfig.IPServiceApiURLNotMapped = unorderedConfig.IPServiceApiURL;
-            unorderedConfig.VPNDetectionMatchCriteriaNotMapped = unorderedConfig.VPNDetectionMatchCriteria;
-            unorderedConfig.BTCServerApiKeyNotMapped = unorderedConfig.BTCServerApiKey;
-            unorderedConfig.BTCServerWebhookSecretNotMapped = unorderedConfig.BTCServerWebhookSecret;
-            unorderedConfig.StripeSecretKeyNotMapped = unorderedConfig.StripeSecretKey;
-            unorderedConfig.StripeWebhookSecretNotMapped = unorderedConfig.StripeWebhookSecret;
-            unorderedConfig.TurnstileSecretKeyNotMapped = unorderedConfig.TurnstileSecretKey;
-            unorderedConfig.LbAuthTokenNotMapped = unorderedConfig.LbAuthToken;
-            unorderedConfig.GithubTokenNotMapped = unorderedConfig.GithubToken;
-            unorderedConfig.GithubReleaseIdNotMapped = unorderedConfig.GithubReleaseId;
-            unorderedConfig.GithubRepositoryNameNotMapped = unorderedConfig.GithubRepositoryName;
-
             return new
             {
                 OrderedConfig = Configuration.BuildJSONConfiguration(),
-                UnorderedConfig = unorderedConfig,
-                OpenKey = nameof(unorderedConfig.OpenAt).ToLower(),
+                UnorderedConfig = Configuration,
+                OpenKey = nameof(Configuration.OpenAt).ToLower(),
                 TableKeys = new string[]
                 {
-                    nameof(unorderedConfig.Sources).ToLower(),
+                    nameof(Configuration.Sources).ToLower(),
                 },
                 ColorPickerKeys = new string[]
                 {
-                    nameof(unorderedConfig.PalettePrimary).ToLower(),
-                    nameof(unorderedConfig.PaletteSecondary).ToLower()
+                    nameof(Configuration.PalettePrimary).ToLower(),
+                    nameof(Configuration.PaletteSecondary).ToLower()
                 }
             };
         }
