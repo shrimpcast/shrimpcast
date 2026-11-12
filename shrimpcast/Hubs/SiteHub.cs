@@ -1650,7 +1650,7 @@ namespace shrimpcast.Hubs
                 var formFile = new FormFile(ms, 0, ms.Length, string.Empty, string.Empty)
                 {
                     Headers = new HeaderDictionary(),
-                    ContentType = $"image/{imageType}" 
+                    ContentType = $"image/{imageType}"
                 };
 
                 var imageExists = await _emoteRepository.Get(imageName);

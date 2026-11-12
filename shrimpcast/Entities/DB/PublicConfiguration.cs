@@ -19,13 +19,13 @@
         public required int MaxLengthTruncation { get; set; }
 
         public required bool ShowBingo { get; set; }
-        
+
         public required string BingoTitle { get; set; }
 
         public required bool ShowPoll { get; set; }
-        
+
         public required bool AcceptNewOptions { get; set; }
-        
+
         public required bool AcceptNewVotes { get; set; }
 
         public required bool EnableVoteSkip { get; set; }
@@ -57,23 +57,23 @@
         public required bool UseDarkTheme { get; set; }
 
         public required bool EnableHalloweenTheme { get; set; }
-        
+
         public required bool EnableStripe { get; set; }
 
         public required bool EnableBTCServer { get; set; }
-        
+
         public required bool EnableTurnstileMode { get; set; }
 
         public string? TurnstileTitle { get; set; }
-        
+
         public string? TurnstilePublicKey { get; set; }
 
         public required bool EnablePWA { get; set; }
 
         public required bool ShowConnectedUsers { get; set; }
-        
+
         public required bool ShowViewerCountPerStream { get; set; }
-        
+
         public required bool TurnstileManagedMode { get; set; }
 
         public required bool StripNonASCIIChars { get; set; }

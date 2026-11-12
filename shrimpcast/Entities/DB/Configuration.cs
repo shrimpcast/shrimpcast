@@ -12,7 +12,7 @@ namespace shrimpcast.Entities.DB
         public static string NormalizeToJavascript(this string value) =>
             char.ToLowerInvariant(value[0]) + value[1..];
 
-        public static PublicConfiguration ToPublicConfiguration (this Configuration config)
+        public static PublicConfiguration ToPublicConfiguration(this Configuration config)
         {
             var publicConfiguration = (PublicConfiguration)RuntimeHelpers.GetUninitializedObject(typeof(PublicConfiguration));
             foreach (var p in typeof(PublicConfiguration).GetProperties())
