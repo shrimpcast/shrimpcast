@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Newtonsoft.Json;
+using shrimpcast.Entities;
 using shrimpcast.Entities.DB;
 using shrimpcast.Helpers;
 using WebPush;
@@ -9,18 +11,47 @@ namespace shrimpcast.Data.Context
 {
     public static class DBInitialize
     {
-        public static readonly string INITIAL_ADMIN_TOKEN = SecureToken.GenerateTokenThreadSafe();
+        private static readonly SessionToken INITIAL_ADMIN_TOKEN = SecureToken.GenerateTokenThreadSafe();
+        private static readonly HistoryRow HASH_TOKENS_MIGRATION = new("20261112165555_HASH_TOKENS_MIGRATION", "10.0.14");
 
         public static void Initialize(APPContext context)
         {
             context.Database.Migrate();
+            RunHashMigration(context);
+        }
+
+        private static void RunHashMigration(APPContext context)
+        {
+            var historyRepository = context.GetService<IHistoryRepository>();
+            var appliedMigration = historyRepository.GetAppliedMigrations().Any(m => m.MigrationId == HASH_TOKENS_MIGRATION.MigrationId);
+            if (appliedMigration) return;
+
+            using var transaction = context.Database.BeginTransaction();
+            try
+            {
+                foreach (var session in context.Sessions.ToList())
+                {
+                    var TokenInfo = SecureToken.HashToken(session.HashedSessionToken);
+                    session.HashedSessionToken = TokenInfo.Hash;
+                    session.SessionTokenLookupKey = TokenInfo.LookupKey;
+                }
+
+                context.SaveChanges();
+                context.Database.ExecuteSqlRaw(historyRepository.GetInsertScript(HASH_TOKENS_MIGRATION));
+                transaction.Commit();
+            }
+            catch (Exception)
+            {
+                transaction.Rollback();
+                throw;
+            }
         }
 
         public static void SetInitialData(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.InsertData("Session", [nameof(Session.SessionToken), nameof(Session.CreatedAt), nameof(Session.IsAdmin), "IsModerator", "UserDisplayColor"], new object[,]
+            migrationBuilder.InsertData("Session", ["SessionToken", nameof(Session.CreatedAt), nameof(Session.IsAdmin), "IsModerator", "UserDisplayColor"], new object[,]
             {
-                { INITIAL_ADMIN_TOKEN, DateTime.UtcNow, true, false, string.Empty},
+                { INITIAL_ADMIN_TOKEN.Plain, DateTime.UtcNow, true, false, string.Empty},
             });
 
             migrationBuilder.InsertData("SessionName", [nameof(SessionName.SessionId), nameof(SessionName.CreatedAt), nameof(SessionName.Name)], new object[,]
@@ -105,7 +136,7 @@ namespace shrimpcast.Data.Context
             }
 
             migrationBuilder.InsertData("Emote", [nameof(Emote.Name), nameof(Emote.Content), nameof(Emote.ContentType)], emotes);
-            File.WriteAllText("setup/GeneratedAdminToken.txt", INITIAL_ADMIN_TOKEN);
+            File.WriteAllText("setup/GeneratedAdminToken.txt", INITIAL_ADMIN_TOKEN.Plain);
         }
     }
 }
