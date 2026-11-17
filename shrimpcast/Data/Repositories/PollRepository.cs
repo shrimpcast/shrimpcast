@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using shrimpcast.Data.Context;
 using shrimpcast.Data.Repositories.Interfaces;
 using shrimpcast.Entities.DB;
 

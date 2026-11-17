@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using shrimpcast.Data;
+using shrimpcast.Data.Context;
 
 #nullable disable
 
@@ -396,6 +396,9 @@ namespace shrimpcast.Migrations
                     b.Property<string>("ContentType")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<bool>("IsManualUpload")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Name")
                         .IsRequired()
