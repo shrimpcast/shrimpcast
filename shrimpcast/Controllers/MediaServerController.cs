@@ -53,7 +53,10 @@ namespace shrimpcast.Controllers
                     stream = p.Value.Stream,
                     launchCommand = p.Value.LaunchCommand,
                 },
-                streamUrl = p.Value.StreamPath,
+                streamUrl = p.Value.Stream.RequiresGoldStatus
+                            ? p.Value.StreamPath.Replace("/streams/", $"/streams/{sessionToken}/")
+                            : p.Value.StreamPath,
+                isRestricted = p.Value.Stream.RequiresGoldStatus,
                 processStatus = new
                 {
                     runningStatus = !p.Value.Stream.IsEnabled ? "Stopping"
@@ -94,15 +97,29 @@ namespace shrimpcast.Controllers
         }
 
         [HttpGet, Route("Streams/{Name}/{File}")]
+        [HttpGet, Route("Streams/{SessionToken}/{Name}/{File}")]
         [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true, Duration = 0)]
-        public IActionResult Streams(string Name, string File)
+        public async Task<IActionResult> Streams(string Name, string File, string? SessionToken = null)
         {
             var isPlaylist = File.EndsWith("m3u8");
             var isPlaylistInfo = File.EndsWith("info");
             if (!isPlaylist && !isPlaylistInfo && !Constants.IsDevelopment()) return UnprocessableEntity();
 
             _processes.All.TryGetValue(Name, out var streamInfo);
-            if (isPlaylistInfo) return ReturnPlaylistInfo(streamInfo);
+
+            var hasAccess = true;
+            if (streamInfo != null && streamInfo.Stream.RequiresGoldStatus)
+            {
+                var account = await _sessionRepository.GetExistingByTokenAsync(SessionToken ?? string.Empty);
+                if (account == null || (!account.IsAdmin && !account.IsMod && !account.IsGolden))
+                {
+                    hasAccess = false;
+                }
+
+                if (!hasAccess && !isPlaylistInfo) return Unauthorized();
+            }
+
+            if (isPlaylistInfo) return ReturnPlaylistInfo(streamInfo, hasAccess);
             else if (streamInfo == null) return NotFound();
 
             streamInfo.Viewers.AddOrUpdate(HttpContext.Connection.RemoteIpAddress!, DateTime.UtcNow, (k, oldValue) => DateTime.UtcNow);
@@ -113,7 +130,7 @@ namespace shrimpcast.Controllers
             return PhysicalFile(path, contentType);
         }
 
-        private IActionResult ReturnPlaylistInfo(StreamInfo? streamInfo)
+        private IActionResult ReturnPlaylistInfo(StreamInfo? streamInfo, bool hasAccess)
         {
             var isDownloading = streamInfo?.Stream_IsDownloading;
             var isStarting = !System.IO.File.Exists(streamInfo?.FullStreamPath);
@@ -123,7 +140,8 @@ namespace shrimpcast.Controllers
             return Ok(new
             {
                 title,
-                status = streamInfo == null ? Constants.StreamStatus.StreamOffline
+                status = !hasAccess ? Constants.StreamStatus.StreamForbidden
+                       : streamInfo == null ? Constants.StreamStatus.StreamOffline
                        : isDownloading != null ? Constants.StreamStatus.StreamDownloading
                        : isStarting ? Constants.StreamStatus.StreamStarting : Constants.StreamStatus.StreamPlaying
             });

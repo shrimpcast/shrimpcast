@@ -60,6 +60,8 @@
 
         public bool ShowStats { get; set; }
 
+        public bool RequiresGoldStatus { get; set; }
+
         public MediaServerStream Clone() => (MediaServerStream)MemberwiseClone();
     }
 }

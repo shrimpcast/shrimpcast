@@ -147,7 +147,10 @@ const GoldenPassDialog = (props) => {
               - <WorkspacePremiumIcon sx={{ fontSize: "13px", position: "relative", top: "1px" }} /> Glowie username
             </Typography>
             <Typography variant="body2">- No chat restrictions</Typography>
-            <Typography variant="body2">- Unlimited duration </Typography>
+            <Typography variant="body2">- Unrestricted access to lag-free streams</Typography>
+            <Typography fontWeight="bold" variant="body2">
+              - Unlimited duration (single payment)
+            </Typography>
             {enableBTCServer && <Typography variant="body2">- 100% anonymous via crypto</Typography>}
             <Typography variant="body2">- All payments are processed automatically</Typography>
           </Box>
@@ -211,17 +214,24 @@ const GoldenPassDialog = (props) => {
             </Box>
           )}
           {enableStripe && (
-            <Box justifyContent="center" display="flex" mt={2}>
-              <Button
-                disabled={loading || !enableStripe}
-                onClick={() => beginPurchase(false)}
-                variant="contained"
-                sx={BuyButtonSx}
-              >
-                Contribute with card (stripe) - USD ${amount}
-                {loading && <CircularProgress color="primary" sx={{ ml: "10px" }} size={14} />}
-              </Button>
-            </Box>
+            <>
+              <Box justifyContent="center" display="flex" mt={2}>
+                <Button
+                  disabled={loading || !enableStripe}
+                  onClick={() => beginPurchase(false)}
+                  variant="contained"
+                  sx={BuyButtonSx}
+                >
+                  Contribute with card (stripe) - USD ${amount}
+                  {loading && <CircularProgress color="primary" sx={{ ml: "10px" }} size={14} />}
+                </Button>
+              </Box>
+              <Typography mt="10px" fontStyle={"italic"} textAlign="center" variant="body2">
+                Tip: your name and email don't have to be real. Any made-up details will work, since they aren't checked
+                against your card. Your payment info is handled entirely by Stripe, a third-party payment processor, so
+                this site never sees it.
+              </Typography>
+            </>
           )}
           <InvoiceTable invoices={invoices} setCheckoutUrl={setCheckoutUrl} />
         </DialogContent>

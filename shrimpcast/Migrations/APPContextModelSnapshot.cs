@@ -473,6 +473,9 @@ namespace shrimpcast.Migrations
                     b.Property<bool>("Randomize")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("RequiresGoldStatus")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("ShowStats")
                         .HasColumnType("boolean");
 

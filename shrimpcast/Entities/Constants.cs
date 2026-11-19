@@ -126,6 +126,7 @@ namespace shrimpcast.Entities
             StreamDownloading = 1,
             StreamStarting = 2,
             StreamPlaying = 3,
+            StreamForbidden = 4,
         }
 
         public static string EMOTE_GET(string name) => $"/api/emote/get/{name}";
