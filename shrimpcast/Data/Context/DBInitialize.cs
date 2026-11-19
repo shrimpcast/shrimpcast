@@ -12,7 +12,7 @@ namespace shrimpcast.Data.Context
     public static class DBInitialize
     {
         private static readonly SessionToken INITIAL_ADMIN_TOKEN = SecureToken.GenerateTokenThreadSafe();
-        private static readonly HistoryRow HASH_TOKENS_MIGRATION = new("20261112165555_HASH_TOKENS_MIGRATION", "10.0.14");
+        private static readonly HistoryRow HASH_TOKENS_MIGRATION = new("20261119165555_HASH_TOKENS_MIGRATION", "10.0.14");
 
         public static void Initialize(APPContext context)
         {

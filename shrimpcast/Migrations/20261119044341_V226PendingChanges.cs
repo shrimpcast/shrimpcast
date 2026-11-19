@@ -5,11 +5,25 @@
 namespace shrimpcast.Migrations
 {
     /// <inheritdoc />
-    public partial class MakeSessionTokenColumnUnique : Migration
+    public partial class V226PendingChanges : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AddColumn<string>(
+                name: "SessionTokenLookupKey",
+                table: "Session",
+                type: "character varying(16)",
+                maxLength: 16,
+                nullable: true);
+
+            migrationBuilder.AddColumn<bool>(
+                name: "RequiresGoldStatus",
+                table: "MediaServerStreams",
+                type: "boolean",
+                nullable: false,
+                defaultValue: false);
+
             migrationBuilder.CreateIndex(
                 name: "IX_Session_HashedSessionToken",
                 table: "Session",
@@ -33,6 +47,14 @@ namespace shrimpcast.Migrations
             migrationBuilder.DropIndex(
                 name: "IX_Session_SessionTokenLookupKey",
                 table: "Session");
+
+            migrationBuilder.DropColumn(
+                name: "SessionTokenLookupKey",
+                table: "Session");
+
+            migrationBuilder.DropColumn(
+                name: "RequiresGoldStatus",
+                table: "MediaServerStreams");
         }
     }
 }

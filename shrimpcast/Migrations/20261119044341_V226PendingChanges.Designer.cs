@@ -12,8 +12,8 @@ using shrimpcast.Data.Context;
 namespace shrimpcast.Migrations
 {
     [DbContext(typeof(APPContext))]
-    [Migration("20261112182003_MaxLengthOnSessionTokenLookupKey")]
-    partial class MaxLengthOnSessionTokenLookupKey
+    [Migration("20261119044341_V226PendingChanges")]
+    partial class V226PendingChanges
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -476,6 +476,9 @@ namespace shrimpcast.Migrations
                     b.Property<bool>("Randomize")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("RequiresGoldStatus")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("ShowStats")
                         .HasColumnType("boolean");
 
@@ -743,7 +746,6 @@ namespace shrimpcast.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("SessionTokenLookupKey")
-                        .IsRequired()
                         .HasMaxLength(16)
                         .HasColumnType("character varying(16)");
 

@@ -13,7 +13,7 @@ namespace shrimpcast.Entities.DB
         public required string HashedSessionToken { get; set; }
 
         [MaxLength(16)]
-        public required string SessionTokenLookupKey { get; set; }
+        public string? SessionTokenLookupKey { get; set; }
 
         public required DateTime CreatedAt { get; set; }
 

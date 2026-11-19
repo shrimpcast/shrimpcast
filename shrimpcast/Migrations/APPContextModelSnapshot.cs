@@ -743,7 +743,6 @@ namespace shrimpcast.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("SessionTokenLookupKey")
-                        .IsRequired()
                         .HasMaxLength(16)
                         .HasColumnType("character varying(16)");
 
