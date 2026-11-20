@@ -12,8 +12,8 @@ using shrimpcast.Data.Context;
 namespace shrimpcast.Migrations
 {
     [DbContext(typeof(APPContext))]
-    [Migration("20261112165414_HashSessionTokens")]
-    partial class HashSessionTokens
+    [Migration("20261120075732_V226")]
+    partial class V226
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -476,6 +476,9 @@ namespace shrimpcast.Migrations
                     b.Property<bool>("Randomize")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("RequiresGoldStatus")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("ShowStats")
                         .HasColumnType("boolean");
 
@@ -751,6 +754,9 @@ namespace shrimpcast.Migrations
                         .HasColumnType("character varying(32)");
 
                     b.HasKey("SessionId");
+
+                    b.HasIndex("HashedSessionToken")
+                        .IsUnique();
 
                     b.HasIndex("MutedBySessionId");
 

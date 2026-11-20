@@ -742,10 +742,6 @@ namespace shrimpcast.Migrations
                     b.Property<bool>("PassedTurnstile")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("SessionTokenLookupKey")
-                        .HasMaxLength(16)
-                        .HasColumnType("character varying(16)");
-
                     b.Property<string>("UserColorDisplay")
                         .IsRequired()
                         .HasColumnType("text");
@@ -762,9 +758,6 @@ namespace shrimpcast.Migrations
                     b.HasIndex("MutedBySessionId");
 
                     b.HasIndex("SessionId");
-
-                    b.HasIndex("SessionTokenLookupKey")
-                        .IsUnique();
 
                     b.ToTable("Session", (string)null);
                 });

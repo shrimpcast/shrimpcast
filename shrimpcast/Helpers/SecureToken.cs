@@ -8,7 +8,7 @@ namespace shrimpcast.Helpers
     {
         public static SessionToken GenerateTokenThreadSafe()
         {
-            var tokenBytes = new byte[48];
+            var tokenBytes = new byte[32];
             using var rng = RandomNumberGenerator.Create();
             rng.GetBytes(tokenBytes);
             var base64token = UrlBase64Encode(tokenBytes);
@@ -30,8 +30,5 @@ namespace shrimpcast.Helpers
             var hashedToken = Convert.ToHexString(SHA256.HashData(tokenBytes));
             return new SessionToken { Hash = hashedToken, Plain = token };
         }
-
-        public static bool AuthToken(string storedHash, string liveHash) =>
-            CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(storedHash), Encoding.UTF8.GetBytes(liveHash));
     }
 }

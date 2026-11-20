@@ -59,10 +59,8 @@ namespace shrimpcast.Data.Repositories
         public async Task<Session?> GetExistingByTokenAsync(string accessToken)
         {
             var SessionToken = SecureToken.HashToken(accessToken);
-            var account = await _context.Sessions.AsNoTracking().FirstOrDefaultAsync(Session => Session.SessionTokenLookupKey == SessionToken.LookupKey);
-            if (account == null) return null;
-            var isValidToken = SecureToken.AuthToken(account.HashedSessionToken, SessionToken.Hash);
-            return isValidToken ? account : null;
+            var account = await _context.Sessions.AsNoTracking().FirstOrDefaultAsync(Session => Session.HashedSessionToken == SessionToken.Hash);
+            return account;
         }
 
         public async Task<(Session Session, string? ReturnSessionToken)> GetNewOrExistingAsync(string accessToken, string RemoteAddress)
@@ -75,7 +73,6 @@ namespace shrimpcast.Data.Repositories
             {
                 CreatedAt = DateTime.UtcNow,
                 HashedSessionToken = TokenInfo.Hash,
-                SessionTokenLookupKey = TokenInfo.LookupKey,
                 UserColorDisplay = await _nameColourRepository.GetRandom(),
             };
 
