@@ -808,7 +808,7 @@ namespace shrimpcast.Hubs
                     }
                 }
 
-                await _hubContext.Clients.All.SendAsync("ConfigUpdated", _configurationSingleton.Configuration);
+                await _hubContext.Clients.All.SendAsync("ConfigUpdated", Configuration.ToPublicConfiguration());
             }
 
             await DispatchSystemMessage($"{(sourceUpdated ? "Executed" : "Could not execute")} scheduled job for [{sourceName}, {status}]", true, false, GetAdminSessions());
