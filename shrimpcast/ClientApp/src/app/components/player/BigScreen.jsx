@@ -9,7 +9,6 @@ import ChatActionsManager from "../../managers/ChatActionsManager";
 import LoadBalancingManager from "../../managers/LoadBalancingManager";
 import MultistreamPrompt from "../layout/Prompts/MultistreamPrompt";
 import NothingPlaying from "./NothingPlaying";
-import LocalStorageManager from "../../managers/LocalStorageManager";
 
 const PlayerWrapperSx = (theme, isMultistreaming) => ({
   width: `calc(100% - ${isMultistreaming ? 20 : 0}px)`,
@@ -42,7 +41,7 @@ const BigScreen = (props) => {
       playsinline: true,
       sources: [
         {
-          src: url.replace("/streams/", `/streams/${LocalStorageManager.getToken()}/`),
+          src: url,
           type: "application/x-mpegURL",
           withCredentials,
         },

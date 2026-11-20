@@ -6,7 +6,7 @@ const PremiumStream = () => {
     document.dispatchEvent(new CustomEvent("openPremiumStream"));
   }, []);
 
-  return <NothingPlaying message={"This is a premium stream, please buy a pass :-)"} />;
+  return <NothingPlaying message={"This stream is exclusive to gold users. Get a pass to join in!"} />;
 };
 
 export default PremiumStream;
