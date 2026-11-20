@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using shrimpcast.Entities.DB;
 
-namespace shrimpcast.Data
+namespace shrimpcast.Data.Context
 {
     public class APPContext(DbContextOptions<APPContext> options) : DbContext(options)
     {

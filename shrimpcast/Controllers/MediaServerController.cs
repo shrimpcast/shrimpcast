@@ -25,9 +25,7 @@ namespace shrimpcast.Controllers
         [HttpGet, Route("GetSystemStats")]
         public async Task<object> GetSystemStats(string sessionToken, bool selfInstanceOnly)
         {
-            var session = await _sessionRepository.GetExistingByTokenAsync(sessionToken);
-            if (session == null || !session.IsAdmin) throw new Exception("Permission denied.");
-
+            await _sessionRepository.VerifyAdmin(sessionToken);
             var selfInstanceName = Constants.SELF_INSTANCE_LB_NAME;
             return new
             {
@@ -46,8 +44,7 @@ namespace shrimpcast.Controllers
         [HttpGet, Route("GetStreamStats")]
         public async Task<object> GetStreamStats(string sessionToken)
         {
-            var session = await _sessionRepository.GetExistingByTokenAsync(sessionToken);
-            if (session == null || !session.IsAdmin) throw new Exception("Permission denied.");
+            await _sessionRepository.VerifyAdmin(sessionToken);
             return _processes.All.Select(p => new
             {
                 name = p.Key,
@@ -56,7 +53,10 @@ namespace shrimpcast.Controllers
                     stream = p.Value.Stream,
                     launchCommand = p.Value.LaunchCommand,
                 },
-                streamUrl = p.Value.StreamPath,
+                streamUrl = p.Value.Stream.RequiresGoldStatus
+                            ? p.Value.StreamPath.Replace("/streams/", $"/streams/{sessionToken}/")
+                            : p.Value.StreamPath,
+                isRestricted = p.Value.Stream.RequiresGoldStatus,
                 processStatus = new
                 {
                     runningStatus = !p.Value.Stream.IsEnabled ? "Stopping"
@@ -75,8 +75,7 @@ namespace shrimpcast.Controllers
         [HttpGet, Route("GetStreamLogs")]
         public async Task<IEnumerable<string>> GetStreamLogs(string sessionToken, string? Name)
         {
-            var session = await _sessionRepository.GetExistingByTokenAsync(sessionToken);
-            if (session == null || !session.IsAdmin) throw new Exception("Permission denied.");
+            await _sessionRepository.VerifyAdmin(sessionToken);
             if (Name == null)
             {
                 var activeFfmpegProcessCount = $"Active FFMPEG processes: {_ffmpegRepository.GetActiveFFMPEGProcesses().Length}";
@@ -93,21 +92,34 @@ namespace shrimpcast.Controllers
         [HttpPost, Route("Probe")]
         public async Task<object?> Probe([FromForm] ProbeDTO probeDTO)
         {
-            var session = await _sessionRepository.GetExistingByTokenAsync(probeDTO.SessionToken);
-            if (session == null || !session.IsAdmin) throw new Exception("Permission denied.");
+            await _sessionRepository.VerifyAdmin(probeDTO.SessionToken);
             return await _ffmpegRepository.ProbeStreamProcess(probeDTO.CustomHeaders, probeDTO.URL, probeDTO.ForceHLS);
         }
 
         [HttpGet, Route("Streams/{Name}/{File}")]
+        [HttpGet, Route("Streams/{SessionToken}/{Name}/{File}")]
         [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true, Duration = 0)]
-        public IActionResult Streams(string Name, string File)
+        public async Task<IActionResult> Streams(string Name, string File, string? SessionToken = null)
         {
             var isPlaylist = File.EndsWith("m3u8");
             var isPlaylistInfo = File.EndsWith("info");
             if (!isPlaylist && !isPlaylistInfo && !Constants.IsDevelopment()) return UnprocessableEntity();
 
             _processes.All.TryGetValue(Name, out var streamInfo);
-            if (isPlaylistInfo) return ReturnPlaylistInfo(streamInfo);
+
+            var hasAccess = true;
+            if (streamInfo != null && streamInfo.Stream.RequiresGoldStatus)
+            {
+                var account = await _sessionRepository.GetExistingByTokenAsync(SessionToken ?? string.Empty);
+                if (account == null || (!account.IsAdmin && !account.IsMod && !account.IsGolden))
+                {
+                    hasAccess = false;
+                }
+
+                if (!hasAccess && !isPlaylistInfo) return Unauthorized();
+            }
+
+            if (isPlaylistInfo) return ReturnPlaylistInfo(streamInfo, hasAccess);
             else if (streamInfo == null) return NotFound();
 
             streamInfo.Viewers.AddOrUpdate(HttpContext.Connection.RemoteIpAddress!, DateTime.UtcNow, (k, oldValue) => DateTime.UtcNow);
@@ -118,7 +130,7 @@ namespace shrimpcast.Controllers
             return PhysicalFile(path, contentType);
         }
 
-        private IActionResult ReturnPlaylistInfo(StreamInfo? streamInfo)
+        private IActionResult ReturnPlaylistInfo(StreamInfo? streamInfo, bool hasAccess)
         {
             var isDownloading = streamInfo?.Stream_IsDownloading;
             var isStarting = !System.IO.File.Exists(streamInfo?.FullStreamPath);
@@ -128,7 +140,8 @@ namespace shrimpcast.Controllers
             return Ok(new
             {
                 title,
-                status = streamInfo == null ? Constants.StreamStatus.StreamOffline
+                status = !hasAccess ? Constants.StreamStatus.StreamForbidden
+                       : streamInfo == null ? Constants.StreamStatus.StreamOffline
                        : isDownloading != null ? Constants.StreamStatus.StreamDownloading
                        : isStarting ? Constants.StreamStatus.StreamStarting : Constants.StreamStatus.StreamPlaying
             });
@@ -177,16 +190,14 @@ namespace shrimpcast.Controllers
         [HttpGet, Route("RemoveInstanceMetrics")]
         public async Task<bool> RemoveInstanceMetrics(string sessionToken, string key)
         {
-            var session = await _sessionRepository.GetExistingByTokenAsync(sessionToken);
-            if (session == null || !session.IsAdmin) throw new Exception("Permission denied.");
+            await _sessionRepository.VerifyAdmin(sessionToken);
             return _lbMetrics.All.TryRemove(key, out _);
         }
 
         [HttpPost, Route("EditStream")]
         public async Task<bool> EditStream([FromBody] MediaServerStreamDTO mediaServerStreamDTO)
         {
-            var session = await _sessionRepository.GetExistingByTokenAsync(mediaServerStreamDTO.SessionToken);
-            if (session == null || !session.IsAdmin) throw new Exception("Permission denied.");
+            await _sessionRepository.VerifyAdmin(mediaServerStreamDTO.SessionToken);
             var edited = await _mediaServerStreamRepository.Edit(mediaServerStreamDTO.MediaServerStream);
             _ffmpegRepository.StopStreamProcess(mediaServerStreamDTO.MediaServerStream.Name, "edited", true);
             return edited;

@@ -4,7 +4,7 @@ namespace shrimpcast.Entities
 {
     public class Constants
     {
-        public const string BACKEND_VERSION = "2.2.5";
+        public const string BACKEND_VERSION = "2.2.6";
 
         public const string PING_COMMAND = "!ping";
 
@@ -38,9 +38,11 @@ namespace shrimpcast.Entities
 
         public const string MASTER_SKIP = "!masterskip";
 
+        public const string FETCH_IMAGE = "!fetchimage";
+
         public const string FILTERS = "filters.json";
 
-        public static readonly string FIREANDFORGET_TOKEN = SecureToken.GenerateTokenThreadSafe();
+        public static readonly string FIREANDFORGET_TOKEN = SecureToken.GenerateTokenThreadSafe().Plain;
 
         public const string BANNED_MESSAGE = "You are banned.";
 
@@ -72,6 +74,10 @@ namespace shrimpcast.Entities
 
         public const string VIP_MOVIE = "vip";
 
+        public const string UNAUTORHIZED_ACCESS = "Unauthorized access, permission denied";
+
+        public static void THROW_UNAUTHORIZED_ACCESS() => throw new Exception(UNAUTORHIZED_ACCESS);
+
         public static string DOWNLOADING_STATUS_FORMAT(int progress = 0) => $"Downloading {progress}%";
 
         public readonly static string[] USER_COMMANDS = [
@@ -95,6 +101,7 @@ namespace shrimpcast.Entities
             DOCKER_RESTART,
             TRUNCATE_LOGS,
             SET_USER_LABEL,
+            FETCH_IMAGE,
             ..MOD_COMMANDS,
         ];
 
@@ -119,6 +126,7 @@ namespace shrimpcast.Entities
             StreamDownloading = 1,
             StreamStarting = 2,
             StreamPlaying = 3,
+            StreamForbidden = 4,
         }
 
         public static string EMOTE_GET(string name) => $"/api/emote/get/{name}";

@@ -1,4 +1,4 @@
-import { Box, Typography, useTheme } from "@mui/material";
+import { Box, useTheme } from "@mui/material";
 import { useEffect, useMemo } from "react";
 import PickSource from "../layout/Actions/Sources/PickSource";
 import VideoJSInstance from "./VideoJSInstance";
@@ -8,22 +8,16 @@ import SourceCountdown from "../layout/Actions/Sources/SourceCountdown";
 import ChatActionsManager from "../../managers/ChatActionsManager";
 import LoadBalancingManager from "../../managers/LoadBalancingManager";
 import MultistreamPrompt from "../layout/Prompts/MultistreamPrompt";
+import NothingPlaying from "./NothingPlaying";
 
-const WrapperSx = {
+const PlayerWrapperSx = (theme, isMultistreaming) => ({
+  width: `calc(100% - ${isMultistreaming ? 20 : 0}px)`,
+  height: "100%",
+  [theme.breakpoints.down("md")]: {
+    height: `calc(100% - ${isMultistreaming ? 20 : 0}px)`,
     width: "100%",
-    height: "100%",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
   },
-  PlayerWrapperSx = (theme, isMultistreaming) => ({
-    width: `calc(100% - ${isMultistreaming ? 20 : 0}px)`,
-    height: "100%",
-    [theme.breakpoints.down("md")]: {
-      height: `calc(100% - ${isMultistreaming ? 20 : 0}px)`,
-      width: "100%",
-    },
-  });
+});
 
 const BigScreen = (props) => {
   const { streamStatus, signalR, configuration } = props,
@@ -105,11 +99,7 @@ const BigScreen = (props) => {
       </>
     )
   ) : (
-    <Box sx={WrapperSx}>
-      <Typography className="noselect" textAlign="center" variant="h2">
-        Nothing playing right now
-      </Typography>
-    </Box>
+    <NothingPlaying message={"Nothing playing right now"} />
   );
 };
 

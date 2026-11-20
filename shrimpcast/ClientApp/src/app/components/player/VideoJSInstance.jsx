@@ -3,6 +3,8 @@ import videojs from "video.js";
 import LocalStorageManager from "../../managers/LocalStorageManager";
 import MediaServerManager from "../../managers/MediaServerManager";
 import CenteredSpinner from "../loaders/CenteredSpinner";
+import NothingPlaying from "./NothingPlaying";
+import PremiumStream from "./PremiumStream";
 
 const InitialPlayerState = {
     waiting: null,
@@ -13,7 +15,8 @@ const InitialPlayerState = {
     0: `/media/stream_offline.mp4?v=${import.meta.env.VITE_APP_CSS_CACHE_BUST}`,
     1: `/media/stream_downloading.mp4?v=${import.meta.env.VITE_APP_CSS_CACHE_BUST}`,
     2: `/media/stream_starting.mp4?v=${import.meta.env.VITE_APP_CSS_CACHE_BUST}`,
-  };
+  },
+  premiumStreamStatus = 4;
 
 const VideoJSInstance = (props) => {
   const { options, theme, poster, isEmbed } = props,
@@ -22,7 +25,8 @@ const VideoJSInstance = (props) => {
     [cssLoaded, setCssLoaded] = useState(false),
     [playerInitialized, setPlayerInitialized] = useState(false),
     [shouldSetOptions, setShouldSetOptions] = useState(false),
-    [, setPlayerErrorState] = useState(InitialPlayerState);
+    [, setPlayerErrorState] = useState(InitialPlayerState),
+    [isPremiumStream, setPremiumStream] = useState(false);
 
   const PlayerInitMode = () => {
     const player = playerRef.current;
@@ -138,6 +142,7 @@ const VideoJSInstance = (props) => {
         status: infoResponse?.status,
       });
       title && player.userActive(true);
+      setPremiumStream(infoResponse?.status == premiumStreamStatus);
     },
     setPlayerPoster = () => {
       const player = playerRef.current;
@@ -199,6 +204,7 @@ const VideoJSInstance = (props) => {
       setShouldSetOptions(false);
       setPlayerInitialized(false);
       setPlayerErrorState(InitialPlayerState);
+      setPremiumStream(false);
       console.log(`Player disposed [${playerId}]`);
     };
 
@@ -209,7 +215,9 @@ const VideoJSInstance = (props) => {
       try {
         await import("video.js/dist/video-js.css");
         await import("./css/videojs-skin.css");
-        setShouldSetOptions(await MediaServerManager.GetCurrentlyPlaying(options.sources[0].src));
+        const streamStatus = await MediaServerManager.GetCurrentlyPlaying(options.sources[0].src);
+        setShouldSetOptions(streamStatus);
+        setPremiumStream(streamStatus?.status === premiumStreamStatus);
       } catch (e) {
         console.log(e);
         setTimeout(() => importCSS(abortSignal), 1000);
@@ -257,9 +265,18 @@ const VideoJSInstance = (props) => {
       {!cssLoaded ? (
         <CenteredSpinner loadingText={isEmbed ? "player" : "skip"} />
       ) : (
-        <div data-vjs-player className="full-height">
-          <div ref={videoRef} className="full-height" />
-        </div>
+        <>
+          {isPremiumStream ? (
+            isEmbed ? (
+              <NothingPlaying message={"Premium streams can not be embedded"} />
+            ) : (
+              <PremiumStream />
+            )
+          ) : null}
+          <div data-vjs-player className="full-height" hidden={isPremiumStream}>
+            <div ref={videoRef} className="full-height" />
+          </div>
+        </>
       )}
     </>
   );

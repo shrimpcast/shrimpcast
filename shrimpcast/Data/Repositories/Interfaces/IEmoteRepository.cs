@@ -6,7 +6,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
     {
         Task<object> GetAll();
 
-        Task<object> Add(IFormFile emote, string name);
+        Task<object> Add(IFormFile emote, string name, bool isManualUpload);
 
         Task<bool> Remove(int emoteId);
 

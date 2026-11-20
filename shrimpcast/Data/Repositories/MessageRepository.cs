@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using shrimpcast.Data.Context;
 using shrimpcast.Data.Repositories.Interfaces;
 using shrimpcast.Entities;
 using shrimpcast.Entities.DB;
@@ -104,10 +105,10 @@ namespace shrimpcast.Data.Repositories
 
                 return result > 0 ? Message : throw new Exception("Could not add message.");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 await transaction.RollbackAsync();
-                throw new Exception(ex.Message);
+                throw;
             }
         }
 

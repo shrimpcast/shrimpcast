@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using shrimpcast.Data;
+using shrimpcast.Data.Context;
 
 #nullable disable
 
@@ -397,6 +397,9 @@ namespace shrimpcast.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<bool>("IsManualUpload")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
@@ -468,6 +471,9 @@ namespace shrimpcast.Migrations
                         .HasColumnType("text");
 
                     b.Property<bool>("Randomize")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("RequiresGoldStatus")
                         .HasColumnType("boolean");
 
                     b.Property<bool>("ShowStats")
@@ -711,6 +717,10 @@ namespace shrimpcast.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("HashedSessionToken")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<bool>("IsAdmin")
                         .HasColumnType("boolean");
 
@@ -732,10 +742,6 @@ namespace shrimpcast.Migrations
                     b.Property<bool>("PassedTurnstile")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("SessionToken")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("UserColorDisplay")
                         .IsRequired()
                         .HasColumnType("text");
@@ -745,6 +751,9 @@ namespace shrimpcast.Migrations
                         .HasColumnType("character varying(32)");
 
                     b.HasKey("SessionId");
+
+                    b.HasIndex("HashedSessionToken")
+                        .IsUnique();
 
                     b.HasIndex("MutedBySessionId");
 
