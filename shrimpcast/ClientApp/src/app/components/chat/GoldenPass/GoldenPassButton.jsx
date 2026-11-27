@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Box, IconButton, Typography } from "@mui/material";
 import GoldenPassDialog from "./GoldenPassDialog";
 import { Close as CloseIcon } from "@mui/icons-material";
@@ -45,6 +45,11 @@ const GoldenPassButton = (props) => {
       ? configuration.goldenPassTitle.toUpperCase()
       : configuration.streamTitle.toUpperCase(),
     closeButton = () => setGoldenPassExpanded(false);
+
+  useEffect(() => {
+    document.addEventListener("openPremiumStream", openDialog);
+    return () => document.removeEventListener("openPremiumStream", openDialog);
+  }, []);
 
   return !isAdmin && !isGolden && showGoldenPassButton && goldenPassExpanded ? (
     <>

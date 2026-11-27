@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using shrimpcast.Data.Context;
 using shrimpcast.Data.Repositories.Interfaces;
 using shrimpcast.Entities;
 using shrimpcast.Entities.DB;
@@ -12,6 +13,7 @@ namespace shrimpcast.Data.Repositories
         public async Task<object> GetAll()
         {
             var emotes = await _context.Emotes.AsNoTracking()
+                                              .Where(emote => emote.IsManualUpload)
                                               .OrderBy(emote => emote.EmoteId)
                                               .Select(emote => new
                                               {
@@ -28,7 +30,7 @@ namespace shrimpcast.Data.Repositories
             return emote;
         }
 
-        public async Task<object> Add(IFormFile emote, string name)
+        public async Task<object> Add(IFormFile emote, string name, bool isManualUpload)
         {
             name = name.ToLower().Trim();
             if (string.IsNullOrEmpty(name)) throw new Exception("Name must have a value.");
@@ -45,6 +47,7 @@ namespace shrimpcast.Data.Repositories
                 Content = emoteBytes,
                 Name = name,
                 ContentType = emote.ContentType,
+                IsManualUpload = isManualUpload,
             };
 
             await _context.AddAsync(Emote);

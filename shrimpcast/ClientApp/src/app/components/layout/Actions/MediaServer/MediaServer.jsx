@@ -81,6 +81,12 @@ const MediaServer = (props) => {
           disabledTitle: "Enable H264 transcoding to show VOD info",
         },
       },
+      {
+        name: "requiresGoldStatus",
+        label: "Premium status",
+        type: 1,
+        color: "error",
+      },
     ],
     requiredFields: ["name", "ingressUri", "probeSuccess"],
     reservedWords: [],

@@ -7,7 +7,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
         Task<Session?> GetExistingAsync(string accessToken, string RemoteAddress);
         Task<Session> GetExistingByIdAsync(int sessionId, bool skipNames);
         Task<Session?> GetExistingByTokenAsync(string sessionToken);
-        Task<Session> GetNewOrExistingAsync(string accessToken, string RemoteAddress);
+        Task<(Session Session, string? ReturnSessionToken)> GetNewOrExistingAsync(string accessToken, string RemoteAddress);
         Task<SessionName> ChangeName(int sessionId, string NewName);
         Task<List<SessionName>> GetAllNames(int sessionId);
         Task<string> GetCurrentName(int sessionId);
@@ -24,6 +24,7 @@ namespace shrimpcast.Data.Repositories.Interfaces
         Task<bool> SetTurnstilePassed(int sessionId);
         Task<string?> IsMuted(string RemoteAddress, int SessionId);
         Task<string?> SetUserLabel(string? Label, int SessionId);
+        Task VerifyAdmin(string sessionToken);
     }
 }
 

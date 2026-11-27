@@ -344,20 +344,59 @@ const StreamStats = (props) => {
               {dialogType === "json" ? "Debug information" : "Stream preview"}
               {dialogType === "preview" && (
                 <>
-                  <Tooltip title="Copy M3U8 URL">
-                    <IconButton onClick={handleCopyStreamUrl} size="small" sx={{ ml: 1 }}>
-                      <ContentCopyIcon fontSize="small" />
-                    </IconButton>
+                  <Tooltip
+                    title={
+                      selectedItem?.isRestricted
+                        ? "Copying the M3U8 URL of a premium stream is not supported, as it contains your token. Copy it at your own discretion with F12."
+                        : "Copy M3U8 URL"
+                    }
+                  >
+                    <span>
+                      <IconButton
+                        disabled={selectedItem?.isRestricted}
+                        onClick={handleCopyStreamUrl}
+                        size="small"
+                        sx={{ ml: 1 }}
+                      >
+                        <ContentCopyIcon fontSize="small" />
+                      </IconButton>
+                    </span>
                   </Tooltip>
-                  <Tooltip title="Copy embed URL">
-                    <IconButton onClick={() => handleCopyEmbedCode(false)} size="small" sx={{ ml: 1 }}>
-                      <CodeIcon fontSize="small" />
-                    </IconButton>
+                  <Tooltip
+                    title={
+                      selectedItem?.isRestricted
+                        ? "Copying the embed URL of a premium stream is not supported, as it contains your token."
+                        : "Copy embed URL"
+                    }
+                  >
+                    <span>
+                      <IconButton
+                        disabled={selectedItem?.isRestricted}
+                        onClick={() => handleCopyEmbedCode(false)}
+                        size="small"
+                        sx={{ ml: 1 }}
+                      >
+                        <CodeIcon fontSize="small" />
+                      </IconButton>
+                    </span>
                   </Tooltip>
-                  <Tooltip title="Copy embed code">
-                    <IconButton onClick={() => handleCopyEmbedCode(true)} size="small" sx={{ ml: 1 }}>
-                      <HtmlIcon fontSize="small" />
-                    </IconButton>
+                  <Tooltip
+                    title={
+                      selectedItem?.isRestricted
+                        ? "Copying the embed code of a premium stream is not supported, as it contains your token."
+                        : "Copy embed code"
+                    }
+                  >
+                    <span>
+                      <IconButton
+                        disabled={selectedItem?.isRestricted}
+                        onClick={() => handleCopyEmbedCode(true)}
+                        size="small"
+                        sx={{ ml: 1 }}
+                      >
+                        <HtmlIcon fontSize="small" />
+                      </IconButton>
+                    </span>
                   </Tooltip>
                 </>
               )}

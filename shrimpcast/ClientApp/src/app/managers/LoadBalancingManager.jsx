@@ -1,3 +1,4 @@
+import LocalStorageManager from "./LocalStorageManager";
 import MediaServerManager from "./MediaServerManager";
 
 class LoadBalancingManager {
@@ -27,7 +28,9 @@ class LoadBalancingManager {
   static ResolveBalancing(input, isThumbnail) {
     const { name, streamOverride, lbSettings } = input;
     const isOverrideUrl = MediaServerManager.IsURL(streamOverride);
-    const streamUrlPath = isOverrideUrl.pathname || `/api/mediaserver/streams/${streamOverride || name}/index.m3u8`;
+    const streamUrlPath =
+      isOverrideUrl.pathname ||
+      `/api/mediaserver/streams/${LocalStorageManager.getToken()}/${streamOverride || name}/index.m3u8`;
     const origin = isOverrideUrl.origin || window.location.origin;
     if (!lbSettings) return origin + streamUrlPath;
     const hostname = isOverrideUrl.hostname || window.location.hostname;

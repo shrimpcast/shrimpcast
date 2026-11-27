@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using shrimpcast.Data.Context;
 using shrimpcast.Data.Repositories.Interfaces;
 using shrimpcast.Entities;
 using shrimpcast.Entities.DB;
@@ -25,7 +26,7 @@ namespace shrimpcast.Data.Repositories
 
         public async Task<Session?> GetExistingAsync(string accessToken, string RemoteAddress)
         {
-            var tokenExists = await _context.Sessions.FirstOrDefaultAsync(Session => Session.SessionToken == accessToken);
+            var tokenExists = await GetExistingByTokenAsync(accessToken);
             if (tokenExists == null) return null;
 
             var IPExists = await _context.SessionIPs.FirstOrDefaultAsync(SessionIP => SessionIP.SessionId == tokenExists.SessionId && SessionIP.RemoteAddress == RemoteAddress);
@@ -57,19 +58,21 @@ namespace shrimpcast.Data.Repositories
 
         public async Task<Session?> GetExistingByTokenAsync(string accessToken)
         {
-            var account = await _context.Sessions.AsNoTracking().FirstOrDefaultAsync(Session => Session.SessionToken == accessToken);
+            var SessionToken = SecureToken.HashToken(accessToken);
+            var account = await _context.Sessions.AsNoTracking().FirstOrDefaultAsync(Session => Session.HashedSessionToken == SessionToken.Hash);
             return account;
         }
 
-        public async Task<Session> GetNewOrExistingAsync(string accessToken, string RemoteAddress)
+        public async Task<(Session Session, string? ReturnSessionToken)> GetNewOrExistingAsync(string accessToken, string RemoteAddress)
         {
             var tokenExists = await GetExistingAsync(accessToken, RemoteAddress);
-            if (tokenExists != null) return tokenExists;
+            if (tokenExists != null) return (tokenExists, null);
 
+            var TokenInfo = SecureToken.GenerateTokenThreadSafe();
             var Session = new Session
             {
                 CreatedAt = DateTime.UtcNow,
-                SessionToken = SecureToken.GenerateTokenThreadSafe(),
+                HashedSessionToken = TokenInfo.Hash,
                 UserColorDisplay = await _nameColourRepository.GetRandom(),
             };
 
@@ -92,7 +95,7 @@ namespace shrimpcast.Data.Repositories
 
             await _context.AddRangeAsync(SessionIP, SessionName);
             await _context.SaveChangesAsync();
-            return Session;
+            return (Session, TokenInfo.Plain);
         }
 
         public async Task<SessionName> ChangeName(int sessionId, string NewName)
@@ -274,6 +277,15 @@ namespace shrimpcast.Data.Repositories
             var Session = await GetExistingByIdAsync(SessionId, true);
             Session.UserLabel = Label == "null" ? null : Label;
             return await _context.SaveChangesAsync() > 0 ? Session.UserLabel : throw new Exception("Could not update record.");
+        }
+
+        public async Task VerifyAdmin(string sessionToken)
+        {
+            var session = await GetExistingByTokenAsync(sessionToken);
+            if (session == null || !session.IsAdmin)
+            {
+                Constants.THROW_UNAUTHORIZED_ACCESS();
+            }
         }
 
         private static string? BuildMutedStringMinutes(DateTime MutedUntil)
