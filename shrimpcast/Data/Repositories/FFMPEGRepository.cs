@@ -261,8 +261,7 @@ namespace shrimpcast.Data.Repositories
                 var playlistSources = GetPlaylistItemsArray(isPlaylistOnEndEvent ? getEndPlaylist() : playlist);
                 if (streamInfo == null)
                 {
-                    var playlistIndex = playlist.Randomize ? new Random().Next(0, playlistSources.Length) : 0;
-                    nextSourceName = playlistSources[playlistIndex];
+                    nextSourceName = playlist.Randomize ? PickRandomPlaylistItem(playlist.Name, playlistSources) : playlistSources[0];
                 }
                 else
                 {
@@ -280,7 +279,7 @@ namespace shrimpcast.Data.Repositories
 
                     if (playlist.Randomize)
                     {
-                        nextSourceName = playlistSources[new Random().Next(0, playlistSources.Length)];
+                        nextSourceName = PickRandomPlaylistItem(playlist.Name, playlistSources);
                     }
                     else if (currentlyPlayingIndex == -1 || hasPlaylistFinished)
                     {
@@ -314,6 +313,25 @@ namespace shrimpcast.Data.Repositories
                     VideoEncodingPreset = string.Empty,
                     VideoStreamIndex = 0,
                 }, isPlaylistOnEndEvent);
+            }
+        }
+
+        // Playlist Randomiser Helper
+        private const int RecentHistorySize = 50; // holds how many movies until a repeat can occur
+        
+        private string PickRandomPlaylistItem(string playlistName, string[] items)
+        {
+            var history = _processes.PlaylistHistory.GetOrAdd(playlistName, _ => new Queue<string>());
+            lock (history)
+            {
+                var available = items.Except(history).ToArray();
+                if (available.Length < 1) available = items;
+
+                var pick = available[new Random().Next(0, available.Length)];
+                history.Enqueue(pick);
+                
+                while (history.Count > Math.Min(RecentHistorySize, items.Length - 1)) history.Dequeue();
+                return pick;
             }
         }
 

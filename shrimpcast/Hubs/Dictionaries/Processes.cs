@@ -7,5 +7,6 @@ namespace shrimpcast.Hubs.Dictionaries
     public class Processes<T> where T : Hub
     {
         public ConcurrentDictionary<string, StreamInfo> All { get; } = new();
+        public ConcurrentDictionary<string, Queue<string>> PlaylistHistory { get; } = new();
     }
 }
